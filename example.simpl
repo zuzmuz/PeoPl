@@ -1,0 +1,43 @@
+
+
+contract MyInterface
+    id: String
+    sing: I32
+    calculate: { in: I32 out: F64 } F64
+    .
+
+type Denominator
+    id String.
+
+
+** this function does a lot of things
+func Denomainator calculate in: I32 out: String String
+    [1 2 3] | map transfrom: { |value| value }
+    .
+
+
+
+func factorial n: I32 I32
+    n = 1 
+    | is_true 
+        then: { 1 } 
+        otherwise: {
+            n * factorial n: (n - 1)
+    }.
+
+
+** func Denomainator calculate in I32 out F64 F64
+**   hi.
+
+
+**        (call_expression ; [12, 4] - [12, 25]
+**          field: (expression ; [12, 4] - [12, 19]
+**            (call_expression ; [12, 4] - [12, 19]
+**              field: (expression ; [12, 4] - [12, 13]
+**                (call_expression ; [12, 4] - [12, 13]
+**                  field: (expression ; [12, 4] - [12, 5]
+**                    (single_expression ; [12, 4] - [12, 5]
+**                      (int_literal))) ; [12, 4] - [12, 5]
+**                  function: (field_identifier))) ; [12, 8] - [12, 13]
+**              function: (field_identifier))) ; [12, 16] - [12, 19]
+**          function: (field_identifier))))) ; [12, 22] - [12, 25]
