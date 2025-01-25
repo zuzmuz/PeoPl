@@ -17,14 +17,6 @@ func Denomainator calculate in: I32 out: String String
 
 
 
-func factorial n: I32 I32
-    n = 1 
-    | is_true 
-        then: { 1 } 
-        otherwise: {
-            n * factorial n: (n - 1)
-    }.
-
 
 ** func Denomainator calculate in I32 out F64 F64
 **   hi.

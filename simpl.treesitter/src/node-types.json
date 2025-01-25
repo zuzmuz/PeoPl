@@ -72,6 +72,25 @@
     }
   },
   {
+    "type": "branchsubpipe_expression",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "call_expression",
+          "named": true
+        },
+        {
+          "type": "subpipe_expresssion",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "call_expression",
     "named": true,
     "fields": {
@@ -146,11 +165,11 @@
           "named": true
         },
         {
-          "type": "call_expression",
+          "type": "branchsubpipe_expression",
           "named": true
         },
         {
-          "type": "lambda_expression",
+          "type": "call_expression",
           "named": true
         },
         {
@@ -248,40 +267,6 @@
     }
   },
   {
-    "type": "lambda_argument_list",
-    "named": true,
-    "fields": {},
-    "children": {
-      "multiple": true,
-      "required": true,
-      "types": [
-        {
-          "type": "field_identifier",
-          "named": true
-        }
-      ]
-    }
-  },
-  {
-    "type": "lambda_expression",
-    "named": true,
-    "fields": {},
-    "children": {
-      "multiple": true,
-      "required": true,
-      "types": [
-        {
-          "type": "expression",
-          "named": true
-        },
-        {
-          "type": "lambda_argument_list",
-          "named": true
-        }
-      ]
-    }
-  },
-  {
     "type": "multiplicative_operator",
     "named": true,
     "fields": {}
@@ -330,10 +315,6 @@
         "multiple": false,
         "required": true,
         "types": [
-          {
-            "type": "lambda_expression",
-            "named": true
-          },
           {
             "type": "parenthised_expression",
             "named": true
@@ -411,7 +392,19 @@
       "required": true,
       "types": [
         {
+          "type": "branchsubpipe_expression",
+          "named": true
+        },
+        {
           "type": "call_expression",
+          "named": true
+        },
+        {
+          "type": "parenthised_expression",
+          "named": true
+        },
+        {
+          "type": "single_expression",
           "named": true
         }
       ]
@@ -479,6 +472,33 @@
         },
         {
           "type": "type_declaration",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "subpipe_expresssion",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "call_expression",
+          "named": true
+        },
+        {
+          "type": "expression",
+          "named": true
+        },
+        {
+          "type": "parenthised_expression",
+          "named": true
+        },
+        {
+          "type": "single_expression",
           "named": true
         }
       ]
@@ -584,6 +604,10 @@
     "named": false
   },
   {
+    "type": ",",
+    "named": false
+  },
+  {
     "type": "-",
     "named": false
   },
@@ -597,6 +621,10 @@
   },
   {
     "type": ":",
+    "named": false
+  },
+  {
+    "type": ";",
     "named": false
   },
   {

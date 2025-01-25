@@ -282,15 +282,15 @@
         },
         {
           "type": "SYMBOL",
+          "name": "branchsubpipe_expression"
+        },
+        {
+          "type": "SYMBOL",
           "name": "pipe_expression"
         },
         {
           "type": "SYMBOL",
           "name": "call_expression"
-        },
-        {
-          "type": "SYMBOL",
-          "name": "lambda_expression"
         },
         {
           "type": "SYMBOL",
@@ -350,7 +350,7 @@
     },
     "pipe_expression": {
       "type": "PREC_LEFT",
-      "value": 5,
+      "value": 2,
       "content": {
         "type": "SEQ",
         "members": [
@@ -364,18 +364,119 @@
           },
           {
             "type": "STRING",
-            "value": "|"
+            "value": ";"
           },
           {
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "SYMBOL",
+                "name": "single_expression"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "call_expression"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "branchsubpipe_expression"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "parenthised_expression"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "subpipe_expresssion": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "STRING",
+          "value": "|"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "expression"
+        },
+        {
+          "type": "STRING",
+          "value": "|"
+        },
+        {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "SYMBOL",
+              "name": "single_expression"
+            },
+            {
+              "type": "SYMBOL",
+              "name": "call_expression"
+            },
+            {
+              "type": "SYMBOL",
+              "name": "parenthised_expression"
+            }
+          ]
+        }
+      ]
+    },
+    "branchsubpipe_expression": {
+      "type": "PREC_LEFT",
+      "value": 1,
+      "content": {
+        "type": "SEQ",
+        "members": [
+          {
             "type": "SYMBOL",
-            "name": "call_expression"
+            "name": "subpipe_expresssion"
+          },
+          {
+            "type": "REPEAT",
+            "content": {
+              "type": "SEQ",
+              "members": [
+                {
+                  "type": "STRING",
+                  "value": ","
+                },
+                {
+                  "type": "SYMBOL",
+                  "name": "subpipe_expresssion"
+                }
+              ]
+            }
+          },
+          {
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "SEQ",
+                "members": [
+                  {
+                    "type": "STRING",
+                    "value": ","
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "call_expression"
+                  }
+                ]
+              },
+              {
+                "type": "BLANK"
+              }
+            ]
           }
         ]
       }
     },
     "call_expression": {
       "type": "PREC_LEFT",
-      "value": 5,
+      "value": 2,
       "content": {
         "type": "SEQ",
         "members": [
@@ -408,7 +509,7 @@
     },
     "param_list_call": {
       "type": "PREC_LEFT",
-      "value": 5,
+      "value": 2,
       "content": {
         "type": "REPEAT1",
         "content": {
@@ -445,10 +546,6 @@
               {
                 "type": "SYMBOL",
                 "name": "parenthised_expression"
-              },
-              {
-                "type": "SYMBOL",
-                "name": "lambda_expression"
               }
             ]
           }
@@ -609,7 +706,7 @@
         },
         {
           "type": "PREC_LEFT",
-          "value": 3,
+          "value": 5,
           "content": {
             "type": "SEQ",
             "members": [
@@ -642,7 +739,7 @@
         },
         {
           "type": "PREC_LEFT",
-          "value": 2,
+          "value": 4,
           "content": {
             "type": "SEQ",
             "members": [
@@ -675,7 +772,7 @@
         },
         {
           "type": "PREC_LEFT",
-          "value": 1,
+          "value": 3,
           "content": {
             "type": "SEQ",
             "members": [
