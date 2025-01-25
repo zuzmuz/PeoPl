@@ -1,5 +1,4 @@
 [
-  "contract"
   "type"
 ] @keyword.type
 
@@ -50,7 +49,7 @@
   "^"
   ";"
   ","
-  "."
+  ".."
 ] @keyword.operator
 
 [

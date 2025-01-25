@@ -29,32 +29,41 @@ module.exports = grammar({
   ],
 
   rules: {
-    source_file: $ => repeat($._statement),
+    source_file: $ => repeat(
+      seq(
+        $._statement,
+        '..',
+        '\n',
+      )
+    ),
     comment: _ => seq('** ', /(\\+(.|\r?\n)|[^\\\n])*/),
     _statement: $ => choice(
       $._declaration,
-      $._expression,
+      $.implementation_statement,
+      $.constants_statement,
+    ),
+
+    implementation_statement: $ => seq(
+      $.type_identifier,
+      '=',
+      $.type_identifier,
+    ),
+
+    constants_statement: $ => seq(
+      $.field_identifier,
+      '=',
+      $._single_expression,
     ),
 
     _declaration: $ => seq(
       choice(
         $.type_declaration,
-        // $.meta_type_declaration,
-        $.contract_declaration,
         $.function_declaration,
       ),
-      '.',
-      '\n',
     ),
     
     type_declaration: $ => seq(
       'type',
-      field("name", $.type_identifier),
-      field("params", optional($.param_list)),
-    ),
-
-    contract_declaration: $ => seq(
-      'contract',
       field("name", $.type_identifier),
       field("params", optional($.param_list)),
     ),
@@ -68,24 +77,49 @@ module.exports = grammar({
       field("body", $._expression),
     ),
 
-    param_list: $ => repeat1($.param_declaration),
+    param_list: $ => prec.left(PREC.PARAM, repeat1($.param_declaration)),
     param_declaration: $ => seq(
       field("name", $.field_identifier),
       ":",
       field("type", $.type_identifier),
     ),
 
-    type_identifier: $ => choice(
+    type_name: $ => prec.left(seq(
       /[A-Z][a-zA-Z0-9_]*/,
+      repeat(seq('.', /[A-Z][a-zA-Z0-9_]*/))
+    )),
+
+    type_identifier: $ => choice(
+      $.type_name,
       $.inline_function_declaration,
+      $.tupled_type_identifer,
+      $.generic_type_identifier,
     ),
-    field_identifier: $ => /[a-z_][a-zA-Z0-9_]*/,
+
+    tupled_type_identifer: $ => seq(
+      '[',
+        repeat($.type_identifier),
+      ']'
+    ),
+
+    generic_type_identifier: $ => seq(
+      field('generic_type', $.type_name),
+      '<',
+      field('associated_type', repeat($.type_identifier)),
+      '>'
+    ),
 
     inline_function_declaration: $ => seq(
       '{',
       field('input_type', repeat($.type_identifier)),
       '}',
       field('return_type', $.type_identifier),
+    ),
+
+
+    field_identifier: $ => choice(
+      /[a-z_][a-zA-Z0-9_]*/,
+      seq(repeat(seq($.type_name, '.')), /[a-z_][a-zA-Z0-9_]*/)
     ),
 
 
@@ -98,7 +132,6 @@ module.exports = grammar({
       $.call_expression,
       $.pipe_expression,
       $.subpipe_expression,
-      // $.looped_expression,
     ),
 
     // simple expressions can be unambiguousely inserted anywhere
@@ -106,10 +139,11 @@ module.exports = grammar({
         $._single_expression,
         $.unary_expression,
         $.binary_expression,
-        $.array_literal,
+        // $.array_literal,
         $.parenthised_expression,
         $.lambda_expression,
         $.field_identifier,
+        $.accessed_identifier,
     ),
     
     // single expressions are usually single tokens
@@ -200,7 +234,7 @@ module.exports = grammar({
     // a call param list is the list of arguments to pass to a command
     // the only exist in a call expression
     // it is a list of call params
-    call_param_list: $ => prec.left(PREC.PARAM, repeat1($.call_param)),
+    call_param_list: $ => repeat1($.call_param),
     
     // a call param is a pair of param name and a simple expression
     // non simple expression needs to be parenthised to be unambiguousely
@@ -254,6 +288,12 @@ module.exports = grammar({
       '{',
        $._expression,
       '}'
+    ),
+
+    accessed_identifier: $ => seq(
+      $._simple_expression,
+      '.',
+      $.field_identifier
     ),
   }
 });
