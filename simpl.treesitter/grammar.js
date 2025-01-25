@@ -10,6 +10,7 @@
 
 
 const PREC = {
+  ACCESS: 30,
   PARAM: 20,
   UNARY: 10,
   MULT: 8,
@@ -78,13 +79,13 @@ module.exports = grammar({
       /[A-Z][a-zA-Z0-9_]*/,
       $.inline_function_declaration,
     ),
-    field_identifier: $ => /[a-z][a-zA-Z0-9_]*/,
+    field_identifier: $ => /[a-z_][a-zA-Z0-9_]*/,
 
     inline_function_declaration: $ => seq(
       '{',
-      repeat($.param_declaration),
+      field('input_type', repeat($.type_identifier)),
       '}',
-      $.type_identifier,
+      field('return_type', $.type_identifier),
     ),
 
 
@@ -108,7 +109,7 @@ module.exports = grammar({
         $.array_literal,
         $.parenthised_expression,
         $.lambda_expression,
-        $.field_identifier
+        $.field_identifier,
     ),
     
     // single expressions are usually single tokens
@@ -236,7 +237,7 @@ module.exports = grammar({
     // or a looped expression which is just are regular parenthesized expression
     // followed by ^
     subpipe_branch_expresssion: $ => seq(
-      '|', field("capture_group", $._expression), '|',
+      '|', field("capture_group", repeat($._simple_expression)), '|',
       field("body", choice(
         $._simple_expression,
         $.call_expression,
@@ -251,7 +252,7 @@ module.exports = grammar({
 
     lambda_expression: $ => seq(
       '{',
-       $.subpipe_expression,
+       $._expression,
       '}'
     ),
   }

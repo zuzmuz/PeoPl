@@ -243,7 +243,7 @@
     },
     "field_identifier": {
       "type": "PATTERN",
-      "value": "[a-z][a-zA-Z0-9_]*"
+      "value": "[a-z_][a-zA-Z0-9_]*"
     },
     "inline_function_declaration": {
       "type": "SEQ",
@@ -256,7 +256,7 @@
           "type": "REPEAT",
           "content": {
             "type": "SYMBOL",
-            "name": "param_declaration"
+            "name": "type_identifier"
           }
         },
         {
@@ -871,8 +871,11 @@
           "type": "FIELD",
           "name": "capture_group",
           "content": {
-            "type": "SYMBOL",
-            "name": "_expression"
+            "type": "REPEAT",
+            "content": {
+              "type": "SYMBOL",
+              "name": "_simple_expression"
+            }
           }
         },
         {
@@ -924,7 +927,7 @@
         },
         {
           "type": "SYMBOL",
-          "name": "subpipe_expression"
+          "name": "_expression"
         },
         {
           "type": "STRING",

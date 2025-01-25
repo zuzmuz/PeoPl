@@ -440,10 +440,6 @@
       "required": true,
       "types": [
         {
-          "type": "param_declaration",
-          "named": true
-        },
-        {
           "type": "type_identifier",
           "named": true
         }
@@ -459,7 +455,55 @@
       "required": true,
       "types": [
         {
+          "type": "array_literal",
+          "named": true
+        },
+        {
+          "type": "binary_expression",
+          "named": true
+        },
+        {
+          "type": "bool_literal",
+          "named": true
+        },
+        {
+          "type": "call_expression",
+          "named": true
+        },
+        {
+          "type": "field_identifier",
+          "named": true
+        },
+        {
+          "type": "float_literal",
+          "named": true
+        },
+        {
+          "type": "int_literal",
+          "named": true
+        },
+        {
+          "type": "lambda_expression",
+          "named": true
+        },
+        {
+          "type": "parenthised_expression",
+          "named": true
+        },
+        {
+          "type": "pipe_expression",
+          "named": true
+        },
+        {
+          "type": "string_literal",
+          "named": true
+        },
+        {
           "type": "subpipe_expression",
+          "named": true
+        },
+        {
+          "type": "unary_expression",
           "named": true
         }
       ]
@@ -846,8 +890,8 @@
         ]
       },
       "capture_group": {
-        "multiple": false,
-        "required": true,
+        "multiple": true,
+        "required": false,
         "types": [
           {
             "type": "array_literal",
@@ -859,10 +903,6 @@
           },
           {
             "type": "bool_literal",
-            "named": true
-          },
-          {
-            "type": "call_expression",
             "named": true
           },
           {
@@ -886,15 +926,7 @@
             "named": true
           },
           {
-            "type": "pipe_expression",
-            "named": true
-          },
-          {
             "type": "string_literal",
-            "named": true
-          },
-          {
-            "type": "subpipe_expression",
             "named": true
           },
           {
