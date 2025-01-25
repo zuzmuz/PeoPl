@@ -20,7 +20,7 @@
 
 
 (call_expression
-  function: (field_identifier) @function.call)
+  callee: (field_identifier) @function.call)
 (param_definition
   name: (field_identifier) @variable.parameter)
 
@@ -38,7 +38,10 @@
   ">"
   "<="
   ">="
-  ; "^"
+  "^"
+  ";"
+  ","
+  "."
   ; "&"
   ; "&&"
   "|"

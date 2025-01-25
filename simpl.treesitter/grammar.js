@@ -31,7 +31,7 @@ module.exports = grammar({
     comment: _ => seq('** ', /(\\+(.|\r?\n)|[^\\\n])*/),
     _statement: $ => choice(
       $._declaration,
-      $.expression,
+      $._expression,
     ),
 
     _declaration: $ => seq(
@@ -41,7 +41,8 @@ module.exports = grammar({
         $.contract_declaration,
         $.function_declaration,
       ),
-      '.\n',
+      '.',
+      '\n',
     ),
     
     type_declaration: $ => seq(
@@ -62,7 +63,7 @@ module.exports = grammar({
       field("name", $.field_identifier),
       field("params", optional($.param_list)),
       field("return", $.type_identifier),
-      field("body", $.expression),
+      field("body", $._expression),
     ),
 
     param_list: $ => repeat1($.param_declaration),
@@ -85,18 +86,19 @@ module.exports = grammar({
       $.type_identifier,
     ),
 
-    expression: $ => choice(
-      $.single_expression,
+    _expression: $ => choice(
+      $._single_expression,
       $.unary_expression,
       $.binary_expression,
-      $.branchsubpipe_expression,
+      $.subpipe_expression,
       $.pipe_expression,
       $.call_expression,
+      $.looped_expression,
       // $.lambda_expression,
       $.parenthised_expression,
     ),
 
-    single_expression: $ => choice(
+    _single_expression: $ => choice(
       $.int_literal,
       $.float_literal,
       $.string_literal,
@@ -106,35 +108,46 @@ module.exports = grammar({
       $.field_identifier
     ),
 
+    looped_expression: $ => seq(
+      $.parenthised_expression,
+      '^'
+    ),
+
     parenthised_expression: $ => seq(
       '(',
-      $.expression,
+      $._expression,
       ')',
     ),
 
     pipe_expression: $ => prec.left(PREC.PIPE, seq(
-        field("field", $.expression),
+        field("left", $._expression),
         ';',
-        choice(
-          $.single_expression,
+        field("right", choice(
+          $._single_expression,
           $.call_expression,
-          $.branchsubpipe_expression,
-          $.parenthised_expression)
+          $.subpipe_expression,
+          $.looped_expression,
+          $.parenthised_expression))
     )),
 
-    subpipe_expresssion: $ => seq(
-      '|', $.expression, '|',
-      choice($.single_expression, $.call_expression, $.parenthised_expression)
+    subpipe_branch_expresssion: $ => seq(
+      '|', field("capture_group", $._expression), '|',
+      field("subpipe", choice(
+        $._single_expression,
+        $.call_expression,
+        $.looped_expression,
+        $.parenthised_expression
+      ))
     ),
 
-    branchsubpipe_expression: $ => prec.left(PREC.SUBPIPE, seq(
-      $.subpipe_expresssion, 
-      repeat(seq(',', $.subpipe_expresssion)),
-      optional(seq(',', choice($.call_expression, $.single_expression)),
+    subpipe_expression: $ => prec.left(PREC.SUBPIPE, seq(
+      $.subpipe_branch_expresssion,
+      repeat(seq(',', $.subpipe_branch_expresssion)),
+      optional(seq(',', choice($.call_expression, $._single_expression))),
     )),
 
     call_expression: $ => prec.left(PREC.PIPE, seq(
-        field("function", $.field_identifier),
+        field("callee", choice($.field_identifier, $.type_identifier)),
         field("params", optional($.param_list_call)),
     )),
 
@@ -144,7 +157,7 @@ module.exports = grammar({
       field("name", $.field_identifier),
       ":",
       field("value", choice(
-        $.single_expression,
+        $._single_expression,
         $.parenthised_expression,
         // $.lambda_expression,
       )),
@@ -153,14 +166,14 @@ module.exports = grammar({
     unary_expression: $ => prec.left(PREC.UNARY,
       seq(
         field("operator", choice($.additive_operator, 'not')),
-        field("operand", $.expression),
+        field("operand", $._expression),
       )
     ),
 
     lambda_expression: $ => seq(
       '{',
       optional(seq('|', $.lambda_argument_list, '|')),
-      $.expression,
+      $._expression,
       '}'
     ),
 
@@ -169,37 +182,37 @@ module.exports = grammar({
     binary_expression: $ => choice(
       prec.left(PREC.MULT,
         seq(
-          field("left", $.expression),
+          field("left", $._expression),
           field("operator", $.multiplicative_operator),
-          field("right", $.expression),
+          field("right", $._expression),
         )
       ),
       prec.left(PREC.ADD,
         seq(
-          field("left", $.expression),
+          field("left", $._expression),
           field("operator", $.additive_operator),
-          field("right", $.expression),
+          field("right", $._expression),
         )
       ),
       prec.left(PREC.COMP,
         seq(
-          field("left", $.expression),
+          field("left", $._expression),
           field("operator", $.comparative_operator),
-          field("right", $.expression),
+          field("right", $._expression),
         )
       ),
       prec.left(PREC.AND,
         seq(
-          field("left", $.expression),
+          field("left", $._expression),
           field("operator", $.and_operator),
-          field("right", $.expression),
+          field("right", $._expression),
         )
       ),
       prec.left(PREC.OR,
         seq(
-          field("left", $.expression),
+          field("left", $._expression),
           field("operator", $.or_operator),
-          field("right", $.expression),
+          field("right", $._expression),
         )
       )
     ),
@@ -209,7 +222,7 @@ module.exports = grammar({
     int_literal: $ => /\d+/,
     float_literal: $ => /\d+\.\d+/,
     string_literal: $ => /"[^"]*"/,
-    array_literal: $ => seq('[', repeat($.expression), ']'),
+    array_literal: $ => seq('[', repeat($._expression), ']'),
 
     multiplicative_operator: $ => choice('*', '/', '%'),
     additive_operator: $ => choice('+', '-'),
