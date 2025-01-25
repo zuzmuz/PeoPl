@@ -7,6 +7,7 @@
  "func"
 ] @keyword.function
 
+
 (type_identifier) @type
 
 (function_declaration
@@ -21,10 +22,11 @@
 
 (call_expression
   callee: (field_identifier) @function.call)
-(param_definition
+(call_param
   name: (field_identifier) @variable.parameter)
 
 (int_literal) @number
+(bool_literal) @boolean
 (float_literal) @number.float
 (string_literal) @string
 [
@@ -38,15 +40,18 @@
   ">"
   "<="
   ">="
-  "^"
-  ";"
-  ","
-  "."
   ; "&"
   ; "&&"
   "|"
   ; "..."
 ] @operator
+
+[
+  "^"
+  ";"
+  ","
+  "."
+] @keyword.operator
 
 [
   "("

@@ -87,97 +87,52 @@ module.exports = grammar({
       $.type_identifier,
     ),
 
+
+    // -----------
+    // EXPRESSIONS
+    // -----------
+
     _expression: $ => choice(
       $._simple_expression,
-      $.subpipe_expression,
-      $.pipe_expression,
       $.call_expression,
-      $.looped_expression,
-      // $.lambda_expression,
+      $.pipe_expression,
+      $.subpipe_expression,
+      // $.looped_expression,
     ),
 
-    _single_expression: $ => choice(
-      $.int_literal,
-      $.float_literal,
-      $.string_literal,
-      $.array_literal,
-      $.true,
-      $.false,
-      $.field_identifier
-    ),
-
-    looped_expression: $ => seq(
-      $.parenthised_expression,
-      '^'
-    ),
-
-    parenthised_expression: $ => seq(
-      '(',
-      $._expression,
-      ')',
-    ),
-
-    pipe_expression: $ => prec.left(PREC.PIPE, seq(
-        field("left", $._expression),
-        ';',
-        field("right", choice(
-          $._simple_expression,
-          $.call_expression,
-          $.subpipe_expression,
-          $.looped_expression))
-    )),
-
-    subpipe_branch_expresssion: $ => seq(
-      '|', field("capture_group", $._expression), '|',
-      field("subpipe", choice(
-        $._simple_expression,
-        $.call_expression,
-        $.looped_expression,
-      ))
-    ),
-
-    subpipe_expression: $ => prec.left(PREC.SUBPIPE, seq(
-      $.subpipe_branch_expresssion,
-      repeat(seq(',', $.subpipe_branch_expresssion)),
-      optional(seq(',', choice($.call_expression, $._simple_expression))),
-    )),
-
-    call_expression: $ => prec.left(PREC.PIPE, seq(
-        field("callee", choice($.field_identifier, $.type_identifier)),
-        field("params", optional($.param_list_call)),
-    )),
-
-    param_list_call: $ => prec.left(PREC.PARAM, repeat1($.param_definition)),
-
-    param_definition: $ => seq(
-      field("name", $.field_identifier),
-      ":",
-      field("value", $._simple_expression),
-    ),
-
+    // simple expressions can be unambiguousely inserted anywhere
     _simple_expression: $ => choice(
         $._single_expression,
         $.unary_expression,
         $.binary_expression,
+        $.array_literal,
         $.parenthised_expression,
+        $.lambda_expression,
+        $.field_identifier
+    ),
+    
+    // single expressions are usually single tokens
+    _single_expression: $ => choice(
+      $.int_literal,
+      $.float_literal,
+      $.string_literal,
+      $.bool_literal,
     ),
 
+    bool_literal: $ => choice('true', 'false'),
+    int_literal: $ => /\d+/,
+    float_literal: $ => /\d+\.\d+/,
+    string_literal: $ => /"[^"]*"/,
+    array_literal: $ => seq('[', repeat($._simple_expression), ']'),
+
+    // a unary operator followed by a simple expression 
     unary_expression: $ => prec.left(PREC.UNARY,
       seq(
         field("operator", choice($.additive_operator, 'not')),
         field("operand", $._simple_expression),
       )
     ),
-
-    lambda_expression: $ => seq(
-      '{',
-      optional(seq('|', $.lambda_argument_list, '|')),
-      $._expression,
-      '}'
-    ),
-
-    lambda_argument_list: $ => repeat1($.field_identifier),
-
+    // two simple expressions surrounding a arithmetic or logic operator
     binary_expression: $ => choice(
       prec.left(PREC.MULT,
         seq(
@@ -203,38 +158,101 @@ module.exports = grammar({
       prec.left(PREC.AND,
         seq(
           field("left", $._simple_expression),
-          field("operator", $.and_operator),
+          field("operator", 'and'),
           field("right", $._simple_expression),
         )
       ),
       prec.left(PREC.OR,
         seq(
           field("left", $._simple_expression),
-          field("operator", $.or_operator),
+          field("operator", 'or'),
           field("right", $._simple_expression),
         )
       )
     ),
 
-    true: $ => 'true',
-    false: $ => 'false',
-    int_literal: $ => /\d+/,
-    float_literal: $ => /\d+\.\d+/,
-    string_literal: $ => /"[^"]*"/,
-    array_literal: $ => seq('[', repeat($._simple_expression), ']'),
-
     multiplicative_operator: $ => choice('*', '/', '%'),
     additive_operator: $ => choice('+', '-'),
     comparative_operator: $ => choice('=', '!=', '>', '>=', '<', '<='),
-    and_operator: $ => 'and',
-    or_operator: $ => 'or',
 
     operator: $ => choice(
       $.additive_operator, 
       $.multiplicative_operator,
       $.comparative_operator,
-      $.and_operator,
-      $.or_operator,
+      'and', 'or'
+    ),
+
+    parenthised_expression: $ => seq(
+      '(',
+      $._expression,
+      ')',
+    ),
+
+    // a call expression is not a simple expression and need to be paranthesised to be
+    // unambiguousely inserted anywhere, it fits in special places
+    // it is constructed by a callee which is the command name
+    // and a list of param calls
+    call_expression: $ => prec.left(PREC.PIPE, seq(
+        field("callee", choice($.field_identifier, $.type_identifier)),
+        field("params", optional($.call_param_list)),
+    )),
+    // a call param list is the list of arguments to pass to a command
+    // the only exist in a call expression
+    // it is a list of call params
+    call_param_list: $ => prec.left(PREC.PARAM, repeat1($.call_param)),
+    
+    // a call param is a pair of param name and a simple expression
+    // non simple expression needs to be parenthised to be unambiguousely
+    // inserted as param values
+    call_param: $ => seq(
+      field("name", $.field_identifier),
+      ":",
+      field("value", $._simple_expression),
+    ),
+
+    // the pipe expression is a binary expression
+    // 2 expressions separated by the pipe operator
+    pipe_expression: $ => prec.left(PREC.PIPE, seq(
+        field("left", $._expression),
+        ';',
+        field("right", $._expression),
+    )),
+
+    // a subpipe is one contained expression
+    // it can contain multiple subpipe branch expression separated by ,
+    // the last branch can be a call or a simple expression
+    // all the other branches need to be a subpipe branch expressions
+    subpipe_expression: $ => prec.left(PREC.SUBPIPE, seq(
+      $.subpipe_branch_expresssion,
+      repeat(seq(',', $.subpipe_branch_expresssion)),
+      optional(seq(',', choice($.call_expression, $._simple_expression))),
+    )),
+
+    // a subpipe branch is expression with a capture group
+    // it is called a branch because it is made to branch out
+    // the subpipe.
+    // it has a capture group followed by the subpipe body
+    // the subpipe body can be a simple or a call expression
+    // or a looped expression which is just are regular parenthesized expression
+    // followed by ^
+    subpipe_branch_expresssion: $ => seq(
+      '|', field("capture_group", $._expression), '|',
+      field("body", choice(
+        $._simple_expression,
+        $.call_expression,
+        $.looped_expression,
+      ))
+    ),
+
+    looped_expression: $ => seq(
+      $.parenthised_expression,
+      '^'
+    ),
+
+    lambda_expression: $ => seq(
+      '{',
+       $.subpipe_expression,
+      '}'
     ),
   }
 });
