@@ -10,6 +10,7 @@
 
 
 const PREC = {
+  PARAM: 20,
   UNARY: 10,
   MULT: 8,
   ADD: 6,
@@ -87,15 +88,12 @@ module.exports = grammar({
     ),
 
     _expression: $ => choice(
-      $._single_expression,
-      $.unary_expression,
-      $.binary_expression,
+      $._simple_expression,
       $.subpipe_expression,
       $.pipe_expression,
       $.call_expression,
       $.looped_expression,
       // $.lambda_expression,
-      $.parenthised_expression,
     ),
 
     _single_expression: $ => choice(
@@ -123,27 +121,25 @@ module.exports = grammar({
         field("left", $._expression),
         ';',
         field("right", choice(
-          $._single_expression,
+          $._simple_expression,
           $.call_expression,
           $.subpipe_expression,
-          $.looped_expression,
-          $.parenthised_expression))
+          $.looped_expression))
     )),
 
     subpipe_branch_expresssion: $ => seq(
       '|', field("capture_group", $._expression), '|',
       field("subpipe", choice(
-        $._single_expression,
+        $._simple_expression,
         $.call_expression,
         $.looped_expression,
-        $.parenthised_expression
       ))
     ),
 
     subpipe_expression: $ => prec.left(PREC.SUBPIPE, seq(
       $.subpipe_branch_expresssion,
       repeat(seq(',', $.subpipe_branch_expresssion)),
-      optional(seq(',', choice($.call_expression, $._single_expression))),
+      optional(seq(',', choice($.call_expression, $._simple_expression))),
     )),
 
     call_expression: $ => prec.left(PREC.PIPE, seq(
@@ -151,22 +147,25 @@ module.exports = grammar({
         field("params", optional($.param_list_call)),
     )),
 
-    param_list_call: $ => prec.left(PREC.PIPE, repeat1($.param_definition)),
+    param_list_call: $ => prec.left(PREC.PARAM, repeat1($.param_definition)),
 
     param_definition: $ => seq(
       field("name", $.field_identifier),
       ":",
-      field("value", choice(
+      field("value", $._simple_expression),
+    ),
+
+    _simple_expression: $ => choice(
         $._single_expression,
+        $.unary_expression,
+        $.binary_expression,
         $.parenthised_expression,
-        // $.lambda_expression,
-      )),
     ),
 
     unary_expression: $ => prec.left(PREC.UNARY,
       seq(
         field("operator", choice($.additive_operator, 'not')),
-        field("operand", $._expression),
+        field("operand", $._simple_expression),
       )
     ),
 
@@ -182,37 +181,37 @@ module.exports = grammar({
     binary_expression: $ => choice(
       prec.left(PREC.MULT,
         seq(
-          field("left", $._expression),
+          field("left", $._simple_expression),
           field("operator", $.multiplicative_operator),
-          field("right", $._expression),
+          field("right", $._simple_expression),
         )
       ),
       prec.left(PREC.ADD,
         seq(
-          field("left", $._expression),
+          field("left", $._simple_expression),
           field("operator", $.additive_operator),
-          field("right", $._expression),
+          field("right", $._simple_expression),
         )
       ),
       prec.left(PREC.COMP,
         seq(
-          field("left", $._expression),
+          field("left", $._simple_expression),
           field("operator", $.comparative_operator),
-          field("right", $._expression),
+          field("right", $._simple_expression),
         )
       ),
       prec.left(PREC.AND,
         seq(
-          field("left", $._expression),
+          field("left", $._simple_expression),
           field("operator", $.and_operator),
-          field("right", $._expression),
+          field("right", $._simple_expression),
         )
       ),
       prec.left(PREC.OR,
         seq(
-          field("left", $._expression),
+          field("left", $._simple_expression),
           field("operator", $.or_operator),
-          field("right", $._expression),
+          field("right", $._simple_expression),
         )
       )
     ),
@@ -222,7 +221,7 @@ module.exports = grammar({
     int_literal: $ => /\d+/,
     float_literal: $ => /\d+\.\d+/,
     string_literal: $ => /"[^"]*"/,
-    array_literal: $ => seq('[', repeat($._expression), ']'),
+    array_literal: $ => seq('[', repeat($._simple_expression), ']'),
 
     multiplicative_operator: $ => choice('*', '/', '%'),
     additive_operator: $ => choice('+', '-'),
