@@ -64,9 +64,18 @@ module.exports = grammar({
     
     type_declaration: $ => seq(
       'type',
-      field("name", $.type_identifier),
-      field("params", optional($.param_list)),
+      choice($.meta_type_declaration, $.simple_type_declaration)
     ),
+
+    meta_type_declaration: $ => seq(
+      field('meta_type', choice($.type_name, $.generic_type_identifier)),
+      field('case_type', repeat1($.simple_type_declaration)),
+    ),
+
+    simple_type_declaration: $ => prec.left(seq(
+      field('name', choice($.type_name, $.generic_type_identifier)),
+      field("params", optional($.param_list)),
+    )),
 
     function_declaration: $ => seq(
       'func',
@@ -85,8 +94,8 @@ module.exports = grammar({
     ),
 
     type_name: $ => prec.left(seq(
-      /[A-Z][a-zA-Z0-9_]*/,
-      repeat(seq('.', /[A-Z][a-zA-Z0-9_]*/))
+      /_*[A-Z][a-zA-Z0-9_]*/,
+      repeat(seq('.', /_*[A-Z][a-zA-Z0-9_]*/))
     )),
 
     type_identifier: $ => choice(
@@ -96,11 +105,11 @@ module.exports = grammar({
       $.generic_type_identifier,
     ),
 
-    tupled_type_identifer: $ => seq(
+    tupled_type_identifer: $ => prec.left(PREC.ACCESS, seq(
       '[',
         repeat($.type_identifier),
       ']'
-    ),
+    )),
 
     generic_type_identifier: $ => seq(
       field('generic_type', $.type_name),
@@ -139,7 +148,7 @@ module.exports = grammar({
         $._single_expression,
         $.unary_expression,
         $.binary_expression,
-        // $.array_literal,
+        $.array_literal,
         $.parenthised_expression,
         $.lambda_expression,
         $.field_identifier,
@@ -271,7 +280,10 @@ module.exports = grammar({
     // or a looped expression which is just are regular parenthesized expression
     // followed by ^
     subpipe_branch_expresssion: $ => seq(
-      '|', field("capture_group", repeat($._simple_expression)), '|',
+      '|', field("capture_group", seq(
+        choice($.call_expression, $._simple_expression),
+        repeat(seq(',', choice($.call_expression, $._simple_expression))),
+      )), '|',
       field("body", choice(
         $._simple_expression,
         $.call_expression,
