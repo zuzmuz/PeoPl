@@ -1,0 +1,35 @@
+{
+  "grammars": [
+    {
+      "name": "peopl",
+      "camelcase": "PeoPl",
+      "scope": "source.peopl",
+      "file-types": [
+        ".ppl"
+      ],
+      "injection-regex": "^peopl$"
+    }
+  ],
+  "metadata": {
+    "version": "0.1.0",
+    "license": "MIT",
+    "description": "the peopl's language",
+    "authors": [
+      {
+        "name": "zuzmuz",
+        "email": "hamadeh0@gmail.com"
+      }
+    ],
+    "links": {
+      "repository": "https://github.com/tree-sitter/tree-sitter-peopl"
+    }
+  },
+  "bindings": {
+    "c": true,
+    "go": true,
+    "node": true,
+    "python": true,
+    "rust": true,
+    "swift": true
+  }
+}
