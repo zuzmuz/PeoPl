@@ -35,6 +35,6 @@ func I32 add right: I32 I32
 func String initials String
     ** in is implicitely passed to the split function
     split separator: " ";
-    map transform: {|word| (word; get 0)};
+    map transform: {|word| (word; get index: 0)};
     join separator: " "..
 

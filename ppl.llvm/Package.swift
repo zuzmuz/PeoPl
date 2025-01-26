@@ -5,10 +5,14 @@ import PackageDescription
 
 let package = Package(
     name: "ppllvm",
+    platforms: [
+        .macOS(.v13)
+    ],
+
     dependencies: [
         .package(path: "../ppl.treesitter"),
         .package(url: "https://github.com/ChimeHQ/SwiftTreeSitter", from: "0.9.0"),
-        .package(url: "https://github.com/llvm-swift/LLVMSwift", from: "0.8.0")
+        .package(url: "https://github.com/llvm-swift/LLVMSwift", from: "0.8.0"),
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
@@ -17,7 +21,7 @@ let package = Package(
             name: "Peopllvm",
             dependencies: [
                 "SwiftTreeSitter",
-                .product(name: "TreeSitterPeopl", package: "ppl.treesitter"),
-            ]),
+                .product(name: "TreeSitterPeoPl", package: "ppl.treesitter"),
+            ])
     ]
 )
