@@ -1,0 +1,40 @@
+
+
+** here's hello word
+
+func main Nothing
+    "Hello World"; print..
+
+** basic example of piping
+
+func main Nothing
+    "dlroW olleH";
+    reverse;
+    print..
+
+** functions that takes arguments
+
+func display arg: String Nothing
+    arg; print..
+
+
+** basic arithmetic
+
+func add left: I32 right: I32 I32
+    left + right..
+
+** functions that take input
+** input is an implicit argument called in
+
+func I32 add right: I32 I32
+    in + right..
+
+** it is implicit in the sense that 
+** it can be piped into the next command
+
+func String initials String
+    ** in is implicitely passed to the split function
+    split separator: " ";
+    map transform: {|word| (word; get 0)};
+    join separator: " "..
+

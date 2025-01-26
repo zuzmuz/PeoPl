@@ -1,0 +1,66 @@
+
+** basic struct
+
+type Basic
+    param1: I32
+    param2: F64
+    param3: String
+    ..
+
+** internal type
+type _Internal
+    param: Basic
+    ..
+
+** file private type
+type __Private
+    param: _Iternal
+    ..
+
+** enum type
+type SumType
+    Case1
+    Case2
+    ..
+
+** enum type with associated values
+type Shape
+    Square side: F64
+    Rectangle width: F64 height: F64
+    Circle radius: F64
+    ..
+
+** function types
+type Functions
+    callable: {InputType1 InputType2} OutputType
+    ..
+
+** Tuple typles (product types)
+type Container
+    tuple: [Type1 Type2 Type3]
+    ..
+
+** generic types
+type Generic<T>
+    param: T
+    ..
+
+type MultiGeneric<T U V>
+    param1: T
+    param2: U
+    param3: V
+    ..
+
+** generic enum types
+
+type Optional<T>
+    Value _: T
+    Nothing
+    ..
+
+type Result<T E>
+    Success _: T
+    Error _: E
+
+** _ is a valid field identifier it is usually used as a short insignificant name
+
