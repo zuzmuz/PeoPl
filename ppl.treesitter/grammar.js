@@ -51,7 +51,7 @@ module.exports = grammar({
     constants_statement: $ => seq(
       $.field_identifier,
       '=',
-      $._single_expression,
+      $._single_expression, //can be a simple expression
     ),
 
     _declaration: $ => seq(
@@ -257,7 +257,7 @@ module.exports = grammar({
     // 2 expressions separated by the pipe operator
     pipe_expression: $ => prec.left(PREC.PIPE, seq(
         field("left", $._expression),
-        ';',
+        optional('?'), ';',
         field("right", $._expression),
     )),
 

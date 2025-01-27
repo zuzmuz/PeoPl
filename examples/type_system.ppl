@@ -60,7 +60,7 @@ type Optional<T>
 
 type Result<T E>
     Success _: T
-    Error _: E
+    Error _: E..
 
 ** _ is a valid field identifier it is usually used as a short insignificant name
 
