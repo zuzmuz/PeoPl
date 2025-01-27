@@ -190,8 +190,8 @@ impl MyStruct {
 ```go
 
 struct MyStruct {
-    member int
-    member int
+    member1 int
+    member2 int
 }
 
 func (myStruct MyStruct) method1(argument int) String {
@@ -209,6 +209,16 @@ When I first learned c++, I was always confused about `this`, where did it come 
 what does it represent. What happens when we nest classes, what is `this`??
 It was worse in Java, cause we had anonymous classes, and I always felt accessing the
 exterior class from the nested class to be clunky and weird.
+
+Kotlin has a nice feature which is extension functions, it is a similar syntax to go's functions
+
+```kotlin
+class MyClass (val member1: Int, val member2: Int){}
+
+fun MyClass.method1(argument: Int) {
+    // this is implicit here
+}
+```
 
 An interesting example from python and lua to prove the point.
 
@@ -356,18 +366,21 @@ Specially nushell
 We talked about (5*5) which is a very basic expression. Let's zoom out a bit.
 
 Let's consider a block
-
+```
  ╭───────╮
 ─┤a block├─
  ╰───────╯
+```
 
  This block is an atomic processing unit that evaluates to a value.
  It takes an input, maybe some extra arguments, and produces an output.
 
+```
        extra arguments
        ╭┴──────╮
 input ─┤a block├─ output
        ╰───────╯
+```
 
 Let's chain a bunch of these
 
@@ -375,7 +388,7 @@ Let's chain a bunch of these
 
        extra arguments    extra arguments 
        ╭┴──────╮          ╭┴──────╮
-input ─┤a block├─ output ─┤a block├─ output
+input ─┤block 1├─ output ─┤block 2├─ output
        ╰───────╯          ╰───────╯
 
 ```
@@ -401,12 +414,254 @@ Furthermore, branching might be the first thing we learn in programming
 How do we model branching with blocks?
 ```
                             extra arguments
-                            ╭┴──────╮
-       extra arguments    ╭─┤a block├───────╮          extra arguments 
-       ╭┴──────╮          │ ╰───────╯       │          ╭┴──────╮
-input ─┤a block├─ output ─┤ extra arguments ├─ output ─┤a block├─ output
-       ╰───────╯          │ ╭┴──────╮       │          ╰───────╯
-                          ╰─┤a block├───────╯
-                            ╰───────╯
+                            ╭┴────────╮
+       extra arguments    ╭─┤block 2.1├───────╮          extra arguments 
+       ╭┴──────╮          │ ╰─────────╯       │          ╭┴──────╮
+input ─┤block 1├─ output ─┤ extra arguments   ├─ output ─┤block 3├─ output
+       ╰───────╯          │ ╭┴────────╮       │          ╰───────╯
+                          ╰─┤block 2.2├───────╯
+                            ╰─────────╯
 ```
-Like this
+Like this.
+
+
+In most known programming language branching is performed by using the `if` statement.
+
+If "STATEMENT".
+
+A statement is not expression. It is special syntax that tells the program where to go.
+It is not an expression that evaluates to something.
+
+Modern programming languages now considers an if/else block as an expression.
+Makes sense, an if statement alone can not be a valid expression,
+because it will only evaluates if the if condition passes.
+To have a valid expression we need all branches to evaluate to something.
+
+#### Capturing
+
+Before continuing, let's ponder a bit on the last diagram.
+
+In order for this diagram to be a valid one, the output of block 1 should match the input
+of both block 2.1 and block 2.2. And the [sum](#what-about-the-data) of the outputs
+of block 2.1 and block 2.2 should match the input of block 3.
+
+Let's reconsider the expression ( 5*5 ).
+This does not take any input. We can phrase this differently by saying that,
+it takes `Nothing` as input. If we consider `Nothing` to be the empty [tuple](#what-about-the-data),
+then `Nothing` is a valid type.
+
+In programming languages like C, C++ and Java, it is called void.
+
+> (void in c has a different semantics to it when it comes to pointers,
+> it also represents the erasure of
+> type information, a void * for example is not a pointer to nothing,
+> rather it is a pointer to "I don't care")
+
+Object literals are expressions that take `Nothing` as input.
+Integer literals (0, -100, 69, 420)
+Float literals (1.4142, 3.14159, 2.7182)
+Bool literals (true, false)
+String literals ("Hello World")
+
+are all expression that have outputs, but don't take inputs. Hold this thought.
+
+If we want to imagine the blocks above as passing through a stream of data,
+an unstoppable flow of objects. Then if we need to stop it, we need to capture the input.
+
+Capturing the input means we're giving it a name. When input is captured,
+the actual input becomes `Nothing`, and input now has a name, to get input 
+you need to call it by its new name
+
+```
+       extra arguments             extra arguments 
+       ╭┴──────╮          ╭───────╮╭┴──────╮
+input ─┤block 1├─ output ─┤capture├┤block 2├─ output
+       ╰───────╯          ╰───────╯╰───────╯
+```
+
+Capturing the input is useful. It is so useful that we don't actually need assignments
+Assignments are used to store temporary variables that will be needed at some point
+in the process. In other programming languages, assignments are unstructured.
+They can be scoped, which is a good thing (I will never understand why javascript thought
+hoisting variables was an accepted idea), but they can be placed anywhere in the code.
+Some times we don't need to give names to these temporary variables, cause they're temporary.
+In this case they can just trickle through implicitly, if they are relevant, they're captured.
+
+```swift
+// TODO: give example of guard let and if let and corresponding c example
+```
+
+
+#### Capturing with Branching
+
+Where the concept of capturing really blossoms is when paired with pattern matching.
+
+When learning elixir I came across this feature that I never saw before
+```elixir
+defmodule MyModule do
+    def factorial(1), do: 1
+    def factorial(n) when n > 1, do: n * factorial(n - 1)
+end
+```
+
+Elixir supports function overloading on values.
+I was mind blown. I suspect this behaves like pattern matching. 
+Technically, factorial is just one function, when it's called, pattern matching is performed
+at runtime on the argument, and then the corresponding branch is executed.
+It was the first time that I understood the value of pattern matching in branching.
+You don't really need an explicit if statement.
+You just need to define a block of code that runs based on a condition, and another block that runs
+based on another condition. With some clever syntax (which is still very intuitive) you can get rid
+of the if statements.
+
+Let's see how this applies to our blocks.
+
+```
+                                                extra arguments
+                           ╭───────────────────╮╭┴────────╮
+       extra arguments    ╭┤capture condition 1├┤block 2.1├───────╮          extra arguments 
+       ╭┴──────╮          │╰───────────────────╯╰─────────╯       │          ╭┴──────╮
+input ─┤block 1├─ output ─┤                     extra arguments   ├─ output ─┤block 3├─ output
+       ╰───────╯          │╭───────────────────╮╭┴────────╮       │          ╰───────╯
+                          ╰┤capture condition 2├┤block 2.2├───────╯
+                           ╰───────────────────╯╰─────────╯
+```
+
+
+
+Capture blocks are also expressions. In the initial example where we only had one branch,
+the capture block was just a name, a field identifier, which technically is an expression.
+Capture groups should:
+- be expressions that takes `Nothing`
+- contain a field identifier that is new, input will then be assigned to it
+- evaluate to something. A field identifier is an expression that evaluate to itself
+
+Remember when I asked to hold the thought?
+No?
+[Here](#capturing)
+
+Back then I claimed that literals are expressions that take `Nothing` as input.
+They also output themselves. Just like field identifiers.
+
+#### Do we need looping
+
+Alright, so we established a system where assignments and if statements are not needed.
+What about looping.
+
+Looping is nice, functional programming languages ditched it completely so I know that
+it is doable with recursion and tail call optimizations.
+
+But, I don't mind looping, I believe that it's a neat concept, plus, if we want to go all
+the way to perform a basic operation like looping with recursion than there's something wrong.
+
+It's important to note that looping is overrated. You rarely need to do C style raw looping.
+Everything you want to achieve with looping can be achieved with iterators, mapping and
+folding algorithms. And it's usually more desirable to write your code in this declarative
+functional style rather than raw dogging imperative for/while loops.
+
+Plus, C style loops don't work if we don't have assignments, because we need to keep track of
+a index variables, and keep incrementing it.
+
+We can have basic looping without the need of side effects and mutable variables.
+For loops are basically if statements with a goto at the end of it.
+Ah, remember gotos? I don't. Never used them. They're a myth of past programming practices.
+I thought about reinventing gotos, make them cool again, make them viable again,
+give them a new purpose.
+
+The problem with gotos is that were not scoped, they were chaotic.
+If we constrain them to only their scope they can be very intuitive, safe and useful.
+
+Let's see how we can do it with our blocks
+
+
+```
+       ╭──────────╮
+       │╭───────╮ │
+input ─┴┤block  ├─╯
+        ╰───────╯  
+```
+
+Hey, look, I just created an infinite loop.
+
+Let's pause and ponder on what this diagram means.
+First, it is an expression, and like all expressions, should take an input, 
+optional extra arguments and should output something.
+
+But what does this block output? You might say it outputs nothing.
+Well, this is wrong, it can not output `Norhing`, because `Nothing` can be
+consumed by the next block, if the next block accepts `Nothing`.
+In this case it's more semantically correct to state that this block returns `Never`.
+
+`Nothing` is the empty tuple, it can be represented by () in python or swift.
+It represents the absence of content. It is analogous to the empty set in mathematics.
+`Never` is different, it represents an interruption in the chain of pipes.
+It is not a valid value. An interruption in the flow of data means two things:
+- there is an infinite loop
+- there's a fatal error (and the program exited unexpectedly)
+
+Some programming languages have the concept of Never.
+
+One example is swift. The `Never` type is a type that should never occur, either because it means
+the termination of the program, or because if an expression returns `Never` 
+it should never be called.
+
+#### For Ever and Never
+
+I want to expand a little bit on `Never` and how it is implemented in swift,
+because it's where I'm most familiar with.
+
+A cool attribute of `Never` is that it implements everything, and can replace any type.
+If a function returns Int, you can return `Never` inside it, and the compiler will be okay with it.
+This is usually done by calling ```fatalError()``` for example.
+
+Another place where `Never` occurs in swift is in defining associated types for generic protocols.
+
+You might live your life never worrying about `Never`, but for compilers,
+it is a useful tool for logical reasoning. A function that never returns, should never be called.
+If it's called then something is wrong, and the compiler can identify this at compile time.
+For example, a type which is a sum of a String and `Never` can be considered a just a string,
+because the never variant can never exist.
+A pure virtual function on an abstract type can be thought of as returning `Never`,
+because `Never` can be coerced into anything, it is a valid thing to consider,
+this concept will come handy later.
+
+#### Back to looping
+
+Because the block in the last diagram returns `Never`, the compiler can warn us about it.
+If we supposedly run it in strict mode, we can even throw a compiler error.
+PeoPl detects infinite loops at compile time (PeoPl 1 c++ 0).
+
+However, `Never` can exist in the code and  not cause problem, you just need to convince
+the compiler that there's a way out. The is a path that leads to a valid output.
+
+Combining capturing, with branching and looping we can have a nice elegant way to model looping.
+
+```
+
+
+                          ╭────────────────────────────────────────╮
+                          │                      extra arguments   │
+                          │ ╭───────────────────╮╭┴────────╮       │
+       extra arguments    │╭┤capture condition 1├┤block 2.1├───────╯          extra arguments 
+       ╭┴──────╮          ││╰───────────────────╯╰─────────╯                  ╭┴──────╮
+input ─┤block 1├─ output ─┴┤                     extra arguments   ╭─ output ─┤block 3├─ output
+       ╰───────╯           │╭───────────────────╮╭┴────────╮       │          ╰───────╯
+                           ╰┤capture condition 2├┤block 2.2├───────╯
+                            ╰───────────────────╯╰─────────╯
+```
+
+That a nice diagram isn't it?
+
+Let's break it down.
+- Block 1 produces an output that should match the block 2's input.
+- Block 2's input is captured, either in the capture condition 1 or in capture condition 2.
+- if follow the capture condition 1, we execute block 2.1 
+  and the output of block 2.1 is looped back into block 2.
+- Block 2.1's output should match block 2's input, which means it should match block 1's output.
+- the output of block 2 is basically the output of block 2.2. Technically, it should be the
+  sum of block 2.1's and block 2.2's outputs, but we've established that
+  a sum of whatever and `Never` is the whatever.
+
+
+#### Unwrapping and early returns 
+
