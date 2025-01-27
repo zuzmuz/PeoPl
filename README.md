@@ -14,7 +14,7 @@ are the most useful programming concepts.
 
 BTW each heading can be skipped if you don't feel like reading everything.
 
-## Cartesianism
+# Cartesianism
 
 If not interested skip to the [philosophy behind Peopl](#my-philosophy)
 
@@ -29,14 +29,14 @@ You then examine all apples, one by one, and only put back the ones that are goo
 In the same way, I tried to reevaluate every programming concept, syntax and idioms.
 Only keeping the ones I personally deem most useful, removing everything else.
 
-### No keywords
+## No keywords
 
 Keywords are an easy way out for a language. They are needed in some cases,
 but their problem is that whenever a new keyword is added, a new special syntax is needed.
 This is more work on the language parser, more things for it to verify, 
 the semantics of the code might change. It's also more things to learn as a programmer.
 
-### The Bad and the Ugly
+## The Bad and the Ugly
 
 There's also some concepts that I consider either bad, or useless.
 I can go into more details about this later, but here is a list of examples.
@@ -82,7 +82,7 @@ I can go into more details about this later, but here is a list of examples.
 
 There's many more that I will fill here whenever I remember them.
 
-### The Good
+## The Good
 
 I mentioned that inheritance is [bad](#the-bad-and-the-ugly).
 Not all OOP concepts are bad though
@@ -113,13 +113,13 @@ Not all OOP concepts are bad though
 
 There's many more that I will fill here whenever I remember them.
 
-## My Philosophy
+# My Philosophy
 
 Okay let's start from scratch.
 Let's go an acid trip, forgetting all programming syntax, remembering all programming concepts.
 How would we model our programs.
 
-### Data and Behavior
+## Data and Behavior
 
 Basically programming boils down to defining two things
 - the shape and layout of your data
@@ -134,7 +134,7 @@ Having too few will make things cryptic and terse (APL, Perl as examples)
 
 There's an elegant balance to find somewhere in between the two extremes.
 
-### What about the Data
+## What about the Data
 
 Data is the easy part. C got it right from the start,
 and we kept trying to reinvent the wheel.
@@ -159,7 +159,7 @@ These are in my opinion the most useful types in programming.
 A programming language that provide a clean and meaningful syntax to define custom types.
 Is a good programming language.
 
-#### Tangent about object methods
+### Tangent about object methods
 
 Ah and by the way, a type does not need to handle methods, they don't need to live inside the type
 (because they technically don't) so why are we writing them inside the type.
@@ -288,7 +288,7 @@ to the method on the right.
 
 Let's take a break from this programming language features tour, and jump back to my philosophy.
 
-### What about the process
+## What about the process
 
 Alright, now we delve into the advanced concepts.
 As I said, defining your types is easy. We can just use a declarative syntax,
@@ -296,7 +296,7 @@ that will define the structure and layout of our data.
 
 However defining our processes is much more nuanced, and is gonna be the gist of PeoPl.
 
-#### Let's take a deep breath, and talk about expressions
+### Let's take a deep breath, and talk about expressions
 
 When I started working on PeoPl, I was asking myself, what is the most basic processing unit.
 
@@ -316,7 +316,7 @@ An expression is self contained, does not have side effects, and produce a value
 
 So I started thinking, is that all we need?
 
-#### A tangent about shell scripting
+### A tangent about shell scripting
 
 I don't really like BASH, but I do believe that POSIX and the unix philosophy
 have a lot of merit.
@@ -361,7 +361,7 @@ Some of the things nushell got right:
 The reason I mentioned shell scripting at all was that I was really influenced by it.
 Specially nushell
 
-#### Back to expressions
+### Back to expressions
 
 We talked about (5*5) which is a very basic expression. Let's zoom out a bit.
 
@@ -402,7 +402,7 @@ We don't need statements, we don't need assignments, we don't need keywords.
 
 But, there's still a lot of things we need
 
-#### Branching
+### Branching
 
 Branching might be the most important concept in programming.
 It is what makes programming possible and gives us the possibility
@@ -437,7 +437,7 @@ Makes sense, an if statement alone can not be a valid expression,
 because it will only evaluates if the if condition passes.
 To have a valid expression we need all branches to evaluate to something.
 
-#### Capturing
+### Capturing
 
 Before continuing, let's ponder a bit on the last diagram.
 
@@ -492,7 +492,7 @@ In this case they can just trickle through implicitly, if they are relevant, the
 ```
 
 
-#### Capturing with Branching
+### Capturing with Branching
 
 Where the concept of capturing really blossoms is when paired with pattern matching.
 
@@ -543,7 +543,7 @@ No?
 Back then I claimed that literals are expressions that take `Nothing` as input.
 They also output themselves. Just like field identifiers.
 
-#### Do we need looping
+### Do we need looping
 
 Alright, so we established a system where assignments and if statements are not needed.
 What about looping.
@@ -605,7 +605,7 @@ One example is swift. The `Never` type is a type that should never occur, either
 the termination of the program, or because if an expression returns `Never` 
 it should never be called.
 
-#### For Ever and Never
+### For Ever and Never
 
 I want to expand a little bit on `Never` and how it is implemented in swift,
 because it's where I'm most familiar with.
@@ -625,7 +625,7 @@ A pure virtual function on an abstract type can be thought of as returning `Neve
 because `Never` can be coerced into anything, it is a valid thing to consider,
 this concept will come handy later.
 
-#### Back to looping
+### Back to looping
 
 Because the block in the last diagram returns `Never`, the compiler can warn us about it.
 If we supposedly run it in strict mode, we can even throw a compiler error.
@@ -637,7 +637,6 @@ the compiler that there's a way out. The is a path that leads to a valid output.
 Combining capturing, with branching and looping we can have a nice elegant way to model looping.
 
 ```
-
 
                           ╭────────────────────────────────────────╮
                           │                      extra arguments   │
@@ -663,5 +662,144 @@ Let's break it down.
   a sum of whatever and `Never` is the whatever.
 
 
-#### Unwrapping and early returns 
+### Functions
+
+We covered expressions, blocks, inputs, arguments, and outputs.
+We also covered capturing, branching and looping.
+
+In my opinion this covers the essentials of programming.
+These concepts, alongside an expressive declarative type system,
+are enough to create a very useful and totally functional programming language.
+
+Now let's talk about modularization.
+
+It would be very useful if we can group these blocks together, slap a name onto them
+and call it a function.
+It would look something like that
+
+
+```
+       ╭────────────────────────────────────────────────────────────────────────────────────────╮      
+       │                    ╭────────────────────────────────────────╮                          │  
+       │                    │                      extra arguments   │                          │
+       │                    │ ╭───────────────────╮╭┴────────╮       │                          │
+       │ extra arguments    │╭┤capture condition 1├┤block 2.1├───────╯          extra arguments │  
+       │ ╭┴──────╮          ││╰───────────────────╯╰─────────╯                  ╭┴──────╮       │
+input ─┼─┤block 1├─ output ─┴┤                     extra arguments   ╭─ output ─┤block 3├───────┼─ output
+       │ ╰───────╯           │╭───────────────────╮╭┴────────╮       │          ╰───────╯       │ 
+       │                     ╰┤capture condition 2├┤block 2.2├───────╯                          │ 
+       │                      ╰───────────────────╯╰─────────╯                                  │ 
+       ╰────────────────────────────────────────────────────────────────────────────────────────╯       
+                                              MY FUNCTION
+```
+
+Like a block, a function takes an input, optional extra arguments, and produces an output.
+
+Functions that take in `Nothing` can be considered global functions, or top level functions,
+or even static methods.
+Functions that take in something can be considered object methods.
+
+
+### Some extra sugar
+
+One final feature we can think of is not technically necessary per say,
+but it is a huge quality of life improvement. I know I wanted to be minimal,
+but this feature gives us so much gain for no pain at all.
+
+**Early returns.**
+
+Let's consider long chain of blocks, that finally returns a sum type, of a specific result,
+or a specific error.
+
+Our chain of blocks can fail at each step, but only produce a result if it reaches the final step.
+
+This is a very common type of application, for example: handling http request
+- I need to handle authentication, if it fails I need to return NotAuthenticatedError
+  if it succeeds,
+- I need to handle authorization, if it fails I need to return NotAuthorizedError
+  if it succeeds,
+  I need to parse the request body, if it's invalid I need to return InvalidBodyError
+  if it succeeds,
+- I need to perform the corresponding query, if the logic of my application fails
+  I need to return a OperationNotAllowedError, if it succeeds,
+- I need to return the result with the corresponding return body.
+
+We can model this chain with our blocks, but it will become cumbersome really quickly,
+I'll either need to trickle down the error at each step so that it reaches the end then return it.
+Or create nested capture groups at each step to handle the errors.
+
+Both solutions seems unintuitive and ugly.
+
+Usually, in programming languages you can have early returns on specific conditions.
+Swift has guard clauses with the ```guard let``` keywords.
+Rust has by far one of the most interesting approaches called error propagation.
+
+How does it work.
+
+Usually functions that return `Result` types in rust will behave in the way I explained above.
+
+In rust, `Result` is a sum type with `Ok` being the result and `Err` being the error.
+Error are handled in a special way, if a function returns an error
+it can be propagated with the `?` operator.
+
+This is a basic example:
+
+```rust
+
+fn handle(req: Request) -> Result<Response, Error> {
+    let user = authenticate(req.token)?;
+    authorize(user)?;
+    let body = parse(req.body)?;
+    let result = do_the_stuff(user, body)?;
+    Ok(result)
+}
+
+```
+
+See how potentially elegant this syntax can be.
+Each step can return an error, if the step succeeds, you go to the next,
+if it fails you stop execution and return the error.
+
+Rust opted for this type of syntax because they chose not to implement a throw keyword.
+The throw does a similar thing in theory, and in practice can lead to similar code.
+`throws` have a bad rep because of c++ and javascript. However, in modern programming languages
+like swift, they behave just like errors as values, even newer versions of swift have
+typed throws.
+
+```swift
+func handle(req: Request) throws -> Response {
+    let user = try authenticate(req.token)
+    try authorize(user)
+    let body = try parse(req.body)
+    return try doTheStuff(user, body)
+}
+```
+
+
+One could argue that the ? operator behaves like the try keyword in swift.
+I will say they're basically the same. Under the hood, swift handles thrown exceptions
+as sum type values. A function that has throws in the signature is equivalent to a
+function that has a Result type with an error in rust.
+
+Because the `throws` signature is mandatory in swift, exceptions are safe.
+In javascript (to be fair, most dynamic typed languages do the same),
+you can throw an error from anywhere and handle it god knows where so that's why
+they became a bad idea. But in principle, with the correct clever syntax, you can make them work.
+
+In conclusion, early returns or error propagation are very nice quality of life feature.
+How would we model it with our blocks.
+
+Basically if a block returns a `Result` sum type (it works with `Optional` too btw)
+we can check output of the block. If it's an error, it will be propagated out
+of the chain of blocks. If it's a success, it will be safely unwrapped,
+(destructuring the `Result` into is success type) and passed to the next block.
+Therefor, we don't need to do pattern matching a each step, and escort the error
+with us the last block.
+
+### Polymorphism
+
+Ouff, that was a ride, but we still have a long way to go.
+As I mentioned [before](#the-good), polymorphism is one of the very useful 
+
+
 
