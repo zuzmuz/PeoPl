@@ -371,12 +371,14 @@ input ─┤a block├─ output
 
 Let's chain a bunch of these
 
+```
 
        extra arguments    extra arguments 
        ╭┴──────╮          ╭┴──────╮
 input ─┤a block├─ output ─┤a block├─ output
        ╰───────╯          ╰───────╯
 
+```
 The output of block 1 becomes the input of block 2.
 Each block evaluates to an output. Each block is an expression.
 
@@ -397,7 +399,7 @@ Furthermore, branching might be the first thing we learn in programming
 (after the hello world, basic primitives and variable declaration)
 
 How do we model branching with blocks?
-
+```
                             extra arguments
                             ╭┴──────╮
        extra arguments    ╭─┤a block├───────╮          extra arguments 
@@ -406,5 +408,5 @@ input ─┤a block├─ output ─┤ extra arguments ├─ output ─┤a bl
        ╰───────╯          │ ╭┴──────╮       │          ╰───────╯
                           ╰─┤a block├───────╯
                             ╰───────╯
-
+```
 Like this
