@@ -69,7 +69,27 @@ I can go into more details about this later, but here is a list of examples.
     A C developer might write i = i + 1, and think this is a completely valid statement.
     But show this to someone who never learned programming and he will be confused.
 3. side effect:
-    `should fill`
+    I really hate methods or functions that have this kind of signature
+    ```c
+    void doesSomethingMysterious() { 
+     // ...
+    }
+    ```
+    What does it do? Why does it return void? Why does it take no arguments?
+    I always viewed these kinds of functions like ghosts in the code, and I like to call
+    them ghost functions.
+    Do I really need to dig into the function implementation to guess what it's doing.
+    There's only thing this function can be doing that is meaningful, actually 2:
+    - Printing useless stuff to console
+    - Modifying global state
+    I genuinely believe that this type of signature should not be allowed in new high level
+    programming languages (we give C a pass). 
+    Luckily nobody does this anymore, right? Cause we unanimously decided that global variables
+    are bad. But, why do I still see these kind of functions as class methods.
+    Is it because it's scoped to an object that it becomes magically safer.
+    Truth is, code that produce invisible side effects was, is and will always be a bad idea.
+    Plus, a function that takes named arguments, and return a type is always way more expressive
+    than a ghost function.
 4. using objects to model behavior:
     OOP is great. I don't find anything wrong with it theoretically.
     It is much more intuitive to think about your code in terms of objects.
@@ -148,7 +168,7 @@ All useful data types (in my opinion) are:
     1. structured types, basically structs (like in C, go, rust, swift ...)
     2. tuples, also called product types, a compound of types paired together.
        They are called product types cause it's basically TypeA "and" TypeB "and" etc...
-       (PS: structs are basically named product types, the struct members
+       (NB: structs are basically named product types, the struct members
        (each one having its name and type) constitute the element of the tuple
     3. enums, also called sum types, variant, choice types.
        They are called sum types cause it's basically TypeA "or" TypeB "or" etc...
@@ -158,6 +178,18 @@ All useful data types (in my opinion) are:
 These are in my opinion the most useful types in programming.
 A programming language that provide a clean and meaningful syntax to define custom types.
 Is a good programming language.
+
+> I intentionally glossed over references and shared pointers
+> In my opinion, these don't need to be represented in the type system
+> They can be handled by a different mechanism, related to data ownership
+> and the borrowing, moving, and copying mechanism.
+> Furthermore, shared mutable types are generally not desirable
+> and should be avoided if possible.
+> In my opinion, shared mutable state when needed should exclusively be handled
+> in a thread safe manner. Using an actor model of some sort.
+> In all other applications, references might not be needed, the language, if designed
+> correctly, should theoretically help the compiler know when to move, borrow or copy data.
+> Memory ownership is generally an advanced topic that I'll delve into in more depth later
 
 ### Tangent about object methods
 
