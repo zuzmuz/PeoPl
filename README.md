@@ -302,4 +302,109 @@ For example:
 
 This is an expression that evaluates to 25.
 
-An expression is self contained, does not have side effects
+An expression is self contained, does not have side effects, and produce a value.
+
+So I started thinking, is that all we need?
+
+#### A tangent about shell scripting
+
+I don't really like BASH, but I do believe that POSIX and the unix philosophy
+have a lot of merit.
+
+What is it you may ask?
+
+Every command in the shell:
+- takes in data (from stdin) usually text.
+- might take extra arguments
+- outputs data (to stdout (or stderr)) also usually as text.
+
+Every command in the shell:
+- is a self contained processing unit that does one thing (supposedly)
+- can be part of a chain of commands, each command's output is the next command's input.
+
+This is a very powerful concept, 
+each command can either be a shell script, a compiled executable, a function etc,
+and they all behave the same:
+> take input +args return output
+
+Some of the issues bash has:
+- input and output are text, raw unstructured data. This is pretty annoying,
+  because commands should worry about data content and representation.
+  Commands should know how to parse the input, and if the input format change,
+  the input parsing should also change to accommodate.
+- archaic syntax, whenever I write BASH I just wonder who thought it was good idea
+  to have `fi` terminate `if` blocks, and `esac` terminate `case` block.
+  Oh and option arguments parsing is a mess.
+- general inconsistencies, it's clear that you're not supposed to write big applications
+  in BASH. But just like javascript and PHP, people kept adding stuff to it, so that it can do more.
+  Eventually, we get some inconsistent syntax.
+
+
+I'd like to mention nushell, which is a new type of shell.
+
+I was really influenced by it, and I do believe that the nushell team got a lot of things right.
+
+Some of the things nushell got right:
+- data is now structured. Everything is a record. A record is basically a hashmap.
+- new modern functional syntax.
+
+The reason I mentioned shell scripting at all was that I was really influenced by it.
+Specially nushell
+
+#### Back to expressions
+
+We talked about (5*5) which is a very basic expression. Let's zoom out a bit.
+
+Let's consider a block
+
+ ╭───────╮
+─┤a block├─
+ ╰───────╯
+
+ This block is an atomic processing unit that evaluates to a value.
+ It takes an input, maybe some extra arguments, and produces an output.
+
+       extra arguments
+       ╭┴──────╮
+input ─┤a block├─ output
+       ╰───────╯
+
+Let's chain a bunch of these
+
+
+       extra arguments    extra arguments 
+       ╭┴──────╮          ╭┴──────╮
+input ─┤a block├─ output ─┤a block├─ output
+       ╰───────╯          ╰───────╯
+
+The output of block 1 becomes the input of block 2.
+Each block evaluates to an output. Each block is an expression.
+
+If we're clever about with it, I can argue that a chain of blocks is everything we need to
+express our logic.
+
+We don't need statements, we don't need assignments, we don't need keywords.
+
+But, there's still a lot of things we need
+
+#### Branching
+
+Branching might be the most important concept in programming.
+It is what makes programming possible and gives us the possibility
+of creating interesting software.
+
+Furthermore, branching might be the first thing we learn in programming
+(after the hello world, basic primitives and variable declaration)
+
+How do we model branching with blocks?
+
+                            extra arguments
+                            ╭┴──────╮
+       extra arguments    ╭─┤a block├───────╮          extra arguments 
+       ╭┴──────╮          │ ╰───────╯       │          ╭┴──────╮
+input ─┤a block├─ output ─┤ extra arguments ├─ output ─┤a block├─ output
+       ╰───────╯          │ ╭┴──────╮       │          ╰───────╯
+                          ╰─┤a block├───────╯
+                            ╰───────╯
+
+Like this
