@@ -100,11 +100,11 @@ module.exports = grammar({
     type_identifier: $ => choice(
       $.specific_nominal_type,
       $.generic_nominal_type,
-      $.inline_function_declaration,
-      $.tupled_type_identifer,
+      $.lambda_structural_type,
+      $.tuple_structural_type,
     ),
 
-    tupled_type_identifer: $ => seq(
+    tuple_structural_type: $ => seq(
       '[',
         repeat($.type_identifier),
       ']'
@@ -117,7 +117,7 @@ module.exports = grammar({
       '>'
     ),
 
-    inline_function_declaration: $ => seq(
+    lambda_structural_type: $ => seq(
       '{',
       field('input_type', repeat($.type_identifier)),
       '}',

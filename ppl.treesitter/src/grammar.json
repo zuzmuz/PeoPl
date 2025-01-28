@@ -340,19 +340,19 @@
         },
         {
           "type": "SYMBOL",
-          "name": "inline_function_declaration"
-        },
-        {
-          "type": "SYMBOL",
-          "name": "tupled_type_identifer"
-        },
-        {
-          "type": "SYMBOL",
           "name": "generic_nominal_type"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "lambda_structural_type"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "tuple_structural_type"
         }
       ]
     },
-    "tupled_type_identifer": {
+    "tuple_structural_type": {
       "type": "SEQ",
       "members": [
         {
@@ -404,7 +404,7 @@
         }
       ]
     },
-    "inline_function_declaration": {
+    "lambda_structural_type": {
       "type": "SEQ",
       "members": [
         {

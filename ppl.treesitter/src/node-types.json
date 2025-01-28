@@ -513,32 +513,6 @@
     }
   },
   {
-    "type": "inline_function_declaration",
-    "named": true,
-    "fields": {
-      "input_type": {
-        "multiple": true,
-        "required": false,
-        "types": [
-          {
-            "type": "type_identifier",
-            "named": true
-          }
-        ]
-      },
-      "return_type": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "type_identifier",
-            "named": true
-          }
-        ]
-      }
-    }
-  },
-  {
     "type": "lambda_expression",
     "named": true,
     "fields": {},
@@ -603,6 +577,32 @@
           "named": true
         }
       ]
+    }
+  },
+  {
+    "type": "lambda_structural_type",
+    "named": true,
+    "fields": {
+      "input_type": {
+        "multiple": true,
+        "required": false,
+        "types": [
+          {
+            "type": "type_identifier",
+            "named": true
+          }
+        ]
+      },
+      "return_type": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "type_identifier",
+            "named": true
+          }
+        ]
+      }
     }
   },
   {
@@ -1201,7 +1201,7 @@
     }
   },
   {
-    "type": "tupled_type_identifer",
+    "type": "tuple_structural_type",
     "named": true,
     "fields": {},
     "children": {
@@ -1247,7 +1247,7 @@
           "named": true
         },
         {
-          "type": "inline_function_declaration",
+          "type": "lambda_structural_type",
           "named": true
         },
         {
@@ -1255,7 +1255,7 @@
           "named": true
         },
         {
-          "type": "tupled_type_identifer",
+          "type": "tuple_structural_type",
           "named": true
         }
       ]

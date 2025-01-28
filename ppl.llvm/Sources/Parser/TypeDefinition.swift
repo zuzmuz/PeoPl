@@ -1,5 +1,4 @@
 import SwiftTreeSitter
-import TreeSitterPeoPl
 
 extension Statement {
 
@@ -155,20 +154,20 @@ extension Statement {
             case tuple([TypeIdentifier])
 
             enum CodingKeys: String, CodingKey {
-                case lambda
-                case tuple
+                case lambda = "lambda_structural_type"
+                case tuple = "tuple_structural_type"
             }
             
             init?(from node: Node, source: String) {
                 switch node.nodeType {
-                case "tupled_type_identifer":
+                case CodingKeys.tuple.rawValue:
                     self = .tuple(node.compactMapChildren { child in
                         if child.nodeType == TypeIdentifier.rawValue {
                             return TypeIdentifier(from: child, source: source)
                         }
                         return nil
                     })
-                case "inline_function_declaration":
+                case CodingKeys.lambda.rawValue:
                     guard let lambda = Lambda(from: node, source: source) else { return nil }
                     self = .lambda(lambda)
                 default:
@@ -214,7 +213,7 @@ extension Statement {
                       let identifier = NominalType(from: identifierNode, source: source) else { return nil }
                 self.identifier = identifier
                 self.cases = node.compactMapChildren { childNode in
-                    if childNode.nodeType == "simple_type_declaration" {
+                    if childNode.nodeType == TypeDefinition.CodingKeys.simple.rawValue {
                         return Simple(from: childNode, source: source)
                     }
                     return nil
