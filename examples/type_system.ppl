@@ -30,15 +30,15 @@ type Shape
     Circle radius: F64
     ..
 ** 
-** ** function types
-** type Functions
-**     callable: {InputType1 InputType2} OutputType
-**     ..
+** function types
+type Functions
+    callable: {InputType1 InputType2} OutputType
+    ..
 ** 
-** ** Tuple typles (product types)
-** type Container
-**     tuple: [Type1 Type2 Type3]
-**     ..
+** Tuple typles (product types)
+type Container
+    tuple: [Type1 Type2 Type3]
+    ..
 ** 
 ** ** generic types
 ** type Generic<T>
@@ -64,3 +64,6 @@ type Result<T E>
 
 ** _ is a valid field identifier it is usually used as a short insignificant name
 
+type Weird
+    mess: { T [A B {C D} {E F} G [H I]] G } [A {B C} D]
+    ..

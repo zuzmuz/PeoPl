@@ -13,6 +13,13 @@ extension Node {
             return block(child)
         }
     }
+
+    func compactMapChildrenEnumerated<T>(block: (Int, Node) -> T?) -> [T] {
+        (0..<childCount).compactMap { i in
+            guard let child = child(at: i) else { return nil }
+            return block(i, child)
+        }
+    }
 }
 
 struct SyntaxTree {

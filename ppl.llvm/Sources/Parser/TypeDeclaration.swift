@@ -81,6 +81,8 @@ extension Statement {
                 guard let child = node.child(at: 0) else { return nil }
                 if let nominal = NominalType(from: child, source: source) {
                     self = .nominal(nominal)
+                } else if let structural = StructuralType(from: child, source: source) {
+                    self = .structural(structural)
                 } else {
                     return nil
                 }
@@ -147,8 +149,57 @@ extension Statement {
         }
 
         enum StructuralType: Encodable {
-            indirect case lambda(input: [TypeIdentifier], output: TypeIdentifier)
+            indirect case lambda(Lambda)
             case tuple([TypeIdentifier])
+
+            enum CodingKeys: String, CodingKey {
+                case lambda
+                case tuple
+            }
+            
+            init?(from node: Node, source: String) {
+                switch node.nodeType {
+                case "tupled_type_identifer":
+                    self = .tuple(node.compactMapChildren { child in
+                        if child.nodeType == "type_identifier" {
+                            return TypeIdentifier(from: child, source: source)
+                        }
+                        return nil
+                    })
+                case "inline_function_declaration":
+                    guard let lambda = Lambda(from: node, source: source) else { return nil }
+                    self = .lambda(lambda)
+                default:
+                    return nil
+                }
+            }
+
+            func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: CodingKeys.self)
+                switch self {
+                case let .tuple(types):
+                    try container.encode(types, forKey: .tuple)
+                case let .lambda(lambda):
+                    try container.encode(lambda, forKey: .lambda)
+                }
+            }
+
+            struct Lambda: Encodable {
+                let input: [TypeIdentifier]
+                let output: TypeIdentifier
+
+                init?(from node: Node, source: String) {
+                    self.input = node.compactMapChildrenEnumerated { (index, child) in
+                        if child.nodeType == "type_identifier" && index < node.childCount - 1 {
+                            return TypeIdentifier(from: child, source: source)
+                        }
+                        return nil
+                    }
+                    guard let outputNode = node.child(at: node.childCount-1),
+                          let output = TypeIdentifier(from: outputNode, source: source) else { return nil }
+                    self.output = output
+                }
+            }
         }
 
 
