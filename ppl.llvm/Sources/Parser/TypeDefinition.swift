@@ -3,17 +3,17 @@ import TreeSitterPeoPl
 
 extension Statement {
 
-    enum TypeDeclaration: Encodable {
+    enum TypeDefinition: Encodable {
         case simple(Simple)
         case meta(Meta)
 
         init?(from node: Node, source: String) {
             guard let child = node.child(at: 1) else { return nil }
             switch child.nodeType {
-            case "meta_type_declaration":
+            case CodingKeys.meta.rawValue:
                 guard let meta = Meta(from: child, source: source) else { return nil }
                 self = .meta(meta)
-            case "simple_type_declaration":
+            case CodingKeys.simple.rawValue:
                 guard let simple = Simple(from: child, source: source) else { return nil }
                 self = .simple(simple)
             default:
@@ -22,8 +22,8 @@ extension Statement {
         }
 
         enum CodingKeys: String, CodingKey {
-            case simple
-            case meta
+            case simple = "simple_type_definition"
+            case meta = "meta_type_definition"
         }
 
         func encode(to encoder: any Encoder) throws {
@@ -74,6 +74,8 @@ extension Statement {
         }
 
         enum TypeIdentifier: Encodable {
+            static let rawValue = "type_identifier"
+
             case nominal(NominalType)
             case structural(StructuralType)
 
@@ -103,16 +105,16 @@ extension Statement {
             case generic(GenericType)
 
             enum CodingKeys: String, CodingKey {
-                case specific
-                case generic
+                case specific = "specific_nominal_type"
+                case generic = "generic_nominal_type"
             }
 
             init?(from node: Node, source: String) {
                 switch node.nodeType {
-                case "type_name":
+                case CodingKeys.specific.rawValue:
                     guard let range = Swift.Range(node.range, in: source) else { return nil }
                     self = .specific(String(source[range]))
-                case "generic_type_identifier":
+                case CodingKeys.generic.rawValue:
                     guard let genericType = GenericType(from: node, source: source) else { return nil }
                     self = .generic(genericType)
                 default: return nil
@@ -137,7 +139,7 @@ extension Statement {
                     guard let typeNameNode = node.child(at: 0),
                           let range = Swift.Range(typeNameNode.range, in: source) else { return nil }
                     self.associatedTypes = node.compactMapChildren { childNode in
-                        if childNode.nodeType == "type_identifier" {
+                        if childNode.nodeType == TypeIdentifier.rawValue {
                             return TypeIdentifier(from: childNode, source: source)
                         } else {
                             return nil
@@ -161,7 +163,7 @@ extension Statement {
                 switch node.nodeType {
                 case "tupled_type_identifer":
                     self = .tuple(node.compactMapChildren { child in
-                        if child.nodeType == "type_identifier" {
+                        if child.nodeType == TypeIdentifier.rawValue {
                             return TypeIdentifier(from: child, source: source)
                         }
                         return nil
@@ -190,7 +192,7 @@ extension Statement {
 
                 init?(from node: Node, source: String) {
                     self.input = node.compactMapChildrenEnumerated { (index, child) in
-                        if child.nodeType == "type_identifier" && index < node.childCount - 1 {
+                        if child.nodeType == TypeIdentifier.rawValue && index < node.childCount - 1 {
                             return TypeIdentifier(from: child, source: source)
                         }
                         return nil

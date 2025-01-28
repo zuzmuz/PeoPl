@@ -2,13 +2,13 @@ import Foundation
 import SwiftTreeSitter
 
 enum Statement: Encodable {
-    case typeDeclaration(TypeDeclaration)
+    case typeDeclaration(TypeDefinition)
     // case functionDeclaration(FunctionDeclaration)
     // case implementationStatement(ImplementationStatement)
     // case constantsStatement(ConstantsStatement)
 
-    enum CodingKeys: CodingKey {
-        case typeDeclaration
+    enum CodingKeys: String, CodingKey {
+        case typeDefinition = "type_definition"
         // case functionDeclaration
         // case implementationStatement
         // case constantsStatement
@@ -18,14 +18,14 @@ enum Statement: Encodable {
         var container = encoder.container(keyedBy: CodingKeys.self)
         switch self {
         case let .typeDeclaration(declaration):
-            try container.encode(declaration, forKey: .typeDeclaration)
+            try container.encode(declaration, forKey: .typeDefinition)
         }
     }
 
     init?(from node: Node, source: String) {
         switch node.nodeType {
-        case "type_declaration":
-            guard let typeDeclaration = TypeDeclaration(from: node, source: source) else { return nil }
+        case CodingKeys.typeDefinition.rawValue:
+            guard let typeDeclaration = TypeDefinition(from: node, source: source) else { return nil }
             self = .typeDeclaration(typeDeclaration)
         // case "function_declaration":
         //     self = .functionDeclaration(.init(from: node, source: source))

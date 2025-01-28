@@ -37,7 +37,7 @@ module.exports = grammar({
     ),
     comment: _ => seq('** ', /(\\+(.|\r?\n)|[^\\\n])*/),
     _statement: $ => choice(
-      $._declaration,
+      $._definition,
       $.implementation_statement,
       $.constants_statement,
     ),
@@ -54,25 +54,25 @@ module.exports = grammar({
       $._single_expression, //can be a simple expression
     ),
 
-    _declaration: $ => seq(
+    _definition: $ => seq(
       choice(
-        $.type_declaration,
+        $.type_definition,
         $.function_declaration,
       ),
     ),
     
-    type_declaration: $ => seq(
+    type_definition: $ => seq(
       'type',
-      choice($.meta_type_declaration, $.simple_type_declaration)
+      choice($.meta_type_definition, $.simple_type_definition)
     ),
 
-    meta_type_declaration: $ => seq(
-      field('meta_type', choice($.type_name, $.generic_type_identifier)),
-      field('case_type', repeat1($.simple_type_declaration)),
+    meta_type_definition: $ => seq(
+      field('meta_type', choice($.specific_nominal_type, $.generic_nominal_type)),
+      field('case_type', repeat1($.simple_type_definition)),
     ),
 
-    simple_type_declaration: $ => prec.left(seq(
-      field('name', choice($.type_name, $.generic_type_identifier)),
+    simple_type_definition: $ => prec.left(seq(
+      field('name', choice($.specific_nominal_type, $.generic_nominal_type)),
       field("params", optional($.param_list)),
     )),
 
@@ -92,16 +92,16 @@ module.exports = grammar({
       field("type", $.type_identifier),
     ),
 
-    type_name: $ => prec.left(seq(
+    specific_nominal_type: $ => prec.left(seq(
       /_*[A-Z][a-zA-Z0-9_]*/,
       repeat(seq('.', /_*[A-Z][a-zA-Z0-9_]*/))
     )),
 
     type_identifier: $ => choice(
-      $.type_name,
+      $.specific_nominal_type,
+      $.generic_nominal_type,
       $.inline_function_declaration,
       $.tupled_type_identifer,
-      $.generic_type_identifier,
     ),
 
     tupled_type_identifer: $ => seq(
@@ -110,8 +110,8 @@ module.exports = grammar({
       ']'
     ),
 
-    generic_type_identifier: $ => seq(
-      field('generic_type', $.type_name),
+    generic_nominal_type: $ => seq(
+      field('generic_type', $.specific_nominal_type),
       '<',
       field('associated_type', repeat($.type_identifier)),
       '>'
@@ -127,7 +127,7 @@ module.exports = grammar({
 
     field_identifier: $ => choice(
       /[a-z_][a-zA-Z0-9_]*/,
-      seq(repeat(seq($.type_name, '.')), /[a-z_][a-zA-Z0-9_]*/)
+      seq(repeat(seq($.specific_nominal_type, '.')), /[a-z_][a-zA-Z0-9_]*/)
     ),
 
 

@@ -15,7 +15,7 @@ func main Nothing
 ** functions that takes arguments
 
 func display arg: String Nothing
-    [(Nothing a: d)  (Proce)]; print..
+    [Nothing a: d,  Proce]; print..
 
 
 ** basic arithmetic

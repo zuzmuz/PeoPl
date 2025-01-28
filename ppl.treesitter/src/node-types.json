@@ -357,7 +357,7 @@
       "required": false,
       "types": [
         {
-          "type": "type_name",
+          "type": "specific_nominal_type",
           "named": true
         }
       ]
@@ -472,7 +472,7 @@
     }
   },
   {
-    "type": "generic_type_identifier",
+    "type": "generic_nominal_type",
     "named": true,
     "fields": {
       "associated_type": {
@@ -490,7 +490,7 @@
         "required": true,
         "types": [
           {
-            "type": "type_name",
+            "type": "specific_nominal_type",
             "named": true
           }
         ]
@@ -621,7 +621,7 @@
     }
   },
   {
-    "type": "meta_type_declaration",
+    "type": "meta_type_definition",
     "named": true,
     "fields": {
       "case_type": {
@@ -629,7 +629,7 @@
         "required": true,
         "types": [
           {
-            "type": "simple_type_declaration",
+            "type": "simple_type_definition",
             "named": true
           }
         ]
@@ -639,11 +639,11 @@
         "required": true,
         "types": [
           {
-            "type": "generic_type_identifier",
+            "type": "generic_nominal_type",
             "named": true
           },
           {
-            "type": "type_name",
+            "type": "specific_nominal_type",
             "named": true
           }
         ]
@@ -894,7 +894,7 @@
     }
   },
   {
-    "type": "simple_type_declaration",
+    "type": "simple_type_definition",
     "named": true,
     "fields": {
       "name": {
@@ -902,11 +902,11 @@
         "required": true,
         "types": [
           {
-            "type": "generic_type_identifier",
+            "type": "generic_nominal_type",
             "named": true
           },
           {
-            "type": "type_name",
+            "type": "specific_nominal_type",
             "named": true
           }
         ]
@@ -945,11 +945,16 @@
           "named": true
         },
         {
-          "type": "type_declaration",
+          "type": "type_definition",
           "named": true
         }
       ]
     }
+  },
+  {
+    "type": "specific_nominal_type",
+    "named": true,
+    "fields": {}
   },
   {
     "type": "subpipe_branch_expresssion",
@@ -1211,7 +1216,7 @@
     }
   },
   {
-    "type": "type_declaration",
+    "type": "type_definition",
     "named": true,
     "fields": {},
     "children": {
@@ -1219,11 +1224,11 @@
       "required": true,
       "types": [
         {
-          "type": "meta_type_declaration",
+          "type": "meta_type_definition",
           "named": true
         },
         {
-          "type": "simple_type_declaration",
+          "type": "simple_type_definition",
           "named": true
         }
       ]
@@ -1238,7 +1243,7 @@
       "required": true,
       "types": [
         {
-          "type": "generic_type_identifier",
+          "type": "generic_nominal_type",
           "named": true
         },
         {
@@ -1246,20 +1251,15 @@
           "named": true
         },
         {
-          "type": "tupled_type_identifer",
+          "type": "specific_nominal_type",
           "named": true
         },
         {
-          "type": "type_name",
+          "type": "tupled_type_identifer",
           "named": true
         }
       ]
     }
-  },
-  {
-    "type": "type_name",
-    "named": true,
-    "fields": {}
   },
   {
     "type": "unary_expression",
