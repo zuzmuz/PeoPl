@@ -136,8 +136,8 @@ module.exports = grammar({
     _expression: $ => choice(
       $._simple_expression,
       $.call_expression,
-      $.pipe_expression,
-      $.subpipe_expression,
+      $.branched_expression,
+      $.piped_expression,
     ),
 
     // simple expressions can be unambiguousely inserted anywhere
@@ -255,7 +255,7 @@ module.exports = grammar({
 
     // the pipe expression is a binary expression
     // 2 expressions separated by the pipe operator
-    pipe_expression: $ => prec.left(PREC.PIPE, seq(
+    piped_expression: $ => prec.left(PREC.PIPE, seq(
         field("left", $._expression),
         optional('?'), ';',
         field("right", $._expression),
@@ -265,7 +265,7 @@ module.exports = grammar({
     // it can contain multiple subpipe branch expression separated by ,
     // the last branch can be a call or a simple expression
     // all the other branches need to be a subpipe branch expressions
-    subpipe_expression: $ => prec.left(PREC.SUBPIPE, seq(
+    branched_expression: $ => prec.left(PREC.SUBPIPE, seq(
       $.subpipe_branch_expresssion,
       repeat(seq(',', $.subpipe_branch_expresssion)),
       optional(seq(',', choice($.call_expression, $._simple_expression))),

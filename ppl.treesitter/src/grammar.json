@@ -483,11 +483,11 @@
         },
         {
           "type": "SYMBOL",
-          "name": "pipe_expression"
+          "name": "branched_expression"
         },
         {
           "type": "SYMBOL",
-          "name": "subpipe_expression"
+          "name": "piped_expression"
         }
       ]
     },
@@ -1004,7 +1004,7 @@
         }
       ]
     },
-    "pipe_expression": {
+    "piped_expression": {
       "type": "PREC_LEFT",
       "value": 2,
       "content": {
@@ -1045,7 +1045,7 @@
         ]
       }
     },
-    "subpipe_expression": {
+    "branched_expression": {
       "type": "PREC_LEFT",
       "value": 1,
       "content": {

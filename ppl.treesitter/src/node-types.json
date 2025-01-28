@@ -197,6 +197,69 @@
     "fields": {}
   },
   {
+    "type": "branched_expression",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "accessed_identifier",
+          "named": true
+        },
+        {
+          "type": "binary_expression",
+          "named": true
+        },
+        {
+          "type": "bool_literal",
+          "named": true
+        },
+        {
+          "type": "call_expression",
+          "named": true
+        },
+        {
+          "type": "field_identifier",
+          "named": true
+        },
+        {
+          "type": "float_literal",
+          "named": true
+        },
+        {
+          "type": "int_literal",
+          "named": true
+        },
+        {
+          "type": "lambda_expression",
+          "named": true
+        },
+        {
+          "type": "parenthised_expression",
+          "named": true
+        },
+        {
+          "type": "string_literal",
+          "named": true
+        },
+        {
+          "type": "subpipe_branch_expresssion",
+          "named": true
+        },
+        {
+          "type": "tuple_literal",
+          "named": true
+        },
+        {
+          "type": "unary_expression",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "call_expression",
     "named": true,
     "fields": {
@@ -384,6 +447,10 @@
             "named": true
           },
           {
+            "type": "branched_expression",
+            "named": true
+          },
+          {
             "type": "call_expression",
             "named": true
           },
@@ -408,15 +475,11 @@
             "named": true
           },
           {
-            "type": "pipe_expression",
+            "type": "piped_expression",
             "named": true
           },
           {
             "type": "string_literal",
-            "named": true
-          },
-          {
-            "type": "subpipe_expression",
             "named": true
           },
           {
@@ -533,6 +596,10 @@
           "named": true
         },
         {
+          "type": "branched_expression",
+          "named": true
+        },
+        {
           "type": "call_expression",
           "named": true
         },
@@ -557,15 +624,11 @@
           "named": true
         },
         {
-          "type": "pipe_expression",
+          "type": "piped_expression",
           "named": true
         },
         {
           "type": "string_literal",
-          "named": true
-        },
-        {
-          "type": "subpipe_expression",
           "named": true
         },
         {
@@ -717,6 +780,10 @@
           "named": true
         },
         {
+          "type": "branched_expression",
+          "named": true
+        },
+        {
           "type": "call_expression",
           "named": true
         },
@@ -741,15 +808,11 @@
           "named": true
         },
         {
-          "type": "pipe_expression",
+          "type": "piped_expression",
           "named": true
         },
         {
           "type": "string_literal",
-          "named": true
-        },
-        {
-          "type": "subpipe_expression",
           "named": true
         },
         {
@@ -764,7 +827,7 @@
     }
   },
   {
-    "type": "pipe_expression",
+    "type": "piped_expression",
     "named": true,
     "fields": {
       "left": {
@@ -781,6 +844,10 @@
           },
           {
             "type": "bool_literal",
+            "named": true
+          },
+          {
+            "type": "branched_expression",
             "named": true
           },
           {
@@ -808,15 +875,11 @@
             "named": true
           },
           {
-            "type": "pipe_expression",
+            "type": "piped_expression",
             "named": true
           },
           {
             "type": "string_literal",
-            "named": true
-          },
-          {
-            "type": "subpipe_expression",
             "named": true
           },
           {
@@ -846,6 +909,10 @@
             "named": true
           },
           {
+            "type": "branched_expression",
+            "named": true
+          },
+          {
             "type": "call_expression",
             "named": true
           },
@@ -870,15 +937,11 @@
             "named": true
           },
           {
-            "type": "pipe_expression",
+            "type": "piped_expression",
             "named": true
           },
           {
             "type": "string_literal",
-            "named": true
-          },
-          {
-            "type": "subpipe_expression",
             "named": true
           },
           {
@@ -1076,69 +1139,6 @@
           }
         ]
       }
-    }
-  },
-  {
-    "type": "subpipe_expression",
-    "named": true,
-    "fields": {},
-    "children": {
-      "multiple": true,
-      "required": true,
-      "types": [
-        {
-          "type": "accessed_identifier",
-          "named": true
-        },
-        {
-          "type": "binary_expression",
-          "named": true
-        },
-        {
-          "type": "bool_literal",
-          "named": true
-        },
-        {
-          "type": "call_expression",
-          "named": true
-        },
-        {
-          "type": "field_identifier",
-          "named": true
-        },
-        {
-          "type": "float_literal",
-          "named": true
-        },
-        {
-          "type": "int_literal",
-          "named": true
-        },
-        {
-          "type": "lambda_expression",
-          "named": true
-        },
-        {
-          "type": "parenthised_expression",
-          "named": true
-        },
-        {
-          "type": "string_literal",
-          "named": true
-        },
-        {
-          "type": "subpipe_branch_expresssion",
-          "named": true
-        },
-        {
-          "type": "tuple_literal",
-          "named": true
-        },
-        {
-          "type": "unary_expression",
-          "named": true
-        }
-      ]
     }
   },
   {
