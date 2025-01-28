@@ -2,14 +2,14 @@ import Foundation
 import SwiftTreeSitter
 
 enum Statement: Encodable {
-    case typeDeclaration(TypeDefinition)
-    // case functionDeclaration(FunctionDeclaration)
+    case typeDefinition(TypeDefinition)
+    case functionDefinition(FunctionDefinition)
     // case implementationStatement(ImplementationStatement)
     // case constantsStatement(ConstantsStatement)
 
     enum CodingKeys: String, CodingKey {
         case typeDefinition = "type_definition"
-        // case functionDeclaration
+        case functionDefinition = "function_definition"
         // case implementationStatement
         // case constantsStatement
     }
@@ -17,16 +17,21 @@ enum Statement: Encodable {
     func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         switch self {
-        case let .typeDeclaration(declaration):
-            try container.encode(declaration, forKey: .typeDefinition)
+        case let .typeDefinition(definition):
+            try container.encode(definition, forKey: .typeDefinition)
+        case let .functionDefinition(definition):
+            try container.encode(definition, forKey: .functionDefinition)
         }
     }
 
     init?(from node: Node, source: String) {
         switch node.nodeType {
         case CodingKeys.typeDefinition.rawValue:
-            guard let typeDeclaration = TypeDefinition(from: node, source: source) else { return nil }
-            self = .typeDeclaration(typeDeclaration)
+            guard let typeDefinition = TypeDefinition(from: node, source: source) else { return nil }
+            self = .typeDefinition(typeDefinition)
+        case CodingKeys.functionDefinition.rawValue:
+            guard let functionDefinition = FunctionDefinition(from: node, source: source) else { return nil }
+            self = .functionDefinition(functionDefinition)
         // case "function_declaration":
         //     self = .functionDeclaration(.init(from: node, source: source))
         // case "implementation_statement":
@@ -35,33 +40,6 @@ enum Statement: Encodable {
         //     self = .constantsStatement(.init(from: node))
         default:
             return nil
-        }
-    }
-    struct FunctionDeclaration {
-        // let inputType: String
-        // let name: String
-        // let params: [(name: String, value: String)]
-        // let outputType: String
-        // let body: String
-
-        init(from: Node, source: String) {
-            // inputType = from.child(at: 0)?.string ?? ""
-            // name = from.child(at: 1)?.string ?? ""
-            // params = from.child(at: 2)?.children.map { child in
-            //     (name: child.child(at: 0)?.string ?? "", value: child.child(at: 1)?.string ?? "")
-            // } ?? []
-            // outputType = from.child(at: 3)?.string ?? ""
-            // body = from.child(at: 4)?.string ?? ""
-        }
-    }
-
-    struct ImplementationStatement {
-        // let subType: String
-        // let superType: String
-
-        init(from: Node, source: String) {
-            // subType = from.child(at: 0)?.string ?? ""
-            // superType = from.child(at: 1)?.string ?? ""
         }
     }
 }

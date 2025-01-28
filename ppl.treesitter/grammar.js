@@ -57,7 +57,7 @@ module.exports = grammar({
     _definition: $ => seq(
       choice(
         $.type_definition,
-        $.function_declaration,
+        $.function_definition,
       ),
     ),
     
@@ -76,8 +76,8 @@ module.exports = grammar({
       field("params", optional($.param_list)),
     )),
 
-    param_list: $ => prec.left(PREC.PARAM, repeat1($.param_declaration)),
-    param_declaration: $ => seq(
+    param_list: $ => prec.left(PREC.PARAM, repeat1($.param_definition)),
+    param_definition: $ => seq(
       field("name", $.field_identifier),
       ":",
       field("type", $.type_identifier),
@@ -120,12 +120,12 @@ module.exports = grammar({
       seq(repeat(seq($.specific_nominal_type, '.')), /[a-z_][a-zA-Z0-9_]*/)
     ),
 
-    function_declaration: $ => seq(
+    function_definition: $ => seq(
       'func',
-      field("on_type", optional($.type_identifier)),
+      field("input_type", optional($.type_identifier)),
       field("name", $.field_identifier),
       field("params", optional($.param_list)),
-      field("return", $.type_identifier),
+      field("output_type", $.type_identifier),
       field("body", $._expression),
     ),
 

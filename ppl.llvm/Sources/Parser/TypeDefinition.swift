@@ -35,7 +35,7 @@ enum TypeDefinition: Encodable {
 
     struct Simple: Encodable {
         let identifier: NominalType
-        let params: [Param]
+        let params: [ParamDefinition]
 
         init?(from node: Node, source: String) {
             guard let identifierNode = node.child(at: 0),
@@ -44,28 +44,14 @@ enum TypeDefinition: Encodable {
 
             if let paramListNode = node.child(at: 1) {
                 self.params = paramListNode.compactMapChildren { paramNode in
-                    if paramNode.nodeType == "param_declaration" {
-                        return Param(from: paramNode, source: source)
+                    if paramNode.nodeType == ParamDefinition.rawValue {
+                        return ParamDefinition(from: paramNode, source: source)
                     } else {
                         return nil
                     }
                 }
             } else {
                 self.params = []
-            }
-        }
-
-        struct Param: Encodable {
-            let name: String
-            let type: TypeIdentifier
-
-            init?(from node: Node, source: String) {
-                guard let paramNameNode = node.child(at: 0),
-                      let paramNameRange = Swift.Range(paramNameNode.range, in: source),
-                      let paramTypeNode = node.child(at: 2),
-                      let paramType = TypeIdentifier(from: paramTypeNode, source: source) else { return nil }
-                self.name = String(source[paramNameRange])
-                self.type = paramType
             }
         }
     }

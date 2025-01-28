@@ -39,8 +39,8 @@ enum NominalType: Encodable {
     init?(from node: Node, source: String) {
         switch node.nodeType {
         case CodingKeys.specific.rawValue:
-            guard let range = Swift.Range(node.range, in: source) else { return nil }
-            self = .specific(String(source[range]))
+            guard let name = node.getString(in: source) else { return nil }
+            self = .specific(name)
         case CodingKeys.generic.rawValue:
             guard let genericType = GenericType(from: node, source: source) else { return nil }
             self = .generic(genericType)
@@ -64,7 +64,8 @@ enum NominalType: Encodable {
 
         init?(from node: Node, source: String) {
             guard let typeNameNode = node.child(at: 0),
-                  let range = Swift.Range(typeNameNode.range, in: source) else { return nil }
+                  let name = typeNameNode.getString(in: source) else { return nil }
+            self.name = name
             self.associatedTypes = node.compactMapChildren { childNode in
                 if childNode.nodeType == TypeIdentifier.rawValue {
                     return TypeIdentifier(from: childNode, source: source)
@@ -72,7 +73,6 @@ enum NominalType: Encodable {
                     return nil
                 }
             }
-            self.name = String(source[range])
         }
     }
 }

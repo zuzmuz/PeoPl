@@ -20,6 +20,11 @@ extension Node {
             return block(i, child)
         }
     }
+
+    func getString(in source: String) -> String? {
+        guard let range = Swift.Range(self.range, in: source) else { return nil }
+        return String(source[range])
+    }
 }
 
 struct SyntaxTree {

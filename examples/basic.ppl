@@ -12,12 +12,6 @@ func main Nothing
     reverse;
     print..
 
-** functions that takes arguments
-
-func display arg: String Nothing
-    [Nothing a: d,  Proce]; print..
-
-
 ** basic arithmetic
 
 func add left: I32 right: I32 I32
@@ -27,7 +21,7 @@ func add left: I32 right: I32 I32
 ** input is an implicit argument called in
 
 func I32 add right: I32 I32
-    in + right..
+    |input| input + right..
 
 ** it is implicit in the sense that 
 ** it can be piped into the next command

@@ -1,7 +1,7 @@
 import Foundation
 
 
-let syntaxTree = try SyntaxTree(path: "../examples/type_system.ppl")
+let syntaxTree = try SyntaxTree(path: "../examples/basic.ppl")
 let jsonEncoder = JSONEncoder()
 jsonEncoder.outputFormatting = .prettyPrinted
 let encoded = try jsonEncoder.encode(syntaxTree.statements)
