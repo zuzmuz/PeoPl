@@ -11,7 +11,8 @@ extension Statement {
             guard let child = node.child(at: 1) else { return nil }
             switch child.nodeType {
             case "meta_type_declaration":
-                return nil
+                guard let meta = Meta(from: child, source: source) else { return nil }
+                self = .meta(meta)
             case "simple_type_declaration":
                 guard let simple = Simple(from: child, source: source) else { return nil }
                 self = .simple(simple)
@@ -30,8 +31,8 @@ extension Statement {
             switch self {
             case let .simple(simple):
                 try container.encode(simple, forKey: .simple)
-            case .meta:
-                break
+            case let .meta(meta):
+                try container.encode(meta, forKey: .meta)
             }
         }
 
@@ -128,15 +129,14 @@ extension Statement {
 
             struct GenericType: Encodable {
                 let name: String
-                let associatedTypes: [NominalType]
+                let associatedTypes: [TypeIdentifier]
 
                 init?(from node: Node, source: String) {
                     guard let typeNameNode = node.child(at: 0),
                           let range = Swift.Range(typeNameNode.range, in: source) else { return nil }
                     self.associatedTypes = node.compactMapChildren { childNode in
                         if childNode.nodeType == "type_identifier" {
-                            guard let typeIdentifier = childNode.child(at: 0) else { return nil }
-                            return NominalType(from: typeIdentifier, source: source)
+                            return TypeIdentifier(from: childNode, source: source)
                         } else {
                             return nil
                         }
@@ -153,6 +153,20 @@ extension Statement {
 
 
         struct Meta: Encodable {
+            let identifier: NominalType
+            let cases: [Simple]
+
+            init?(from node: Node, source: String) {
+                guard let identifierNode = node.child(at: 0),
+                      let identifier = NominalType(from: identifierNode, source: source) else { return nil }
+                self.identifier = identifier
+                self.cases = node.compactMapChildren { childNode in
+                    if childNode.nodeType == "simple_type_declaration" {
+                        return Simple(from: childNode, source: source)
+                    }
+                    return nil
+                }
+            }
         }
     }
 }
