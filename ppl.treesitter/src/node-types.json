@@ -12,10 +12,6 @@
           "named": true
         },
         {
-          "type": "array_literal",
-          "named": true
-        },
-        {
           "type": "binary_expression",
           "named": true
         },
@@ -45,6 +41,10 @@
         },
         {
           "type": "string_literal",
+          "named": true
+        },
+        {
+          "type": "tuple_literal",
           "named": true
         },
         {
@@ -60,61 +60,6 @@
     "fields": {}
   },
   {
-    "type": "array_literal",
-    "named": true,
-    "fields": {},
-    "children": {
-      "multiple": true,
-      "required": false,
-      "types": [
-        {
-          "type": "accessed_identifier",
-          "named": true
-        },
-        {
-          "type": "array_literal",
-          "named": true
-        },
-        {
-          "type": "binary_expression",
-          "named": true
-        },
-        {
-          "type": "bool_literal",
-          "named": true
-        },
-        {
-          "type": "field_identifier",
-          "named": true
-        },
-        {
-          "type": "float_literal",
-          "named": true
-        },
-        {
-          "type": "int_literal",
-          "named": true
-        },
-        {
-          "type": "lambda_expression",
-          "named": true
-        },
-        {
-          "type": "parenthised_expression",
-          "named": true
-        },
-        {
-          "type": "string_literal",
-          "named": true
-        },
-        {
-          "type": "unary_expression",
-          "named": true
-        }
-      ]
-    }
-  },
-  {
     "type": "binary_expression",
     "named": true,
     "fields": {
@@ -124,10 +69,6 @@
         "types": [
           {
             "type": "accessed_identifier",
-            "named": true
-          },
-          {
-            "type": "array_literal",
             "named": true
           },
           {
@@ -160,6 +101,10 @@
           },
           {
             "type": "string_literal",
+            "named": true
+          },
+          {
+            "type": "tuple_literal",
             "named": true
           },
           {
@@ -203,10 +148,6 @@
             "named": true
           },
           {
-            "type": "array_literal",
-            "named": true
-          },
-          {
             "type": "binary_expression",
             "named": true
           },
@@ -236,6 +177,10 @@
           },
           {
             "type": "string_literal",
+            "named": true
+          },
+          {
+            "type": "tuple_literal",
             "named": true
           },
           {
@@ -304,10 +249,6 @@
             "named": true
           },
           {
-            "type": "array_literal",
-            "named": true
-          },
-          {
             "type": "binary_expression",
             "named": true
           },
@@ -337,6 +278,10 @@
           },
           {
             "type": "string_literal",
+            "named": true
+          },
+          {
+            "type": "tuple_literal",
             "named": true
           },
           {
@@ -431,10 +376,6 @@
             "named": true
           },
           {
-            "type": "array_literal",
-            "named": true
-          },
-          {
             "type": "binary_expression",
             "named": true
           },
@@ -476,6 +417,10 @@
           },
           {
             "type": "subpipe_expression",
+            "named": true
+          },
+          {
+            "type": "tuple_literal",
             "named": true
           },
           {
@@ -606,10 +551,6 @@
           "named": true
         },
         {
-          "type": "array_literal",
-          "named": true
-        },
-        {
           "type": "binary_expression",
           "named": true
         },
@@ -651,6 +592,10 @@
         },
         {
           "type": "subpipe_expression",
+          "named": true
+        },
+        {
+          "type": "tuple_literal",
           "named": true
         },
         {
@@ -764,10 +709,6 @@
           "named": true
         },
         {
-          "type": "array_literal",
-          "named": true
-        },
-        {
           "type": "binary_expression",
           "named": true
         },
@@ -812,6 +753,10 @@
           "named": true
         },
         {
+          "type": "tuple_literal",
+          "named": true
+        },
+        {
           "type": "unary_expression",
           "named": true
         }
@@ -831,10 +776,6 @@
             "named": true
           },
           {
-            "type": "array_literal",
-            "named": true
-          },
-          {
             "type": "binary_expression",
             "named": true
           },
@@ -876,6 +817,10 @@
           },
           {
             "type": "subpipe_expression",
+            "named": true
+          },
+          {
+            "type": "tuple_literal",
             "named": true
           },
           {
@@ -893,10 +838,6 @@
             "named": true
           },
           {
-            "type": "array_literal",
-            "named": true
-          },
-          {
             "type": "binary_expression",
             "named": true
           },
@@ -938,6 +879,10 @@
           },
           {
             "type": "subpipe_expression",
+            "named": true
+          },
+          {
+            "type": "tuple_literal",
             "named": true
           },
           {
@@ -1019,10 +964,6 @@
             "named": true
           },
           {
-            "type": "array_literal",
-            "named": true
-          },
-          {
             "type": "binary_expression",
             "named": true
           },
@@ -1063,6 +1004,10 @@
             "named": true
           },
           {
+            "type": "tuple_literal",
+            "named": true
+          },
+          {
             "type": "unary_expression",
             "named": true
           }
@@ -1078,10 +1023,6 @@
           },
           {
             "type": "accessed_identifier",
-            "named": true
-          },
-          {
-            "type": "array_literal",
             "named": true
           },
           {
@@ -1121,6 +1062,10 @@
             "named": true
           },
           {
+            "type": "tuple_literal",
+            "named": true
+          },
+          {
             "type": "unary_expression",
             "named": true
           }
@@ -1138,10 +1083,6 @@
       "types": [
         {
           "type": "accessed_identifier",
-          "named": true
-        },
-        {
-          "type": "array_literal",
           "named": true
         },
         {
@@ -1182,6 +1123,69 @@
         },
         {
           "type": "subpipe_branch_expresssion",
+          "named": true
+        },
+        {
+          "type": "tuple_literal",
+          "named": true
+        },
+        {
+          "type": "unary_expression",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "tuple_literal",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "accessed_identifier",
+          "named": true
+        },
+        {
+          "type": "binary_expression",
+          "named": true
+        },
+        {
+          "type": "bool_literal",
+          "named": true
+        },
+        {
+          "type": "call_expression",
+          "named": true
+        },
+        {
+          "type": "field_identifier",
+          "named": true
+        },
+        {
+          "type": "float_literal",
+          "named": true
+        },
+        {
+          "type": "int_literal",
+          "named": true
+        },
+        {
+          "type": "lambda_expression",
+          "named": true
+        },
+        {
+          "type": "parenthised_expression",
+          "named": true
+        },
+        {
+          "type": "string_literal",
+          "named": true
+        },
+        {
+          "type": "tuple_literal",
           "named": true
         },
         {
@@ -1270,10 +1274,6 @@
             "named": true
           },
           {
-            "type": "array_literal",
-            "named": true
-          },
-          {
             "type": "binary_expression",
             "named": true
           },
@@ -1303,6 +1303,10 @@
           },
           {
             "type": "string_literal",
+            "named": true
+          },
+          {
+            "type": "tuple_literal",
             "named": true
           },
           {

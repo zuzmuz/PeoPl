@@ -15,7 +15,7 @@ func main Nothing
 ** functions that takes arguments
 
 func display arg: String Nothing
-    arg; print..
+    [(Nothing a: d)  (Proce)]; print..
 
 
 ** basic arithmetic
@@ -38,3 +38,6 @@ func String initials String
     map transform: {|word| (word; get index: 0)};
     join separator: " "..
 
+** example of variadic input and pack extension
+** func [T ...] variadic [T ...]
+**    |a...| (a; process)..

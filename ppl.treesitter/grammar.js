@@ -104,11 +104,11 @@ module.exports = grammar({
       $.generic_type_identifier,
     ),
 
-    tupled_type_identifer: $ => prec.left(PREC.ACCESS, seq(
+    tupled_type_identifer: $ => seq(
       '[',
         repeat($.type_identifier),
       ']'
-    )),
+    ),
 
     generic_type_identifier: $ => seq(
       field('generic_type', $.type_name),
@@ -147,7 +147,7 @@ module.exports = grammar({
         $._single_expression,
         $.unary_expression,
         $.binary_expression,
-        $.array_literal,
+        $.tuple_literal,
         $.parenthised_expression,
         $.lambda_expression,
         $.field_identifier,
@@ -166,7 +166,9 @@ module.exports = grammar({
     int_literal: $ => /\d+/,
     float_literal: $ => /\d+\.\d+/,
     string_literal: $ => /"[^"]*"/,
-    array_literal: $ => seq('[', repeat($._simple_expression), ']'),
+    tuple_literal: $ => seq('[',
+      choice($.call_expression, $._simple_expression),
+      repeat(seq(',', choice($.call_expression, $._simple_expression))), ']'),
 
     // a unary operator followed by a simple expression 
     unary_expression: $ => prec.left(PREC.UNARY,

@@ -353,28 +353,24 @@
       ]
     },
     "tupled_type_identifer": {
-      "type": "PREC_LEFT",
-      "value": 30,
-      "content": {
-        "type": "SEQ",
-        "members": [
-          {
-            "type": "STRING",
-            "value": "["
-          },
-          {
-            "type": "REPEAT",
-            "content": {
-              "type": "SYMBOL",
-              "name": "type_identifier"
-            }
-          },
-          {
-            "type": "STRING",
-            "value": "]"
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "STRING",
+          "value": "["
+        },
+        {
+          "type": "REPEAT",
+          "content": {
+            "type": "SYMBOL",
+            "name": "type_identifier"
           }
-        ]
-      }
+        },
+        {
+          "type": "STRING",
+          "value": "]"
+        }
+      ]
     },
     "generic_type_identifier": {
       "type": "SEQ",
@@ -512,7 +508,7 @@
         },
         {
           "type": "SYMBOL",
-          "name": "array_literal"
+          "name": "tuple_literal"
         },
         {
           "type": "SYMBOL",
@@ -578,7 +574,7 @@
       "type": "PATTERN",
       "value": "\"[^\"]*\""
     },
-    "array_literal": {
+    "tuple_literal": {
       "type": "SEQ",
       "members": [
         {
@@ -586,10 +582,41 @@
           "value": "["
         },
         {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "SYMBOL",
+              "name": "call_expression"
+            },
+            {
+              "type": "SYMBOL",
+              "name": "_simple_expression"
+            }
+          ]
+        },
+        {
           "type": "REPEAT",
           "content": {
-            "type": "SYMBOL",
-            "name": "_simple_expression"
+            "type": "SEQ",
+            "members": [
+              {
+                "type": "STRING",
+                "value": ","
+              },
+              {
+                "type": "CHOICE",
+                "members": [
+                  {
+                    "type": "SYMBOL",
+                    "name": "call_expression"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "_simple_expression"
+                  }
+                ]
+              }
+            ]
           }
         },
         {
