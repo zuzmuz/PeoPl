@@ -1,5 +1,5 @@
 import SwiftTreeSitter
 
-extension Statement {
-    
+
+struct FunctionDefinition {
 }

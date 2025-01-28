@@ -76,15 +76,6 @@ module.exports = grammar({
       field("params", optional($.param_list)),
     )),
 
-    function_declaration: $ => seq(
-      'func',
-      field("on_type", optional($.type_identifier)),
-      field("name", $.field_identifier),
-      field("params", optional($.param_list)),
-      field("return", $.type_identifier),
-      field("body", $._expression),
-    ),
-
     param_list: $ => prec.left(PREC.PARAM, repeat1($.param_declaration)),
     param_declaration: $ => seq(
       field("name", $.field_identifier),
@@ -124,12 +115,19 @@ module.exports = grammar({
       field('return_type', $.type_identifier),
     ),
 
-
     field_identifier: $ => choice(
       /[a-z_][a-zA-Z0-9_]*/,
       seq(repeat(seq($.specific_nominal_type, '.')), /[a-z_][a-zA-Z0-9_]*/)
     ),
 
+    function_declaration: $ => seq(
+      'func',
+      field("on_type", optional($.type_identifier)),
+      field("name", $.field_identifier),
+      field("params", optional($.param_list)),
+      field("return", $.type_identifier),
+      field("body", $._expression),
+    ),
 
     // -----------
     // EXPRESSIONS
