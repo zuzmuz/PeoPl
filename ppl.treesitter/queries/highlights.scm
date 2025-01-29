@@ -10,13 +10,13 @@
 
 (type_identifier) @type
 
-(function_declaration
+(function_definition
   name: (field_identifier) @function)
 
-(function_declaration
-  on_type: (type_identifier) @type)
+(function_definition
+  input_type: (type_identifier) @type)
 
-(param_declaration
+(param_definition
   name: (field_identifier) @variable.member)
 
 

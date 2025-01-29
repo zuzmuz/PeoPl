@@ -369,17 +369,16 @@ extension Expression {
 
     init?(from node: Node, source: String) {
         switch node.nodeType {
-            case CodingKeys.call.rawValue:
+        case CodingKeys.call.rawValue:
             return nil
-            case CodingKeys.branched.rawValue:
+        case CodingKeys.branched.rawValue:
             return nil
-            case CodingKeys.piped.rawValue:
+        case CodingKeys.piped.rawValue:
             return nil
-            default:
+        default:
             guard let simple = Expression.Simple(from: node, source: source) else { return nil }
             self = .simple(simple)
         }
-        return nil
     }
 }
 
@@ -417,7 +416,25 @@ extension Expression.Simple {
     }
 
     init?(from node: Node, source: String) {
-        return nil
+        switch node.nodeType {
+        case CodingKeys.intLiteral.rawValue:
+            guard let intText = node.getString(in: source),
+                  let intValue = Int(intText) else { return nil }
+            self = .intLiteral(intValue)
+        case CodingKeys.floatLiteral.rawValue:
+            guard let floatText = node.getString(in: source),
+                  let floatValue = Float(floatText) else { return nil }
+            self = .floatLiteral(floatValue)
+        case CodingKeys.stringLiteral.rawValue:
+            guard let stringValue = node.getString(in: source) else { return nil }
+            self = .stringLiteral(stringValue)
+        case CodingKeys.boolLiteral.rawValue:
+            guard let boolText = node.getString(in: source),
+                  let boolValue = Bool(boolText) else { return nil }
+            self = .boolLiteral(boolValue)
+        default:
+            return nil
+        }
     }
 }
 

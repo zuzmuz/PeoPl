@@ -1,36 +1,50 @@
 
 
+func integer I32
+    42..
+
+func float F64
+    3.14..
+func string String
+    "hi mom"..
+
+func bool_true Bool
+    true..
+
+func bool_false Bool
+    false..
+
 ** here's hello word
 
-func main Nothing
-    "Hello World"; print..
+** func main Nothing
+**     "Hello World"; print..
 
 ** basic example of piping
 
-func main Nothing
-    "dlroW olleH";
-    reverse;
-    print..
-
-** basic arithmetic
-
-func add left: I32 right: I32 I32
-    left + right..
-
-** functions that take input
-** input is an implicit argument called in
-
-func I32 add right: I32 I32
-    |input| input + right..
-
-** it is implicit in the sense that 
-** it can be piped into the next command
-
-func String initials String
-    ** in is implicitely passed to the split function
-    split separator: " ";
-    map transform: {|word| (word; get index: 0)};
-    join separator: " "..
+** func main Nothing
+**     "dlroW olleH";
+**     reverse;
+**     print..
+** 
+** ** basic arithmetic
+** 
+** func add left: I32 right: I32 I32
+**     left + right..
+** 
+** ** functions that take input
+** ** input is an implicit argument called in
+** 
+** func I32 add right: I32 I32
+**     |input| input + right..
+** 
+** ** it is implicit in the sense that 
+** ** it can be piped into the next command
+** 
+** func String initials String
+**     ** in is implicitely passed to the split function
+**     split separator: " ";
+**     map transform: {|word| (word; get index: 0)};
+**     join separator: " "..
 
 ** example of variadic input and pack extension
 ** func [T ...] variadic [T ...]
