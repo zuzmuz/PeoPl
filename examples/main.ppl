@@ -6,4 +6,4 @@ type Basic
 
 
 func main Nothing
-    Nothing..
+    3 + 3 * 4 + 2 - 6 / 2 -10 ..

@@ -215,17 +215,12 @@ extension FunctionDefinition {
            let outputType = TypeIdentifier(from: child, source: source) else {
             return nil
         }
-
-        self.body = if let child = node.child(byFieldName: CodingKeys.body.rawValue),
-            let body = Expression(from: child, source: source) {
-                body
-        } else {
-            nil
-        }
+        guard let child = node.child(byFieldName: CodingKeys.body.rawValue),
+              let body = Expression(from: child, source: source) else { return nil }
 
         self.name = name
         self.outputType = outputType
-        // self.body = body
+        self.body = body
     }
 }
 
