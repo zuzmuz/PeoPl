@@ -263,7 +263,7 @@
     "type": "call_expression",
     "named": true,
     "fields": {
-      "callee": {
+      "command": {
         "multiple": false,
         "required": true,
         "types": [

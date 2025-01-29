@@ -77,6 +77,8 @@ extension Expression {
         switch self {
         case let .simple(simple):
             try simple.encode(to: encoder)
+        case let .call(call):
+            try container.encode(call, forKey: .call)
         default:
             break
         }
@@ -135,6 +137,18 @@ extension Expression.Simple {
             try container.encode(field, forKey: .field)
         default:
             break
+        }
+    }
+}
+
+extension Expression.Call.Command {
+    func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: Expression.Call.Command.CodingKeys.self)
+        switch self {
+        case let .field(value):
+            try container.encode(value, forKey: .field)
+        case let .type(type):
+            try container.encode(type, forKey: .type)
         }
     }
 }

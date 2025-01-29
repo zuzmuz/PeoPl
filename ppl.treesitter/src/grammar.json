@@ -925,7 +925,7 @@
         "members": [
           {
             "type": "FIELD",
-            "name": "callee",
+            "name": "command",
             "content": {
               "type": "CHOICE",
               "members": [

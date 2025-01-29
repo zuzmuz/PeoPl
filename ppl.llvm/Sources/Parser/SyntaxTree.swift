@@ -138,14 +138,14 @@ enum Expression: Encodable {
             case type(TypeIdentifier)
         }
 
+        struct Argument: Encodable {
+            let name: String
+            let value: Simple
+        }
+
         let command: Command
         let arguments: [Argument]
 
-    }
-
-    struct Argument: Encodable {
-        let name: String
-        let value: Simple
     }
 
     struct Branched: Encodable {

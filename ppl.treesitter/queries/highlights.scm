@@ -21,7 +21,7 @@
 
 
 (call_expression
-  callee: (field_identifier) @function.call)
+  command: (field_identifier) @function.call)
 (call_param
   name: (field_identifier) @variable.parameter)
 

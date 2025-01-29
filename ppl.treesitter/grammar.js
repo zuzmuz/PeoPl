@@ -233,7 +233,7 @@ module.exports = grammar({
     // it is constructed by a callee which is the command name
     // and a list of param calls
     call_expression: $ => prec.left(PREC.PIPE, seq(
-        field("callee", choice($.field_identifier, $.type_identifier)),
+        field("command", choice($.field_identifier, $.type_identifier)),
         field("params", optional($.call_param_list)),
     )),
     // a call param list is the list of arguments to pass to a command

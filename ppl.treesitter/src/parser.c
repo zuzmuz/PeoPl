@@ -645,9 +645,9 @@ static const TSSymbolMetadata ts_symbol_metadata[] = {
 enum ts_field_identifiers {
   field_associated_type = 1,
   field_body = 2,
-  field_callee = 3,
-  field_capture_group = 4,
-  field_case_type = 5,
+  field_capture_group = 3,
+  field_case_type = 4,
+  field_command = 5,
   field_generic_type = 6,
   field_input_type = 7,
   field_left = 8,
@@ -667,9 +667,9 @@ static const char * const ts_field_names[] = {
   [0] = NULL,
   [field_associated_type] = "associated_type",
   [field_body] = "body",
-  [field_callee] = "callee",
   [field_capture_group] = "capture_group",
   [field_case_type] = "case_type",
+  [field_command] = "command",
   [field_generic_type] = "generic_type",
   [field_input_type] = "input_type",
   [field_left] = "left",
@@ -726,7 +726,7 @@ static const TSFieldMapEntry ts_field_map_entries[] = {
     {field_input_type, 1},
     {field_return_type, 3},
   [9] =
-    {field_callee, 0},
+    {field_command, 0},
   [10] =
     {field_body, 3},
     {field_name, 1},
@@ -751,7 +751,7 @@ static const TSFieldMapEntry ts_field_map_entries[] = {
     {field_operand, 1},
     {field_operator, 0},
   [27] =
-    {field_callee, 0},
+    {field_command, 0},
     {field_params, 1},
   [29] =
     {field_body, 5},

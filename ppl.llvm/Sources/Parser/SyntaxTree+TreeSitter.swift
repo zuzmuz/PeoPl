@@ -321,7 +321,8 @@ extension Expression {
     init?(from node: Node, source: String) {
         switch node.nodeType {
         case CodingKeys.call.rawValue:
-            return nil
+            guard let call = Expression.Call(from: node, source: source) else { return nil }
+            self = .call(call)
         case CodingKeys.branched.rawValue:
             return nil
         case CodingKeys.piped.rawValue:
@@ -471,4 +472,50 @@ extension Expression.Simple {
     }
 }
 
+extension Expression.Call {
+    init?(from node: Node, source: String) {
+        guard let commandNode = node.child(at: 0),
+              let command = Expression.Call.Command(from: commandNode, source: source) else { return nil }
+        self.command = command
 
+        if let paramListNode = node.child(at: 1) {
+            self.arguments = paramListNode.compactMapChildren { child in
+                Expression.Call.Argument(from: child, source: source) 
+            }
+        } else {
+            self.arguments = []
+        }
+    }
+}
+
+extension Expression.Call.Command {
+    enum CodingKeys: String, CodingKey {
+        case field = "field_identifier"
+        case type = "type_identifier"
+    }
+
+    init?(from node: Node, source: String) {
+        switch node.nodeType {
+        case CodingKeys.field.rawValue:
+            guard let fieldValue = node.getString(in: source) else { return nil }
+            self = .field(fieldValue)
+        case CodingKeys.type.rawValue:
+            guard let type = TypeIdentifier(from: node, source: source) else { return nil }
+            self = .type(type)
+        default:
+            return nil
+        }
+    }
+}
+
+extension Expression.Call.Argument {
+    init?(from node: Node, source: String) {
+        guard let nameNode = node.child(byFieldName: "name"),
+              let name = nameNode.getString(in: source) else { return nil }
+        self.name = name
+
+        guard let valueNode = node.child(byFieldName: "value"),
+              let value = Expression.Simple(from: valueNode, source: source) else { return nil }
+        self.value = value
+    }
+}
