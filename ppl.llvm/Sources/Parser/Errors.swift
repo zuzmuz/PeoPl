@@ -6,6 +6,8 @@ enum SemanticError: LocalizedError, Encodable {
     case notImplemented
     case invalidOperation
     case invalidInputForExpression
+    case noCaptureGroups
+    case invalidCaptureGroup
     // case multipleDefinitions(type: NominalType)
 
     var errorDescription: String? {
@@ -20,6 +22,10 @@ enum SemanticError: LocalizedError, Encodable {
             "Invalid operation"
         case .invalidInputForExpression:
             "Invalid input for expression"
+        case .noCaptureGroups:
+            "No capture groups"
+        case .invalidCaptureGroup:
+            "Invalid capture group"
         // case .multipleDefinitions:
         //     "Muliplte definition"
         }

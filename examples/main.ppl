@@ -6,4 +6,6 @@ type Basic
 
 
 func main Nothing
-    "Hello World"; print ..
+    9 % 2 = 0;
+    |true| "is even",
+    |false| "is odd"..

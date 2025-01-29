@@ -11,7 +11,7 @@ fileprivate extension String {
     }
 }
 
-enum Evaluation: Encodable {
+enum Evaluation: Encodable, Equatable {
     case nothing
     case int(Int)
     case float(Float)
@@ -42,28 +42,30 @@ protocol Evaluable {
 
 extension Project: Evaluable {
     func evaluate(with input: Evaluation) -> Result<Evaluation, SemanticError> {
-        self.main.body.evaluate(with: input)
+        print("evaluating main")
+        return self.main.body.evaluate(with: input)
     }
 }
 
 extension Expression: Evaluable {
     func evaluate(with input: Evaluation) -> Result<Evaluation, SemanticError> {
         switch self {
-        case .branched(_):
-            .failure(.notImplemented)
-        case let .call(call):
-            call.evaluate(with: input)
-        case let .piped(piped):
-            piped.evaluate(with: input)
         case let .simple(simple):
             simple.evaluate(with: .nothing)
+        case let .call(call):
+            call.evaluate(with: input)
+        case let .branched(branched):
+            branched.evaluate(with: input)
+        case let .piped(piped):
+            piped.evaluate(with: input)
         }
     }
 }
 
 extension Expression.Simple: Evaluable {
     func evaluate(with input: Evaluation) -> Result<Evaluation, SemanticError> {
-        if case .nothing = input {
+        print("evaluating simple")
+        return if case .nothing = input {
             switch self {
             case .nothing:
                 .success(.nothing)
@@ -224,6 +226,44 @@ extension Expression.Call: Evaluable {
             }
         default:
             return .failure(.notImplemented)
+        }
+    }
+}
+
+extension Expression.Branched: Evaluable {
+    func evaluate(with input: Evaluation) -> Result<Evaluation, SemanticError> {
+        // TODO: handle tupe input differently
+        print("evaluating branched")
+        do {
+            let branch = try self.branches.filter { branch in
+                guard let captureGroupExpression = branch.captureGroup.first else {
+                    throw SemanticError.noCaptureGroups
+                }
+                switch captureGroupExpression {
+                case let .simple(simple):
+                    switch simple.evaluate(with: .nothing) {
+                    case let .success(evaluation):
+                        return evaluation == input
+                    case let .failure(error):
+                        throw error
+                    }
+                // case let .call(call):
+                //     return true //assign to scope
+                default:
+                    throw SemanticError.invalidCaptureGroup
+                }
+            }.first
+
+            switch branch?.body {
+            case let .simple(simple):
+                return simple.evaluate(with: .nothing)
+            default:
+                throw SemanticError.notImplemented
+            }
+        } catch let error as SemanticError {
+            return .failure(error)
+        } catch {
+            return .failure(.invalidOperation)
         }
     }
 }
