@@ -19,7 +19,7 @@ func I32 is_pallindrome Bool
 
 func I32 is_even String
     |i % 2 = 0| "is even",
-    "is odd"..
+    |_| "is odd"..
 
 ** subbranches are separated by ,
 
@@ -49,3 +49,8 @@ func print from: I32 to: I32 String
     ..
 
 ** capturing is used for pattern mathing
+
+
+func [A B C] whatever Bool
+    |a=0, b=1, c=3| true,
+    is_it..

@@ -324,7 +324,8 @@ extension Expression {
             guard let call = Expression.Call(from: node, source: source) else { return nil }
             self = .call(call)
         case CodingKeys.branched.rawValue:
-            return nil
+            guard let branched = Expression.Branched(from: node, source: source) else { return nil }
+            self = .branched(branched)
         case CodingKeys.piped.rawValue:
             return nil
         default:
@@ -350,6 +351,7 @@ extension Expression.Simple {
         case minus = "binary_minus"
         case times = "binary_times"
         case by = "binary_by"
+        case mod = "binary_mod"
 
         case equal = "binary_equal"
         case different = "binary_different"
@@ -424,6 +426,8 @@ extension Expression.Simple {
                 self = .times(left: leftExpression, right: rightExpression)
             case "/":
                 self = .by(left: leftExpression, right: rightExpression)
+            case "%":
+                self = .mod(left: leftExpression, right: rightExpression)
             case "=":
                 self = .equal(left: leftExpression, right: rightExpression)
             case "!=":
@@ -517,5 +521,63 @@ extension Expression.Call.Argument {
         guard let valueNode = node.child(byFieldName: "value"),
               let value = Expression.Simple(from: valueNode, source: source) else { return nil }
         self.value = value
+    }
+}
+
+extension Expression.Branched {
+    static let branch = "branch_expression"
+
+    init?(from node: Node, source: String) {
+        self.branches = node.compactMapChildren { child in
+            if child.nodeType == Expression.Branched.branch {
+                Expression.Branched.Branch(from: child, source: source)
+            } else {
+                nil
+            }
+        }
+        self.lastBranch = if let lastChild = node.lastChild,
+            lastChild.nodeType != Expression.Branched.branch {
+            Expression(from: lastChild, source: source)
+        } else {
+            nil
+        }
+    }
+}
+
+extension Expression.Branched.Branch {
+    init?(from node: Node, source: String) {
+        guard let captureGroupNode = node.child(byFieldName: "capture_group") else { return nil }
+        self.captureGroup = captureGroupNode.compactMapChildren { child in
+            Expression(from: child, source: source)
+        }
+
+        guard let bodyNode = node.child(byFieldName: "body"),
+              let body = Expression.Branched.Branch.Body(from: bodyNode, source: source) else { return nil }
+        self.body = body
+    }
+}
+
+extension Expression.Branched.Branch.Body {
+
+    enum CodingKeys: String, CodingKey {
+        case simple
+        case call = "call_expression"
+        case looped = "looped_expression"
+    }
+
+    init?(from node: Node, source: String) {
+        switch node.nodeType {
+        case CodingKeys.call.rawValue:
+            guard let call = Expression.Call(from: node, source: source) else { return nil }
+            self = .call(call)
+        case CodingKeys.looped.rawValue:
+            guard let loopedNode = node.child(at: 1),
+                  let parenthisizedNode = loopedNode.child(at: 1),
+                  let expression = Expression(from: parenthisizedNode, source: source) else { return nil }
+            self = .looped(expression) 
+        default:
+            guard let simple = Expression.Simple(from: node, source: source) else { return nil }
+            self = .simple(simple)
+        }
     }
 }

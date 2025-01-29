@@ -13,3 +13,4 @@ func main Nothing
 
 func new Object
     Object a: 1 b: 2 c: 3..
+

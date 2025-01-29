@@ -263,8 +263,8 @@ module.exports = grammar({
     // the last branch can be a call or a simple expression
     // all the other branches need to be a subpipe branch expressions
     branched_expression: $ => prec.left(PREC.SUBPIPE, seq(
-      $.subpipe_branch_expresssion,
-      repeat(seq(',', $.subpipe_branch_expresssion)),
+      $.branch_expression,
+      repeat(seq(',', $.branch_expression)),
       optional(seq(',', choice($.call_expression, $._simple_expression))),
     )),
 
@@ -275,17 +275,20 @@ module.exports = grammar({
     // the subpipe body can be a simple or a call expression
     // or a looped expression which is just are regular parenthesized expression
     // followed by ^
-    subpipe_branch_expresssion: $ => seq(
-      '|', field("capture_group", seq(
-        choice($.call_expression, $._simple_expression),
-        repeat(seq(',', choice($.call_expression, $._simple_expression))),
-      )), '|',
+    branch_expression: $ => seq(
+      '|', field("capture_group", $.capture_group), '|',
       field("body", choice(
         $._simple_expression,
         $.call_expression,
         $.looped_expression,
       ))
     ),
+
+    capture_group: $ => seq(
+      choice($.call_expression, $._simple_expression),
+      repeat(seq(',', choice($.call_expression, $._simple_expression))),
+    ),
+
 
     looped_expression: $ => seq(
       $.parenthisized_expression,

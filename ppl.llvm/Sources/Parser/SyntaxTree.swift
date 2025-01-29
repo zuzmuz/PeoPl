@@ -85,7 +85,7 @@ enum StructuralType: Encodable {
 enum Expression: Encodable {
     case simple(Simple)
     case call(Call)
-    case branched(Branched)
+    indirect case branched(Branched)
     case piped(Piped)
 
     indirect enum Simple: Encodable {
@@ -107,6 +107,7 @@ enum Expression: Encodable {
         // Multiplicatives
         case times(left: Simple, right: Simple)
         case by(left: Simple, right: Simple)
+        case mod(left: Simple, right: Simple)
         // Comparatives
         case equal(left: Simple, right: Simple)
         case different(left: Simple, right: Simple)
@@ -150,13 +151,13 @@ enum Expression: Encodable {
 
     struct Branched: Encodable {
         let branches: [Branch]
-        let lastBranch: Branch?
+        let lastBranch: Expression?
 
         struct Branch: Encodable {
             let captureGroup: [Expression]
-            let body: BranchBody
+            let body: Body
 
-            enum BranchBody: Encodable {
+            enum Body: Encodable {
                 case simple(Simple)
                 case call(Call)
                 indirect case looped(Expression)

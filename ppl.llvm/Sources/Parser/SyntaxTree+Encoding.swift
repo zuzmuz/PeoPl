@@ -79,6 +79,8 @@ extension Expression {
             try simple.encode(to: encoder)
         case let .call(call):
             try container.encode(call, forKey: .call)
+        case let .branched(branched):
+            try container.encode(branched, forKey: .branched)
         default:
             break
         }
@@ -109,6 +111,8 @@ extension Expression.Simple {
             try container.encode(["left": left, "right": right], forKey: .times)
         case let .by(left, right):
             try container.encode(["left": left, "right": right], forKey: .by)
+        case let .mod(left, right):
+            try container.encode(["left": left, "right": right], forKey: .mod)
         case let .equal(left, right):
             try container.encode(["left": left, "right": right], forKey: .equal)
         case let .different(left, right):
