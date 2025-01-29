@@ -327,7 +327,8 @@ extension Expression {
             guard let branched = Expression.Branched(from: node, source: source) else { return nil }
             self = .branched(branched)
         case CodingKeys.piped.rawValue:
-            return nil
+            guard let piped = Expression.Piped(from: node, source: source) else { return nil }
+            self = .piped(piped)
         default:
             guard let simple = Expression.Simple(from: node, source: source) else { return nil }
             self = .simple(simple)
@@ -571,13 +572,42 @@ extension Expression.Branched.Branch.Body {
             guard let call = Expression.Call(from: node, source: source) else { return nil }
             self = .call(call)
         case CodingKeys.looped.rawValue:
-            guard let loopedNode = node.child(at: 1),
+            guard let loopedNode = node.child(at: 0),
                   let parenthisizedNode = loopedNode.child(at: 1),
                   let expression = Expression(from: parenthisizedNode, source: source) else { return nil }
             self = .looped(expression) 
         default:
             guard let simple = Expression.Simple(from: node, source: source) else { return nil }
             self = .simple(simple)
+        }
+    }
+}
+
+extension Expression.Piped {
+
+    enum CodingKeys: String, CodingKey {
+        case normal
+        case unwrapping
+    }
+
+    init?(from node: Node, source: String) {
+        guard let leftNode = node.child(byFieldName: "left"),
+              let left = Expression(from: leftNode, source: source) else { return nil }
+        guard let rightNode = node.child(byFieldName: "right"),
+              let right = Expression(from: rightNode, source: source) else { return nil }
+
+        if let pipeNode = node.child(byFieldName: "operator"),
+           let pipeOperator = pipeNode.getString(in: source) {
+            switch pipeOperator {
+            case "?":
+                self = .unwrapping(left: left, right: right)
+            case ";":
+                self = .normal(left: left, right: right)
+            default:
+                return nil
+            }
+        } else {
+            return nil
         }
     }
 }

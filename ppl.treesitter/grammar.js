@@ -254,9 +254,11 @@ module.exports = grammar({
     // 2 expressions separated by the pipe operator
     piped_expression: $ => prec.left(PREC.PIPE, seq(
         field("left", $._expression),
-        optional('?'), ';',
+        field("operator", $.pipe_operator),
         field("right", $._expression),
     )),
+
+    pipe_operator: $ => choice('?', ';'),
 
     // a subpipe is one contained expression
     // it can contain multiple subpipe branch expression separated by ,

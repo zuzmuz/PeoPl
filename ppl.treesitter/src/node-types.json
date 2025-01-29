@@ -960,6 +960,11 @@
     }
   },
   {
+    "type": "pipe_operator",
+    "named": true,
+    "fields": {}
+  },
+  {
     "type": "piped_expression",
     "named": true,
     "fields": {
@@ -1021,6 +1026,16 @@
           },
           {
             "type": "unary_expression",
+            "named": true
+          }
+        ]
+      },
+      "operator": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "pipe_operator",
             "named": true
           }
         ]

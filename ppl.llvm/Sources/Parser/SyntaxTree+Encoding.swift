@@ -81,8 +81,8 @@ extension Expression {
             try container.encode(call, forKey: .call)
         case let .branched(branched):
             try container.encode(branched, forKey: .branched)
-        default:
-            break
+        case let .piped(piped):
+            try container.encode(piped, forKey: .piped)
         }
     }
 }
@@ -167,6 +167,18 @@ extension Expression.Branched.Branch.Body {
             try container.encode(call, forKey: .call)
         case let .looped(expression):
             try container.encode(expression, forKey: .looped)
+        }
+    }
+}
+
+extension Expression.Piped {
+    func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: Expression.Piped.CodingKeys.self) 
+        switch self {
+        case let .normal(left, right):
+            try container.encode(["left": left, "right": right], forKey: .normal)
+        case let .unwrapping(left, right):
+            try container.encode(["left": left, "right": right], forKey: .unwrapping)
         }
     }
 }

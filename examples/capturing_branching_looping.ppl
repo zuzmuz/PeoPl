@@ -7,7 +7,7 @@
 ** a function to know if number is pallindrome
 func I32 is_pallindrome Bool
     to_string;
-    |original| original = (original; reverse); ** saving the original string before the reverse
+    |original| original = (original; reverse) ** saving the original string before the reverse
     ..
 
 
@@ -26,7 +26,7 @@ func I32 is_even String
 ** looping can be performed by creating a looped pipe
 
 func print from: I32 to: I32 Nothing
-    from;
+    from?
     |i < to| (i; print; i+1)^,
     Nothing
     ..
