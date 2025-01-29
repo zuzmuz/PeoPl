@@ -413,7 +413,11 @@ extension Expression.Simple {
         case lambda
         case field
         case access
+
+        static let unaryExpression = "unary_expression"
+        static let binaryExpression = "binary_expression"
     }
+
 
     init?(from node: Node, source: String) {
         switch node.nodeType {
@@ -432,6 +436,23 @@ extension Expression.Simple {
             guard let boolText = node.getString(in: source),
                   let boolValue = Bool(boolText) else { return nil }
             self = .boolLiteral(boolValue)
+        case CodingKeys.unaryExpression:
+            guard let operatorNode = node.child(byFieldName: "operator"),
+                  let operatorValue = operatorNode.getString(in: source),
+                  let operandNode = node.child(byFieldName: "operand"),
+                  let operandExpression = Expression.Simple(from: operandNode, source: source) else {
+                return nil
+            }
+            switch operatorValue {
+            case "+":
+                self = .positive(operandExpression)
+            case "-":
+                self = .negative(operandExpression)
+            case "not":
+                self = .not(operandExpression)
+            default:
+                return nil
+            }
         default:
             return nil
         }

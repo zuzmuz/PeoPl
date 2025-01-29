@@ -171,7 +171,7 @@ module.exports = grammar({
     // a unary operator followed by a simple expression 
     unary_expression: $ => prec.left(PREC.UNARY,
       seq(
-        field("operator", choice($.additive_operator, 'not')),
+        field("operator", choice($.additive_operator, $.not_operator)),
         field("operand", $._simple_expression),
       )
     ),
@@ -201,14 +201,14 @@ module.exports = grammar({
       prec.left(PREC.AND,
         seq(
           field("left", $._simple_expression),
-          field("operator", 'and'),
+          field("operator", $.and_operator),
           field("right", $._simple_expression),
         )
       ),
       prec.left(PREC.OR,
         seq(
           field("left", $._simple_expression),
-          field("operator", 'or'),
+          field("operator", $.or_operator),
           field("right", $._simple_expression),
         )
       )
@@ -217,13 +217,9 @@ module.exports = grammar({
     multiplicative_operator: $ => choice('*', '/', '%'),
     additive_operator: $ => choice('+', '-'),
     comparative_operator: $ => choice('=', '!=', '>', '>=', '<', '<='),
-
-    operator: $ => choice(
-      $.additive_operator, 
-      $.multiplicative_operator,
-      $.comparative_operator,
-      'and', 'or'
-    ),
+    not_operator: $ => 'not',
+    and_operator: $ => 'and',
+    or_operator: $ => 'or',
 
     parenthised_expression: $ => seq(
       '(',

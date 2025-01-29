@@ -122,8 +122,8 @@
             "named": true
           },
           {
-            "type": "and",
-            "named": false
+            "type": "and_operator",
+            "named": true
           },
           {
             "type": "comparative_operator",
@@ -134,8 +134,8 @@
             "named": true
           },
           {
-            "type": "or",
-            "named": false
+            "type": "or_operator",
+            "named": true
           }
         ]
       },
@@ -1324,8 +1324,8 @@
             "named": true
           },
           {
-            "type": "not",
-            "named": false
+            "type": "not_operator",
+            "named": true
           }
         ]
       }
@@ -1428,8 +1428,8 @@
     "named": false
   },
   {
-    "type": "and",
-    "named": false
+    "type": "and_operator",
+    "named": true
   },
   {
     "type": "false",
@@ -1448,12 +1448,12 @@
     "named": true
   },
   {
-    "type": "not",
-    "named": false
+    "type": "not_operator",
+    "named": true
   },
   {
-    "type": "or",
-    "named": false
+    "type": "or_operator",
+    "named": true
   },
   {
     "type": "string_literal",

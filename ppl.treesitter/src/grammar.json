@@ -642,8 +642,8 @@
                   "name": "additive_operator"
                 },
                 {
-                  "type": "STRING",
-                  "value": "not"
+                  "type": "SYMBOL",
+                  "name": "not_operator"
                 }
               ]
             }
@@ -779,8 +779,8 @@
                 "type": "FIELD",
                 "name": "operator",
                 "content": {
-                  "type": "STRING",
-                  "value": "and"
+                  "type": "SYMBOL",
+                  "name": "and_operator"
                 }
               },
               {
@@ -812,8 +812,8 @@
                 "type": "FIELD",
                 "name": "operator",
                 "content": {
-                  "type": "STRING",
-                  "value": "or"
+                  "type": "SYMBOL",
+                  "name": "or_operator"
                 }
               },
               {
@@ -888,30 +888,17 @@
         }
       ]
     },
-    "operator": {
-      "type": "CHOICE",
-      "members": [
-        {
-          "type": "SYMBOL",
-          "name": "additive_operator"
-        },
-        {
-          "type": "SYMBOL",
-          "name": "multiplicative_operator"
-        },
-        {
-          "type": "SYMBOL",
-          "name": "comparative_operator"
-        },
-        {
-          "type": "STRING",
-          "value": "and"
-        },
-        {
-          "type": "STRING",
-          "value": "or"
-        }
-      ]
+    "not_operator": {
+      "type": "STRING",
+      "value": "not"
+    },
+    "and_operator": {
+      "type": "STRING",
+      "value": "and"
+    },
+    "or_operator": {
+      "type": "STRING",
+      "value": "or"
     },
     "parenthised_expression": {
       "type": "SEQ",

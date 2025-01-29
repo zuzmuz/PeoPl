@@ -14,6 +14,15 @@ func bool_true Bool
 func bool_false Bool
     false..
 
+func integer I32
+    +42..
+
+func float F64
+    -3.14..
+
+func bool_true Bool
+    not false..
+
 ** here's hello word
 
 ** func main Nothing
