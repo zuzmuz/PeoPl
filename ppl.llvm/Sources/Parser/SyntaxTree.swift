@@ -1,54 +1,84 @@
-import SwiftTreeSitter
-import TreeSitterPeoPl
-import Foundation
 
-enum SemanticError: Error {
-    case sourceUnreadable
-}
+// MARK: - the syntax tree source
+// ------------------------------
 
-extension Node {
-    func compactMapChildren<T>(block: (Node) -> T?) -> [T] {
-        (0..<childCount).compactMap { i in
-            guard let child = child(at: i) else { return nil }
-            return block(child)
-        }
-    }
-
-    func compactMapChildrenEnumerated<T>(block: (Int, Node) -> T?) -> [T] {
-        (0..<childCount).compactMap { i in
-            guard let child = child(at: i) else { return nil }
-            return block(i, child)
-        }
-    }
-
-    func getString(in source: String) -> String? {
-        guard let range = Swift.Range(self.range, in: source) else { return nil }
-        return String(source[range])
-    }
-}
-
-struct SyntaxTree {
+struct SyntaxTree: Encodable {
     let statements: [Statement]
-    init(path: String) throws {
-        let language = Language(tree_sitter_peopl())
-        let parser = Parser()
-        try parser.setLanguage(language)
+}
 
-        let fileHandle = FileHandle(forReadingAtPath: path)
+enum Statement: Encodable {
+    case typeDefinition(TypeDefinition)
+    case functionDefinition(FunctionDefinition)
+    // case implementationStatement(ImplementationStatement)
+    // case constantsStatement(ConstantsStatement)
+}
 
-        guard let outputData = try fileHandle?.read(upToCount: Int.max),
-            let outputString = String(data: outputData, encoding: .utf8)
-        else {
-            throw SemanticError.sourceUnreadable
-        }
+// MARK: - type definitions
+// ------------------------
 
-        let tree = parser.parse(outputString)
-        guard let rootNode = tree?.rootNode else {
-            throw SemanticError.sourceUnreadable
-        }
 
-        self.statements = rootNode.compactMapChildren { node in
-            Statement(from: node, source: outputString)
-        }
+struct ParamDefinition: Encodable {
+    let name: String
+    let type: TypeIdentifier
+}
+
+enum TypeDefinition: Encodable {
+    case simple(Simple)
+    case meta(Meta)
+
+
+    struct Simple: Encodable {
+        let identifier: NominalType
+        let params: [ParamDefinition]
+    }
+
+    struct Meta: Encodable {
+        let identifier: NominalType
+        let cases: [Simple]
     }
 }
+
+// MARK: - function definitions
+// ----------------------------
+
+struct FunctionDefinition: Encodable {
+    let inputType: TypeIdentifier?
+    let name: String
+    let params: [ParamDefinition]
+    let outputType: TypeIdentifier
+    let body: String
+}
+
+// MARK: - types
+// -------------
+
+enum TypeIdentifier: Encodable {
+    case nominal(NominalType)
+    case structural(StructuralType)
+}
+
+enum NominalType: Encodable {
+    case specific(String)
+    case generic(GenericType)
+
+
+    struct GenericType: Encodable {
+        let name: String
+        let associatedTypes: [TypeIdentifier]
+    }
+}
+
+enum StructuralType: Encodable {
+    indirect case lambda(Lambda)
+    case tuple([TypeIdentifier])
+
+    struct Lambda: Encodable {
+        let input: [TypeIdentifier]
+        let output: TypeIdentifier
+    }
+}
+
+
+// MARK: - Expressions
+
+
