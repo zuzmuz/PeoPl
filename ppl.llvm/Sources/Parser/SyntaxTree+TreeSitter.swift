@@ -30,7 +30,7 @@ extension Node {
 // MARK: - the syntax tree source
 // ------------------------------
 
-extension SyntaxTree {
+extension Project {
     init(path: String) throws {
         let language = Language(tree_sitter_peopl())
         let parser = Parser()
@@ -51,6 +51,20 @@ extension SyntaxTree {
 
         self.statements = rootNode.compactMapChildren { node in
             Statement(from: node, source: outputString)
+        }
+
+        let mainFunction = self.statements.compactMap { statement in
+            if case let .functionDefinition(functionDefinition) = statement,
+                functionDefinition.name == "main" {
+                return functionDefinition
+            }
+            return nil
+        }
+
+        if mainFunction.count == 1, let mainFunction = mainFunction.first {
+            self.main = mainFunction
+        } else {
+            throw SemanticError.mainFunctionNotFound
         }
     }
 }
@@ -96,6 +110,12 @@ extension ParamDefinition {
               let paramType = TypeIdentifier(from: paramTypeNode, source: source) else { return nil }
         self.name = String(source[paramNameRange])
         self.type = paramType
+
+        self.defaultValue = if let defaultValueNode = node.child(byFieldName: "default_value"),
+                               let value = Expression.Simple(from: defaultValueNode, source: source) {
+            value
+        } else { nil }
+
     }
 }
 
@@ -339,6 +359,8 @@ extension Expression {
 extension Expression.Simple {
 
     enum CodingKeys: String, CodingKey {
+        case nothing
+        case never
         case intLiteral = "int_literal"
         case floatLiteral = "float_literal"
         case stringLiteral = "string_literal"
@@ -377,6 +399,10 @@ extension Expression.Simple {
 
     init?(from node: Node, source: String) {
         switch node.nodeType {
+        case CodingKeys.nothing.rawValue:
+            self = .nothing
+        case CodingKeys.never.rawValue:
+            self = .never
         case CodingKeys.intLiteral.rawValue:
             guard let intText = node.getString(in: source),
                   let intValue = Int(intText) else { return nil }

@@ -81,6 +81,11 @@ module.exports = grammar({
       field("name", $.field_identifier),
       ":",
       field("type", $.type_identifier),
+      optional(seq(
+        '(',
+        field("default_value", $._simple_expression),
+        ')',
+      )),
     ),
 
     specific_nominal_type: $ => prec.left(seq(
@@ -154,12 +159,16 @@ module.exports = grammar({
     
     // single expressions are usually single tokens
     _single_expression: $ => choice(
+      $.nothing,
+      $.never,
       $.int_literal,
       $.float_literal,
       $.string_literal,
       $.bool_literal,
     ),
-
+    
+    nothing: $ => 'Nothing',
+    never: $ => 'Never',
     bool_literal: $ => choice('true', 'false'),
     int_literal: $ => /\d+/,
     float_literal: $ => /\d+\.\d+/,

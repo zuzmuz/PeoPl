@@ -54,3 +54,4 @@ func print from: I32 to: I32 String
 func [A B C] whatever Bool
     |a=0, b=1, c=3| true,
     is_it..
+

@@ -36,6 +36,14 @@
           "named": true
         },
         {
+          "type": "never",
+          "named": true
+        },
+        {
+          "type": "nothing",
+          "named": true
+        },
+        {
           "type": "parenthisized_expression",
           "named": true
         },
@@ -93,6 +101,14 @@
           },
           {
             "type": "lambda_expression",
+            "named": true
+          },
+          {
+            "type": "never",
+            "named": true
+          },
+          {
+            "type": "nothing",
             "named": true
           },
           {
@@ -172,6 +188,14 @@
             "named": true
           },
           {
+            "type": "never",
+            "named": true
+          },
+          {
+            "type": "nothing",
+            "named": true
+          },
+          {
             "type": "parenthisized_expression",
             "named": true
           },
@@ -238,6 +262,14 @@
           },
           {
             "type": "looped_expression",
+            "named": true
+          },
+          {
+            "type": "never",
+            "named": true
+          },
+          {
+            "type": "nothing",
             "named": true
           },
           {
@@ -312,6 +344,14 @@
         },
         {
           "type": "lambda_expression",
+          "named": true
+        },
+        {
+          "type": "never",
+          "named": true
+        },
+        {
+          "type": "nothing",
           "named": true
         },
         {
@@ -410,6 +450,14 @@
             "named": true
           },
           {
+            "type": "never",
+            "named": true
+          },
+          {
+            "type": "nothing",
+            "named": true
+          },
+          {
             "type": "parenthisized_expression",
             "named": true
           },
@@ -485,6 +533,14 @@
           "named": true
         },
         {
+          "type": "never",
+          "named": true
+        },
+        {
+          "type": "nothing",
+          "named": true
+        },
+        {
           "type": "parenthisized_expression",
           "named": true
         },
@@ -535,6 +591,14 @@
         },
         {
           "type": "int_literal",
+          "named": true
+        },
+        {
+          "type": "never",
+          "named": true
+        },
+        {
+          "type": "nothing",
           "named": true
         },
         {
@@ -601,6 +665,14 @@
           },
           {
             "type": "lambda_expression",
+            "named": true
+          },
+          {
+            "type": "never",
+            "named": true
+          },
+          {
+            "type": "nothing",
             "named": true
           },
           {
@@ -753,6 +825,14 @@
           "named": true
         },
         {
+          "type": "never",
+          "named": true
+        },
+        {
+          "type": "nothing",
+          "named": true
+        },
+        {
           "type": "parenthisized_expression",
           "named": true
         },
@@ -855,6 +935,64 @@
     "type": "param_definition",
     "named": true,
     "fields": {
+      "default_value": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "access_expression",
+            "named": true
+          },
+          {
+            "type": "binary_expression",
+            "named": true
+          },
+          {
+            "type": "bool_literal",
+            "named": true
+          },
+          {
+            "type": "field_identifier",
+            "named": true
+          },
+          {
+            "type": "float_literal",
+            "named": true
+          },
+          {
+            "type": "int_literal",
+            "named": true
+          },
+          {
+            "type": "lambda_expression",
+            "named": true
+          },
+          {
+            "type": "never",
+            "named": true
+          },
+          {
+            "type": "nothing",
+            "named": true
+          },
+          {
+            "type": "parenthisized_expression",
+            "named": true
+          },
+          {
+            "type": "string_literal",
+            "named": true
+          },
+          {
+            "type": "tuple_literal",
+            "named": true
+          },
+          {
+            "type": "unary_expression",
+            "named": true
+          }
+        ]
+      },
       "name": {
         "multiple": false,
         "required": true,
@@ -937,6 +1075,14 @@
           "named": true
         },
         {
+          "type": "never",
+          "named": true
+        },
+        {
+          "type": "nothing",
+          "named": true
+        },
+        {
           "type": "parenthisized_expression",
           "named": true
         },
@@ -1009,6 +1155,14 @@
             "named": true
           },
           {
+            "type": "never",
+            "named": true
+          },
+          {
+            "type": "nothing",
+            "named": true
+          },
+          {
             "type": "parenthisized_expression",
             "named": true
           },
@@ -1078,6 +1232,14 @@
           },
           {
             "type": "lambda_expression",
+            "named": true
+          },
+          {
+            "type": "never",
+            "named": true
+          },
+          {
+            "type": "nothing",
             "named": true
           },
           {
@@ -1208,6 +1370,14 @@
           "named": true
         },
         {
+          "type": "never",
+          "named": true
+        },
+        {
+          "type": "nothing",
+          "named": true
+        },
+        {
           "type": "parenthisized_expression",
           "named": true
         },
@@ -1321,6 +1491,14 @@
           },
           {
             "type": "lambda_expression",
+            "named": true
+          },
+          {
+            "type": "never",
+            "named": true
+          },
+          {
+            "type": "nothing",
             "named": true
           },
           {
@@ -1474,7 +1652,15 @@
     "named": true
   },
   {
+    "type": "never",
+    "named": true
+  },
+  {
     "type": "not_operator",
+    "named": true
+  },
+  {
+    "type": "nothing",
     "named": true
   },
   {

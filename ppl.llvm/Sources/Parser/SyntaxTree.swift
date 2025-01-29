@@ -2,8 +2,9 @@
 // MARK: - the syntax tree source
 // ------------------------------
 
-struct SyntaxTree: Encodable {
+struct Project: Encodable {
     let statements: [Statement]
+    let main: FunctionDefinition
 }
 
 enum Statement: Encodable {
@@ -20,6 +21,7 @@ enum Statement: Encodable {
 struct ParamDefinition: Encodable {
     let name: String
     let type: TypeIdentifier
+    let defaultValue: Expression.Simple?
 }
 
 enum TypeDefinition: Encodable {
@@ -89,6 +91,9 @@ enum Expression: Encodable {
     case piped(Piped)
 
     indirect enum Simple: Encodable {
+
+        case nothing
+        case never
         // Literals
         case intLiteral(Int)
         case floatLiteral(Float)

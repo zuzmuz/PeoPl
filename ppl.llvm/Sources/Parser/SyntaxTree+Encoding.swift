@@ -91,6 +91,10 @@ extension Expression.Simple {
     func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         switch self {
+        case .nothing:
+            try container.encode("nothing", forKey: .nothing)
+        case .never:
+            try container.encode("never", forKey: .never)
         case let .intLiteral(value):
             try container.encode(value, forKey: .intLiteral)
         case let .floatLiteral(value):
@@ -103,6 +107,8 @@ extension Expression.Simple {
             try container.encode(expression, forKey: .positive)
         case let .negative(expression):
             try container.encode(expression, forKey: .negative)
+        case let .not(expression):
+            try container.encode(expression, forKey: .not)
         case let .plus(left, right):
             try container.encode(["left": left, "right": right], forKey: .plus)
         case let .minus(left, right):
@@ -139,8 +145,6 @@ extension Expression.Simple {
             try container.encode(accessExpression, forKey: .access)
         case let .field(field):
             try container.encode(field, forKey: .field)
-        default:
-            break
         }
     }
 }
