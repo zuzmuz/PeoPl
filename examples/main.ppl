@@ -5,7 +5,7 @@ type Basic
     ..
 
 
-func main Nothing
-    9 % 2 = 0;
-    |true| "is even",
-    |false| "is odd"..
+func I32 main Nothing
+    |i % 2 = 1| "is odd",
+    |i = 9| "is 9",
+    "this should fail"..

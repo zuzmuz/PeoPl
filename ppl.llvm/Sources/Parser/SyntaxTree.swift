@@ -128,6 +128,8 @@ enum Expression: Encodable {
         case tuple([Expression])
         case parenthesized(Expression)
         case lambda(Expression)
+
+        // Fields
         case field(String)
         case access(Access)
 

@@ -8,6 +8,8 @@ enum SemanticError: LocalizedError, Encodable {
     case invalidInputForExpression
     case noCaptureGroups
     case invalidCaptureGroup
+    case fieldNotInScope(String)
+    case tooManyFieldsInCaptureGroup
     // case multipleDefinitions(type: NominalType)
 
     var errorDescription: String? {
@@ -26,6 +28,10 @@ enum SemanticError: LocalizedError, Encodable {
             "No capture groups"
         case .invalidCaptureGroup:
             "Invalid capture group"
+        case let .fieldNotInScope(field):
+            "Field \"\(field)\" not in scope"
+        case .tooManyFieldsInCaptureGroup:
+            "Too many fields in capture group"
         // case .multipleDefinitions:
         //     "Muliplte definition"
         }

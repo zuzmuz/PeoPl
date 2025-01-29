@@ -1,10 +1,10 @@
 import Foundation
 
 do {
-    let project = try Project(path: "../examples/main.ppl")
+    let project = try Project(path: "/Users/zuz/Desktop/Muz/coding/simpl/examples/main.ppl")
     let jsonEncoder = JSONEncoder()
     jsonEncoder.outputFormatting = .prettyPrinted
-    let evaluation = project.evaluate(with: .nothing)
+    let evaluation = project.evaluate(with: .int(10), and: [:])
     let encoded = switch evaluation {
     case let .success(expression):
         try jsonEncoder.encode(expression)
