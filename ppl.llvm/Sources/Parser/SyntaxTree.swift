@@ -46,7 +46,7 @@ struct FunctionDefinition: Encodable {
     let name: String
     let params: [ParamDefinition]
     let outputType: TypeIdentifier
-    let body: String
+    let body: Expression?
 }
 
 // MARK: - types
@@ -80,30 +80,47 @@ enum StructuralType: Encodable {
 
 
 // MARK: - Expressions
+// -------------------
 
 enum Expression: Encodable {
-    case simpleExpression(Simple)
-    case callExpression(Call)
-    case branchedExpression(Branched)
-    case pipedExpression
+    case simple(Simple)
+    case call(Call)
+    case branched(Branched)
+    case piped(Piped)
 
     indirect enum Simple: Encodable {
+        // Literals
         case intLiteral(Int)
         case floatLiteral(Float)
         case stringLiteral(String)
         case boolLiteral(Bool)
-
+        
+        // Unary
         case positive(Simple)
         case negative(Simple)
         case not(Simple)
 
-        case add(left: Simple, right: Simple)
+        // Binary
+        // Additives
+        case plus(left: Simple, right: Simple)
         case minus(left: Simple, right: Simple)
+        // Multiplicatives
         case times(left: Simple, right: Simple)
         case by(left: Simple, right: Simple)
-
+        // Comparatives
+        case equal(left: Simple, right: Simple)
+        case different(left: Simple, right: Simple)
+        case lessThan(left: Simple, right: Simple)
+        case lessThanEqual(left: Simple, right: Simple)
+        case greaterThan(left: Simple, right: Simple)
+        case greaterThanEqual(left: Simple, right: Simple)
+        // Logical
+        case or(left: Simple, right: Simple)
+        case and(left: Simple, right: Simple)
+        
+        // Compounds
         case tuple([Expression])
-        case parenthised(Expression)
+        case parenthesized(Expression)
         case lambda(Expression)
         case field(String)
         case access(Simple, field: String)

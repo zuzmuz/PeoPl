@@ -82,8 +82,6 @@ extension Statement {
         case CodingKeys.functionDefinition.rawValue:
             guard let functionDefinition = FunctionDefinition(from: node, source: source) else { return nil }
             self = .functionDefinition(functionDefinition)
-        // case "function_declaration":
-        //     self = .functionDeclaration(.init(from: node, source: source))
         // case "implementation_statement":
         //     self = .implementationStatement(.init(from: node, source: source))
         // case "constants_statement":
@@ -218,14 +216,16 @@ extension FunctionDefinition {
             return nil
         }
 
-        guard let child = node.child(byFieldName: CodingKeys.body.rawValue),
-           let body = child.getString(in: source) else {
-            return nil
+        self.body = if let child = node.child(byFieldName: CodingKeys.body.rawValue),
+            let body = Expression(from: child, source: source) {
+                body
+        } else {
+            nil
         }
 
         self.name = name
         self.outputType = outputType
-        self.body = body
+        // self.body = body
     }
 }
 
@@ -353,4 +353,72 @@ extension StructuralType.Lambda {
         self.output = output
     }
 }
+
+
+// MARK: - Expressions
+// -------------------
+
+extension Expression {
+
+    enum CodingKeys: String, CodingKey {
+        case simple
+        case call = "call_expression"
+        case branched = "branched_expression"
+        case piped = "piped_expression"
+    }
+
+    init?(from node: Node, source: String) {
+        switch node.nodeType {
+            case CodingKeys.call.rawValue:
+            return nil
+            case CodingKeys.branched.rawValue:
+            return nil
+            case CodingKeys.piped.rawValue:
+            return nil
+            default:
+            guard let simple = Expression.Simple(from: node, source: source) else { return nil }
+            self = .simple(simple)
+        }
+        return nil
+    }
+}
+
+extension Expression.Simple {
+
+    enum CodingKeys: String, CodingKey {
+        case intLiteral = "int_literal"
+        case floatLiteral = "float_literal"
+        case stringLiteral = "string_literal"
+        case boolLiteral = "bool_literal"
+
+        case positive = "unary_positive"
+        case negative = "unary_negative"
+        case not = "unary_not"
+
+        case plus = "binary_plus"
+        case minus = "binary_minus"
+        case times = "binary_times"
+        case by = "binary_by"
+
+        case equal = "binary_equal"
+        case different = "binary_different"
+        case lessThan = "binary_less_than"
+        case lessThanEqual = "binary_less_than_or_equal"
+        case greaterThan = "binary_greater_than"
+        case greaterThanEqual = "binary_greater_than_or_equal"
+        case or = "binary_or"
+        case and = "binary_and"
+
+        case tuple
+        case parenthesized
+        case lambda
+        case field
+        case access
+    }
+
+    init?(from node: Node, source: String) {
+        return nil
+    }
+}
+
 
