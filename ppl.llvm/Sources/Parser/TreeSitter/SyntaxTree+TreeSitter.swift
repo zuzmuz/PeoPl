@@ -453,6 +453,43 @@ extension Expression.Simple {
             default:
                 return nil
             }
+        case CodingKeys.binaryExpression:
+            guard let leftNode = node.child(byFieldName: "left"),
+                  let leftExpression = Expression.Simple(from: leftNode, source: source),
+                  let operatorNode = node.child(byFieldName: "operator"),
+                  let operatorValue = operatorNode.getString(in: source),
+                  let rightNode = node.child(byFieldName: "right"),
+                  let rightExpression = Expression.Simple(from: rightNode, source: source) else {
+                return nil
+            }
+            switch operatorValue {
+            case "+":
+                self = .plus(left: leftExpression, right: rightExpression)
+            case "-":
+                self = .minus(left: leftExpression, right: rightExpression)
+            case "*":
+                self = .times(left: leftExpression, right: rightExpression)
+            case "/":
+                self = .by(left: leftExpression, right: rightExpression)
+            case "=":
+                self = .equal(left: leftExpression, right: rightExpression)
+            case "!=":
+                self = .different(left: leftExpression, right: rightExpression)
+            case "<":
+                self = .lessThan(left: leftExpression, right: rightExpression)
+            case "<=":
+                self = .lessThanEqual(left: leftExpression, right: rightExpression)
+            case ">":
+                self = .greaterThan(left: leftExpression, right: rightExpression)
+            case ">=":
+                self = .greaterThanEqual(left: leftExpression, right: rightExpression)
+            case "or":
+                self = .or(left: leftExpression, right: rightExpression)
+            case "and":
+                self = .and(left: leftExpression, right: rightExpression)
+            default:
+                return nil
+            }
         default:
             return nil
         }

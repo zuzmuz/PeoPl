@@ -23,6 +23,22 @@ func float F64
 func bool_true Bool
     not false..
 
+func add I32
+    3 + 2..
+
+func subtract F64
+    1.5 - 3..
+
+func chained F64
+    1 + 2 - 3 * 4 - 10 / 2 + 4..
+
+func comparison Bool
+    2 + 4 < 1 - 4..
+
+func logic Bool
+    2 = 3 and 6 < 10 or 5 = 1 and 4 >= 3..
+    
+
 ** here's hello word
 
 ** func main Nothing
