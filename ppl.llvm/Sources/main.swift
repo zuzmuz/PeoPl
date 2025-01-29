@@ -4,7 +4,7 @@ do {
     let project = try Project(path: "../examples/main.ppl")
     let jsonEncoder = JSONEncoder()
     jsonEncoder.outputFormatting = .prettyPrinted
-    let evaluation = project.evaluate()
+    let evaluation = project.evaluate(with: .nothing)
     let encoded = switch evaluation {
     case let .success(expression):
         try jsonEncoder.encode(expression)

@@ -5,6 +5,7 @@ enum SemanticError: LocalizedError, Encodable {
     case mainFunctionNotFound
     case notImplemented
     case invalidOperation
+    case invalidInputForExpression
     // case multipleDefinitions(type: NominalType)
 
     var errorDescription: String? {
@@ -17,6 +18,8 @@ enum SemanticError: LocalizedError, Encodable {
             "Not implemented"
         case .invalidOperation:
             "Invalid operation"
+        case .invalidInputForExpression:
+            "Invalid input for expression"
         // case .multipleDefinitions:
         //     "Muliplte definition"
         }

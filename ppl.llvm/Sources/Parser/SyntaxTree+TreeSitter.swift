@@ -408,7 +408,7 @@ extension Expression.Simple {
             self = .floatLiteral(floatValue)
         case CodingKeys.stringLiteral.rawValue:
             guard let stringValue = node.getString(in: source) else { return nil }
-            self = .stringLiteral(stringValue)
+            self = .stringLiteral(String(stringValue.dropFirst().dropLast()))
         case CodingKeys.boolLiteral.rawValue:
             guard let boolText = node.getString(in: source),
                   let boolValue = Bool(boolText) else { return nil }
