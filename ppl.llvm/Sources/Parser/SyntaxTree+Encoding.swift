@@ -156,3 +156,17 @@ extension Expression.Call.Command {
         }
     }
 }
+
+extension Expression.Branched.Branch.Body {
+    func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: Expression.Branched.Branch.Body.CodingKeys.self)
+        switch self {
+        case let .simple(simple):
+            try simple.encode(to: encoder)
+        case let .call(call):
+            try container.encode(call, forKey: .call)
+        case let .looped(expression):
+            try container.encode(expression, forKey: .looped)
+        }
+    }
+}
