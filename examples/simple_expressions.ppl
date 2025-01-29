@@ -1,6 +1,6 @@
 
 
-func integer I32
+func integer a: I32(0) b: String("sdfsdfs") I32
     42..
 
 func float F64

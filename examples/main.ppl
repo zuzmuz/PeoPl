@@ -5,7 +5,7 @@ type Basic
     ..
 
 
-func I32 main Nothing
+func (I32) main -> Nothing
     |i % 2 = 1| "is odd",
     |i % 3 = 0| "divisible by 3",
     |_| (_; print(format: "does this work {}"))

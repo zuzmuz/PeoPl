@@ -72,14 +72,14 @@ module.exports = grammar({
       field('case_type', repeat1($.simple_type_definition)),
     ),
 
-    simple_type_definition: $ => prec.left(seq(
+    simple_type_definition: $ => seq(
       field('name', choice($.specific_nominal_type, $.generic_nominal_type)),
       field("params", optional($.param_list)),
-    )),
+    ),
 
-    param_list: $ => prec.left(PREC.PARAM, repeat1($.param_definition)),
+    param_list: $ => repeat1($.param_definition),
     param_definition: $ => seq(
-      field("name", $.field_identifier),
+      field("name", $.argument_name),
       ":",
       field("type", $.type_identifier),
       optional(seq(
@@ -89,9 +89,12 @@ module.exports = grammar({
       )),
     ),
 
+    argument_name: $ => /_*[a-z][a-zA-Z0-9_]*/,
+    type_name: $ => /_*[A-Z][a-zA-Z0-9_]*/,
+
     specific_nominal_type: $ => prec.left(seq(
-      /_*[A-Z][a-zA-Z0-9_]*/,
-      repeat(seq('.', /_*[A-Z][a-zA-Z0-9_]*/))
+      $.type_name,
+      repeat(seq('.', $.type_name))
     )),
 
     type_identifier: $ => choice(
@@ -101,11 +104,11 @@ module.exports = grammar({
       $.tuple_structural_type,
     ),
 
-    tuple_structural_type: $ => prec.left(PREC.TYPES, seq(
+    tuple_structural_type: $ => seq(
       '[',
         repeat($.type_identifier),
       ']'
-    )),
+    ),
 
     generic_nominal_type: $ => seq(
       field('generic_type', $.specific_nominal_type),
@@ -122,15 +125,23 @@ module.exports = grammar({
     ),
 
     field_identifier: $ => choice(
-      /[a-z_][a-zA-Z0-9_]*/,
-      seq(repeat(seq($.specific_nominal_type, '.')), /[a-z_][a-zA-Z0-9_]*/)
+        '_',
+        $.argument_name,
+        prec.left(seq(
+          $.type_name,
+          repeat(seq('.', $.type_name)),
+          '.',
+          $.argument_name,
+        ),
+      )
     ),
 
     function_definition: $ => seq(
       'func',
-      field("input_type", optional($.type_identifier)),
+      field("input_type", optional(seq('(', $.type_identifier, ')'))),
       field("name", $.field_identifier),
       field("params", optional($.param_list)),
+      '->',
       field("output_type", $.type_identifier),
       field("body", $._expression),
     ),
@@ -147,7 +158,7 @@ module.exports = grammar({
     ),
 
     // simple expressions can be unambiguousely inserted anywhere
-    _simple_expression: $ => prec.left(PREC.PIPE, choice(
+    _simple_expression: $ => choice(
         $._single_expression,
         $.unary_expression,
         $.binary_expression,
@@ -156,7 +167,7 @@ module.exports = grammar({
         $.lambda_expression,
         $.field_identifier,
         $.access_expression,
-    )),
+    ),
     
     // single expressions are usually single tokens
     _single_expression: $ => choice(
@@ -177,7 +188,7 @@ module.exports = grammar({
     tuple_literal: $ => seq('[',
       choice($.call_expression, $._simple_expression),
       repeat(seq(',', choice($.call_expression, $._simple_expression))),
-      ']'),
+    ']'),
 
     // a unary operator followed by a simple expression 
     unary_expression: $ => prec.left(PREC.UNARY,
@@ -257,7 +268,7 @@ module.exports = grammar({
     // non simple expression needs to be parenthised to be unambiguousely
     // inserted as param values
     call_param: $ => seq(
-      field("name", $.field_identifier),
+      field("name", $.argument_name),
       ":",
       field("value", $._simple_expression),
     ),
@@ -318,7 +329,7 @@ module.exports = grammar({
     access_expression: $ => seq(
       $._simple_expression,
       '.',
-      $.field_identifier
+      $.argument_name,
     ),
   }
 });

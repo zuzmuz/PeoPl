@@ -17,13 +17,13 @@
   input_type: (type_identifier) @type)
 
 (param_definition
-  name: (field_identifier) @variable.member)
+  name: (argument_name) @variable.member)
 
 
 (call_expression
   command: (field_identifier) @function.call)
 (call_param
-  name: (field_identifier) @variable.parameter)
+  name: (argument_name) @variable.parameter)
 
 (int_literal) @number
 (bool_literal) @boolean
@@ -47,6 +47,7 @@
 ] @operator
 
 [
+  "?"
   "^"
   ";"
   ","

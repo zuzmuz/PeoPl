@@ -12,6 +12,10 @@
           "named": true
         },
         {
+          "type": "argument_name",
+          "named": true
+        },
+        {
           "type": "binary_expression",
           "named": true
         },
@@ -412,7 +416,7 @@
         "required": true,
         "types": [
           {
-            "type": "field_identifier",
+            "type": "argument_name",
             "named": true
           }
         ]
@@ -617,7 +621,11 @@
       "required": false,
       "types": [
         {
-          "type": "specific_nominal_type",
+          "type": "argument_name",
+          "named": true
+        },
+        {
+          "type": "type_name",
           "named": true
         }
       ]
@@ -698,9 +706,17 @@
         ]
       },
       "input_type": {
-        "multiple": false,
+        "multiple": true,
         "required": false,
         "types": [
+          {
+            "type": "(",
+            "named": false
+          },
+          {
+            "type": ")",
+            "named": false
+          },
           {
             "type": "type_identifier",
             "named": true
@@ -998,7 +1014,7 @@
         "required": true,
         "types": [
           {
-            "type": "field_identifier",
+            "type": "argument_name",
             "named": true
           }
         ]
@@ -1327,7 +1343,17 @@
   {
     "type": "specific_nominal_type",
     "named": true,
-    "fields": {}
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "type_name",
+          "named": true
+        }
+      ]
+    }
   },
   {
     "type": "tuple_literal",
@@ -1576,6 +1602,10 @@
     "named": false
   },
   {
+    "type": "->",
+    "named": false
+  },
+  {
     "type": ".",
     "named": false
   },
@@ -1632,7 +1662,15 @@
     "named": false
   },
   {
+    "type": "_",
+    "named": false
+  },
+  {
     "type": "and_operator",
+    "named": true
+  },
+  {
+    "type": "argument_name",
     "named": true
   },
   {
@@ -1678,6 +1716,10 @@
   {
     "type": "type",
     "named": false
+  },
+  {
+    "type": "type_name",
+    "named": true
   },
   {
     "type": "{",

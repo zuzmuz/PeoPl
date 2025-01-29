@@ -20,9 +20,23 @@ extension Node {
         }
     }
 
-    func getString(in source: String) -> String? {
-        guard let range = Swift.Range(self.range, in: source) else { return nil }
-        return String(source[range])
+    func getString(in source: Source) -> String? {
+        guard let range = Swift.Range(self.range, in: source.content) else { return nil }
+        return String(source.content[range])
+    }
+
+    func getLocation(in source: Source) -> NodeLocation? {
+        let range = self.range.lowerBound..<self.range.upperBound
+        let pointRange = NodeLocation.Point(
+            line: Int(self.pointRange.lowerBound.row), 
+            column: Int(self.pointRange.lowerBound.column)
+        )..<NodeLocation.Point(
+            line: Int(self.pointRange.upperBound.row), 
+            column: Int(self.pointRange.upperBound.column)
+        )
+        return NodeLocation(
+            pointRange: pointRange,
+            range: range, sourceName: source.name)
     }
 }
 
@@ -49,8 +63,10 @@ extension Project {
             throw SemanticError.sourceUnreadable
         }
 
+        let source = Source(content: outputString, name: path)
+
         self.statements = rootNode.compactMapChildren { node in
-            Statement(from: node, source: outputString)
+            Statement(from: node, in: source)
         }
 
         let mainFunction = self.statements.compactMap { statement in
@@ -78,16 +94,16 @@ extension Statement {
         // case constantsStatement
     }
 
-    init?(from node: Node, source: String) {
+    init?(from node: Node, in source: Source) {
         switch node.nodeType {
         case CodingKeys.typeDefinition.rawValue:
-            guard let typeDefinition = TypeDefinition(from: node, source: source) else { return nil }
+            guard let typeDefinition = TypeDefinition(from: node, in: source) else { return nil }
             self = .typeDefinition(typeDefinition)
         case CodingKeys.functionDefinition.rawValue:
-            guard let functionDefinition = FunctionDefinition(from: node, source: source) else { return nil }
+            guard let functionDefinition = FunctionDefinition(from: node, in: source) else { return nil }
             self = .functionDefinition(functionDefinition)
         // case "implementation_statement":
-        //     self = .implementationStatement(.init(from: node, source: source))
+        //     self = .implementationStatement(.init(from: node, in: source))
         // case "constants_statement":
         //     self = .constantsStatement(.init(from: node))
         default:
@@ -103,31 +119,34 @@ extension Statement {
 extension ParamDefinition {
     static let rawValue = "param_definition"
 
-    init?(from node: Node, source: String) {
-        guard let paramNameNode = node.child(at: 0),
-              let paramNameRange = Swift.Range(paramNameNode.range, in: source),
-              let paramTypeNode = node.child(at: 2),
-              let paramType = TypeIdentifier(from: paramTypeNode, source: source) else { return nil }
-        self.name = String(source[paramNameRange])
+    init?(from node: Node, in source: Source) {
+        guard let paramNameNode = node.child(byFieldName: "name"),
+              let paramName = paramNameNode.getString(in: source),
+              let paramTypeNode = node.child(byFieldName: "type"),
+              let paramType = TypeIdentifier(from: paramTypeNode, in: source),
+              let location = node.getLocation(in: source) else { return nil }
+
         self.type = paramType
+        self.name = paramName
 
         self.defaultValue = if let defaultValueNode = node.child(byFieldName: "default_value"),
-                               let value = Expression.Simple(from: defaultValueNode, source: source) {
+                               let value = Expression.Simple(from: defaultValueNode, in: source) {
             value
         } else { nil }
 
+        self.location = location
     }
 }
 
 extension TypeDefinition {
-    init?(from node: Node, source: String) {
+    init?(from node: Node, in source: Source) {
         guard let child = node.child(at: 1) else { return nil }
         switch child.nodeType {
         case CodingKeys.meta.rawValue:
-            guard let meta = Meta(from: child, source: source) else { return nil }
+            guard let meta = Meta(from: child, in: source) else { return nil }
             self = .meta(meta)
         case CodingKeys.simple.rawValue:
-            guard let simple = Simple(from: child, source: source) else { return nil }
+            guard let simple = Simple(from: child, in: source) else { return nil }
             self = .simple(simple)
         default:
             return nil
@@ -142,15 +161,16 @@ extension TypeDefinition {
 
 extension TypeDefinition.Simple {
 
-    init?(from node: Node, source: String) {
+    init?(from node: Node, in source: Source) {
         guard let identifierNode = node.child(at: 0),
-              let identifier = NominalType(from: identifierNode, source: source) else { return nil }
+              let identifier = NominalType(from: identifierNode, in: source),
+              let location = node.getLocation(in: source) else { return nil }
         self.identifier = identifier
 
         if let paramListNode = node.child(at: 1) {
             self.params = paramListNode.compactMapChildren { paramNode in
                 if paramNode.nodeType == ParamDefinition.rawValue {
-                    return ParamDefinition(from: paramNode, source: source)
+                    return ParamDefinition(from: paramNode, in: source)
                 } else {
                     return nil
                 }
@@ -158,21 +178,25 @@ extension TypeDefinition.Simple {
         } else {
             self.params = []
         }
+
+        self.location = location
     }
 }
 
 extension TypeDefinition.Meta {
 
-    init?(from node: Node, source: String) {
+    init?(from node: Node, in source: Source) {
         guard let identifierNode = node.child(at: 0),
-              let identifier = NominalType(from: identifierNode, source: source) else { return nil }
+              let identifier = NominalType(from: identifierNode, in: source),
+              let location = node.getLocation(in: source) else { return nil }
         self.identifier = identifier
         self.cases = node.compactMapChildren { childNode in
             if childNode.nodeType == TypeDefinition.CodingKeys.simple.rawValue {
-                return TypeDefinition.Simple(from: childNode, source: source)
+                return TypeDefinition.Simple(from: childNode, in: source)
             }
             return nil
         }
+        self.location = location
     }
 }
 
@@ -190,9 +214,10 @@ extension FunctionDefinition {
         case body
     }
 
-    init?(from node: Node, source: String) {
+    init?(from node: Node, in source: Source) {
+        guard let location = node.getLocation(in: source) else { return nil }
         self.inputType = if let child = node.child(byFieldName: CodingKeys.inputType.rawValue) {
-            TypeIdentifier(from: child, source: source)
+            TypeIdentifier(from: child, in: source)
         } else {
             nil
         }
@@ -203,7 +228,7 @@ extension FunctionDefinition {
         self.params = if let child = node.child(byFieldName: CodingKeys.params.rawValue) {
             child.compactMapChildren { paramNode in
                 if paramNode.nodeType == ParamDefinition.rawValue {
-                    return ParamDefinition(from: paramNode, source: source)
+                    return ParamDefinition(from: paramNode, in: source)
                 } else {
                     return nil
                 }
@@ -212,15 +237,16 @@ extension FunctionDefinition {
             []
         }
         guard let child = node.child(byFieldName: CodingKeys.outputType.rawValue),
-           let outputType = TypeIdentifier(from: child, source: source) else {
+           let outputType = TypeIdentifier(from: child, in: source) else {
             return nil
         }
         guard let child = node.child(byFieldName: CodingKeys.body.rawValue),
-              let body = Expression(from: child, source: source) else { return nil }
+              let body = Expression(from: child, in: source) else { return nil }
 
         self.name = name
         self.outputType = outputType
         self.body = body
+        self.location = location
     }
 }
 
@@ -231,11 +257,11 @@ extension FunctionDefinition {
 extension TypeIdentifier {
     static let rawValue = "type_identifier"
 
-    init?(from node: Node, source: String) {
+    init?(from node: Node, in source: Source) {
         guard let child = node.child(at: 0) else { return nil }
-        if let nominal = NominalType(from: child, source: source) {
+        if let nominal = NominalType(from: child, in: source) {
             self = .nominal(nominal)
-        } else if let structural = StructuralType(from: child, source: source) {
+        } else if let structural = StructuralType(from: child, in: source) {
             self = .structural(structural)
         } else {
             return nil
@@ -250,13 +276,14 @@ extension NominalType {
         case generic = "generic_nominal_type"
     }
 
-    init?(from node: Node, source: String) {
+    init?(from node: Node, in source: Source) {
         switch node.nodeType {
         case CodingKeys.specific.rawValue:
-            guard let name = node.getString(in: source) else { return nil }
-            self = .specific(name)
+            guard let name = node.getString(in: source),
+                  let location = node.getLocation(in: source) else { return nil }
+            self = .specific(.init(name: name, location: location))
         case CodingKeys.generic.rawValue:
-            guard let genericType = GenericType(from: node, source: source) else { return nil }
+            guard let genericType = GenericType(from: node, in: source) else { return nil }
             self = .generic(genericType)
         default: return nil
         }
@@ -265,13 +292,14 @@ extension NominalType {
 
 extension NominalType.GenericType {
 
-    init?(from node: Node, source: String) {
+    init?(from node: Node, in source: Source) {
         guard let typeNameNode = node.child(at: 0),
-              let name = typeNameNode.getString(in: source) else { return nil }
-        self.name = name
+              let name = typeNameNode.getString(in: source),
+              let location = node.getLocation(in: source) else { return nil }
+        self.name = .init(name: name, location: location)
         self.associatedTypes = node.compactMapChildren { childNode in
             if childNode.nodeType == TypeIdentifier.rawValue {
-                return TypeIdentifier(from: childNode, source: source)
+                return TypeIdentifier(from: childNode, in: source)
             } else {
                 return nil
             }
@@ -287,17 +315,22 @@ extension StructuralType {
         case tuple = "tuple_structural_type"
     }
     
-    init?(from node: Node, source: String) {
+    init?(from node: Node, in source: Source) {
         switch node.nodeType {
         case CodingKeys.tuple.rawValue:
-            self = .tuple(node.compactMapChildren { child in
-                if child.nodeType == TypeIdentifier.rawValue {
-                    return TypeIdentifier(from: child, source: source)
-                }
-                return nil
-            })
+            guard let location = node.getLocation(in: source) else { return nil }
+            self = .tuple(
+                StructuralType.Tuple(
+                    types: node.compactMapChildren { child in
+                        if child.nodeType == TypeIdentifier.rawValue {
+                            return TypeIdentifier(from: child, in: source)
+                        }
+                        return nil
+                    },
+                    location: location))
+
         case CodingKeys.lambda.rawValue:
-            guard let lambda = Lambda(from: node, source: source) else { return nil }
+            guard let lambda = Lambda(from: node, in: source) else { return nil }
             self = .lambda(lambda)
         default:
             return nil
@@ -307,16 +340,19 @@ extension StructuralType {
 
 extension StructuralType.Lambda {
 
-    init?(from node: Node, source: String) {
+    init?(from node: Node, in source: Source) {
         self.input = node.compactMapChildrenEnumerated { (index, child) in
             if child.nodeType == TypeIdentifier.rawValue && index < node.childCount - 1 {
-                return TypeIdentifier(from: child, source: source)
+                return TypeIdentifier(from: child, in: source)
             }
             return nil
         }
         guard let outputNode = node.child(at: node.childCount-1),
-              let output = TypeIdentifier(from: outputNode, source: source) else { return nil }
+              let output = TypeIdentifier(from: outputNode, in: source) else { return nil }
         self.output = output
+
+        guard let location = node.getLocation(in: source) else { return nil }
+        self.location = location
     }
 }
 
@@ -333,19 +369,19 @@ extension Expression {
         case piped = "piped_expression"
     }
 
-    init?(from node: Node, source: String) {
+    init?(from node: Node, in source: Source) {
         switch node.nodeType {
         case CodingKeys.call.rawValue:
-            guard let call = Expression.Call(from: node, source: source) else { return nil }
+            guard let call = Expression.Call(from: node, in: source) else { return nil }
             self = .call(call)
         case CodingKeys.branched.rawValue:
-            guard let branched = Expression.Branched(from: node, source: source) else { return nil }
+            guard let branched = Expression.Branched(from: node, in: source) else { return nil }
             self = .branched(branched)
         case CodingKeys.piped.rawValue:
-            guard let piped = Expression.Piped(from: node, source: source) else { return nil }
+            guard let piped = Expression.Piped(from: node, in: source) else { return nil }
             self = .piped(piped)
         default:
-            guard let simple = Expression.Simple(from: node, source: source) else { return nil }
+            guard let simple = Expression.Simple(from: node, in: source) else { return nil }
             self = .simple(simple)
         }
     }
@@ -392,7 +428,7 @@ extension Expression.Simple {
     }
 
 
-    init?(from node: Node, source: String) {
+    init?(from node: Node, in source: Source) {
         switch node.nodeType {
         case CodingKeys.nothing.rawValue:
             self = .nothing
@@ -417,7 +453,7 @@ extension Expression.Simple {
             guard let operatorNode = node.child(byFieldName: "operator"),
                   let operatorValue = operatorNode.getString(in: source),
                   let operandNode = node.child(byFieldName: "operand"),
-                  let operandExpression = Expression.Simple(from: operandNode, source: source) else {
+                  let operandExpression = Expression.Simple(from: operandNode, in: source) else {
                 return nil
             }
             switch operatorValue {
@@ -432,11 +468,11 @@ extension Expression.Simple {
             }
         case CodingKeys.binaryExpression:
             guard let leftNode = node.child(byFieldName: "left"),
-                  let leftExpression = Expression.Simple(from: leftNode, source: source),
+                  let leftExpression = Expression.Simple(from: leftNode, in: source),
                   let operatorNode = node.child(byFieldName: "operator"),
                   let operatorValue = operatorNode.getString(in: source),
                   let rightNode = node.child(byFieldName: "right"),
-                  let rightExpression = Expression.Simple(from: rightNode, source: source) else {
+                  let rightExpression = Expression.Simple(from: rightNode, in: source) else {
                 return nil
             }
             switch operatorValue {
@@ -471,23 +507,23 @@ extension Expression.Simple {
             }
         case CodingKeys.tuple.rawValue:
             let expressions = node.compactMapChildren { node in
-                Expression(from: node, source: source)
+                Expression(from: node, in: source)
             }
             self = .tuple(expressions)
         case CodingKeys.parenthesized.rawValue:
             guard let expressionNode = node.child(at: 1),
-                  let expression = Expression(from: expressionNode, source: source) else { return nil }
+                  let expression = Expression(from: expressionNode, in: source) else { return nil }
             self = .parenthesized(expression)
         case CodingKeys.lambda.rawValue:
             guard let expressionNode = node.child(at: 1),
-                  let expression = Expression(from: expressionNode, source: source) else { return nil }
+                  let expression = Expression(from: expressionNode, in: source) else { return nil }
             self = .lambda(expression)
         case CodingKeys.field.rawValue:
             guard let fieldValue = node.getString(in: source) else { return nil }
             self = .field(fieldValue)
         case CodingKeys.access.rawValue:
             guard let containerNode = node.child(at: 0),
-                  let container = Expression.Simple(from: containerNode, source: source),
+                  let container = Expression.Simple(from: containerNode, in: source),
                   let fieldNode = node.child(at: 2),
                   let fieldValue = fieldNode.getString(in: source) else { return nil }
             self = .access(Expression.Simple.Access(accessed: container, field: fieldValue))
@@ -499,14 +535,14 @@ extension Expression.Simple {
 }
 
 extension Expression.Call {
-    init?(from node: Node, source: String) {
+    init?(from node: Node, in source: Source) {
         guard let commandNode = node.child(byFieldName: "command"),
-              let command = Expression.Call.Command(from: commandNode, source: source) else { return nil }
+              let command = Expression.Call.Command(from: commandNode, in: source) else { return nil }
         self.command = command
 
         if let paramListNode = node.child(byFieldName: "params") {
             self.arguments = paramListNode.compactMapChildren { child in
-                Expression.Call.Argument(from: child, source: source) 
+                Expression.Call.Argument(from: child, in: source) 
             }
         } else {
             self.arguments = []
@@ -520,13 +556,13 @@ extension Expression.Call.Command {
         case type = "type_identifier"
     }
 
-    init?(from node: Node, source: String) {
+    init?(from node: Node, in source: Source) {
         switch node.nodeType {
         case CodingKeys.field.rawValue:
             guard let fieldValue = node.getString(in: source) else { return nil }
             self = .field(fieldValue)
         case CodingKeys.type.rawValue:
-            guard let type = TypeIdentifier(from: node, source: source) else { return nil }
+            guard let type = TypeIdentifier(from: node, in: source) else { return nil }
             self = .type(type)
         default:
             return nil
@@ -535,13 +571,13 @@ extension Expression.Call.Command {
 }
 
 extension Expression.Call.Argument {
-    init?(from node: Node, source: String) {
+    init?(from node: Node, in source: Source) {
         guard let nameNode = node.child(byFieldName: "name"),
               let name = nameNode.getString(in: source) else { return nil }
         self.name = name
 
         guard let valueNode = node.child(byFieldName: "value"),
-              let value = Expression.Simple(from: valueNode, source: source) else { return nil }
+              let value = Expression.Simple(from: valueNode, in: source) else { return nil }
         self.value = value
     }
 }
@@ -549,17 +585,17 @@ extension Expression.Call.Argument {
 extension Expression.Branched {
     static let branch = "branch_expression"
 
-    init?(from node: Node, source: String) {
+    init?(from node: Node, in source: Source) {
         self.branches = node.compactMapChildren { child in
             if child.nodeType == Expression.Branched.branch {
-                Expression.Branched.Branch(from: child, source: source)
+                Expression.Branched.Branch(from: child, in: source)
             } else {
                 nil
             }
         }
         self.lastBranch = if let lastChild = node.lastChild,
             lastChild.nodeType != Expression.Branched.branch {
-            Expression(from: lastChild, source: source)
+            Expression(from: lastChild, in: source)
         } else {
             nil
         }
@@ -567,14 +603,14 @@ extension Expression.Branched {
 }
 
 extension Expression.Branched.Branch {
-    init?(from node: Node, source: String) {
+    init?(from node: Node, in source: Source) {
         guard let captureGroupNode = node.child(byFieldName: "capture_group") else { return nil }
         self.captureGroup = captureGroupNode.compactMapChildren { child in
-            Expression(from: child, source: source)
+            Expression(from: child, in: source)
         }
 
         guard let bodyNode = node.child(byFieldName: "body"),
-              let body = Expression.Branched.Branch.Body(from: bodyNode, source: source) else { return nil }
+              let body = Expression.Branched.Branch.Body(from: bodyNode, in: source) else { return nil }
         self.body = body
     }
 }
@@ -587,18 +623,18 @@ extension Expression.Branched.Branch.Body {
         case looped = "looped_expression"
     }
 
-    init?(from node: Node, source: String) {
+    init?(from node: Node, in source: Source) {
         switch node.nodeType {
         case CodingKeys.call.rawValue:
-            guard let call = Expression.Call(from: node, source: source) else { return nil }
+            guard let call = Expression.Call(from: node, in: source) else { return nil }
             self = .call(call)
         case CodingKeys.looped.rawValue:
             guard let loopedNode = node.child(at: 0),
                   let parenthisizedNode = loopedNode.child(at: 1),
-                  let expression = Expression(from: parenthisizedNode, source: source) else { return nil }
+                  let expression = Expression(from: parenthisizedNode, in: source) else { return nil }
             self = .looped(expression) 
         default:
-            guard let simple = Expression.Simple(from: node, source: source) else { return nil }
+            guard let simple = Expression.Simple(from: node, in: source) else { return nil }
             self = .simple(simple)
         }
     }
@@ -611,11 +647,11 @@ extension Expression.Piped {
         case unwrapping
     }
 
-    init?(from node: Node, source: String) {
+    init?(from node: Node, in source: Source) {
         guard let leftNode = node.child(byFieldName: "left"),
-              let left = Expression(from: leftNode, source: source) else { return nil }
+              let left = Expression(from: leftNode, in: source) else { return nil }
         guard let rightNode = node.child(byFieldName: "right"),
-              let right = Expression(from: rightNode, source: source) else { return nil }
+              let right = Expression(from: rightNode, in: source) else { return nil }
 
         if let pipeNode = node.child(byFieldName: "operator"),
            let pipeOperator = pipeNode.getString(in: source) {

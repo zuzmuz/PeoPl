@@ -2,6 +2,28 @@
 // MARK: - the syntax tree source
 // ------------------------------
 
+struct NodeLocation: Encodable {
+    struct Point: Comparable, Encodable {
+        let line: Int
+        let column: Int
+        static func < (lhs: Point, rhs: Point) -> Bool {
+            lhs.line < rhs.line || lhs.line == rhs.line && lhs.column < rhs.column
+        }
+    }
+    let pointRange: Range<Point>
+    let range: Range<Int>
+    let sourceName: String
+}
+
+struct Source {
+    let content: String
+    let name: String
+}
+
+protocol SyntaxNode {
+    var location: NodeLocation { get }
+}
+
 struct Project: Encodable {
     let statements: [Statement]
     let main: FunctionDefinition
@@ -18,10 +40,11 @@ enum Statement: Encodable {
 // ------------------------
 
 
-struct ParamDefinition: Encodable {
+struct ParamDefinition: Encodable, SyntaxNode {
     let name: String
     let type: TypeIdentifier
     let defaultValue: Expression.Simple?
+    let location: NodeLocation
 }
 
 enum TypeDefinition: Encodable {
@@ -29,26 +52,29 @@ enum TypeDefinition: Encodable {
     case meta(Meta)
 
 
-    struct Simple: Encodable {
+    struct Simple: Encodable, SyntaxNode {
         let identifier: NominalType
         let params: [ParamDefinition]
+        let location: NodeLocation
     }
 
-    struct Meta: Encodable {
+    struct Meta: Encodable, SyntaxNode {
         let identifier: NominalType
         let cases: [Simple]
+        let location: NodeLocation
     }
 }
 
 // MARK: - function definitions
 // ----------------------------
 
-struct FunctionDefinition: Encodable {
+struct FunctionDefinition: Encodable, SyntaxNode {
     let inputType: TypeIdentifier?
     let name: String
     let params: [ParamDefinition]
     let outputType: TypeIdentifier
     let body: Expression
+    let location: NodeLocation
 }
 
 // MARK: - types
@@ -60,23 +86,34 @@ enum TypeIdentifier: Encodable {
 }
 
 enum NominalType: Encodable {
-    case specific(String)
+    struct TypeName: Encodable, SyntaxNode {
+        let name: String
+        let location: NodeLocation
+    }
+
+    case specific(TypeName)
     case generic(GenericType)
 
 
     struct GenericType: Encodable {
-        let name: String
+        let name: TypeName
         let associatedTypes: [TypeIdentifier]
     }
 }
 
 enum StructuralType: Encodable {
     indirect case lambda(Lambda)
-    case tuple([TypeIdentifier])
+    case tuple(Tuple)
 
-    struct Lambda: Encodable {
+    struct Lambda: Encodable, SyntaxNode {
         let input: [TypeIdentifier]
         let output: TypeIdentifier
+        let location: NodeLocation
+    }
+
+    struct Tuple: Encodable, SyntaxNode {
+        let types: [TypeIdentifier]
+        let location: NodeLocation
     }
 }
 
