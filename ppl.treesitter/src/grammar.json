@@ -317,24 +317,28 @@
       ]
     },
     "tuple_structural_type": {
-      "type": "SEQ",
-      "members": [
-        {
-          "type": "STRING",
-          "value": "["
-        },
-        {
-          "type": "REPEAT",
-          "content": {
-            "type": "SYMBOL",
-            "name": "type_identifier"
+      "type": "PREC_LEFT",
+      "value": 15,
+      "content": {
+        "type": "SEQ",
+        "members": [
+          {
+            "type": "STRING",
+            "value": "["
+          },
+          {
+            "type": "REPEAT",
+            "content": {
+              "type": "SYMBOL",
+              "name": "type_identifier"
+            }
+          },
+          {
+            "type": "STRING",
+            "value": "]"
           }
-        },
-        {
-          "type": "STRING",
-          "value": "]"
-        }
-      ]
+        ]
+      }
     },
     "generic_nominal_type": {
       "type": "SEQ",
@@ -521,41 +525,45 @@
       ]
     },
     "_simple_expression": {
-      "type": "CHOICE",
-      "members": [
-        {
-          "type": "SYMBOL",
-          "name": "_single_expression"
-        },
-        {
-          "type": "SYMBOL",
-          "name": "unary_expression"
-        },
-        {
-          "type": "SYMBOL",
-          "name": "binary_expression"
-        },
-        {
-          "type": "SYMBOL",
-          "name": "tuple_literal"
-        },
-        {
-          "type": "SYMBOL",
-          "name": "parenthisized_expression"
-        },
-        {
-          "type": "SYMBOL",
-          "name": "lambda_expression"
-        },
-        {
-          "type": "SYMBOL",
-          "name": "field_identifier"
-        },
-        {
-          "type": "SYMBOL",
-          "name": "access_expression"
-        }
-      ]
+      "type": "PREC_LEFT",
+      "value": 2,
+      "content": {
+        "type": "CHOICE",
+        "members": [
+          {
+            "type": "SYMBOL",
+            "name": "_single_expression"
+          },
+          {
+            "type": "SYMBOL",
+            "name": "unary_expression"
+          },
+          {
+            "type": "SYMBOL",
+            "name": "binary_expression"
+          },
+          {
+            "type": "SYMBOL",
+            "name": "tuple_literal"
+          },
+          {
+            "type": "SYMBOL",
+            "name": "parenthisized_expression"
+          },
+          {
+            "type": "SYMBOL",
+            "name": "lambda_expression"
+          },
+          {
+            "type": "SYMBOL",
+            "name": "field_identifier"
+          },
+          {
+            "type": "SYMBOL",
+            "name": "access_expression"
+          }
+        ]
+      }
     },
     "_single_expression": {
       "type": "CHOICE",
@@ -963,46 +971,50 @@
       ]
     },
     "call_expression": {
-      "type": "PREC_LEFT",
-      "value": 2,
-      "content": {
-        "type": "SEQ",
-        "members": [
-          {
-            "type": "FIELD",
-            "name": "command",
-            "content": {
-              "type": "CHOICE",
-              "members": [
-                {
-                  "type": "SYMBOL",
-                  "name": "field_identifier"
-                },
-                {
-                  "type": "SYMBOL",
-                  "name": "type_identifier"
-                }
-              ]
-            }
-          },
-          {
-            "type": "FIELD",
-            "name": "params",
-            "content": {
-              "type": "CHOICE",
-              "members": [
-                {
-                  "type": "SYMBOL",
-                  "name": "call_param_list"
-                },
-                {
-                  "type": "BLANK"
-                }
-              ]
-            }
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "FIELD",
+          "name": "command",
+          "content": {
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "SYMBOL",
+                "name": "field_identifier"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "type_identifier"
+              }
+            ]
           }
-        ]
-      }
+        },
+        {
+          "type": "STRING",
+          "value": "("
+        },
+        {
+          "type": "FIELD",
+          "name": "params",
+          "content": {
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "SYMBOL",
+                "name": "call_param_list"
+              },
+              {
+                "type": "BLANK"
+              }
+            ]
+          }
+        },
+        {
+          "type": "STRING",
+          "value": ")"
+        }
+      ]
     },
     "call_param_list": {
       "type": "REPEAT1",

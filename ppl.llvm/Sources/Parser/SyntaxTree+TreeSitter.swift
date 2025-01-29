@@ -500,11 +500,11 @@ extension Expression.Simple {
 
 extension Expression.Call {
     init?(from node: Node, source: String) {
-        guard let commandNode = node.child(at: 0),
+        guard let commandNode = node.child(byFieldName: "command"),
               let command = Expression.Call.Command(from: commandNode, source: source) else { return nil }
         self.command = command
 
-        if let paramListNode = node.child(at: 1) {
+        if let paramListNode = node.child(byFieldName: "params") {
             self.arguments = paramListNode.compactMapChildren { child in
                 Expression.Call.Argument(from: child, source: source) 
             }

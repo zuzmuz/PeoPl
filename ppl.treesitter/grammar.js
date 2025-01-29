@@ -10,6 +10,7 @@
 const PREC = {
   ACCESS: 30,
   PARAM: 20,
+  TYPES: 15,
   UNARY: 10,
   MULT: 8,
   ADD: 6,
@@ -100,11 +101,11 @@ module.exports = grammar({
       $.tuple_structural_type,
     ),
 
-    tuple_structural_type: $ => seq(
+    tuple_structural_type: $ => prec.left(PREC.TYPES, seq(
       '[',
         repeat($.type_identifier),
       ']'
-    ),
+    )),
 
     generic_nominal_type: $ => seq(
       field('generic_type', $.specific_nominal_type),
@@ -146,7 +147,7 @@ module.exports = grammar({
     ),
 
     // simple expressions can be unambiguousely inserted anywhere
-    _simple_expression: $ => choice(
+    _simple_expression: $ => prec.left(PREC.PIPE, choice(
         $._single_expression,
         $.unary_expression,
         $.binary_expression,
@@ -155,7 +156,7 @@ module.exports = grammar({
         $.lambda_expression,
         $.field_identifier,
         $.access_expression,
-    ),
+    )),
     
     // single expressions are usually single tokens
     _single_expression: $ => choice(
@@ -241,10 +242,12 @@ module.exports = grammar({
     // unambiguousely inserted anywhere, it fits in special places
     // it is constructed by a callee which is the command name
     // and a list of param calls
-    call_expression: $ => prec.left(PREC.PIPE, seq(
+    call_expression: $ => seq(
         field("command", choice($.field_identifier, $.type_identifier)),
+        '(',
         field("params", optional($.call_param_list)),
-    )),
+        ')',
+    ),
     // a call param list is the list of arguments to pass to a command
     // the only exist in a call expression
     // it is a list of call params

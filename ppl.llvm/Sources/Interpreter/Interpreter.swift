@@ -46,7 +46,7 @@ extension Project: Evaluable {
     func evaluate(
         with input: Evaluation, and scope: [String: Evaluation]
     ) -> Result<Evaluation, SemanticError> {
-        print("evaluating main")
+        // print("evaluating main")
         return self.main.body.evaluate(with: input, and: scope)
     }
 }
@@ -72,7 +72,7 @@ extension Expression.Simple: Evaluable {
     func evaluate(
         with input: Evaluation, and scope: [String: Evaluation]
     ) -> Result<Evaluation, SemanticError> {
-        print("evaluating simple \(self) with scope \(scope)")
+        // print("evaluating simple \(self) with scope \(scope)")
         return if case .nothing = input {
             switch self {
             case .nothing:
@@ -213,6 +213,8 @@ extension Expression.Simple: Evaluable {
                 } else {
                     .failure(.fieldNotInScope(field))
                 }
+            case let .parenthesized(expression):
+                expression.evaluate(with: input, and: scope)
             default:
                 .failure(.notImplemented)
             }
@@ -269,9 +271,11 @@ extension Expression.Branched: Evaluable {
     func evaluate(
         with input: Evaluation, and scope: [String: Evaluation]
     ) -> Result<Evaluation, SemanticError> {
+
         // TODO: handle tupe input differently
-        print("evaluating branched")
+        // print("evaluating branched")
         do {
+            var scope = scope
             let branch = try self.branches.filter { branch in
                 guard let captureGroupExpression = branch.captureGroup.first else {
                     throw SemanticError.noCaptureGroups
@@ -281,18 +285,22 @@ extension Expression.Branched: Evaluable {
                     let fields = simple.getFields()
                     let scopeFields = Set(scope.keys)
                     let capturedInputSet = fields.union(scopeFields).symmetricDifference(scopeFields)
+                    // print("capturing, expression fields \(fields) scopw fields \(scopeFields) captured \(capturedInputSet)")
 
                     if capturedInputSet.count > 1 {
                         throw SemanticError.tooManyFieldsInCaptureGroup
                     }
-                    var scope = scope
                     if capturedInputSet.count == 1, let capturedInput = capturedInputSet.first {
                         scope[capturedInput] = input
-                        switch simple.evaluate(with: .nothing, and: scope) {
-                        case let .success(evaluation):
-                            return evaluation == .bool(true)
-                        case let .failure(error):
-                            throw error
+                        if case .field = simple {
+                            return true
+                        } else {
+                            switch simple.evaluate(with: .nothing, and: scope) {
+                            case let .success(evaluation):
+                                return evaluation == .bool(true)
+                            case let .failure(error):
+                                throw error
+                            }
                         }
                     } else {
                         switch simple.evaluate(with: .nothing, and: scope) {
@@ -302,8 +310,13 @@ extension Expression.Branched: Evaluable {
                             throw error
                         }
                     }
-                // case let .call(call):
-                //     return true //assign to scope
+                case let .call(call):
+                    // switch call {
+                    // case let .field(field):
+                    //     
+                    // }
+                    // nested pattern matching
+                    return true //assign to scope
                 default:
                     throw SemanticError.invalidCaptureGroup
                 }
@@ -327,7 +340,8 @@ extension Expression.Piped: Evaluable {
     func evaluate(
         with input: Evaluation, and scope: [String: Evaluation]
     ) -> Result<Evaluation, SemanticError> {
-        switch self {
+        // print("piping  input \(input) scope \(scope)")
+        return switch self {
         case let .normal(left, right):
             switch left.evaluate(with: input, and: scope) {
             case let .success(leftEvaluation):

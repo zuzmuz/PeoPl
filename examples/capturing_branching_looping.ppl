@@ -6,8 +6,8 @@
 
 ** a function to know if number is pallindrome
 func I32 is_pallindrome Bool
-    to_string;
-    |original| original = (original; reverse) ** saving the original string before the reverse
+    to_string();
+    |original| original = (original; reverse()) ** saving the original string before the reverse
     ..
 
 

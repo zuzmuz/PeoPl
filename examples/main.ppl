@@ -7,5 +7,6 @@ type Basic
 
 func I32 main Nothing
     |i % 2 = 1| "is odd",
-    |i = 9| "is 9",
-    "this should fail"..
+    |i % 3 = 0| "divisible by 3",
+    |_| (_; print(format: "does this work {}"))
+    ..

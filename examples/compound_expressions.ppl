@@ -9,8 +9,8 @@ func compound I32
     {[{[([4, 5])]}].basic}..
 
 func main Nothing
-    print text: "Hello World"..
+    print(text: "Hello World")..
 
 func new Object
-    Object a: 1 b: 2 c: 3..
+    Object(a: 1 b: 2 c: 3)..
 
