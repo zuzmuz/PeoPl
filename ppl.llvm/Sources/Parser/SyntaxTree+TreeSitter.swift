@@ -359,11 +359,12 @@ extension Expression.Simple {
         case or = "binary_or"
         case and = "binary_and"
 
-        case tuple
-        case parenthesized
-        case lambda
-        case field
-        case access
+        case tuple = "tuple_literal"
+        case parenthesized = "parenthisized_expression"
+        case lambda = "lambda_expression"
+        case access = "access_expression"
+
+        case field = "field_identifier"
 
         static let unaryExpression = "unary_expression"
         static let binaryExpression = "binary_expression"
@@ -441,6 +442,29 @@ extension Expression.Simple {
             default:
                 return nil
             }
+        case CodingKeys.tuple.rawValue:
+            let expressions = node.compactMapChildren { node in
+                Expression(from: node, source: source)
+            }
+            self = .tuple(expressions)
+        case CodingKeys.parenthesized.rawValue:
+            guard let expressionNode = node.child(at: 1),
+                  let expression = Expression(from: expressionNode, source: source) else { return nil }
+            self = .parenthesized(expression)
+        case CodingKeys.lambda.rawValue:
+            guard let expressionNode = node.child(at: 1),
+                  let expression = Expression(from: expressionNode, source: source) else { return nil }
+            self = .lambda(expression)
+        case CodingKeys.field.rawValue:
+            guard let fieldValue = node.getString(in: source) else { return nil }
+            self = .field(fieldValue)
+        case CodingKeys.access.rawValue:
+            guard let containerNode = node.child(at: 0),
+                  let container = Expression.Simple(from: containerNode, source: source),
+                  let fieldNode = node.child(at: 2),
+                  let fieldValue = fieldNode.getString(in: source) else { return nil }
+            self = .access(Expression.Simple.Access(accessed: container, field: fieldValue))
+
         default:
             return nil
         }

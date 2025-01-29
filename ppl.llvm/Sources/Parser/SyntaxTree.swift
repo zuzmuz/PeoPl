@@ -123,7 +123,12 @@ enum Expression: Encodable {
         case parenthesized(Expression)
         case lambda(Expression)
         case field(String)
-        case access(Simple, field: String)
+        case access(Access)
+
+        struct Access: Encodable {
+            let accessed: Simple
+            let field: String
+        }
     }
 
     struct Call: Encodable {

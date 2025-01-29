@@ -146,10 +146,10 @@ module.exports = grammar({
         $.unary_expression,
         $.binary_expression,
         $.tuple_literal,
-        $.parenthised_expression,
+        $.parenthisized_expression,
         $.lambda_expression,
         $.field_identifier,
-        $.accessed_identifier,
+        $.access_expression,
     ),
     
     // single expressions are usually single tokens
@@ -166,7 +166,8 @@ module.exports = grammar({
     string_literal: $ => /"[^"]*"/,
     tuple_literal: $ => seq('[',
       choice($.call_expression, $._simple_expression),
-      repeat(seq(',', choice($.call_expression, $._simple_expression))), ']'),
+      repeat(seq(',', choice($.call_expression, $._simple_expression))),
+      ']'),
 
     // a unary operator followed by a simple expression 
     unary_expression: $ => prec.left(PREC.UNARY,
@@ -221,7 +222,7 @@ module.exports = grammar({
     and_operator: $ => 'and',
     or_operator: $ => 'or',
 
-    parenthised_expression: $ => seq(
+    parenthisized_expression: $ => seq(
       '(',
       $._expression,
       ')',
@@ -287,7 +288,7 @@ module.exports = grammar({
     ),
 
     looped_expression: $ => seq(
-      $.parenthised_expression,
+      $.parenthisized_expression,
       '^'
     ),
 
@@ -297,7 +298,7 @@ module.exports = grammar({
       '}'
     ),
 
-    accessed_identifier: $ => seq(
+    access_expression: $ => seq(
       $._simple_expression,
       '.',
       $.field_identifier

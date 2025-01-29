@@ -1,6 +1,6 @@
 [
   {
-    "type": "accessed_identifier",
+    "type": "access_expression",
     "named": true,
     "fields": {},
     "children": {
@@ -8,7 +8,7 @@
       "required": true,
       "types": [
         {
-          "type": "accessed_identifier",
+          "type": "access_expression",
           "named": true
         },
         {
@@ -36,7 +36,7 @@
           "named": true
         },
         {
-          "type": "parenthised_expression",
+          "type": "parenthisized_expression",
           "named": true
         },
         {
@@ -68,7 +68,7 @@
         "required": true,
         "types": [
           {
-            "type": "accessed_identifier",
+            "type": "access_expression",
             "named": true
           },
           {
@@ -96,7 +96,7 @@
             "named": true
           },
           {
-            "type": "parenthised_expression",
+            "type": "parenthisized_expression",
             "named": true
           },
           {
@@ -144,7 +144,7 @@
         "required": true,
         "types": [
           {
-            "type": "accessed_identifier",
+            "type": "access_expression",
             "named": true
           },
           {
@@ -172,7 +172,7 @@
             "named": true
           },
           {
-            "type": "parenthised_expression",
+            "type": "parenthisized_expression",
             "named": true
           },
           {
@@ -205,7 +205,7 @@
       "required": true,
       "types": [
         {
-          "type": "accessed_identifier",
+          "type": "access_expression",
           "named": true
         },
         {
@@ -237,7 +237,7 @@
           "named": true
         },
         {
-          "type": "parenthised_expression",
+          "type": "parenthisized_expression",
           "named": true
         },
         {
@@ -308,7 +308,7 @@
         "required": true,
         "types": [
           {
-            "type": "accessed_identifier",
+            "type": "access_expression",
             "named": true
           },
           {
@@ -336,7 +336,7 @@
             "named": true
           },
           {
-            "type": "parenthised_expression",
+            "type": "parenthisized_expression",
             "named": true
           },
           {
@@ -435,7 +435,7 @@
         "required": true,
         "types": [
           {
-            "type": "accessed_identifier",
+            "type": "access_expression",
             "named": true
           },
           {
@@ -471,7 +471,7 @@
             "named": true
           },
           {
-            "type": "parenthised_expression",
+            "type": "parenthisized_expression",
             "named": true
           },
           {
@@ -584,7 +584,7 @@
       "required": true,
       "types": [
         {
-          "type": "accessed_identifier",
+          "type": "access_expression",
           "named": true
         },
         {
@@ -620,7 +620,7 @@
           "named": true
         },
         {
-          "type": "parenthised_expression",
+          "type": "parenthisized_expression",
           "named": true
         },
         {
@@ -677,7 +677,7 @@
       "required": true,
       "types": [
         {
-          "type": "parenthised_expression",
+          "type": "parenthisized_expression",
           "named": true
         }
       ]
@@ -760,7 +760,7 @@
     }
   },
   {
-    "type": "parenthised_expression",
+    "type": "parenthisized_expression",
     "named": true,
     "fields": {},
     "children": {
@@ -768,7 +768,7 @@
       "required": true,
       "types": [
         {
-          "type": "accessed_identifier",
+          "type": "access_expression",
           "named": true
         },
         {
@@ -804,7 +804,7 @@
           "named": true
         },
         {
-          "type": "parenthised_expression",
+          "type": "parenthisized_expression",
           "named": true
         },
         {
@@ -835,7 +835,7 @@
         "required": true,
         "types": [
           {
-            "type": "accessed_identifier",
+            "type": "access_expression",
             "named": true
           },
           {
@@ -871,7 +871,7 @@
             "named": true
           },
           {
-            "type": "parenthised_expression",
+            "type": "parenthisized_expression",
             "named": true
           },
           {
@@ -897,7 +897,7 @@
         "required": true,
         "types": [
           {
-            "type": "accessed_identifier",
+            "type": "access_expression",
             "named": true
           },
           {
@@ -933,7 +933,7 @@
             "named": true
           },
           {
-            "type": "parenthised_expression",
+            "type": "parenthisized_expression",
             "named": true
           },
           {
@@ -1028,7 +1028,7 @@
         "required": true,
         "types": [
           {
-            "type": "accessed_identifier",
+            "type": "access_expression",
             "named": true
           },
           {
@@ -1064,7 +1064,7 @@
             "named": true
           },
           {
-            "type": "parenthised_expression",
+            "type": "parenthisized_expression",
             "named": true
           },
           {
@@ -1090,7 +1090,7 @@
             "named": false
           },
           {
-            "type": "accessed_identifier",
+            "type": "access_expression",
             "named": true
           },
           {
@@ -1122,7 +1122,7 @@
             "named": true
           },
           {
-            "type": "parenthised_expression",
+            "type": "parenthisized_expression",
             "named": true
           },
           {
@@ -1150,7 +1150,7 @@
       "required": true,
       "types": [
         {
-          "type": "accessed_identifier",
+          "type": "access_expression",
           "named": true
         },
         {
@@ -1182,7 +1182,7 @@
           "named": true
         },
         {
-          "type": "parenthised_expression",
+          "type": "parenthisized_expression",
           "named": true
         },
         {
@@ -1270,7 +1270,7 @@
         "required": true,
         "types": [
           {
-            "type": "accessed_identifier",
+            "type": "access_expression",
             "named": true
           },
           {
@@ -1298,7 +1298,7 @@
             "named": true
           },
           {
-            "type": "parenthised_expression",
+            "type": "parenthisized_expression",
             "named": true
           },
           {

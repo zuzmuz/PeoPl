@@ -76,7 +76,7 @@ extension Expression {
         var container = encoder.container(keyedBy: CodingKeys.self)
         switch self {
         case let .simple(simple):
-            try container.encode(simple, forKey: .simple)
+            try simple.encode(to: encoder)
         default:
             break
         }
@@ -123,6 +123,16 @@ extension Expression.Simple {
             try container.encode(["left": left, "right": right], forKey: .or)
         case let .and(left, right):
             try container.encode(["left": left, "right": right], forKey: .and)
+        case let .tuple(expressions):
+            try container.encode(expressions, forKey: .tuple)
+        case let .parenthesized(expression):
+            try container.encode(expression, forKey: .parenthesized)
+        case let .lambda(expression):
+            try container.encode(expression, forKey: .lambda)
+        case let .access(accessExpression):
+            try container.encode(accessExpression, forKey: .access)
+        case let .field(field):
+            try container.encode(field, forKey: .field)
         default:
             break
         }

@@ -1,0 +1,9 @@
+func simple_tuples I32
+    [42, "adsa" = 1]..
+
+
+func simple_tuples_in_expression I32
+    [42, "adsa" = 1] - [21, false]..
+
+func compound I32
+    {[{[([4, 5])]}].basic}..

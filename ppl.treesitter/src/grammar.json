@@ -512,7 +512,7 @@
         },
         {
           "type": "SYMBOL",
-          "name": "parenthised_expression"
+          "name": "parenthisized_expression"
         },
         {
           "type": "SYMBOL",
@@ -524,7 +524,7 @@
         },
         {
           "type": "SYMBOL",
-          "name": "accessed_identifier"
+          "name": "access_expression"
         }
       ]
     },
@@ -900,7 +900,7 @@
       "type": "STRING",
       "value": "or"
     },
-    "parenthised_expression": {
+    "parenthisized_expression": {
       "type": "SEQ",
       "members": [
         {
@@ -1177,7 +1177,7 @@
       "members": [
         {
           "type": "SYMBOL",
-          "name": "parenthised_expression"
+          "name": "parenthisized_expression"
         },
         {
           "type": "STRING",
@@ -1202,7 +1202,7 @@
         }
       ]
     },
-    "accessed_identifier": {
+    "access_expression": {
       "type": "SEQ",
       "members": [
         {
