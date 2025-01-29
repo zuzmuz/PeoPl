@@ -81,4 +81,69 @@ enum StructuralType: Encodable {
 
 // MARK: - Expressions
 
+enum Expression: Encodable {
+    case simpleExpression(Simple)
+    case callExpression(Call)
+    case branchedExpression(Branched)
+    case pipedExpression
 
+    indirect enum Simple: Encodable {
+        case intLiteral(Int)
+        case floatLiteral(Float)
+        case stringLiteral(String)
+        case boolLiteral(Bool)
+
+        case positive(Simple)
+        case negative(Simple)
+        case not(Simple)
+
+        case add(left: Simple, right: Simple)
+        case minus(left: Simple, right: Simple)
+        case times(left: Simple, right: Simple)
+        case by(left: Simple, right: Simple)
+
+        case tuple([Expression])
+        case parenthised(Expression)
+        case lambda(Expression)
+        case field(String)
+        case access(Simple, field: String)
+    }
+
+    struct Call: Encodable {
+
+        enum Command: Encodable {
+            case field(String)
+            case type(TypeIdentifier)
+        }
+
+        let command: Command
+        let arguments: [Argument]
+
+    }
+
+    struct Argument: Encodable {
+        let name: String
+        let value: Simple
+    }
+
+    struct Branched: Encodable {
+        let branches: [Branch]
+        let lastBranch: Branch?
+
+        struct Branch: Encodable {
+            let captureGroup: [Expression]
+            let body: BranchBody
+
+            enum BranchBody: Encodable {
+                case simple(Simple)
+                case call(Call)
+                indirect case looped(Expression)
+            }
+        }
+    }
+
+    indirect enum Piped: Encodable {
+        case normal(left: Expression, right: Expression)
+        case unwrapping(left: Expression, right: Expression)
+    }
+}
