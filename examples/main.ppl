@@ -1,12 +1,19 @@
 
-type Basic
-    a: I32
-    b: I32
-    ..
 
 
-func (I32) main -> Nothing
-    |i % 2 = 1| "is odd",
-    |i % 3 = 0| "divisible by 3",
-    |_| (_; print(format: "does this work {}"))
+type A
+    a: I32..
+
+func (String) mostafa age: I32 -> String
+    print()..
+
+
+func main -> String
+    "whatever";
+    |var_name| [
+        (var_name; mostafa(age: 42)),
+        (var_name; some_other_func())
+    ];
+    |mostafaed, _| Nothing
     ..
+

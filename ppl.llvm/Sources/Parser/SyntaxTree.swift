@@ -127,6 +127,10 @@ enum Expression: Encodable {
     indirect case branched(Branched)
     case piped(Piped)
 
+    struct Simple: Encodable {
+    }
+
+
     indirect enum Simple: Encodable {
 
         case nothing

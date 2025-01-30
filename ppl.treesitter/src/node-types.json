@@ -24,6 +24,10 @@
           "named": true
         },
         {
+          "type": "call_expression",
+          "named": true
+        },
+        {
           "type": "field_identifier",
           "named": true
         },
@@ -89,6 +93,10 @@
           },
           {
             "type": "bool_literal",
+            "named": true
+          },
+          {
+            "type": "call_expression",
             "named": true
           },
           {
@@ -173,6 +181,10 @@
           },
           {
             "type": "bool_literal",
+            "named": true
+          },
+          {
+            "type": "call_expression",
             "named": true
           },
           {
@@ -435,6 +447,10 @@
           },
           {
             "type": "bool_literal",
+            "named": true
+          },
+          {
+            "type": "call_expression",
             "named": true
           },
           {
@@ -744,9 +760,17 @@
         ]
       },
       "params": {
-        "multiple": false,
-        "required": false,
+        "multiple": true,
+        "required": true,
         "types": [
+          {
+            "type": "(",
+            "named": false
+          },
+          {
+            "type": ")",
+            "named": false
+          },
           {
             "type": "param_list",
             "named": true
@@ -965,6 +989,10 @@
           },
           {
             "type": "bool_literal",
+            "named": true
+          },
+          {
+            "type": "call_expression",
             "named": true
           },
           {
@@ -1376,6 +1404,10 @@
           "named": true
         },
         {
+          "type": "branched_expression",
+          "named": true
+        },
+        {
           "type": "call_expression",
           "named": true
         },
@@ -1405,6 +1437,10 @@
         },
         {
           "type": "parenthisized_expression",
+          "named": true
+        },
+        {
+          "type": "piped_expression",
           "named": true
         },
         {
@@ -1504,6 +1540,10 @@
             "named": true
           },
           {
+            "type": "call_expression",
+            "named": true
+          },
+          {
             "type": "field_identifier",
             "named": true
           },
@@ -1560,10 +1600,6 @@
         ]
       }
     }
-  },
-  {
-    "type": "\n",
-    "named": false
   },
   {
     "type": "!=",

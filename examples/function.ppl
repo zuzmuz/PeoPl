@@ -1,8 +1,12 @@
 
-type A.D.C a: B..
+type TheAmazingStruct
+    field_one_is: TheBigObject
+    field_two_is: TheNotSoBig
+..
 
-A.B.C.C.c = 3..
+func (TheInputObject) function_name(
+    argument_one_is: TheAmazingStruct
+    argument_two_is: TheFace
+) -> [TheOutputObject, Ithing]
+    Nothing..
 
-func (A.C.S) 
-    A.B.D.a a: A b: B c: C.D.E -> A
-    a..

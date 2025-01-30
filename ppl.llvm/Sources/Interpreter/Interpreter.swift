@@ -57,7 +57,7 @@ extension Expression: Evaluable {
     ) -> Result<Evaluation, SemanticError> {
         switch self {
         case let .simple(simple):
-            simple.evaluate(with: .nothing, and: scope)
+            simple.evaluate(with: input, and: scope)
         case let .call(call):
             call.evaluate(with: input, and: scope)
         case let .branched(branched):
@@ -72,7 +72,7 @@ extension Expression.Simple: Evaluable {
     func evaluate(
         with input: Evaluation, and scope: [String: Evaluation]
     ) -> Result<Evaluation, SemanticError> {
-        // print("evaluating simple \(self) with scope \(scope)")
+        // print("evaluating simple \(self) \(input) with scope \(scope)")
         return if case .nothing = input {
             switch self {
             case .nothing:
