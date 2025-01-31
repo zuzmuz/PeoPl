@@ -1,12 +1,19 @@
 
-type TheAmazingStruct
-    field_one_is: TheBigObject
-    field_two_is: TheNotSoBig
-..
+type TheAmazingStruct<A, C>::B<C>::X<Z>
+    Case1<T>
+    Case2
+    ..
 
-func (TheInputObject) function_name(
-    argument_one_is: TheAmazingStruct
-    argument_two_is: TheFace
-) -> [TheOutputObject, Ithing]
-    Nothing..
+
+type X<Z>
+    param: Z
+    ..
+
+X<Z> = X<I32>..
+
+A::C::D.x = 3..
+
+func (TheAmazingStruct<A, C>::B<C>::X<Z>::Case1<T>) A::C.foo(a: C, d: D) => Int::B
+    a.b.x
+    ..
 

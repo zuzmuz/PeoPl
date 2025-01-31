@@ -203,6 +203,21 @@ extension TypeDefinition.Meta {
 // MARK: - function definitions
 // ----------------------------
 
+extension FieldIdentifier {
+    
+    init?(from node: Node, in source: Source) {
+        guard let location = node.getLocation(in: source) else { return nil }
+
+        if node.childCount == 0 {
+            self.namespace = nil
+            self.argument = nil
+        }
+
+        let typeNames = node.compactMapChildren { child in
+            NominalType.TypeName(from: child, in: source)
+        }
+    }
+}
 
 extension FunctionDefinition {
 
@@ -216,13 +231,15 @@ extension FunctionDefinition {
 
     init?(from node: Node, in source: Source) {
         guard let location = node.getLocation(in: source) else { return nil }
-        self.inputType = if let child = node.child(byFieldName: CodingKeys.inputType.rawValue) {
-            TypeIdentifier(from: child, in: source)
+        if let child = node.child(byFieldName: CodingKeys.inputType.rawValue) {
+            guard let typeIdentifier = TypeIdentifier(from: child, in: source) else { return nil }
+            self.inputType = typeIdentifier
         } else {
-            nil
+            self.inputType = TypeIdentifier.nothing
         }
+
         guard let child = node.child(byFieldName: CodingKeys.name.rawValue),
-           let name = child.getString(in: source) else {
+           let name = FieldIdentifier(from: node, in: source) else {
             return nil
         }
         self.params = if let child = node.child(byFieldName: CodingKeys.params.rawValue) {
@@ -279,9 +296,9 @@ extension NominalType {
     init?(from node: Node, in source: Source) {
         switch node.nodeType {
         case CodingKeys.specific.rawValue:
-            guard let name = node.getString(in: source),
+            guard let name = TypeName(from: node, in: source),
                   let location = node.getLocation(in: source) else { return nil }
-            self = .specific(.init(name: name, location: location))
+            self = .specific(name)
         case CodingKeys.generic.rawValue:
             guard let genericType = GenericType(from: node, in: source) else { return nil }
             self = .generic(genericType)
@@ -289,14 +306,27 @@ extension NominalType {
         }
     }
 }
+extension NominalType.TypeName {
+    init?(from node: Node, in source: Source) {
+        guard let location = node.getLocation(in: source) else { return nil }
+        self.location = location
+        self.chain = node.compactMapChildren { child in
+            if child.nodeType == NominalType.TypeName.typeName {
+                child.getString(in: source)
+            } else {
+                nil
+            }
+        }
+    }
+}
 
 extension NominalType.GenericType {
-
     init?(from node: Node, in source: Source) {
         guard let typeNameNode = node.child(at: 0),
-              let name = typeNameNode.getString(in: source),
+              let name = NominalType.TypeName(from: typeNameNode, in: source),
               let location = node.getLocation(in: source) else { return nil }
-        self.name = .init(name: name, location: location)
+        self.location = location
+        self.name = name
         self.associatedTypes = node.compactMapChildren { childNode in
             if childNode.nodeType == TypeIdentifier.rawValue {
                 return TypeIdentifier(from: childNode, in: source)
@@ -305,7 +335,6 @@ extension NominalType.GenericType {
             }
         }
     }
-
 }
 
 extension StructuralType {
@@ -388,6 +417,15 @@ extension Expression {
 }
 
 extension Expression.Simple {
+    init?(from node: Node, in source: Source) {
+        guard let location = node.getLocation(in: source),
+              let simpleType = Expression.Simple.SimpleType(from: node, in: source) else { return nil }
+        self.location = location
+        self.type = simpleType
+    }
+}
+
+extension Expression.Simple.SimpleType {
 
     enum CodingKeys: String, CodingKey {
         case nothing

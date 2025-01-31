@@ -43,15 +43,16 @@ module.exports = grammar({
     ),
 
     implementation_statement: $ => seq(
-      $.type_identifier,
+      $.nominal_type,
       '=',
-      $.type_identifier,
+      $.nominal_type,
     ),
 
     constants_statement: $ => seq(
-      $.field_identifier,
+      optional(seq($.nominal_type, '.')),
+      $.argument_name,
       '=',
-      $._single_expression, //can be a simple expression
+      $._simple_expression, //can be a simple expression
     ),
 
     _definition: $ => seq(
@@ -67,12 +68,12 @@ module.exports = grammar({
     ),
 
     meta_type_definition: $ => seq(
-      field('meta_type', choice($.specific_nominal_type, $.generic_nominal_type)),
+      field('meta_type', $.nominal_type),
       field('case_type', repeat1($.simple_type_definition)),
     ),
 
     simple_type_definition: $ => seq(
-      field('name', choice($.specific_nominal_type, $.generic_nominal_type)),
+      field('name', $.nominal_type),
       field("params", optional($.param_list)),
     ),
 
@@ -89,32 +90,37 @@ module.exports = grammar({
       optional(',')
     ),
 
-    argument_name: $ => /_*[a-z][a-zA-Z0-9_]*/,
+    argument_name: $ => choice('_', /_*[a-z][a-zA-Z0-9_]*/),
     type_name: $ => /_*[A-Z][a-zA-Z0-9_]*/,
 
-    specific_nominal_type: $ => prec.left(seq(
-      $.type_name,
-      repeat(seq('.', $.type_name))
-    )),
-
     type_identifier: $ => choice(
-      $.specific_nominal_type,
-      $.generic_nominal_type,
+      $.nominal_type,
       $.lambda_structural_type,
       $.tuple_structural_type,
     ),
 
-    tuple_structural_type: $ => seq(
-      '[',
-        choice($.type_identifier, repeat(seq(',', $.type_identifier))),
-      ']'
+    nominal_type: $ => prec.left(PREC.TYPES, seq(
+      $._flat_nominal_type,
+      repeat(seq('::', $._flat_nominal_type))
+    )),
+
+    _flat_nominal_type: $ => prec.left(PREC.TYPES,seq(
+      field('name', $.type_name),
+      field('type_arguments', optional($.type_arguments)),
+    )),
+
+
+    type_arguments: $ => seq(
+      '<',
+      seq($.type_identifier, repeat(seq(',', $.type_identifier))),
+      '>',
     ),
 
-    generic_nominal_type: $ => seq(
-      field('generic_type', $.specific_nominal_type),
-      '<',
-      field('associated_type', repeat($.type_identifier)),
-      '>'
+
+    tuple_structural_type: $ => seq(
+      '[',
+        seq($.type_identifier, repeat(seq(',', $.type_identifier))),
+      ']'
     ),
 
     lambda_structural_type: $ => seq(
@@ -124,24 +130,13 @@ module.exports = grammar({
       field('return_type', $.type_identifier),
     ),
 
-    field_identifier: $ => choice(
-        '_',
-        $.argument_name,
-        prec.left(seq(
-          $.type_name,
-          repeat(seq('.', $.type_name)),
-          '.',
-          $.argument_name,
-        ),
-      )
-    ),
-
     function_definition: $ => seq(
       'func',
       field("input_type", optional(seq('(', $.type_identifier, ')'))),
-      field("name", $.field_identifier),
+      field("scope", optional(seq($.nominal_type, '.'))),
+      field("name", $.argument_name),
       field("params", seq('(', optional($.param_list), ')')),
-      '->',
+      '=>',
       field("output_type", $.type_identifier),
       field("body", $._expression),
     ),
@@ -164,7 +159,7 @@ module.exports = grammar({
         $.tuple_literal,
         $.parenthisized_expression,
         $.lambda_expression,
-        $.field_identifier,
+        $.argument_name,
         $.call_expression,
         $.access_expression,
     ),
@@ -254,10 +249,10 @@ module.exports = grammar({
     // it is constructed by a callee which is the command name
     // and a list of param calls
     call_expression: $ => seq(
-        field("command", choice($.field_identifier, $.type_identifier)),
-        '(',
-        field("params", optional($.call_param_list)),
-        ')',
+      field("command", choice($._simple_expression, $.nominal_type)),
+      '(',
+      field("params", optional($.call_param_list)),
+      ')',
     ),
     // a call param list is the list of arguments to pass to a command
     // the only exist in a call expression
@@ -309,7 +304,7 @@ module.exports = grammar({
     ),
 
     capture_group: $ => seq(
-      $._simple_expression,
+      choice($._simple_expression, $.nominal_type),
       repeat(seq(',', $._simple_expression)),
     ),
 
@@ -326,7 +321,7 @@ module.exports = grammar({
     ),
 
     access_expression: $ => seq(
-      $._simple_expression,
+      choice($._simple_expression, $.nominal_type),
       '.',
       $.argument_name,
     ),

@@ -1,4 +1,3 @@
-
 // MARK: - the syntax tree source
 // ------------------------------
 
@@ -39,7 +38,6 @@ enum Statement: Encodable {
 // MARK: - type definitions
 // ------------------------
 
-
 struct ParamDefinition: Encodable, SyntaxNode {
     let name: String
     let type: TypeIdentifier
@@ -50,7 +48,6 @@ struct ParamDefinition: Encodable, SyntaxNode {
 enum TypeDefinition: Encodable {
     case simple(Simple)
     case meta(Meta)
-
 
     struct Simple: Encodable, SyntaxNode {
         let identifier: NominalType
@@ -68,9 +65,15 @@ enum TypeDefinition: Encodable {
 // MARK: - function definitions
 // ----------------------------
 
+struct FieldIdentifier: Encodable, SyntaxNode {
+    let namespace: NominalType?
+    let argument: String?
+    let location: NodeLocation
+}
+
 struct FunctionDefinition: Encodable, SyntaxNode {
-    let inputType: TypeIdentifier?
-    let name: String
+    let inputType: TypeIdentifier
+    let name: FieldIdentifier
     let params: [ParamDefinition]
     let outputType: TypeIdentifier
     let body: Expression
@@ -81,23 +84,26 @@ struct FunctionDefinition: Encodable, SyntaxNode {
 // -------------
 
 enum TypeIdentifier: Encodable {
+    case nothing
+    case never
     case nominal(NominalType)
     case structural(StructuralType)
 }
 
 enum NominalType: Encodable {
-    struct TypeName: Encodable, SyntaxNode {
-        let name: String
-        let location: NodeLocation
-    }
-
     case specific(TypeName)
     case generic(GenericType)
 
+    struct TypeName: Encodable, SyntaxNode {
+        static let typeName = "type_name"
+        let chain: [String]
+        let location: NodeLocation
+    }
 
-    struct GenericType: Encodable {
+    struct GenericType: Encodable, SyntaxNode {
         let name: TypeName
         let associatedTypes: [TypeIdentifier]
+        let location: NodeLocation
     }
 }
 
@@ -117,73 +123,73 @@ enum StructuralType: Encodable {
     }
 }
 
-
 // MARK: - Expressions
 // -------------------
 
 enum Expression: Encodable {
     case simple(Simple)
-    case call(Call)
     indirect case branched(Branched)
     case piped(Piped)
 
-    struct Simple: Encodable {
+    struct Access: Encodable {
+        let accessed: Simple
+        let field: String
     }
 
+    struct Simple: Encodable, SyntaxNode {
+        let location: NodeLocation
+        let type: SimpleType
+        indirect enum SimpleType: Encodable {
 
-    indirect enum Simple: Encodable {
+            case nothing
+            case never
+            // Literals
+            case intLiteral(Int)
+            case floatLiteral(Float)
+            case stringLiteral(String)
+            case boolLiteral(Bool)
 
-        case nothing
-        case never
-        // Literals
-        case intLiteral(Int)
-        case floatLiteral(Float)
-        case stringLiteral(String)
-        case boolLiteral(Bool)
-        
-        // Unary
-        case positive(Simple)
-        case negative(Simple)
-        case not(Simple)
+            // Unary
+            case positive(Simple)
+            case negative(Simple)
+            case not(Simple)
 
-        // Binary
-        // Additives
-        case plus(left: Simple, right: Simple)
-        case minus(left: Simple, right: Simple)
-        // Multiplicatives
-        case times(left: Simple, right: Simple)
-        case by(left: Simple, right: Simple)
-        case mod(left: Simple, right: Simple)
-        // Comparatives
-        case equal(left: Simple, right: Simple)
-        case different(left: Simple, right: Simple)
-        case lessThan(left: Simple, right: Simple)
-        case lessThanEqual(left: Simple, right: Simple)
-        case greaterThan(left: Simple, right: Simple)
-        case greaterThanEqual(left: Simple, right: Simple)
-        // Logical
-        case or(left: Simple, right: Simple)
-        case and(left: Simple, right: Simple)
-        
-        // Compounds
-        case tuple([Expression])
-        case parenthesized(Expression)
-        case lambda(Expression)
+            // Binary
+            // Additives
+            case plus(left: Simple, right: Simple)
+            case minus(left: Simple, right: Simple)
+            // Multiplicatives
+            case times(left: Simple, right: Simple)
+            case by(left: Simple, right: Simple)
+            case mod(left: Simple, right: Simple)
+            // Comparatives
+            case equal(left: Simple, right: Simple)
+            case different(left: Simple, right: Simple)
+            case lessThan(left: Simple, right: Simple)
+            case lessThanEqual(left: Simple, right: Simple)
+            case greaterThan(left: Simple, right: Simple)
+            case greaterThanEqual(left: Simple, right: Simple)
+            // Logical
+            case or(left: Simple, right: Simple)
+            case and(left: Simple, right: Simple)
 
-        // Fields
-        case field(String)
-        case access(Access)
+            // Compounds
+            case tuple([Expression])
+            case parenthesized(Expression)
+            case lambda(Expression)
 
-        struct Access: Encodable {
-            let accessed: Simple
-            let field: String
+            // Scope
+
+            case call(Call)
+            case access(Access)
+            case field(String)
         }
     }
 
     struct Call: Encodable {
 
         enum Command: Encodable {
-            case field(String)
+            case field(FieldIdentifier)
             case type(TypeIdentifier)
         }
 
@@ -194,7 +200,6 @@ enum Expression: Encodable {
 
         let command: Command
         let arguments: [Argument]
-
     }
 
     struct Branched: Encodable {

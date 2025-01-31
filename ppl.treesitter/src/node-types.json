@@ -28,10 +28,6 @@
           "named": true
         },
         {
-          "type": "field_identifier",
-          "named": true
-        },
-        {
           "type": "float_literal",
           "named": true
         },
@@ -45,6 +41,10 @@
         },
         {
           "type": "never",
+          "named": true
+        },
+        {
+          "type": "nominal_type",
           "named": true
         },
         {
@@ -76,6 +76,11 @@
     "fields": {}
   },
   {
+    "type": "argument_name",
+    "named": true,
+    "fields": {}
+  },
+  {
     "type": "binary_expression",
     "named": true,
     "fields": {
@@ -88,6 +93,10 @@
             "named": true
           },
           {
+            "type": "argument_name",
+            "named": true
+          },
+          {
             "type": "binary_expression",
             "named": true
           },
@@ -97,10 +106,6 @@
           },
           {
             "type": "call_expression",
-            "named": true
-          },
-          {
-            "type": "field_identifier",
             "named": true
           },
           {
@@ -176,6 +181,10 @@
             "named": true
           },
           {
+            "type": "argument_name",
+            "named": true
+          },
+          {
             "type": "binary_expression",
             "named": true
           },
@@ -185,10 +194,6 @@
           },
           {
             "type": "call_expression",
-            "named": true
-          },
-          {
-            "type": "field_identifier",
             "named": true
           },
           {
@@ -249,6 +254,10 @@
             "named": true
           },
           {
+            "type": "argument_name",
+            "named": true
+          },
+          {
             "type": "binary_expression",
             "named": true
           },
@@ -258,10 +267,6 @@
           },
           {
             "type": "call_expression",
-            "named": true
-          },
-          {
-            "type": "field_identifier",
             "named": true
           },
           {
@@ -331,6 +336,10 @@
           "named": true
         },
         {
+          "type": "argument_name",
+          "named": true
+        },
+        {
           "type": "binary_expression",
           "named": true
         },
@@ -344,10 +353,6 @@
         },
         {
           "type": "call_expression",
-          "named": true
-        },
-        {
-          "type": "field_identifier",
           "named": true
         },
         {
@@ -398,11 +403,63 @@
         "required": true,
         "types": [
           {
-            "type": "field_identifier",
+            "type": "access_expression",
             "named": true
           },
           {
-            "type": "type_identifier",
+            "type": "argument_name",
+            "named": true
+          },
+          {
+            "type": "binary_expression",
+            "named": true
+          },
+          {
+            "type": "bool_literal",
+            "named": true
+          },
+          {
+            "type": "call_expression",
+            "named": true
+          },
+          {
+            "type": "float_literal",
+            "named": true
+          },
+          {
+            "type": "int_literal",
+            "named": true
+          },
+          {
+            "type": "lambda_expression",
+            "named": true
+          },
+          {
+            "type": "never",
+            "named": true
+          },
+          {
+            "type": "nominal_type",
+            "named": true
+          },
+          {
+            "type": "nothing",
+            "named": true
+          },
+          {
+            "type": "parenthisized_expression",
+            "named": true
+          },
+          {
+            "type": "string_literal",
+            "named": true
+          },
+          {
+            "type": "tuple_literal",
+            "named": true
+          },
+          {
+            "type": "unary_expression",
             "named": true
           }
         ]
@@ -442,6 +499,10 @@
             "named": true
           },
           {
+            "type": "argument_name",
+            "named": true
+          },
+          {
             "type": "binary_expression",
             "named": true
           },
@@ -451,10 +512,6 @@
           },
           {
             "type": "call_expression",
-            "named": true
-          },
-          {
-            "type": "field_identifier",
             "named": true
           },
           {
@@ -525,6 +582,10 @@
           "named": true
         },
         {
+          "type": "argument_name",
+          "named": true
+        },
+        {
           "type": "binary_expression",
           "named": true
         },
@@ -534,10 +595,6 @@
         },
         {
           "type": "call_expression",
-          "named": true
-        },
-        {
-          "type": "field_identifier",
           "named": true
         },
         {
@@ -554,6 +611,10 @@
         },
         {
           "type": "never",
+          "named": true
+        },
+        {
+          "type": "nominal_type",
           "named": true
         },
         {
@@ -598,11 +659,23 @@
       "required": true,
       "types": [
         {
+          "type": "access_expression",
+          "named": true
+        },
+        {
+          "type": "argument_name",
+          "named": true
+        },
+        {
+          "type": "binary_expression",
+          "named": true
+        },
+        {
           "type": "bool_literal",
           "named": true
         },
         {
-          "type": "field_identifier",
+          "type": "call_expression",
           "named": true
         },
         {
@@ -614,7 +687,15 @@
           "named": true
         },
         {
+          "type": "lambda_expression",
+          "named": true
+        },
+        {
           "type": "never",
+          "named": true
+        },
+        {
+          "type": "nominal_type",
           "named": true
         },
         {
@@ -622,26 +703,19 @@
           "named": true
         },
         {
-          "type": "string_literal",
-          "named": true
-        }
-      ]
-    }
-  },
-  {
-    "type": "field_identifier",
-    "named": true,
-    "fields": {},
-    "children": {
-      "multiple": true,
-      "required": false,
-      "types": [
-        {
-          "type": "argument_name",
+          "type": "parenthisized_expression",
           "named": true
         },
         {
-          "type": "type_name",
+          "type": "string_literal",
+          "named": true
+        },
+        {
+          "type": "tuple_literal",
+          "named": true
+        },
+        {
+          "type": "unary_expression",
           "named": true
         }
       ]
@@ -660,6 +734,10 @@
             "named": true
           },
           {
+            "type": "argument_name",
+            "named": true
+          },
+          {
             "type": "binary_expression",
             "named": true
           },
@@ -673,10 +751,6 @@
           },
           {
             "type": "call_expression",
-            "named": true
-          },
-          {
-            "type": "field_identifier",
             "named": true
           },
           {
@@ -744,7 +818,7 @@
         "required": true,
         "types": [
           {
-            "type": "field_identifier",
+            "type": "argument_name",
             "named": true
           }
         ]
@@ -776,29 +850,17 @@
             "named": true
           }
         ]
-      }
-    }
-  },
-  {
-    "type": "generic_nominal_type",
-    "named": true,
-    "fields": {
-      "associated_type": {
+      },
+      "scope": {
         "multiple": true,
         "required": false,
         "types": [
           {
-            "type": "type_identifier",
-            "named": true
-          }
-        ]
-      },
-      "generic_type": {
-        "multiple": false,
-        "required": true,
-        "types": [
+            "type": ".",
+            "named": false
+          },
           {
-            "type": "specific_nominal_type",
+            "type": "nominal_type",
             "named": true
           }
         ]
@@ -814,7 +876,7 @@
       "required": true,
       "types": [
         {
-          "type": "type_identifier",
+          "type": "nominal_type",
           "named": true
         }
       ]
@@ -833,6 +895,10 @@
           "named": true
         },
         {
+          "type": "argument_name",
+          "named": true
+        },
+        {
           "type": "binary_expression",
           "named": true
         },
@@ -846,10 +912,6 @@
         },
         {
           "type": "call_expression",
-          "named": true
-        },
-        {
-          "type": "field_identifier",
           "named": true
         },
         {
@@ -955,11 +1017,7 @@
         "required": true,
         "types": [
           {
-            "type": "generic_nominal_type",
-            "named": true
-          },
-          {
-            "type": "specific_nominal_type",
+            "type": "nominal_type",
             "named": true
           }
         ]
@@ -970,6 +1028,32 @@
     "type": "multiplicative_operator",
     "named": true,
     "fields": {}
+  },
+  {
+    "type": "nominal_type",
+    "named": true,
+    "fields": {
+      "name": {
+        "multiple": true,
+        "required": true,
+        "types": [
+          {
+            "type": "type_name",
+            "named": true
+          }
+        ]
+      },
+      "type_arguments": {
+        "multiple": true,
+        "required": false,
+        "types": [
+          {
+            "type": "type_arguments",
+            "named": true
+          }
+        ]
+      }
+    }
   },
   {
     "type": "param_definition",
@@ -984,6 +1068,10 @@
             "named": true
           },
           {
+            "type": "argument_name",
+            "named": true
+          },
+          {
             "type": "binary_expression",
             "named": true
           },
@@ -993,10 +1081,6 @@
           },
           {
             "type": "call_expression",
-            "named": true
-          },
-          {
-            "type": "field_identifier",
             "named": true
           },
           {
@@ -1087,6 +1171,10 @@
           "named": true
         },
         {
+          "type": "argument_name",
+          "named": true
+        },
+        {
           "type": "binary_expression",
           "named": true
         },
@@ -1100,10 +1188,6 @@
         },
         {
           "type": "call_expression",
-          "named": true
-        },
-        {
-          "type": "field_identifier",
           "named": true
         },
         {
@@ -1167,6 +1251,10 @@
             "named": true
           },
           {
+            "type": "argument_name",
+            "named": true
+          },
+          {
             "type": "binary_expression",
             "named": true
           },
@@ -1180,10 +1268,6 @@
           },
           {
             "type": "call_expression",
-            "named": true
-          },
-          {
-            "type": "field_identifier",
             "named": true
           },
           {
@@ -1247,6 +1331,10 @@
             "named": true
           },
           {
+            "type": "argument_name",
+            "named": true
+          },
+          {
             "type": "binary_expression",
             "named": true
           },
@@ -1260,10 +1348,6 @@
           },
           {
             "type": "call_expression",
-            "named": true
-          },
-          {
-            "type": "field_identifier",
             "named": true
           },
           {
@@ -1319,11 +1403,7 @@
         "required": true,
         "types": [
           {
-            "type": "generic_nominal_type",
-            "named": true
-          },
-          {
-            "type": "specific_nominal_type",
+            "type": "nominal_type",
             "named": true
           }
         ]
@@ -1369,21 +1449,6 @@
     }
   },
   {
-    "type": "specific_nominal_type",
-    "named": true,
-    "fields": {},
-    "children": {
-      "multiple": true,
-      "required": true,
-      "types": [
-        {
-          "type": "type_name",
-          "named": true
-        }
-      ]
-    }
-  },
-  {
     "type": "tuple_literal",
     "named": true,
     "fields": {},
@@ -1393,6 +1458,10 @@
       "types": [
         {
           "type": "access_expression",
+          "named": true
+        },
+        {
+          "type": "argument_name",
           "named": true
         },
         {
@@ -1409,10 +1478,6 @@
         },
         {
           "type": "call_expression",
-          "named": true
-        },
-        {
-          "type": "field_identifier",
           "named": true
         },
         {
@@ -1464,7 +1529,22 @@
     "fields": {},
     "children": {
       "multiple": true,
-      "required": false,
+      "required": true,
+      "types": [
+        {
+          "type": "type_identifier",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "type_arguments",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
       "types": [
         {
           "type": "type_identifier",
@@ -1501,15 +1581,11 @@
       "required": true,
       "types": [
         {
-          "type": "generic_nominal_type",
-          "named": true
-        },
-        {
           "type": "lambda_structural_type",
           "named": true
         },
         {
-          "type": "specific_nominal_type",
+          "type": "nominal_type",
           "named": true
         },
         {
@@ -1532,6 +1608,10 @@
             "named": true
           },
           {
+            "type": "argument_name",
+            "named": true
+          },
+          {
             "type": "binary_expression",
             "named": true
           },
@@ -1541,10 +1621,6 @@
           },
           {
             "type": "call_expression",
-            "named": true
-          },
-          {
-            "type": "field_identifier",
             "named": true
           },
           {
@@ -1638,10 +1714,6 @@
     "named": false
   },
   {
-    "type": "->",
-    "named": false
-  },
-  {
     "type": ".",
     "named": false
   },
@@ -1658,6 +1730,10 @@
     "named": false
   },
   {
+    "type": "::",
+    "named": false
+  },
+  {
     "type": ";",
     "named": false
   },
@@ -1671,6 +1747,10 @@
   },
   {
     "type": "=",
+    "named": false
+  },
+  {
+    "type": "=>",
     "named": false
   },
   {
@@ -1703,10 +1783,6 @@
   },
   {
     "type": "and_operator",
-    "named": true
-  },
-  {
-    "type": "argument_name",
     "named": true
   },
   {
