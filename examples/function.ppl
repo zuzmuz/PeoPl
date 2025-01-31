@@ -1,9 +1,8 @@
 
 type TheAmazingStruct<A, C>::B<C>::X<Z>
-    Case1<T>
-    Case2
+    Case2 a: Ex
+    Case3
     ..
-
 
 type X<Z>
     param: Z
@@ -14,6 +13,9 @@ X<Z> = X<I32>..
 A::C::D.x = 3..
 
 func (TheAmazingStruct<A, C>::B<C>::X<Z>::Case1<T>) A::C.foo(a: C, d: D) => Int::B
-    a.b.x
+    |_| "sdfsdff",
+    3 + 2 < "s";
+    asd(a: s, b: s);
+    Never
     ..
 

@@ -133,7 +133,7 @@
           "members": [
             {
               "type": "SYMBOL",
-              "name": "meta_type_definition"
+              "name": "enum_type_definition"
             },
             {
               "type": "SYMBOL",
@@ -143,7 +143,7 @@
         }
       ]
     },
-    "meta_type_definition": {
+    "enum_type_definition": {
       "type": "SEQ",
       "members": [
         {
@@ -452,16 +452,46 @@
           "type": "FIELD",
           "name": "input_type",
           "content": {
-            "type": "REPEAT",
-            "content": {
-              "type": "SYMBOL",
-              "name": "type_identifier"
-            }
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "SEQ",
+                "members": [
+                  {
+                    "type": "SYMBOL",
+                    "name": "type_identifier"
+                  },
+                  {
+                    "type": "REPEAT",
+                    "content": {
+                      "type": "SEQ",
+                      "members": [
+                        {
+                          "type": "STRING",
+                          "value": ","
+                        },
+                        {
+                          "type": "SYMBOL",
+                          "name": "type_identifier"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "BLANK"
+              }
+            ]
           }
         },
         {
           "type": "STRING",
           "value": "}"
+        },
+        {
+          "type": "STRING",
+          "value": "->"
         },
         {
           "type": "FIELD",

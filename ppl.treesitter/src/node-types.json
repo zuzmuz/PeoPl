@@ -722,6 +722,32 @@
     }
   },
   {
+    "type": "enum_type_definition",
+    "named": true,
+    "fields": {
+      "case_type": {
+        "multiple": true,
+        "required": true,
+        "types": [
+          {
+            "type": "simple_type_definition",
+            "named": true
+          }
+        ]
+      },
+      "meta_type": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "nominal_type",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
     "type": "function_definition",
     "named": true,
     "fields": {
@@ -966,6 +992,10 @@
         "required": false,
         "types": [
           {
+            "type": ",",
+            "named": false
+          },
+          {
             "type": "type_identifier",
             "named": true
           }
@@ -996,32 +1026,6 @@
           "named": true
         }
       ]
-    }
-  },
-  {
-    "type": "meta_type_definition",
-    "named": true,
-    "fields": {
-      "case_type": {
-        "multiple": true,
-        "required": true,
-        "types": [
-          {
-            "type": "simple_type_definition",
-            "named": true
-          }
-        ]
-      },
-      "meta_type": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "nominal_type",
-            "named": true
-          }
-        ]
-      }
     }
   },
   {
@@ -1562,7 +1566,7 @@
       "required": true,
       "types": [
         {
-          "type": "meta_type_definition",
+          "type": "enum_type_definition",
           "named": true
         },
         {
@@ -1711,6 +1715,10 @@
   },
   {
     "type": "-",
+    "named": false
+  },
+  {
+    "type": "->",
     "named": false
   },
   {

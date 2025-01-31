@@ -64,10 +64,10 @@ module.exports = grammar({
     
     type_definition: $ => seq(
       'type',
-      choice($.meta_type_definition, $.simple_type_definition)
+      choice($.enum_type_definition, $.simple_type_definition)
     ),
 
-    meta_type_definition: $ => seq(
+    enum_type_definition: $ => seq(
       field('meta_type', $.nominal_type),
       field('case_type', repeat1($.simple_type_definition)),
     ),
@@ -125,8 +125,12 @@ module.exports = grammar({
 
     lambda_structural_type: $ => seq(
       '{',
-      field('input_type', repeat($.type_identifier)),
+      field('input_type', optional(seq(
+        $.type_identifier,
+        repeat(seq(',', $.type_identifier))
+      ))),
       '}',
+      '->',
       field('return_type', $.type_identifier),
     ),
 
