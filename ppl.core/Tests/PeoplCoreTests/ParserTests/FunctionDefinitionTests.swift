@@ -1,8 +1,7 @@
 import XCTest
-
 @testable import PeoplCore
 
-final class SignatureTests: XCTestCase {
+final class FunctionDefinitionTests: XCTestCase {
 
     func testSimple() throws {
         let source = """
