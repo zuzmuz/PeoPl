@@ -35,23 +35,18 @@ extension TypeDefinition {
 
 extension TypeIdentifier {
     func encode(to encoder: any Encoder) throws {
-        switch self {
-        case let .nominal(nominal):
-            try nominal.encode(to: encoder)
-        case let .structural(structural):
-            try structural.encode(to: encoder)
-}
-    }
-}
-
-extension StructuralType {
-    func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         switch self {
-        case let .tuple(types):
-            try container.encode(types, forKey: .tuple)
+        case .nothing:
+            try container.encode("nothing", forKey: .nothing)
+        case .never:
+            try container.encode("never", forKey: .never)
+        case let .nominal(nominal):
+            try nominal.encode(to: encoder)
+        case let .tuple(tuple):
+            try tuple.encode(to: encoder)
         case let .lambda(lambda):
-            try container.encode(lambda, forKey: .lambda)
+            try lambda.encode(to: encoder)
         }
     }
 }

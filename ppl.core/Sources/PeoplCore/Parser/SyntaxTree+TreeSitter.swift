@@ -45,25 +45,17 @@ extension Node {
 // ------------------------------
 
 extension Project {
-    init(path: String) throws {
+    init(source: String, path: String) throws {
         let language = Language(tree_sitter_peopl())
         let parser = Parser()
         try parser.setLanguage(language)
 
-        let fileHandle = FileHandle(forReadingAtPath: path)
-
-        guard let outputData = try fileHandle?.read(upToCount: Int.max),
-            let outputString = String(data: outputData, encoding: .utf8)
-        else {
-            throw SemanticError.sourceUnreadable
-        }
-
-        let tree = parser.parse(outputString)
+        let tree = parser.parse(source)
         guard let rootNode = tree?.rootNode else {
             throw SemanticError.sourceUnreadable
         }
 
-        let source = Source(content: outputString, name: path)
+        let source = Source(content: source, name: path)
 
         self.statements = rootNode.compactMapChildren { node in
             Statement(from: node, in: source)
@@ -83,6 +75,18 @@ extension Project {
         } else {
             throw SemanticError.mainFunctionNotFound
         }
+    }
+
+    init(path: String) throws {
+
+        let fileHandle = FileHandle(forReadingAtPath: path)
+
+        guard let outputData = try fileHandle?.read(upToCount: Int.max),
+            let outputString = String(data: outputData, encoding: .utf8)
+        else {
+            throw SemanticError.sourceUnreadable
+        }
+        try self.init(source: outputString, path: path)
     }
 }
 
