@@ -1623,7 +1623,15 @@
           "named": true
         },
         {
+          "type": "never",
+          "named": true
+        },
+        {
           "type": "nominal_type",
+          "named": true
+        },
+        {
+          "type": "nothing",
           "named": true
         },
         {

@@ -24,8 +24,11 @@ protocol SyntaxNode {
 }
 
 struct Project: Encodable {
+    let modules: [Module]
+}
+
+struct Module: Encodable {
     let statements: [Statement]
-    let main: FunctionDefinition
 }
 
 enum Statement: Encodable {
@@ -78,7 +81,7 @@ struct FunctionDefinition: Encodable, SyntaxNode {
 // MARK: - types
 // -------------
 
-enum TypeIdentifier: Encodable {
+enum TypeIdentifier: Encodable, Equatable {
     case nothing
     case never
     case nominal(NominalType)
@@ -86,30 +89,46 @@ enum TypeIdentifier: Encodable {
     case tuple(StructuralType.Tuple)
 }
 
-struct FlatNominalType: Encodable, SyntaxNode {
+struct FlatNominalType: Encodable, SyntaxNode, Equatable {
     static let typeName = "type_name"
     static let typeArguments = "type_arguments"
     var typeName: String
     var typeArguments: [TypeIdentifier]
     var location: NodeLocation
+
+    static func == (lhs: FlatNominalType, rhs: FlatNominalType) -> Bool {
+        lhs.typeName == rhs.typeName && lhs.typeArguments == rhs.typeArguments
+    }
 }
 
-struct NominalType: Encodable, SyntaxNode {
+struct NominalType: Encodable, SyntaxNode, Equatable {
     static let flatNominalType = "flat_nominal_type"
     var chain: [FlatNominalType]
     var location: NodeLocation
+
+    static func == (lhs: NominalType, rhs: NominalType) -> Bool {
+        lhs.chain == rhs.chain
+    }
 }
 
 enum StructuralType {
-    struct Lambda: Encodable, SyntaxNode {
+    struct Lambda: Encodable, SyntaxNode, Equatable {
         let input: [TypeIdentifier]
         let output: [TypeIdentifier]
         let location: NodeLocation
+
+        static func == (lhs: Lambda, rhs: Lambda) -> Bool {
+            lhs.input == rhs.input && lhs.output == rhs.output
+        }
     }
 
-    struct Tuple: Encodable, SyntaxNode {
+    struct Tuple: Encodable, SyntaxNode, Equatable {
         let types: [TypeIdentifier]
         let location: NodeLocation
+
+        static func == (lhs: Tuple, rhs: Tuple) -> Bool {
+            lhs.types == rhs.types
+        }
     }
 }
 

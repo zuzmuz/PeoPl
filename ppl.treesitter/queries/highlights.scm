@@ -12,23 +12,22 @@
  ] @include
 
 
-(simple_type_definition
-  (nominal_type
+(nominal_type
+  (flat_nominal_type
     (type_name) @type.definition))
 
-(enum_type_definition
-  meta_type: (nominal_type
-                (type_name) @type.definition))
 
 (enum_type_definition
   (simple_type_definition
     (nominal_type
-      (type_name) @type.definition)))
+      (flat_nominal_type
+        (type_name) @type.definition))))
 
 (type_arguments
   (type_identifier
     (nominal_type
-      (type_name) @variable.member)))
+      (flat_nominal_type
+        (type_name) @variable.member))))
 
 
 (type_arguments
@@ -40,19 +39,23 @@
 (function_definition
   input_type: (type_identifier
                 (nominal_type
-                  (type_name) @type)))
+                  (flat_nominal_type
+                    (type_name) @type))))
 (function_definition
   output_type: (type_identifier
                 (nominal_type
-                  (type_name) @type)))
+                  (flat_nominal_type
+                    (type_name) @type))))
 
 (function_definition
-  scope: (nominal_type
-           (type_name) @namespace))
+  scope: (nominal_type 
+           (flat_nominal_type 
+             (type_name) @namespace)))
 
 (constants_statement
   (nominal_type
-    (type_name) @namespace))
+    (flat_nominal_type
+      (type_name) @type)))
 
 (param_definition
   name: (argument_name) @variable.member)

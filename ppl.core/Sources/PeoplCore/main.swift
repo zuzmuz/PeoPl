@@ -1,7 +1,7 @@
 import Foundation
 
 do {
-    let project = try Project(path: "/Users/zuz/Desktop/Muz/coding/simpl/examples/main.ppl")
+    let module = try Module(path: "/Users/zuz/Desktop/Muz/coding/simpl/examples/main.ppl")
     let jsonEncoder = JSONEncoder()
     jsonEncoder.outputFormatting = .prettyPrinted
     // let evaluation = project.evaluate(with: .nothing, and: [:])

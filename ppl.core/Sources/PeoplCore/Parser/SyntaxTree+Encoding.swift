@@ -35,12 +35,11 @@ extension TypeDefinition {
 
 extension TypeIdentifier {
     func encode(to encoder: any Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
         switch self {
         case .nothing:
-            try container.encode("nothing", forKey: .nothing)
+            try "nothing".encode(to: encoder)
         case .never:
-            try container.encode("never", forKey: .never)
+            try "never".encode(to: encoder)
         case let .nominal(nominal):
             try nominal.encode(to: encoder)
         case let .tuple(tuple):

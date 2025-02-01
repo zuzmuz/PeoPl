@@ -44,7 +44,7 @@ extension Node {
 // MARK: - the syntax tree source
 // ------------------------------
 
-extension Project {
+extension Module {
     init(source: String, path: String) throws {
         let language = Language(tree_sitter_peopl())
         let parser = Parser()
@@ -59,21 +59,6 @@ extension Project {
 
         self.statements = rootNode.compactMapChildren { node in
             Statement(from: node, in: source)
-        }
-
-        let mainFunction = self.statements.compactMap { statement in
-            if case let .functionDefinition(functionDefinition) = statement,
-                functionDefinition.name == "main"
-            {
-                return functionDefinition
-            }
-            return nil
-        }
-
-        if mainFunction.count == 1, let mainFunction = mainFunction.first {
-            self.main = mainFunction
-        } else {
-            throw SemanticError.mainFunctionNotFound
         }
     }
 
@@ -279,8 +264,8 @@ extension TypeIdentifier {
     static let typeIdentifier = "type_identifier"
 
     enum CodingKeys: String, CodingKey {
-        case nothing = "Nothing"
-        case never = "Never"
+        case nothing = "nothing"
+        case never = "never"
         case nominal = "nominal_type"
         case lambda = "lambda_structural_type"
         case tuple = "tuple_structural_type"

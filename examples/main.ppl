@@ -1,19 +1,5 @@
 
 
-
-type A
-    a: I32..
-
-func (String) mostafa age: I32 -> String
-    print()..
-
-
-func main -> String
-    "whatever";
-    |var_name| [
-        (var_name; mostafa(age: 42)),
-        (var_name; some_other_func())
-    ];
-    |mostafaed, _| Nothing
-    ..
+func main() => Nothing
+    Nothing..
 
