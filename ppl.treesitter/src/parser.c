@@ -779,18 +779,18 @@ static const TSFieldMapSlice ts_field_map_slices[PRODUCTION_ID_COUNT] = {
   [10] = {.index = 16, .length = 1},
   [11] = {.index = 17, .length = 2},
   [12] = {.index = 19, .length = 2},
-  [13] = {.index = 21, .length = 5},
-  [14] = {.index = 26, .length = 2},
-  [15] = {.index = 28, .length = 2},
-  [16] = {.index = 30, .length = 3},
-  [17] = {.index = 33, .length = 3},
-  [18] = {.index = 36, .length = 6},
-  [19] = {.index = 42, .length = 7},
-  [20] = {.index = 49, .length = 6},
-  [21] = {.index = 55, .length = 8},
-  [22] = {.index = 63, .length = 7},
-  [23] = {.index = 70, .length = 8},
-  [24] = {.index = 78, .length = 9},
+  [13] = {.index = 21, .length = 3},
+  [14] = {.index = 24, .length = 2},
+  [15] = {.index = 26, .length = 2},
+  [16] = {.index = 28, .length = 3},
+  [17] = {.index = 31, .length = 3},
+  [18] = {.index = 34, .length = 4},
+  [19] = {.index = 38, .length = 5},
+  [20] = {.index = 43, .length = 4},
+  [21] = {.index = 47, .length = 6},
+  [22] = {.index = 53, .length = 5},
+  [23] = {.index = 58, .length = 6},
+  [24] = {.index = 64, .length = 7},
 };
 
 static const TSFieldMapEntry ts_field_map_entries[] = {
@@ -831,78 +831,62 @@ static const TSFieldMapEntry ts_field_map_entries[] = {
     {field_body, 6},
     {field_name, 1},
     {field_output_type, 5},
-    {field_params, 2},
-    {field_params, 3},
-  [26] =
+  [24] =
     {field_body, 3},
     {field_capture_group, 1},
-  [28] =
+  [26] =
     {field_name, 0},
     {field_value, 2},
-  [30] =
+  [28] =
     {field_default_value, 4},
     {field_name, 0},
     {field_type, 2},
-  [33] =
+  [31] =
     {field_input_type, 1},
     {field_input_type, 2},
     {field_return_type, 5},
-  [36] =
+  [34] =
     {field_body, 7},
     {field_name, 1},
     {field_output_type, 6},
-    {field_params, 2},
     {field_params, 3},
-    {field_params, 4},
-  [42] =
+  [38] =
     {field_body, 8},
     {field_name, 3},
     {field_output_type, 7},
-    {field_params, 4},
-    {field_params, 5},
     {field_scope, 1},
     {field_scope, 2},
-  [49] =
+  [43] =
     {field_body, 9},
     {field_input_type, 2},
     {field_name, 4},
     {field_output_type, 8},
-    {field_params, 5},
-    {field_params, 6},
-  [55] =
+  [47] =
     {field_body, 9},
     {field_name, 3},
     {field_output_type, 8},
-    {field_params, 4},
     {field_params, 5},
-    {field_params, 6},
     {field_scope, 1},
     {field_scope, 2},
-  [63] =
+  [53] =
     {field_body, 10},
     {field_input_type, 2},
     {field_name, 4},
     {field_output_type, 9},
-    {field_params, 5},
     {field_params, 6},
-    {field_params, 7},
-  [70] =
+  [58] =
     {field_body, 11},
     {field_input_type, 2},
     {field_name, 6},
     {field_output_type, 10},
-    {field_params, 7},
-    {field_params, 8},
     {field_scope, 4},
     {field_scope, 5},
-  [78] =
+  [64] =
     {field_body, 12},
     {field_input_type, 2},
     {field_name, 6},
     {field_output_type, 11},
-    {field_params, 7},
     {field_params, 8},
-    {field_params, 9},
     {field_scope, 4},
     {field_scope, 5},
 };

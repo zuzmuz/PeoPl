@@ -157,7 +157,7 @@ module.exports = grammar({
       optional(seq('(', field("input_type", $.type_identifier), ')')),
       field("scope", optional(seq($.nominal_type, '.'))),
       field("name", $.argument_name),
-      field("params", seq('(', optional($.param_list), ')')),
+      seq('(', field("params", optional($.param_list)), ')'),
       '=>',
       field("output_type", $.type_identifier),
       field("body", $._expression),
