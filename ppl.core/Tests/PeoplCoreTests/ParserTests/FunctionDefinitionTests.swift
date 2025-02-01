@@ -437,4 +437,64 @@ final class SignatureTests: XCTestCase {
         XCTAssertTrue(type1.chain[0].typeName == "A")
         XCTAssertTrue(type2.chain[0].typeName == "B")
     }
+
+    func testFunctionParamsComplicated() throws {
+        let source = """
+            func (Input) main(param1: A::B, param2: [C<D>, Q], param3: {E, F} -> G) => Nothing
+                Nothing..
+        """
+
+        let module = try Module(source: source, path: "main")
+        let statement = module.statements[0]
+        guard case let .functionDefinition(functionDefinition) = statement else {
+            XCTAssertTrue(false)
+            return
+        }
+
+        guard case let .nominal(inputType) = functionDefinition.inputType else {
+            XCTAssertTrue(false)
+            return
+        }
+        XCTAssertEqual(inputType.chain.count, 1)
+        XCTAssertEqual(inputType.chain[0].typeName, "Input")
+
+        XCTAssertEqual(functionDefinition.params.count, 3)
+        XCTAssertEqual(functionDefinition.params[0].name, "param1")
+        XCTAssertEqual(functionDefinition.params[1].name, "param2")
+        XCTAssertEqual(functionDefinition.params[2].name, "param3")
+
+        guard case let .nominal(type1) = functionDefinition.params[0].type,
+              case let .tuple(type2) = functionDefinition.params[1].type,
+              case let .lambda(type3) = functionDefinition.params[2].type else {
+            XCTAssertTrue(false)
+            return
+        }
+        XCTAssertTrue(type1.chain[0].typeName == "A")
+        XCTAssertTrue(type1.chain[1].typeName == "B")
+
+        XCTAssertEqual(type2.types.count, 2)
+        guard case let .nominal(type21) = type2.types[0],
+              case let .nominal(type22) = type2.types[1] else {
+            XCTAssertTrue(false)
+            return
+        }
+
+        XCTAssertEqual(type21.chain[0].typeName, "C")
+        XCTAssertEqual(type21.chain[0].typeArguments.count, 1)
+        XCTAssertEqual(type22.chain[0].typeName, "Q")
+
+        XCTAssertEqual(type3.input.count, 2)
+        XCTAssertEqual(type3.output.count, 1)
+
+        guard case let .nominal(type31) = type3.input[0],
+              case let .nominal(type32) = type3.input[1],
+              case let .nominal(type33) = type3.output[0] else {
+            XCTAssertTrue(false)
+            return
+        }
+
+        XCTAssertEqual(type31.chain[0].typeName, "E")
+        XCTAssertEqual(type32.chain[0].typeName, "F")
+        XCTAssertEqual(type33.chain[0].typeName, "G")
+    }
 }
