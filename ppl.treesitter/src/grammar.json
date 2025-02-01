@@ -40,15 +40,15 @@
         },
         {
           "type": "SYMBOL",
-          "name": "_definition"
-        },
-        {
-          "type": "SYMBOL",
           "name": "implementation_statement"
         },
         {
           "type": "SYMBOL",
           "name": "constants_statement"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "_definition"
         }
       ]
     },
@@ -365,7 +365,7 @@
         "members": [
           {
             "type": "SYMBOL",
-            "name": "_flat_nominal_type"
+            "name": "flat_nominal_type"
           },
           {
             "type": "REPEAT",
@@ -378,7 +378,7 @@
                 },
                 {
                   "type": "SYMBOL",
-                  "name": "_flat_nominal_type"
+                  "name": "flat_nominal_type"
                 }
               ]
             }
@@ -386,7 +386,7 @@
         ]
       }
     },
-    "_flat_nominal_type": {
+    "flat_nominal_type": {
       "type": "PREC_LEFT",
       "value": 15,
       "content": {

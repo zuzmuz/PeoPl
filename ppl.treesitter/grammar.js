@@ -35,12 +35,14 @@ module.exports = grammar({
         '..'
       )
     ),
+
     comment: _ => seq('** ', /(\\+(.|\r?\n)|[^\\\n])*/),
+
     _statement: $ => choice(
       $.namespace_state,
-      $._definition,
       $.implementation_statement,
       $.constants_statement,
+      $._definition,
     ),
 
     namespace_state: $ => seq(
@@ -52,7 +54,6 @@ module.exports = grammar({
       ),
       ']'
     ),
-
 
     implementation_statement: $ => seq(
       $.nominal_type,
@@ -67,6 +68,9 @@ module.exports = grammar({
       $._simple_expression, //can be a simple expression
     ),
 
+    // DEFEINTIONS
+    // -----------
+    
     _definition: $ => seq(
       choice(
         $.type_definition,
@@ -106,17 +110,19 @@ module.exports = grammar({
     type_name: $ => /_*[A-Z][a-zA-Z0-9_]*/,
 
     type_identifier: $ => choice(
+      $.nothing,
+      $.never,
       $.nominal_type,
       $.lambda_structural_type,
       $.tuple_structural_type,
     ),
 
     nominal_type: $ => prec.left(PREC.TYPES, seq(
-      $._flat_nominal_type,
-      repeat(seq('::', $._flat_nominal_type))
+      $.flat_nominal_type,
+      repeat(seq('::', $.flat_nominal_type))
     )),
 
-    _flat_nominal_type: $ => prec.left(PREC.TYPES,seq(
+    flat_nominal_type: $ => prec.left(PREC.TYPES,seq(
       field('name', $.type_name),
       field('type_arguments', optional($.type_arguments)),
     )),
