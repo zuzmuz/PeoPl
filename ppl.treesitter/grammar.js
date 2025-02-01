@@ -37,10 +37,22 @@ module.exports = grammar({
     ),
     comment: _ => seq('** ', /(\\+(.|\r?\n)|[^\\\n])*/),
     _statement: $ => choice(
+      $.namespace_state,
       $._definition,
       $.implementation_statement,
       $.constants_statement,
     ),
+
+    namespace_state: $ => seq(
+      'namespace',
+      '[',
+      seq(
+        optional($.nominal_type),
+        repeat(seq(',', $.nominal_type))
+      ),
+      ']'
+    ),
+
 
     implementation_statement: $ => seq(
       $.nominal_type,
@@ -270,6 +282,7 @@ module.exports = grammar({
       field("name", $.argument_name),
       ":",
       field("value", $._simple_expression),
+      optional(',')
     ),
 
     // the pipe expression is a binary expression

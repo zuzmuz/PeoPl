@@ -7,6 +7,9 @@
  "func"
 ] @keyword.function
 
+[
+ "namespace"
+ ] @include
 
 
 (simple_type_definition

@@ -1,3 +1,8 @@
+namespace [
+    AB::CA,
+    CD,
+    XC
+]..
 
 type TheAmazingStruct<A, C>::B<C>::X<Z>
     Case2 a: Ex
@@ -12,10 +17,12 @@ X<Z> = X<I32>..
 
 A::C::D.x = 3..
 
-func (TheAmazingStruct<A, C>::B<C>::X<Z>::Case1<T>) A::C.foo(a: C, d: D) => Int::B
+func (TheAmazingStruct<A, C>::B<C>::X<Z>::Case1<T>) A::C.foo(a: C d: D) => Int::B
     |_| "sdfsdff",
     3 + 2 < "s";
-    asd(a: s, b: s);
-    Never
+    asd(a: s b: s);
+    Never;
+    true;
+    false
     ..
 

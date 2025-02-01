@@ -1034,6 +1034,21 @@
     "fields": {}
   },
   {
+    "type": "namespace_state",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "nominal_type",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "nominal_type",
     "named": true,
     "fields": {
@@ -1446,6 +1461,10 @@
           "named": true
         },
         {
+          "type": "namespace_state",
+          "named": true
+        },
+        {
           "type": "type_definition",
           "named": true
         }
@@ -1808,6 +1827,10 @@
   {
     "type": "int_literal",
     "named": true
+  },
+  {
+    "type": "namespace",
+    "named": false
   },
   {
     "type": "never",
