@@ -751,22 +751,22 @@
     "type": "flat_nominal_type",
     "named": true,
     "fields": {
-      "name": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "type_name",
-            "named": true
-          }
-        ]
-      },
       "type_arguments": {
         "multiple": false,
         "required": false,
         "types": [
           {
             "type": "type_arguments",
+            "named": true
+          }
+        ]
+      },
+      "type_name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "type_name",
             "named": true
           }
         ]
@@ -848,17 +848,9 @@
         ]
       },
       "input_type": {
-        "multiple": true,
+        "multiple": false,
         "required": false,
         "types": [
-          {
-            "type": "(",
-            "named": false
-          },
-          {
-            "type": ")",
-            "named": false
-          },
           {
             "type": "type_identifier",
             "named": true

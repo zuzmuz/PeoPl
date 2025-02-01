@@ -300,9 +300,9 @@ extension NominalType {
 
         self.chain = node.compactMapChildren { child in
             if child.nodeType == NominalType.flatNominalType {
-                FlatNominalType(from: child, in: source)
+                return FlatNominalType(from: child, in: source)
             } else {
-                nil
+                return nil
             }
         }
     }
@@ -312,7 +312,7 @@ extension FlatNominalType {
     init?(from node: Node, in source: Source) {
         guard let location = node.getLocation(in: source) else { return nil }
         self.location = location
-
+        
         guard let typeNameNode = node.child(byFieldName: FlatNominalType.typeName),
             let typeName = typeNameNode.getString(in: source)
         else { return nil }

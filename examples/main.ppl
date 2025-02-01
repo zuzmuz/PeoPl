@@ -1,5 +1,5 @@
 
 
-func main() => Nothing
+func (Input) Scope1::Scope2.main() => Nothing
     Nothing..
 

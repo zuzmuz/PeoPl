@@ -402,7 +402,7 @@
         "members": [
           {
             "type": "FIELD",
-            "name": "name",
+            "name": "type_name",
             "content": {
               "type": "SYMBOL",
               "name": "type_name"
@@ -573,33 +573,33 @@
           "value": "func"
         },
         {
-          "type": "FIELD",
-          "name": "input_type",
-          "content": {
-            "type": "CHOICE",
-            "members": [
-              {
-                "type": "SEQ",
-                "members": [
-                  {
-                    "type": "STRING",
-                    "value": "("
-                  },
-                  {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "SEQ",
+              "members": [
+                {
+                  "type": "STRING",
+                  "value": "("
+                },
+                {
+                  "type": "FIELD",
+                  "name": "input_type",
+                  "content": {
                     "type": "SYMBOL",
                     "name": "type_identifier"
-                  },
-                  {
-                    "type": "STRING",
-                    "value": ")"
                   }
-                ]
-              },
-              {
-                "type": "BLANK"
-              }
-            ]
-          }
+                },
+                {
+                  "type": "STRING",
+                  "value": ")"
+                }
+              ]
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
         },
         {
           "type": "FIELD",

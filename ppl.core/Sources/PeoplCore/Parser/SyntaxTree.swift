@@ -2,7 +2,7 @@
 // ------------------------------
 
 struct NodeLocation: Encodable {
-    struct Point: Comparable, Encodable {
+    struct Point: Comparable, Encodable, Equatable {
         let line: Int
         let column: Int
         static func < (lhs: Point, rhs: Point) -> Bool {

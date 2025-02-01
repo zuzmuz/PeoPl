@@ -123,7 +123,7 @@ module.exports = grammar({
     )),
 
     flat_nominal_type: $ => prec.left(PREC.TYPES,seq(
-      field('name', $.type_name),
+      field('type_name', $.type_name),
       field('type_arguments', optional($.type_arguments)),
     )),
 
@@ -154,7 +154,7 @@ module.exports = grammar({
 
     function_definition: $ => seq(
       'func',
-      field("input_type", optional(seq('(', $.type_identifier, ')'))),
+      optional(seq('(', field("input_type", $.type_identifier), ')')),
       field("scope", optional(seq($.nominal_type, '.'))),
       field("name", $.argument_name),
       field("params", seq('(', optional($.param_list), ')')),
