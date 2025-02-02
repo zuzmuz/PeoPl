@@ -367,48 +367,21 @@ extension StructuralType.Lambda {
 
 // MARK: - Expressions
 // -------------------
-
 extension Expression {
-
-    enum CodingKeys: String, CodingKey {
-        case simple
-        case call = "call_expression"
-        case branched = "branched_expression"
-        case piped = "piped_expression"
-    }
-
     init?(from node: Node, in source: Source) {
-        switch node.nodeType {
-        case CodingKeys.call.rawValue:
-            guard let call = Expression.Call(from: node, in: source) else { return nil }
-            self = .call(call)
-        case CodingKeys.branched.rawValue:
-            guard let branched = Expression.Branched(from: node, in: source) else { return nil }
-            self = .branched(branched)
-        case CodingKeys.piped.rawValue:
-            guard let piped = Expression.Piped(from: node, in: source) else { return nil }
-            self = .piped(piped)
-        default:
-            guard let simple = Expression.Simple(from: node, in: source) else { return nil }
-            self = .simple(simple)
-        }
-    }
-}
-
-extension Expression.Simple {
-    init?(from node: Node, in source: Source) {
-        guard let location = node.getLocation(in: source),
-              let simpleType = Expression.Simple.SimpleType(from: node, in: source) else { return nil }
+        guard let location = node.getLocation(in: source) else { return nil }
         self.location = location
-        self.type = simpleType
+        guard let expressionType = Expression.ExpressionType(from: node, in: source) else { return nil }
+        self.expressionType = expressionType
     }
 }
 
-extension Expression.Simple.SimpleType {
+extension Expression.ExpressionType {
 
     enum CodingKeys: String, CodingKey {
         case nothing
         case never
+
         case intLiteral = "int_literal"
         case floatLiteral = "float_literal"
         case stringLiteral = "string_literal"
@@ -436,14 +409,18 @@ extension Expression.Simple.SimpleType {
         case tuple = "tuple_literal"
         case parenthesized = "parenthisized_expression"
         case lambda = "lambda_expression"
-        case access = "access_expression"
 
-        case field = "field_identifier"
+
+        case call = "call_expression"
+        case access = "access_expression"
+        case field = "argument_name"
+
+        case branched = "branched_expression"
+        case piped = "piped_expression"
 
         static let unaryExpression = "unary_expression"
         static let binaryExpression = "binary_expression"
     }
-
 
     init?(from node: Node, in source: Source) {
         switch node.nodeType {
@@ -470,7 +447,7 @@ extension Expression.Simple.SimpleType {
             guard let operatorNode = node.child(byFieldName: "operator"),
                   let operatorValue = operatorNode.getString(in: source),
                   let operandNode = node.child(byFieldName: "operand"),
-                  let operandExpression = Expression.Simple(from: operandNode, in: source) else {
+                  let operandExpression = Expression(from: operandNode, in: source) else {
                 return nil
             }
             switch operatorValue {
@@ -485,11 +462,11 @@ extension Expression.Simple.SimpleType {
             }
         case CodingKeys.binaryExpression:
             guard let leftNode = node.child(byFieldName: "left"),
-                  let leftExpression = Expression.Simple(from: leftNode, in: source),
+                  let leftExpression = Expression(from: leftNode, in: source),
                   let operatorNode = node.child(byFieldName: "operator"),
                   let operatorValue = operatorNode.getString(in: source),
                   let rightNode = node.child(byFieldName: "right"),
-                  let rightExpression = Expression.Simple(from: rightNode, in: source) else {
+                  let rightExpression = Expression(from: rightNode, in: source) else {
                 return nil
             }
             switch operatorValue {
@@ -535,16 +512,24 @@ extension Expression.Simple.SimpleType {
             guard let expressionNode = node.child(at: 1),
                   let expression = Expression(from: expressionNode, in: source) else { return nil }
             self = .lambda(expression)
+        case CodingKeys.call.rawValue:
+            guard let call = Expression.Call(from: node, in: source) else { return nil }
+            self = .call(call)
+        case CodingKeys.access.rawValue:
+            guard let accessedNode = node.child(at: 0),
+                  let accessed = Expression(from: accessedNode, in: source),
+                  let argumentNode = node.child(at: 2),
+                  let argumentName = argumentNode.getString(in: source) else { return nil }
+            self = .access(Expression.Access(accessed: accessed, field: argumentName))
         case CodingKeys.field.rawValue:
             guard let fieldValue = node.getString(in: source) else { return nil }
             self = .field(fieldValue)
-        case CodingKeys.access.rawValue:
-            guard let containerNode = node.child(at: 0),
-                  let container = Expression.Simple(from: containerNode, in: source),
-                  let fieldNode = node.child(at: 2),
-                  let fieldValue = fieldNode.getString(in: source) else { return nil }
-            self = .access(Expression.Simple.Access(accessed: container, field: fieldValue))
-
+        case CodingKeys.branched.rawValue:
+            guard let branched = Expression.Branched(from: node, in: source) else { return nil }
+            self = .branched(branched)
+        case CodingKeys.piped.rawValue:
+            guard let piped = Expression.Piped(from: node, in: source) else { return nil }
+            self = .piped(piped)
         default:
             return nil
         }
@@ -569,20 +554,18 @@ extension Expression.Call {
 
 extension Expression.Call.Command {
     enum CodingKeys: String, CodingKey {
-        case field = "field_identifier"
-        case type = "type_identifier"
+        case simple
+        case type = "nominal_type"
     }
 
     init?(from node: Node, in source: Source) {
         switch node.nodeType {
-        case CodingKeys.field.rawValue:
-            guard let fieldValue = node.getString(in: source) else { return nil }
-            self = .field(fieldValue)
         case CodingKeys.type.rawValue:
             guard let type = TypeIdentifier(from: node, in: source) else { return nil }
             self = .type(type)
         default:
-            return nil
+            guard let expression = Expression(from: node, in: source) else { return nil }
+            self = .simple(expression)
         }
     }
 }
@@ -594,7 +577,7 @@ extension Expression.Call.Argument {
         self.name = name
 
         guard let valueNode = node.child(byFieldName: "value"),
-              let value = Expression.Simple(from: valueNode, in: source) else { return nil }
+              let value = Expression(from: valueNode, in: source) else { return nil }
         self.value = value
     }
 }
@@ -636,28 +619,28 @@ extension Expression.Branched.Branch.Body {
 
     enum CodingKeys: String, CodingKey {
         case simple
-        case call = "call_expression"
         case looped = "looped_expression"
     }
 
     init?(from node: Node, in source: Source) {
         switch node.nodeType {
-        case CodingKeys.call.rawValue:
-            guard let call = Expression.Call(from: node, in: source) else { return nil }
-            self = .call(call)
         case CodingKeys.looped.rawValue:
             guard let loopedNode = node.child(at: 0),
                   let parenthisizedNode = loopedNode.child(at: 1),
                   let expression = Expression(from: parenthisizedNode, in: source) else { return nil }
             self = .looped(expression)
         default:
-            guard let simple = Expression.Simple(from: node, in: source) else { return nil }
+            guard let simple = Expression(from: node, in: source) else { return nil }
             self = .simple(simple)
         }
     }
 }
 
 extension Expression.Piped {
+
+    // TODO: the unwrapping thing doesn't need to be part of the pipe operator
+    // rather an operator on expression that allows optional chaining and early
+    // error propagation
 
     enum CodingKeys: String, CodingKey {
         case normal

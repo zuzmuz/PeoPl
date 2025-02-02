@@ -224,7 +224,7 @@ struct Expression: Encodable, SyntaxNode {
         }
     }
 
-    indirect enum Piped: Encodable {
+    enum Piped: Encodable {
         case normal(left: Expression, right: Expression)
         case unwrapping(left: Expression, right: Expression)
     }

@@ -53,21 +53,7 @@ extension TypeIdentifier {
 // MARK: - Expressions
 // -------------------
 
-extension Expression {
-    func encode(to encoder: any Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        switch self {
-        case let .simple(simple):
-            try simple.encode(to: encoder)
-        case let .branched(branched):
-            try container.encode(branched, forKey: .branched)
-        case let .piped(piped):
-            try container.encode(piped, forKey: .piped)
-        }
-    }
-}
-
-extension Expression.Simple.SimpleType {
+extension Expression.ExpressionType {
     func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         switch self {
@@ -121,10 +107,16 @@ extension Expression.Simple.SimpleType {
             try container.encode(expression, forKey: .parenthesized)
         case let .lambda(expression):
             try container.encode(expression, forKey: .lambda)
+        case let .call(call):
+            try container.encode(call, forKey: .call)
         case let .access(accessExpression):
             try container.encode(accessExpression, forKey: .access)
         case let .field(field):
             try container.encode(field, forKey: .field)
+        case let .branched(branched):
+            try container.encode(branched, forKey: .branched)
+        case let .piped(piped):
+            try container.encode(piped, forKey: .piped)
         }
     }
 }
@@ -133,8 +125,8 @@ extension Expression.Call.Command {
     func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: Expression.Call.Command.CodingKeys.self)
         switch self {
-        case let .field(value):
-            try container.encode(value, forKey: .field)
+        case let .simple(expression):
+            try container.encode(expression, forKey: .simple)
         case let .type(type):
             try container.encode(type, forKey: .type)
         }
@@ -147,8 +139,6 @@ extension Expression.Branched.Branch.Body {
         switch self {
         case let .simple(simple):
             try simple.encode(to: encoder)
-        case let .call(call):
-            try container.encode(call, forKey: .call)
         case let .looped(expression):
             try container.encode(expression, forKey: .looped)
         }

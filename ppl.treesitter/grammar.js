@@ -62,9 +62,10 @@ module.exports = grammar({
     ),
 
     constants_statement: $ => seq(
-      field('field', $.field_identifier),
+      optional(seq(field('scope', $.nominal_type), '.')),
+      field('argument_name', $.argument_name),
       '=',
-      field('expression', $._simple_expression), //can be a simple expression
+      field('expression', $._expression), //can be a simple expression
     ),
 
     // DEFEINTIONS
@@ -278,7 +279,10 @@ module.exports = grammar({
     // a call param list is the list of arguments to pass to a command
     // the only exist in a call expression
     // it is a list of call params
-    call_param_list: $ => repeat1($.call_param),
+    call_param_list: $ => seq(
+      $.call_param,
+      repeat(seq(',', $.call_param))
+    ),
     
     // a call param is a pair of param name and a simple expression
     // non simple expression needs to be parenthised to be unambiguousely
@@ -286,8 +290,7 @@ module.exports = grammar({
     call_param: $ => seq(
       field("name", $.argument_name),
       ":",
-      field("value", $._simple_expression),
-      optional(',')
+      field("value", $._expression),
     ),
 
     // the pipe expression is a binary expression
