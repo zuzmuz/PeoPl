@@ -5,7 +5,7 @@
 ** the capture gives a name to `in`
 
 ** a function to know if number is pallindrome
-func I32 is_pallindrome Bool
+func (I32) is_pallindrome() => Bool
     to_string();
     |original| original = (original; reverse()) ** saving the original string before the reverse
     ..
@@ -17,7 +17,7 @@ func I32 is_pallindrome Bool
 ** with the capture group will evaluate
 
 
-func I32 is_even String
+func (I32) is_even() => String
     |i % 2 = 0| "is even",
     |_| "is odd"..
 
@@ -25,9 +25,9 @@ func I32 is_even String
 
 ** looping can be performed by creating a looped pipe
 
-func print from: I32 to: I32 Nothing
-    from?
-    |i < to| (i; print; i+1)^,
+func print(from: I32, to: I32) => Nothing
+    from;
+    |i < to| (i; print(); +1)^,
     Nothing
     ..
 
@@ -39,19 +39,14 @@ func print from: I32 to: I32 Nothing
 
 ** to mix looping and branching
 
-func print from: I32 to: I32 String
+func print(from: I32, to: I32) => Nothing
     from;
-    |i < to| ((
-        |i % 2 = 0| ("{i} is even"; print),
-        ("{i} is odd"; print)
-    ); i + 1)^;
+    |i < to| (
+        |i % 2 = 0| (i; print(format: "{} is even")),
+        |i| (i; print(format: "{} is odd"));
+        +1)^,
     Nothing
     ..
 
 ** capturing is used for pattern mathing
-
-
-func [A B C] whatever Bool
-    |a=0, b=1, c=3| true,
-    is_it..
 
