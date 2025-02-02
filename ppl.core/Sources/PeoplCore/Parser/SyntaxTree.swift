@@ -74,7 +74,7 @@ struct FunctionDefinition: Encodable, SyntaxNode {
     let name: String
     let params: [ParamDefinition]
     let outputType: TypeIdentifier
-    // let body: Expression
+    let body: Expression
     let location: NodeLocation
 }
 

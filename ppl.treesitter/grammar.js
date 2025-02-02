@@ -98,11 +98,11 @@ module.exports = grammar({
       field("name", $.argument_name),
       ":",
       field("type", $.type_identifier),
-      optional(seq(
-        '(',
-        field("default_value", $._simple_expression),
-        ')',
-      )),
+      // optional(seq(
+      //   '(',
+      //   field("default_value", $._simple_expression),
+      //   ')',
+      // )),
       optional(',')
     ),
 

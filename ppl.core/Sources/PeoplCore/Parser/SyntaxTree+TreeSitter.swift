@@ -204,7 +204,7 @@ extension FunctionDefinition {
         case name
         case params
         case outputType = "output_type"
-        // case body
+        case body
     }
 
     init?(from node: Node, in source: Source) {
@@ -250,10 +250,10 @@ extension FunctionDefinition {
             return nil
         }
         self.outputType = outputType
-        // guard let child = node.child(byFieldName: CodingKeys.body.rawValue),
-        //       let body = Expression(from: child, in: source) else { return nil }
-
-        // self.body = body
+        guard let child = node.child(byFieldName: CodingKeys.body.rawValue),
+              let body = Expression(from: child, in: source) else { return nil }
+        
+        self.body = body
     }
 }
 
