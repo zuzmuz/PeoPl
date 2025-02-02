@@ -182,7 +182,7 @@ struct Expression: Encodable, SyntaxNode {
         case field(String)
 
         case branched(Branched)
-        case piped(Piped)
+        case piped(left: Expression, right: Expression)
     }
 
     struct Call: Encodable {
@@ -220,10 +220,5 @@ struct Expression: Encodable, SyntaxNode {
                 indirect case looped(Expression)
             }
         }
-    }
-
-    enum Piped: Encodable {
-        case normal(left: Expression, right: Expression)
-        case unwrapping(left: Expression, right: Expression)
     }
 }

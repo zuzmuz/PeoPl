@@ -301,7 +301,7 @@ module.exports = grammar({
         field("right", $._expression),
     )),
 
-    pipe_operator: $ => choice('?', ';'),
+    pipe_operator: $ => choice(';'),
 
     // a subpipe is one contained expression
     // it can contain multiple subpipe branch expression separated by ,

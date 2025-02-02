@@ -531,8 +531,11 @@ extension Expression.ExpressionType {
             guard let branched = Expression.Branched(from: node, in: source) else { return nil }
             self = .branched(branched)
         case CodingKeys.piped.rawValue:
-            guard let piped = Expression.Piped(from: node, in: source) else { return nil }
-            self = .piped(piped)
+            guard let leftNode = node.child(byFieldName: "left"),
+                  let left = Expression(from: leftNode, in: source) else { return nil }
+            guard let rightNode = node.child(byFieldName: "right"),
+                  let right = Expression(from: rightNode, in: source) else { return nil }
+            self = .piped(left: left, right: right)
         default:
             return nil
         }
@@ -635,39 +638,6 @@ extension Expression.Branched.Branch.Body {
         default:
             guard let simple = Expression(from: node, in: source) else { return nil }
             self = .simple(simple)
-        }
-    }
-}
-
-extension Expression.Piped {
-
-    // TODO: the unwrapping thing doesn't need to be part of the pipe operator
-    // rather an operator on expression that allows optional chaining and early
-    // error propagation
-
-    enum CodingKeys: String, CodingKey {
-        case normal
-        case unwrapping
-    }
-
-    init?(from node: Node, in source: Source) {
-        guard let leftNode = node.child(byFieldName: "left"),
-              let left = Expression(from: leftNode, in: source) else { return nil }
-        guard let rightNode = node.child(byFieldName: "right"),
-              let right = Expression(from: rightNode, in: source) else { return nil }
-
-        if let pipeNode = node.child(byFieldName: "operator"),
-           let pipeOperator = pipeNode.getString(in: source) {
-            switch pipeOperator {
-            case "?":
-                self = .unwrapping(left: left, right: right)
-            case ";":
-                self = .normal(left: left, right: right)
-            default:
-                return nil
-            }
-        } else {
-            return nil
         }
     }
 }

@@ -355,6 +355,9 @@ final class FunctionDefinitionTests: XCTestCase {
         XCTAssertEqual(type1.chain[1].typeName, "D")
         XCTAssertEqual(type1.chain[1].typeArguments.count, 1)
 
+        XCTAssertEqual(type2.chain.count, 1)
+        XCTAssertEqual(type2.chain[0].typeName, "F")
+
 
         XCTAssertEqual(genericType2.chain[0].typeName, "G")
         XCTAssertEqual(genericType2.chain[1].typeName, "H")
