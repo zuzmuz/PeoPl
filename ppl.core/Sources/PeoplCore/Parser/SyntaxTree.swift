@@ -211,7 +211,7 @@ struct Expression: Encodable, SyntaxNode {
         let lastBranch: Expression?
 
         struct Branch: Encodable {
-            let captureGroup: [Expression]
+            let captureGroup: [Prefix]
             let body: Body
 
             enum Body: Encodable {

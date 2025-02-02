@@ -613,7 +613,7 @@ extension Expression.Branched.Branch {
     init?(from node: Node, in source: Source) {
         guard let captureGroupNode = node.child(byFieldName: "capture_group") else { return nil }
         self.captureGroup = captureGroupNode.compactMapChildren { child in
-            Expression(from: child, in: source)
+            Expression.Prefix(from: child, in: source)
         }
 
         guard let bodyNode = node.child(byFieldName: "body"),
