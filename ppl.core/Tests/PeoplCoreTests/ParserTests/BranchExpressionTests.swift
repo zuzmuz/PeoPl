@@ -2,7 +2,7 @@ import XCTest
 @testable import PeoplCore
 
 final class BranchExpressionTests: XCTestCase {
-    func testHelloWorld() throws {
+    func testIsEven() throws {
         let source = """
                 func main() => String
                     3;
@@ -26,8 +26,15 @@ final class BranchExpressionTests: XCTestCase {
             return
         }
 
+        if case let .intLiteral(value) = left.expressionType {
+            XCTAssertEqual(value, 3)
+        } else {
+            XCTAssertTrue(false)
+        }
+
         if case let .branched(branched) = right.expressionType {
             XCTAssertEqual(branched.branches.count, 2)
+            XCTAssertNil(branched.lastBranch)
             
             let branch1 = branched.branches[0]
             XCTAssertEqual(branch1.captureGroup.count, 1)
@@ -68,6 +75,86 @@ final class BranchExpressionTests: XCTestCase {
             } else {                                                         
                 XCTAssertTrue(false)                                         
             }                                                                
+
+        } else {
+            XCTAssertTrue(false)
+        }
+    }
+
+    func testLooping() throws {
+        let source = """
+                func print(from: I32, to: I32) => Nothing
+                    from;
+                    |i < to| (
+                        |i % 2 = 0| (i; print(format: "{} is even")),
+                        |i| (i; print(format: "{} is odd"));
+                        +1)^,
+                    Nothing
+                    ..
+            """
+        let module = try Module(source: source, path: "main")
+
+        XCTAssertEqual(module.statements.count, 1)
+        let statement = module.statements[0]
+        guard case let .functionDefinition(functionDefinition) = statement else {
+            XCTAssertTrue(false)
+            return
+        }
+
+        let body = functionDefinition.body
+
+        guard case let .piped(left, right) = body.expressionType else {
+            XCTAssertTrue(false)
+            return
+        }
+
+        if case .field("from") = left.expressionType {
+        } else {
+            XCTAssertTrue(false)
+        }
+
+        guard case let .branched(branched) = right.expressionType else {
+            XCTAssertTrue(false)
+            return
+        }
+
+        XCTAssertEqual(branched.branches.count, 1)
+
+        XCTAssertNotNil(branched.lastBranch)
+
+        if case .nothing = branched.lastBranch?.expressionType {
+        } else {
+            XCTAssertTrue(false)
+        }
+
+        let branch = branched.branches[0]
+        XCTAssertEqual(branch.captureGroup.count, 1)
+
+        if case let .simple(expression) = branch.captureGroup[0],
+            case let .lessThan(left, right) = expression.expressionType,
+            case let .field(value1) = left.expressionType,
+            case let .field(value2) = right.expressionType
+        {
+            XCTAssertEqual(value1, "i")
+            XCTAssertEqual(value2, "to")
+        } else {
+            XCTAssertTrue(false)
+        }
+
+        guard case let .looped(expression) = branch.body else {
+            XCTAssertTrue(false)
+            return
+        }
+
+        if case let .piped(left, right) = expression.expressionType,
+            case let .positive(unary) = right.expressionType,
+            case let .intLiteral(value) = unary.expressionType,
+            case let .branched(branched) = left.expressionType
+        {
+            XCTAssertEqual(value, 1)
+            XCTAssertEqual(branched.branches.count, 2)
+
+            // TODO: run test on capture groups and bodies of these
 
         } else {
             XCTAssertTrue(false)

@@ -216,7 +216,7 @@ struct Expression: Encodable, SyntaxNode {
 
             enum Body: Encodable {
                 case simple(Expression)
-                indirect case looped(Expression)
+                case looped(Expression)
             }
         }
     }
