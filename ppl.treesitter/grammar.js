@@ -71,12 +71,32 @@ module.exports = grammar({
     // DEFEINTIONS
     // -----------
     
+    argument_name: $ => choice('_', /_*[a-z][a-zA-Z0-9_]*/),
+    type_name: $ => /_*[A-Z][a-zA-Z0-9_]*/,
+
+    param_list: $ => repeat1($.param_definition),
+    param_definition: $ => seq(
+      field("name", $.argument_name),
+      ":",
+      field("type", $.type_identifier),
+      // optional(seq(
+      //   '(',
+      //   field("default_value", $._simple_expression),
+      //   ')',
+      // )),
+      optional(',')
+    ),
+
+
     _definition: $ => seq(
       choice(
         $.type_definition,
         $.function_definition,
       ),
     ),
+    
+    // Type Definitions
+    // ----------------
     
     type_definition: $ => seq(
       'type',
@@ -93,21 +113,23 @@ module.exports = grammar({
       field("params", optional($.param_list)),
     ),
 
-    param_list: $ => repeat1($.param_definition),
-    param_definition: $ => seq(
+
+    // Function Definitions
+    // --------------------
+    
+    function_definition: $ => seq(
+      'func',
+      optional(seq('(', field("input_type", $.type_identifier), ')')),
+      field("scope", optional(seq($.nominal_type, '.'))),
       field("name", $.argument_name),
-      ":",
-      field("type", $.type_identifier),
-      // optional(seq(
-      //   '(',
-      //   field("default_value", $._simple_expression),
-      //   ')',
-      // )),
-      optional(',')
+      seq('(', field("params", optional($.param_list)), ')'),
+      '=>',
+      field("output_type", $.type_identifier),
+      field("body", $._expression),
     ),
 
-    argument_name: $ => choice('_', /_*[a-z][a-zA-Z0-9_]*/),
-    type_name: $ => /_*[A-Z][a-zA-Z0-9_]*/,
+    // Types
+    // -----
 
     type_identifier: $ => choice(
       $.nothing,
@@ -117,23 +139,21 @@ module.exports = grammar({
       $.tuple_structural_type,
     ),
 
-    nominal_type: $ => prec.left(PREC.TYPES, seq(
-      $.flat_nominal_type,
-      repeat(seq('::', $.flat_nominal_type))
-    )),
-
-    flat_nominal_type: $ => prec.left(PREC.TYPES,seq(
-      field('type_name', $.type_name),
-      field('type_arguments', optional($.type_arguments)),
-    )),
-
-
     type_arguments: $ => seq(
       '<',
       seq($.type_identifier, repeat(seq(',', $.type_identifier))),
       '>',
     ),
 
+    flat_nominal_type: $ => prec.left(PREC.TYPES,seq(
+      field('type_name', $.type_name),
+      field('type_arguments', optional($.type_arguments)),
+    )),
+
+    nominal_type: $ => prec.left(PREC.TYPES, seq(
+      $.flat_nominal_type,
+      repeat(seq('::', $.flat_nominal_type))
+    )),
 
     tuple_structural_type: $ => seq(
       '[',
@@ -152,17 +172,6 @@ module.exports = grammar({
       field('return_type', $.type_identifier),
     ),
 
-    function_definition: $ => seq(
-      'func',
-      optional(seq('(', field("input_type", $.type_identifier), ')')),
-      field("scope", optional(seq($.nominal_type, '.'))),
-      field("name", $.argument_name),
-      seq('(', field("params", optional($.param_list)), ')'),
-      '=>',
-      field("output_type", $.type_identifier),
-      field("body", $._expression),
-    ),
-
     // -----------
     // EXPRESSIONS
     // -----------
@@ -173,39 +182,12 @@ module.exports = grammar({
       $.piped_expression,
     ),
 
-    // simple expressions can be unambiguousely inserted anywhere
-    _simple_expression: $ => choice(
-        $._single_expression,
-        $.unary_expression,
-        $.binary_expression,
-        $.tuple_literal,
-        $.parenthisized_expression,
-        $.lambda_expression,
-        $.argument_name,
-        $.call_expression,
-        $.access_expression,
-    ),
-    
-    // single expressions are usually single tokens
-    _single_expression: $ => choice(
-      $.nothing,
-      $.never,
-      $.int_literal,
-      $.float_literal,
-      $.string_literal,
-      $.bool_literal,
-    ),
-    
     nothing: $ => 'Nothing',
     never: $ => 'Never',
-    bool_literal: $ => choice('true', 'false'),
     int_literal: $ => /\d+/,
     float_literal: $ => /\d+\.\d+/,
     string_literal: $ => /"[^"]*"/,
-    tuple_literal: $ => seq('[',
-      $._expression,
-      repeat(seq(',', $._expression)),
-    ']'),
+    bool_literal: $ => choice('true', 'false'),
 
     // a unary operator followed by a simple expression 
     unary_expression: $ => prec.left(PREC.UNARY,
@@ -260,10 +242,44 @@ module.exports = grammar({
     and_operator: $ => 'and',
     or_operator: $ => 'or',
 
+    // simple expressions can be unambiguousely inserted anywhere
+    _simple_expression: $ => choice(
+        $._single_expression,
+        $.unary_expression,
+        $.binary_expression,
+        $.tuple_literal,
+        $.parenthisized_expression,
+        $.lambda_expression,
+        $.argument_name,
+        $.call_expression,
+        $.access_expression,
+    ),
+    
+    // single expressions are usually single tokens
+    _single_expression: $ => choice(
+      $.nothing,
+      $.never,
+      $.int_literal,
+      $.float_literal,
+      $.string_literal,
+      $.bool_literal,
+    ),
+
     parenthisized_expression: $ => seq(
       '(',
       $._expression,
       ')',
+    ),
+
+    tuple_literal: $ => seq('[',
+      $._expression,
+      repeat(seq(',', $._expression)),
+    ']'),
+
+    lambda_expression: $ => seq(
+      '{',
+       $._expression,
+      '}'
     ),
 
     // a call expression is not a simple expression and need to be paranthesised to be
@@ -276,6 +292,7 @@ module.exports = grammar({
       field("params", optional($.call_param_list)),
       ')',
     ),
+
     // a call param list is the list of arguments to pass to a command
     // the only exist in a call expression
     // it is a list of call params
@@ -293,15 +310,11 @@ module.exports = grammar({
       field("value", $._expression),
     ),
 
-    // the pipe expression is a binary expression
-    // 2 expressions separated by the pipe operator
-    piped_expression: $ => prec.left(PREC.PIPE, seq(
-        field("left", $._expression),
-        field("operator", $.pipe_operator),
-        field("right", $._expression),
-    )),
-
-    pipe_operator: $ => choice(';'),
+    access_expression: $ => seq(
+      field("accessed", choice($._simple_expression, $.nominal_type)),
+      '.',
+      field("argument_name", $.argument_name),
+    ),
 
     // a subpipe is one contained expression
     // it can contain multiple subpipe branch expression separated by ,
@@ -339,16 +352,15 @@ module.exports = grammar({
       '^'
     ),
 
-    lambda_expression: $ => seq(
-      '{',
-       $._expression,
-      '}'
-    ),
 
-    access_expression: $ => seq(
-      field("accessed", choice($._simple_expression, $.nominal_type)),
-      '.',
-      field("argument_name", $.argument_name),
-    ),
+    // the pipe expression is a binary expression
+    // 2 expressions separated by the pipe operator
+    piped_expression: $ => prec.left(PREC.PIPE, seq(
+        field("left", $._expression),
+        field("operator", $.pipe_operator),
+        field("right", $._expression),
+    )),
+
+    pipe_operator: $ => ';',
   }
 });

@@ -520,7 +520,7 @@ extension Expression.ExpressionType {
             self = .call(call)
         case CodingKeys.access.rawValue:
             guard let accessedNode = node.child(at: 0),
-                  let accessed = Expression(from: accessedNode, in: source),
+                  let accessed = Expression.Prefix(from: accessedNode, in: source),
                   let argumentNode = node.child(at: 2),
                   let argumentName = argumentNode.getString(in: source) else { return nil }
             self = .access(Expression.Access(accessed: accessed, field: argumentName))
@@ -545,7 +545,7 @@ extension Expression.ExpressionType {
 extension Expression.Call {
     init?(from node: Node, in source: Source) {
         guard let commandNode = node.child(byFieldName: "command"),
-              let command = Expression.Call.Command(from: commandNode, in: source) else { return nil }
+              let command = Expression.Prefix(from: commandNode, in: source) else { return nil }
         self.command = command
 
         if let paramListNode = node.child(byFieldName: "params") {
@@ -558,7 +558,8 @@ extension Expression.Call {
     }
 }
 
-extension Expression.Call.Command {
+extension Expression.Prefix {
+
     enum CodingKeys: String, CodingKey {
         case simple
         case type = "nominal_type"
@@ -567,7 +568,7 @@ extension Expression.Call.Command {
     init?(from node: Node, in source: Source) {
         switch node.nodeType {
         case CodingKeys.type.rawValue:
-            guard let type = TypeIdentifier(from: node, in: source) else { return nil }
+            guard let type = NominalType(from: node, in: source) else { return nil }
             self = .type(type)
         default:
             guard let expression = Expression(from: node, in: source) else { return nil }

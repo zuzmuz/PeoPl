@@ -119,9 +119,9 @@ extension Expression.ExpressionType {
     }
 }
 
-extension Expression.Call.Command {
+extension Expression.Prefix {
     func encode(to encoder: any Encoder) throws {
-        var container = encoder.container(keyedBy: Expression.Call.Command.CodingKeys.self)
+        var container = encoder.container(keyedBy: Expression.Prefix.CodingKeys.self)
         switch self {
         case let .simple(expression):
             try container.encode(expression, forKey: .simple)

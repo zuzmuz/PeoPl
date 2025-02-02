@@ -185,27 +185,26 @@ struct Expression: Encodable, SyntaxNode {
         case piped(left: Expression, right: Expression)
     }
 
-    struct Call: Encodable {
+    enum Prefix: Encodable {
+        case simple(Expression)
+        case type(NominalType)
+    }
 
-        enum Command: Encodable {
-            case simple(Expression)
-            case type(TypeIdentifier)
-        }
+    struct Call: Encodable {
 
         struct Argument: Encodable {
             let name: String
             let value: Expression
         }
 
-        let command: Command
+        let command: Prefix
         let arguments: [Argument]
     }
 
     struct Access: Encodable {
-        let accessed: Expression
+        let accessed: Prefix
         let field: String
     }
-
 
     struct Branched: Encodable {
         let branches: [Branch]
