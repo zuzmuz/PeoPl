@@ -135,100 +135,97 @@ enum StructuralType {
 // MARK: - Expressions
 // -------------------
 
-// enum Expression: Encodable {
-//     case simple(Simple)
-//     indirect case branched(Branched)
-//     case piped(Piped)
-//
-//     struct Access: Encodable {
-//         let accessed: Simple
-//         let field: String
-//     }
-//
-//     struct Simple: Encodable, SyntaxNode {
-//         let location: NodeLocation
-//         let type: SimpleType
-//         indirect enum SimpleType: Encodable {
-//
-//             case nothing
-//             case never
-//             // Literals
-//             case intLiteral(Int)
-//             case floatLiteral(Float)
-//             case stringLiteral(String)
-//             case boolLiteral(Bool)
-//
-//             // Unary
-//             case positive(Simple)
-//             case negative(Simple)
-//             case not(Simple)
-//
-//             // Binary
-//             // Additives
-//             case plus(left: Simple, right: Simple)
-//             case minus(left: Simple, right: Simple)
-//             // Multiplicatives
-//             case times(left: Simple, right: Simple)
-//             case by(left: Simple, right: Simple)
-//             case mod(left: Simple, right: Simple)
-//             // Comparatives
-//             case equal(left: Simple, right: Simple)
-//             case different(left: Simple, right: Simple)
-//             case lessThan(left: Simple, right: Simple)
-//             case lessThanEqual(left: Simple, right: Simple)
-//             case greaterThan(left: Simple, right: Simple)
-//             case greaterThanEqual(left: Simple, right: Simple)
-//             // Logical
-//             case or(left: Simple, right: Simple)
-//             case and(left: Simple, right: Simple)
-//
-//             // Compounds
-//             case tuple([Expression])
-//             case parenthesized(Expression)
-//             case lambda(Expression)
-//
-//             // Scope
-//
-//             case call(Call)
-//             case access(Access)
-//             case field(String)
-//         }
-//     }
-//
-//     struct Call: Encodable {
-//
-//         enum Command: Encodable {
-//             case field(FieldIdentifier)
-//             case type(TypeIdentifier)
-//         }
-//
-//         struct Argument: Encodable {
-//             let name: String
-//             let value: Simple
-//         }
-//
-//         let command: Command
-//         let arguments: [Argument]
-//     }
-//
-//     struct Branched: Encodable {
-//         let branches: [Branch]
-//         let lastBranch: Expression?
-//
-//         struct Branch: Encodable {
-//             let captureGroup: [Expression]
-//             let body: Body
-//
-//             enum Body: Encodable {
-//                 case simple(Simple)
-//                 case call(Call)
-//                 indirect case looped(Expression)
-//             }
-//         }
-//     }
-//
-//     indirect enum Piped: Encodable {
-//         case normal(left: Expression, right: Expression)
-//         case unwrapping(left: Expression, right: Expression)
-//     }
-// }
+struct Expression: Encodable, SyntaxNode {
+    let location: NodeLocation
+    let expressionType: ExpressionType
+
+    indirect enum ExpressionType: Encodable {
+        case nothing
+        case never
+        // Literals
+        case intLiteral(Int)
+        case floatLiteral(Float)
+        case stringLiteral(String)
+        case boolLiteral(Bool)
+
+        // Unary
+        case positive(Expression)
+        case negative(Expression)
+        case not(Expression)
+
+        // Binary
+        // Additives
+        case plus(left: Expression, right: Expression)
+        case minus(left: Expression, right: Expression)
+        // Multiplicatives
+        case times(left: Expression, right: Expression)
+        case by(left: Expression, right: Expression)
+        case mod(left: Expression, right: Expression)
+        // Comparatives
+        case equal(left: Expression, right: Expression)
+        case different(left: Expression, right: Expression)
+        case lessThan(left: Expression, right: Expression)
+        case lessThanEqual(left: Expression, right: Expression)
+        case greaterThan(left: Expression, right: Expression)
+        case greaterThanEqual(left: Expression, right: Expression)
+        // Logical
+        case or(left: Expression, right: Expression)
+        case and(left: Expression, right: Expression)
+
+        // Compounds
+        case tuple([Expression])
+        case parenthesized(Expression)
+        case lambda(Expression)
+
+        // Scope
+        case call(Call)
+        case access(Access)
+        case field(String)
+
+        case branched(Branched)
+        case piped(Piped)
+
+    }
+
+    struct Call: Encodable {
+
+        enum Command: Encodable {
+            case simple(Expression)
+            case type(TypeIdentifier)
+        }
+
+        struct Argument: Encodable {
+            let name: String
+            let value: Expression
+        }
+
+        let command: Command
+        let arguments: [Argument]
+    }
+
+    struct Access: Encodable {
+        let accessed: Expression
+        let field: String
+    }
+
+
+    struct Branched: Encodable {
+        let branches: [Branch]
+        let lastBranch: Expression?
+
+        struct Branch: Encodable {
+            let captureGroup: [Expression]
+            let body: Body
+
+            enum Body: Encodable {
+                case simple(Expression)
+                indirect case looped(Expression)
+            }
+        }
+    }
+
+    indirect enum Piped: Encodable {
+        case normal(left: Expression, right: Expression)
+        case unwrapping(left: Expression, right: Expression)
+    }
+}

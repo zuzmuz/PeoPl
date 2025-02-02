@@ -62,10 +62,9 @@ module.exports = grammar({
     ),
 
     constants_statement: $ => seq(
-      optional(seq($.nominal_type, '.')),
-      $.argument_name,
+      field('field', $.field_identifier),
       '=',
-      $._simple_expression, //can be a simple expression
+      field('expression', $._simple_expression), //can be a simple expression
     ),
 
     // DEFEINTIONS
@@ -328,7 +327,7 @@ module.exports = grammar({
 
     capture_group: $ => seq(
       choice($._simple_expression, $.nominal_type),
-      repeat(seq(',', $._simple_expression)),
+      repeat(seq(',', $._simple_expression, $.nominal_type)),
     ),
 
 
@@ -344,9 +343,9 @@ module.exports = grammar({
     ),
 
     access_expression: $ => seq(
-      choice($._simple_expression, $.nominal_type),
+      field("accessed", choice($._simple_expression, $.nominal_type)),
       '.',
-      $.argument_name,
+      field("argument_name", $.argument_name),
     ),
   }
 });

@@ -368,320 +368,320 @@ extension StructuralType.Lambda {
 // MARK: - Expressions
 // -------------------
 
-// extension Expression {
-//
-//     enum CodingKeys: String, CodingKey {
-//         case simple
-//         case call = "call_expression"
-//         case branched = "branched_expression"
-//         case piped = "piped_expression"
-//     }
-//
-//     init?(from node: Node, in source: Source) {
-//         switch node.nodeType {
-//         case CodingKeys.call.rawValue:
-//             guard let call = Expression.Call(from: node, in: source) else { return nil }
-//             self = .call(call)
-//         case CodingKeys.branched.rawValue:
-//             guard let branched = Expression.Branched(from: node, in: source) else { return nil }
-//             self = .branched(branched)
-//         case CodingKeys.piped.rawValue:
-//             guard let piped = Expression.Piped(from: node, in: source) else { return nil }
-//             self = .piped(piped)
-//         default:
-//             guard let simple = Expression.Simple(from: node, in: source) else { return nil }
-//             self = .simple(simple)
-//         }
-//     }
-// }
-//
-// extension Expression.Simple {
-//     init?(from node: Node, in source: Source) {
-//         guard let location = node.getLocation(in: source),
-//               let simpleType = Expression.Simple.SimpleType(from: node, in: source) else { return nil }
-//         self.location = location
-//         self.type = simpleType
-//     }
-// }
-//
-// extension Expression.Simple.SimpleType {
-//
-//     enum CodingKeys: String, CodingKey {
-//         case nothing
-//         case never
-//         case intLiteral = "int_literal"
-//         case floatLiteral = "float_literal"
-//         case stringLiteral = "string_literal"
-//         case boolLiteral = "bool_literal"
-//
-//         case positive = "unary_positive"
-//         case negative = "unary_negative"
-//         case not = "unary_not"
-//
-//         case plus = "binary_plus"
-//         case minus = "binary_minus"
-//         case times = "binary_times"
-//         case by = "binary_by"
-//         case mod = "binary_mod"
-//
-//         case equal = "binary_equal"
-//         case different = "binary_different"
-//         case lessThan = "binary_less_than"
-//         case lessThanEqual = "binary_less_than_or_equal"
-//         case greaterThan = "binary_greater_than"
-//         case greaterThanEqual = "binary_greater_than_or_equal"
-//         case or = "binary_or"
-//         case and = "binary_and"
-//
-//         case tuple = "tuple_literal"
-//         case parenthesized = "parenthisized_expression"
-//         case lambda = "lambda_expression"
-//         case access = "access_expression"
-//
-//         case field = "field_identifier"
-//
-//         static let unaryExpression = "unary_expression"
-//         static let binaryExpression = "binary_expression"
-//     }
-//
-//
-//     init?(from node: Node, in source: Source) {
-//         switch node.nodeType {
-//         case CodingKeys.nothing.rawValue:
-//             self = .nothing
-//         case CodingKeys.never.rawValue:
-//             self = .never
-//         case CodingKeys.intLiteral.rawValue:
-//             guard let intText = node.getString(in: source),
-//                   let intValue = Int(intText) else { return nil }
-//             self = .intLiteral(intValue)
-//         case CodingKeys.floatLiteral.rawValue:
-//             guard let floatText = node.getString(in: source),
-//                   let floatValue = Float(floatText) else { return nil }
-//             self = .floatLiteral(floatValue)
-//         case CodingKeys.stringLiteral.rawValue:
-//             guard let stringValue = node.getString(in: source) else { return nil }
-//             self = .stringLiteral(String(stringValue.dropFirst().dropLast()))
-//         case CodingKeys.boolLiteral.rawValue:
-//             guard let boolText = node.getString(in: source),
-//                   let boolValue = Bool(boolText) else { return nil }
-//             self = .boolLiteral(boolValue)
-//         case CodingKeys.unaryExpression:
-//             guard let operatorNode = node.child(byFieldName: "operator"),
-//                   let operatorValue = operatorNode.getString(in: source),
-//                   let operandNode = node.child(byFieldName: "operand"),
-//                   let operandExpression = Expression.Simple(from: operandNode, in: source) else {
-//                 return nil
-//             }
-//             switch operatorValue {
-//             case "+":
-//                 self = .positive(operandExpression)
-//             case "-":
-//                 self = .negative(operandExpression)
-//             case "not":
-//                 self = .not(operandExpression)
-//             default:
-//                 return nil
-//             }
-//         case CodingKeys.binaryExpression:
-//             guard let leftNode = node.child(byFieldName: "left"),
-//                   let leftExpression = Expression.Simple(from: leftNode, in: source),
-//                   let operatorNode = node.child(byFieldName: "operator"),
-//                   let operatorValue = operatorNode.getString(in: source),
-//                   let rightNode = node.child(byFieldName: "right"),
-//                   let rightExpression = Expression.Simple(from: rightNode, in: source) else {
-//                 return nil
-//             }
-//             switch operatorValue {
-//             case "+":
-//                 self = .plus(left: leftExpression, right: rightExpression)
-//             case "-":
-//                 self = .minus(left: leftExpression, right: rightExpression)
-//             case "*":
-//                 self = .times(left: leftExpression, right: rightExpression)
-//             case "/":
-//                 self = .by(left: leftExpression, right: rightExpression)
-//             case "%":
-//                 self = .mod(left: leftExpression, right: rightExpression)
-//             case "=":
-//                 self = .equal(left: leftExpression, right: rightExpression)
-//             case "!=":
-//                 self = .different(left: leftExpression, right: rightExpression)
-//             case "<":
-//                 self = .lessThan(left: leftExpression, right: rightExpression)
-//             case "<=":
-//                 self = .lessThanEqual(left: leftExpression, right: rightExpression)
-//             case ">":
-//                 self = .greaterThan(left: leftExpression, right: rightExpression)
-//             case ">=":
-//                 self = .greaterThanEqual(left: leftExpression, right: rightExpression)
-//             case "or":
-//                 self = .or(left: leftExpression, right: rightExpression)
-//             case "and":
-//                 self = .and(left: leftExpression, right: rightExpression)
-//             default:
-//                 return nil
-//             }
-//         case CodingKeys.tuple.rawValue:
-//             let expressions = node.compactMapChildren { node in
-//                 Expression(from: node, in: source)
-//             }
-//             self = .tuple(expressions)
-//         case CodingKeys.parenthesized.rawValue:
-//             guard let expressionNode = node.child(at: 1),
-//                   let expression = Expression(from: expressionNode, in: source) else { return nil }
-//             self = .parenthesized(expression)
-//         case CodingKeys.lambda.rawValue:
-//             guard let expressionNode = node.child(at: 1),
-//                   let expression = Expression(from: expressionNode, in: source) else { return nil }
-//             self = .lambda(expression)
-//         case CodingKeys.field.rawValue:
-//             guard let fieldValue = node.getString(in: source) else { return nil }
-//             self = .field(fieldValue)
-//         case CodingKeys.access.rawValue:
-//             guard let containerNode = node.child(at: 0),
-//                   let container = Expression.Simple(from: containerNode, in: source),
-//                   let fieldNode = node.child(at: 2),
-//                   let fieldValue = fieldNode.getString(in: source) else { return nil }
-//             self = .access(Expression.Simple.Access(accessed: container, field: fieldValue))
-//
-//         default:
-//             return nil
-//         }
-//     }
-// }
-//
-// extension Expression.Call {
-//     init?(from node: Node, in source: Source) {
-//         guard let commandNode = node.child(byFieldName: "command"),
-//               let command = Expression.Call.Command(from: commandNode, in: source) else { return nil }
-//         self.command = command
-//
-//         if let paramListNode = node.child(byFieldName: "params") {
-//             self.arguments = paramListNode.compactMapChildren { child in
-//                 Expression.Call.Argument(from: child, in: source)
-//             }
-//         } else {
-//             self.arguments = []
-//         }
-//     }
-// }
-//
-// extension Expression.Call.Command {
-//     enum CodingKeys: String, CodingKey {
-//         case field = "field_identifier"
-//         case type = "type_identifier"
-//     }
-//
-//     init?(from node: Node, in source: Source) {
-//         switch node.nodeType {
-//         case CodingKeys.field.rawValue:
-//             guard let fieldValue = node.getString(in: source) else { return nil }
-//             self = .field(fieldValue)
-//         case CodingKeys.type.rawValue:
-//             guard let type = TypeIdentifier(from: node, in: source) else { return nil }
-//             self = .type(type)
-//         default:
-//             return nil
-//         }
-//     }
-// }
-//
-// extension Expression.Call.Argument {
-//     init?(from node: Node, in source: Source) {
-//         guard let nameNode = node.child(byFieldName: "name"),
-//               let name = nameNode.getString(in: source) else { return nil }
-//         self.name = name
-//
-//         guard let valueNode = node.child(byFieldName: "value"),
-//               let value = Expression.Simple(from: valueNode, in: source) else { return nil }
-//         self.value = value
-//     }
-// }
-//
-// extension Expression.Branched {
-//     static let branch = "branch_expression"
-//
-//     init?(from node: Node, in source: Source) {
-//         self.branches = node.compactMapChildren { child in
-//             if child.nodeType == Expression.Branched.branch {
-//                 Expression.Branched.Branch(from: child, in: source)
-//             } else {
-//                 nil
-//             }
-//         }
-//         self.lastBranch = if let lastChild = node.lastChild,
-//             lastChild.nodeType != Expression.Branched.branch {
-//             Expression(from: lastChild, in: source)
-//         } else {
-//             nil
-//         }
-//     }
-// }
-//
-// extension Expression.Branched.Branch {
-//     init?(from node: Node, in source: Source) {
-//         guard let captureGroupNode = node.child(byFieldName: "capture_group") else { return nil }
-//         self.captureGroup = captureGroupNode.compactMapChildren { child in
-//             Expression(from: child, in: source)
-//         }
-//
-//         guard let bodyNode = node.child(byFieldName: "body"),
-//               let body = Expression.Branched.Branch.Body(from: bodyNode, in: source) else { return nil }
-//         self.body = body
-//     }
-// }
-//
-// extension Expression.Branched.Branch.Body {
-//
-//     enum CodingKeys: String, CodingKey {
-//         case simple
-//         case call = "call_expression"
-//         case looped = "looped_expression"
-//     }
-//
-//     init?(from node: Node, in source: Source) {
-//         switch node.nodeType {
-//         case CodingKeys.call.rawValue:
-//             guard let call = Expression.Call(from: node, in: source) else { return nil }
-//             self = .call(call)
-//         case CodingKeys.looped.rawValue:
-//             guard let loopedNode = node.child(at: 0),
-//                   let parenthisizedNode = loopedNode.child(at: 1),
-//                   let expression = Expression(from: parenthisizedNode, in: source) else { return nil }
-//             self = .looped(expression)
-//         default:
-//             guard let simple = Expression.Simple(from: node, in: source) else { return nil }
-//             self = .simple(simple)
-//         }
-//     }
-// }
-//
-// extension Expression.Piped {
-//
-//     enum CodingKeys: String, CodingKey {
-//         case normal
-//         case unwrapping
-//     }
-//
-//     init?(from node: Node, in source: Source) {
-//         guard let leftNode = node.child(byFieldName: "left"),
-//               let left = Expression(from: leftNode, in: source) else { return nil }
-//         guard let rightNode = node.child(byFieldName: "right"),
-//               let right = Expression(from: rightNode, in: source) else { return nil }
-//
-//         if let pipeNode = node.child(byFieldName: "operator"),
-//            let pipeOperator = pipeNode.getString(in: source) {
-//             switch pipeOperator {
-//             case "?":
-//                 self = .unwrapping(left: left, right: right)
-//             case ";":
-//                 self = .normal(left: left, right: right)
-//             default:
-//                 return nil
-//             }
-//         } else {
-//             return nil
-//         }
-//     }
-// }
+extension Expression {
+
+    enum CodingKeys: String, CodingKey {
+        case simple
+        case call = "call_expression"
+        case branched = "branched_expression"
+        case piped = "piped_expression"
+    }
+
+    init?(from node: Node, in source: Source) {
+        switch node.nodeType {
+        case CodingKeys.call.rawValue:
+            guard let call = Expression.Call(from: node, in: source) else { return nil }
+            self = .call(call)
+        case CodingKeys.branched.rawValue:
+            guard let branched = Expression.Branched(from: node, in: source) else { return nil }
+            self = .branched(branched)
+        case CodingKeys.piped.rawValue:
+            guard let piped = Expression.Piped(from: node, in: source) else { return nil }
+            self = .piped(piped)
+        default:
+            guard let simple = Expression.Simple(from: node, in: source) else { return nil }
+            self = .simple(simple)
+        }
+    }
+}
+
+extension Expression.Simple {
+    init?(from node: Node, in source: Source) {
+        guard let location = node.getLocation(in: source),
+              let simpleType = Expression.Simple.SimpleType(from: node, in: source) else { return nil }
+        self.location = location
+        self.type = simpleType
+    }
+}
+
+extension Expression.Simple.SimpleType {
+
+    enum CodingKeys: String, CodingKey {
+        case nothing
+        case never
+        case intLiteral = "int_literal"
+        case floatLiteral = "float_literal"
+        case stringLiteral = "string_literal"
+        case boolLiteral = "bool_literal"
+
+        case positive = "unary_positive"
+        case negative = "unary_negative"
+        case not = "unary_not"
+
+        case plus = "binary_plus"
+        case minus = "binary_minus"
+        case times = "binary_times"
+        case by = "binary_by"
+        case mod = "binary_mod"
+
+        case equal = "binary_equal"
+        case different = "binary_different"
+        case lessThan = "binary_less_than"
+        case lessThanEqual = "binary_less_than_or_equal"
+        case greaterThan = "binary_greater_than"
+        case greaterThanEqual = "binary_greater_than_or_equal"
+        case or = "binary_or"
+        case and = "binary_and"
+
+        case tuple = "tuple_literal"
+        case parenthesized = "parenthisized_expression"
+        case lambda = "lambda_expression"
+        case access = "access_expression"
+
+        case field = "field_identifier"
+
+        static let unaryExpression = "unary_expression"
+        static let binaryExpression = "binary_expression"
+    }
+
+
+    init?(from node: Node, in source: Source) {
+        switch node.nodeType {
+        case CodingKeys.nothing.rawValue:
+            self = .nothing
+        case CodingKeys.never.rawValue:
+            self = .never
+        case CodingKeys.intLiteral.rawValue:
+            guard let intText = node.getString(in: source),
+                  let intValue = Int(intText) else { return nil }
+            self = .intLiteral(intValue)
+        case CodingKeys.floatLiteral.rawValue:
+            guard let floatText = node.getString(in: source),
+                  let floatValue = Float(floatText) else { return nil }
+            self = .floatLiteral(floatValue)
+        case CodingKeys.stringLiteral.rawValue:
+            guard let stringValue = node.getString(in: source) else { return nil }
+            self = .stringLiteral(String(stringValue.dropFirst().dropLast()))
+        case CodingKeys.boolLiteral.rawValue:
+            guard let boolText = node.getString(in: source),
+                  let boolValue = Bool(boolText) else { return nil }
+            self = .boolLiteral(boolValue)
+        case CodingKeys.unaryExpression:
+            guard let operatorNode = node.child(byFieldName: "operator"),
+                  let operatorValue = operatorNode.getString(in: source),
+                  let operandNode = node.child(byFieldName: "operand"),
+                  let operandExpression = Expression.Simple(from: operandNode, in: source) else {
+                return nil
+            }
+            switch operatorValue {
+            case "+":
+                self = .positive(operandExpression)
+            case "-":
+                self = .negative(operandExpression)
+            case "not":
+                self = .not(operandExpression)
+            default:
+                return nil
+            }
+        case CodingKeys.binaryExpression:
+            guard let leftNode = node.child(byFieldName: "left"),
+                  let leftExpression = Expression.Simple(from: leftNode, in: source),
+                  let operatorNode = node.child(byFieldName: "operator"),
+                  let operatorValue = operatorNode.getString(in: source),
+                  let rightNode = node.child(byFieldName: "right"),
+                  let rightExpression = Expression.Simple(from: rightNode, in: source) else {
+                return nil
+            }
+            switch operatorValue {
+            case "+":
+                self = .plus(left: leftExpression, right: rightExpression)
+            case "-":
+                self = .minus(left: leftExpression, right: rightExpression)
+            case "*":
+                self = .times(left: leftExpression, right: rightExpression)
+            case "/":
+                self = .by(left: leftExpression, right: rightExpression)
+            case "%":
+                self = .mod(left: leftExpression, right: rightExpression)
+            case "=":
+                self = .equal(left: leftExpression, right: rightExpression)
+            case "!=":
+                self = .different(left: leftExpression, right: rightExpression)
+            case "<":
+                self = .lessThan(left: leftExpression, right: rightExpression)
+            case "<=":
+                self = .lessThanEqual(left: leftExpression, right: rightExpression)
+            case ">":
+                self = .greaterThan(left: leftExpression, right: rightExpression)
+            case ">=":
+                self = .greaterThanEqual(left: leftExpression, right: rightExpression)
+            case "or":
+                self = .or(left: leftExpression, right: rightExpression)
+            case "and":
+                self = .and(left: leftExpression, right: rightExpression)
+            default:
+                return nil
+            }
+        case CodingKeys.tuple.rawValue:
+            let expressions = node.compactMapChildren { node in
+                Expression(from: node, in: source)
+            }
+            self = .tuple(expressions)
+        case CodingKeys.parenthesized.rawValue:
+            guard let expressionNode = node.child(at: 1),
+                  let expression = Expression(from: expressionNode, in: source) else { return nil }
+            self = .parenthesized(expression)
+        case CodingKeys.lambda.rawValue:
+            guard let expressionNode = node.child(at: 1),
+                  let expression = Expression(from: expressionNode, in: source) else { return nil }
+            self = .lambda(expression)
+        case CodingKeys.field.rawValue:
+            guard let fieldValue = node.getString(in: source) else { return nil }
+            self = .field(fieldValue)
+        case CodingKeys.access.rawValue:
+            guard let containerNode = node.child(at: 0),
+                  let container = Expression.Simple(from: containerNode, in: source),
+                  let fieldNode = node.child(at: 2),
+                  let fieldValue = fieldNode.getString(in: source) else { return nil }
+            self = .access(Expression.Simple.Access(accessed: container, field: fieldValue))
+
+        default:
+            return nil
+        }
+    }
+}
+
+extension Expression.Call {
+    init?(from node: Node, in source: Source) {
+        guard let commandNode = node.child(byFieldName: "command"),
+              let command = Expression.Call.Command(from: commandNode, in: source) else { return nil }
+        self.command = command
+
+        if let paramListNode = node.child(byFieldName: "params") {
+            self.arguments = paramListNode.compactMapChildren { child in
+                Expression.Call.Argument(from: child, in: source)
+            }
+        } else {
+            self.arguments = []
+        }
+    }
+}
+
+extension Expression.Call.Command {
+    enum CodingKeys: String, CodingKey {
+        case field = "field_identifier"
+        case type = "type_identifier"
+    }
+
+    init?(from node: Node, in source: Source) {
+        switch node.nodeType {
+        case CodingKeys.field.rawValue:
+            guard let fieldValue = node.getString(in: source) else { return nil }
+            self = .field(fieldValue)
+        case CodingKeys.type.rawValue:
+            guard let type = TypeIdentifier(from: node, in: source) else { return nil }
+            self = .type(type)
+        default:
+            return nil
+        }
+    }
+}
+
+extension Expression.Call.Argument {
+    init?(from node: Node, in source: Source) {
+        guard let nameNode = node.child(byFieldName: "name"),
+              let name = nameNode.getString(in: source) else { return nil }
+        self.name = name
+
+        guard let valueNode = node.child(byFieldName: "value"),
+              let value = Expression.Simple(from: valueNode, in: source) else { return nil }
+        self.value = value
+    }
+}
+
+extension Expression.Branched {
+    static let branch = "branch_expression"
+
+    init?(from node: Node, in source: Source) {
+        self.branches = node.compactMapChildren { child in
+            if child.nodeType == Expression.Branched.branch {
+                Expression.Branched.Branch(from: child, in: source)
+            } else {
+                nil
+            }
+        }
+        self.lastBranch = if let lastChild = node.lastChild,
+            lastChild.nodeType != Expression.Branched.branch {
+            Expression(from: lastChild, in: source)
+        } else {
+            nil
+        }
+    }
+}
+
+extension Expression.Branched.Branch {
+    init?(from node: Node, in source: Source) {
+        guard let captureGroupNode = node.child(byFieldName: "capture_group") else { return nil }
+        self.captureGroup = captureGroupNode.compactMapChildren { child in
+            Expression(from: child, in: source)
+        }
+
+        guard let bodyNode = node.child(byFieldName: "body"),
+              let body = Expression.Branched.Branch.Body(from: bodyNode, in: source) else { return nil }
+        self.body = body
+    }
+}
+
+extension Expression.Branched.Branch.Body {
+
+    enum CodingKeys: String, CodingKey {
+        case simple
+        case call = "call_expression"
+        case looped = "looped_expression"
+    }
+
+    init?(from node: Node, in source: Source) {
+        switch node.nodeType {
+        case CodingKeys.call.rawValue:
+            guard let call = Expression.Call(from: node, in: source) else { return nil }
+            self = .call(call)
+        case CodingKeys.looped.rawValue:
+            guard let loopedNode = node.child(at: 0),
+                  let parenthisizedNode = loopedNode.child(at: 1),
+                  let expression = Expression(from: parenthisizedNode, in: source) else { return nil }
+            self = .looped(expression)
+        default:
+            guard let simple = Expression.Simple(from: node, in: source) else { return nil }
+            self = .simple(simple)
+        }
+    }
+}
+
+extension Expression.Piped {
+
+    enum CodingKeys: String, CodingKey {
+        case normal
+        case unwrapping
+    }
+
+    init?(from node: Node, in source: Source) {
+        guard let leftNode = node.child(byFieldName: "left"),
+              let left = Expression(from: leftNode, in: source) else { return nil }
+        guard let rightNode = node.child(byFieldName: "right"),
+              let right = Expression(from: rightNode, in: source) else { return nil }
+
+        if let pipeNode = node.child(byFieldName: "operator"),
+           let pipeOperator = pipeNode.getString(in: source) {
+            switch pipeOperator {
+            case "?":
+                self = .unwrapping(left: left, right: right)
+            case ";":
+                self = .normal(left: left, right: right)
+            default:
+                return nil
+            }
+        } else {
+            return nil
+        }
+    }
+}
