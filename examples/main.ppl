@@ -1,5 +1,5 @@
 
 
 func (Input) Scope1::Scope2.main(param1: A, param2: B) => Nothing
-    Nothing..
+    3 * -2 < -1..
 

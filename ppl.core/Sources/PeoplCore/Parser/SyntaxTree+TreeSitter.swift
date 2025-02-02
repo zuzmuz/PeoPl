@@ -368,11 +368,19 @@ extension StructuralType.Lambda {
 // MARK: - Expressions
 // -------------------
 extension Expression {
+    static let parenthesized = "parenthisized_expression"
+
     init?(from node: Node, in source: Source) {
         guard let location = node.getLocation(in: source) else { return nil }
         self.location = location
-        guard let expressionType = Expression.ExpressionType(from: node, in: source) else { return nil }
-        self.expressionType = expressionType
+        if node.nodeType == Expression.parenthesized {
+            guard let child = node.child(at: 1),
+                  let expressionType = Expression.ExpressionType(from: child, in: source) else { return nil }
+            self.expressionType = expressionType
+        } else {
+            guard let expressionType = Expression.ExpressionType(from: node, in: source) else { return nil }
+            self.expressionType = expressionType
+        }
     }
 }
 
@@ -407,7 +415,6 @@ extension Expression.ExpressionType {
         case and = "binary_and"
 
         case tuple = "tuple_literal"
-        case parenthesized = "parenthisized_expression"
         case lambda = "lambda_expression"
 
 
@@ -504,10 +511,6 @@ extension Expression.ExpressionType {
                 Expression(from: node, in: source)
             }
             self = .tuple(expressions)
-        case CodingKeys.parenthesized.rawValue:
-            guard let expressionNode = node.child(at: 1),
-                  let expression = Expression(from: expressionNode, in: source) else { return nil }
-            self = .parenthesized(expression)
         case CodingKeys.lambda.rawValue:
             guard let expressionNode = node.child(at: 1),
                   let expression = Expression(from: expressionNode, in: source) else { return nil }

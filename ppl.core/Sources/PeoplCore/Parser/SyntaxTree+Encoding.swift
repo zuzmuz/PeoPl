@@ -103,8 +103,6 @@ extension Expression.ExpressionType {
             try container.encode(["left": left, "right": right], forKey: .and)
         case let .tuple(expressions):
             try container.encode(expressions, forKey: .tuple)
-        case let .parenthesized(expression):
-            try container.encode(expression, forKey: .parenthesized)
         case let .lambda(expression):
             try container.encode(expression, forKey: .lambda)
         case let .call(call):

@@ -174,7 +174,6 @@ struct Expression: Encodable, SyntaxNode {
 
         // Compounds
         case tuple([Expression])
-        case parenthesized(Expression)
         case lambda(Expression)
 
         // Scope
@@ -184,7 +183,6 @@ struct Expression: Encodable, SyntaxNode {
 
         case branched(Branched)
         case piped(Piped)
-
     }
 
     struct Call: Encodable {
