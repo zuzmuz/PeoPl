@@ -122,6 +122,7 @@ module.exports = grammar({
       optional(seq('(', field("input_type", $.type_identifier), ')')),
       field("scope", optional(seq($.nominal_type, '.'))),
       field("name", $.argument_name),
+      optional(field("type_arguments", $.type_arguments)),
       seq('(', field("params", optional($.param_list)), ')'),
       '=>',
       field("output_type", $.type_identifier),
@@ -195,7 +196,7 @@ module.exports = grammar({
         field("operator", choice(
           $.multiplicative_operator,
           $.additive_operator,
-          $.comparative_operator,
+          // $.comparative_operator,
           $.and_operator,
           $.or_operator,
           $.not_operator,

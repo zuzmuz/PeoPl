@@ -393,6 +393,22 @@
           }
         },
         {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "FIELD",
+              "name": "type_arguments",
+              "content": {
+                "type": "SYMBOL",
+                "name": "type_arguments"
+              }
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
+        },
+        {
           "type": "SEQ",
           "members": [
             {
@@ -737,10 +753,6 @@
                 {
                   "type": "SYMBOL",
                   "name": "additive_operator"
-                },
-                {
-                  "type": "SYMBOL",
-                  "name": "comparative_operator"
                 },
                 {
                   "type": "SYMBOL",

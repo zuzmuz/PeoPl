@@ -33,6 +33,21 @@ enum Evaluation: Encodable, Equatable {
             "\(bool)"
         }
     }
+
+    var typeName: String {
+        return switch self {
+        case .nothing:
+            "Nothing"
+        case .int(_):
+            "Int"
+        case .float(_):
+            "Float"
+        case .string(_):
+            "String"
+        case .bool(_):
+            "Bool"
+        }
+    }
 }
 
 struct EvaluationScope {
@@ -68,7 +83,151 @@ extension Expression: Evaluable {
     func evaluate(
         with input: Evaluation, and scope: EvaluationScope
     ) -> Result<Evaluation, SemanticError> {
-        return .success(.nothing)
+        switch (input, self.expressionType) {
+        // Never
+        case (_, .never):
+            return .failure(.reachedNever(location: self.location))
+        //Nothing
+        case (.nothing, .nothing):
+            return .success(.nothing)
+
+        // Literals
+        case (.nothing, .intLiteral(let value)):
+            return .success(.int(value))
+        case (.nothing, .floatLiteral(let value)):
+            return .success(.float(value))
+        case (.nothing, .stringLiteral(let value)):
+            return .success(.string(value))
+        case (.nothing, .boolLiteral(let value)):
+            return .success(.bool(value))
+        case (input, .nothing), (input, .intLiteral(_)), (input, .floatLiteral(_)), (input, .stringLiteral(_)), (input, .boolLiteral(_)):
+            return .failure(.invalidInputForExpression(
+                location: location, expected: "Nothing", received: input.typeName))
+
+        // Unary
+        case (input, .positive(let value)):
+            let right = value.evaluate(with: input, and: scope)
+            switch (input, right)  {
+            case (.nothing, .success(.int(let value))):
+                return .success(.int(value))
+            case (.nothing, .success(.float(let value))):
+                return .success(.float(value))
+            case (.int(let left), .success(.int(let right))):
+                return .success(.int(left + right))
+            case (.float(let left), .success(.float(let right))):
+                return .success(.float(left + right))
+            case (_, .failure(let error)):
+                return .failure(error)
+            case (_, .success(let right)):
+                return .failure(.invalidInputForExpression(
+                    location: location, expected: input.typeName, received: right.typeName))
+            }
+        case (input, .negative(let value)):
+            let right = value.evaluate(with: input, and: scope)
+            switch (input, right)  {
+            case (.nothing, .success(.int(let value))):
+                return .success(.int(-value))
+            case (.nothing, .success(.float(let value))):
+                return .success(.float(-value))
+            case (.int(let left), .success(.int(let right))):
+                return .success(.int(left - right))
+            case (.float(let left), .success(.float(let right))):
+                return .success(.float(left - right))
+            case (_, .failure(let error)):
+                return .failure(error)
+            case (_, .success(let right)):
+                return .failure(.invalidInputForExpression(
+                    location: location, expected: input.typeName, received: right.typeName))
+            }
+
+        // Binary
+        case (.nothing, .plus(let leftExpression, let rightExpression)):
+            let left = leftExpression.evaluate(with: input, and: scope)
+            let right = rightExpression.evaluate(with: input, and: scope)
+
+            switch (left, right) {
+            case (.success(.int(let left)), .success(.int(let right))):
+                return .success(.int(left + right))
+            case (.success(.float(let left)), .success(.float(let right))):
+                return .success(.float(left + right))
+            case (.success(let left), .success(let right)):
+                return .failure(.invalidOperation(
+                    location: location, operation: "+", left: left.typeName, right: right.typeName))
+            case (.failure(let left), _):
+                return .failure(left)
+            case (_, .failure(let right)):
+                return .failure(right)
+            }
+        case (.nothing, .minus(let leftExpression, let rightExpression)):
+            let left = leftExpression.evaluate(with: input, and: scope)
+            let right = rightExpression.evaluate(with: input, and: scope)
+
+            switch (left, right) {
+            case (.success(.int(let left)), .success(.int(let right))):
+                return .success(.int(left - right))
+            case (.success(.float(let left)), .success(.float(let right))):
+                return .success(.float(left - right))
+            case (.success(let left), .success(let right)):
+                return .failure(.invalidOperation(
+                    location: location, operation: "-", left: left.typeName, right: right.typeName))
+            case (.failure(let left), _):
+                return .failure(left)
+            case (_, .failure(let right)):
+                return .failure(right)
+            }
+        case (.nothing, .times(let leftExpression, let rightExpression)):
+            let left = leftExpression.evaluate(with: input, and: scope)
+            let right = rightExpression.evaluate(with: input, and: scope)
+
+            switch (left, right) {
+            case (.success(.int(let left)), .success(.int(let right))):
+                return .success(.int(left * right))
+            case (.success(.float(let left)), .success(.float(let right))):
+                return .success(.float(left * right))
+            case (.success(let left), .success(let right)):
+                return .failure(.invalidOperation(
+                location: location, operation: "*", left: left.typeName, right: right.typeName))
+            case (.failure(let left), _):
+                return .failure(left)
+            case (_, .failure(let right)):
+                return .failure(right)
+            }
+        case (.nothing, .by(let leftExpression, let rightExpression)):
+            let left = leftExpression.evaluate(with: input, and: scope)
+            let right = rightExpression.evaluate(with: input, and: scope)
+
+            switch (left, right) {
+            case (.success(.int(let left)), .success(.int(let right))):
+                return .success(.int(left / right))
+            case (.success(.float(let left)), .success(.float(let right))):
+                return .success(.float(left / right))
+            case (.success(let left), .success(let right)):
+                return .failure(.invalidOperation(
+                    location: location, operation: "/",  left: left.typeName, right: right.typeName))
+            case (.failure(let left), _):
+                return .failure(left)
+            case (_, .failure(let right)):
+                return .failure(right)
+            }
+        case (.nothing, .mod(let leftExpression, let rightExpression)):
+            let left = leftExpression.evaluate(with: input, and: scope)
+            let right = rightExpression.evaluate(with: input, and: scope)
+
+            switch (left, right) {
+            case (.success(.int(let left)), .success(.int(let right))):
+                return .success(.int(left - right))
+            case (.success(let left), .success(let right)):
+                return .failure(.invalidOperation(
+                    location: location, operation: "%",  left: left.typeName, right: right.typeName))
+            case (.failure(let left), _):
+                return .failure(left)
+            case (_, .failure(let right)):
+                return .failure(right)
+            }
+
+        default:
+            return .failure(.notImplemented)
+        }
     }
 }
 //

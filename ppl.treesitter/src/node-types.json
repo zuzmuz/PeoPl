@@ -944,6 +944,16 @@
             "named": true
           }
         ]
+      },
+      "type_arguments": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "type_arguments",
+            "named": true
+          }
+        ]
       }
     }
   },
@@ -1678,10 +1688,6 @@
           },
           {
             "type": "and_operator",
-            "named": true
-          },
-          {
-            "type": "comparative_operator",
             "named": true
           },
           {
