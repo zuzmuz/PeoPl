@@ -732,7 +732,23 @@
               "members": [
                 {
                   "type": "SYMBOL",
+                  "name": "multiplicative_operator"
+                },
+                {
+                  "type": "SYMBOL",
                   "name": "additive_operator"
+                },
+                {
+                  "type": "SYMBOL",
+                  "name": "comparative_operator"
+                },
+                {
+                  "type": "SYMBOL",
+                  "name": "and_operator"
+                },
+                {
+                  "type": "SYMBOL",
+                  "name": "or_operator"
                 },
                 {
                   "type": "SYMBOL",

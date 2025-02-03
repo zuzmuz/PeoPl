@@ -1677,7 +1677,23 @@
             "named": true
           },
           {
+            "type": "and_operator",
+            "named": true
+          },
+          {
+            "type": "comparative_operator",
+            "named": true
+          },
+          {
+            "type": "multiplicative_operator",
+            "named": true
+          },
+          {
             "type": "not_operator",
+            "named": true
+          },
+          {
+            "type": "or_operator",
             "named": true
           }
         ]

@@ -35,21 +35,42 @@ enum Evaluation: Encodable, Equatable {
     }
 }
 
-// protocol Evaluable {
-//     func evaluate(
-//         with input: Evaluation, and scope: [String: Evaluation]
-//     ) -> Result<Evaluation, SemanticError>
-// }
-//
-//
-// extension Project: Evaluable {
-//     func evaluate(
-//         with input: Evaluation, and scope: [String: Evaluation]
-//     ) -> Result<Evaluation, SemanticError> {
-//         // print("evaluating main")
-//         return self.main.body.evaluate(with: input, and: scope)
-//     }
-// }
+struct EvaluationScope {
+    let locals: [String: Evaluation]
+    // let globals: 
+}
+
+protocol Evaluable {
+    func evaluate(
+        with input: Evaluation, and scope: EvaluationScope 
+    ) -> Result<Evaluation, SemanticError>
+}
+
+
+extension Module: Evaluable {
+    func evaluate(
+        with input: Evaluation, and scope: EvaluationScope
+    ) -> Result<Evaluation, SemanticError> {
+        let main = self.statements.filter { statement in
+            if case let .functionDefinition(functionDefinition) = statement {
+                return functionDefinition.name == "main"
+            }
+            return false
+        }
+        guard main.count == 1, let main = main.first, case let .functionDefinition(main) = main else {
+            return .failure(.mainFunctionNotFound)
+        }
+        return main.body.evaluate(with: input, and: scope)
+    }
+}
+
+extension Expression: Evaluable {
+    func evaluate(
+        with input: Evaluation, and scope: EvaluationScope
+    ) -> Result<Evaluation, SemanticError> {
+        return .success(.nothing)
+    }
+}
 //
 // extension Expression: Evaluable {
 //     func evaluate(

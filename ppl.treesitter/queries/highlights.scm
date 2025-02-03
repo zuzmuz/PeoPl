@@ -78,12 +78,10 @@
 (not_operator) @operator
 (and_operator) @operator
 (or_operator) @operator
-
+(pipe_operator) @operator
 
 [
-  "?"
   "^"
-  ";"
   ","
   ".."
 ] @keyword.operator
