@@ -1,8 +1,21 @@
+import Foundation
 
+protocol DebugableSyntaxNode: Encodable, CustomStringConvertible {
+}
+
+extension DebugableSyntaxNode {
+    var description: String {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .prettyPrinted
+        guard let encoded = try? encoder.encode(self),
+            let description = String(data: encoded, encoding: .utf8) else { return "description failed" }
+        return description
+    }
+}
 // MARK: - the syntax tree source
 // ------------------------------
 
-extension Statement {
+extension Statement: DebugableSyntaxNode {
     func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         switch self {
@@ -18,7 +31,7 @@ extension Statement {
 // MARK: - type definitions
 // ------------------------
 
-extension TypeDefinition {
+extension TypeDefinition: DebugableSyntaxNode {
     func encode(to encoder: any Encoder) throws {
         var container =  encoder.container(keyedBy: CodingKeys.self)
         switch self {
@@ -33,7 +46,7 @@ extension TypeDefinition {
 // MARK: - types
 // -------------
 
-extension TypeIdentifier {
+extension TypeIdentifier: DebugableSyntaxNode {
     func encode(to encoder: any Encoder) throws {
         switch self {
         case .nothing:
@@ -53,7 +66,7 @@ extension TypeIdentifier {
 // MARK: - Expressions
 // -------------------
 
-extension Expression.ExpressionType {
+extension Expression.ExpressionType: DebugableSyntaxNode {
     func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         switch self {
@@ -119,7 +132,7 @@ extension Expression.ExpressionType {
     }
 }
 
-extension Expression.Prefix {
+extension Expression.Prefix: DebugableSyntaxNode {
     func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: Expression.Prefix.CodingKeys.self)
         switch self {
@@ -131,7 +144,7 @@ extension Expression.Prefix {
     }
 }
 
-extension Expression.Branched.Branch.Body {
+extension Expression.Branched.Branch.Body: DebugableSyntaxNode {
     func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: Expression.Branched.Branch.Body.CodingKeys.self)
         switch self {

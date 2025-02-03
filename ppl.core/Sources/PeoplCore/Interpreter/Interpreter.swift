@@ -215,7 +215,7 @@ extension Expression: Evaluable {
 
             switch (left, right) {
             case (.success(.int(let left)), .success(.int(let right))):
-                return .success(.int(left - right))
+                return .success(.int(left % right))
             case (.success(let left), .success(let right)):
                 return .failure(.invalidOperation(
                     location: location, operation: "%",  left: left.typeName, right: right.typeName))

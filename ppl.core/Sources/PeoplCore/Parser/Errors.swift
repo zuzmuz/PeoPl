@@ -1,6 +1,6 @@
 import Foundation
 
-enum SemanticError: LocalizedError, Encodable {
+enum SemanticError: LocalizedError, Encodable, Equatable {
     case sourceUnreadable
     case mainFunctionNotFound
     case notImplemented

@@ -1,7 +1,7 @@
 // MARK: - the syntax tree source
 // ------------------------------
 
-struct NodeLocation: Encodable {
+struct NodeLocation: Encodable, Equatable {
     struct Point: Comparable, Encodable, Equatable {
         let line: Int
         let column: Int
