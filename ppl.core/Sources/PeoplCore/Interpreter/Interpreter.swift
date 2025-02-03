@@ -1,12 +1,9 @@
-
 fileprivate extension String {
     func peoplFormat(_ arguments: [Evaluation]) -> String {
         var result = self
-        
         for argument in arguments {
             result = result.replacingOccurrences(of: "{}", with: argument.describe(formating: ""))
         }
-        
         return result
     }
 }
@@ -38,13 +35,13 @@ enum Evaluation: Encodable, Equatable {
         return switch self {
         case .nothing:
             "Nothing"
-        case .int(_):
+        case .int:
             "Int"
-        case .float(_):
+        case .float:
             "Float"
-        case .string(_):
+        case .string:
             "String"
-        case .bool(_):
+        case .bool:
             "Bool"
         }
     }
@@ -57,10 +54,9 @@ struct EvaluationScope {
 
 protocol Evaluable {
     func evaluate(
-        with input: Evaluation, and scope: EvaluationScope 
+        with input: Evaluation, and scope: EvaluationScope
     ) -> Result<Evaluation, SemanticError>
 }
-
 
 extension Module: Evaluable {
     func evaluate(
@@ -80,6 +76,25 @@ extension Module: Evaluable {
 }
 
 extension Expression: Evaluable {
+    func getFields() -> Set<String> {
+        switch self.expressionType {
+        case let .field(field):
+            return Set([field])
+        case let .positive(unary), let .negative(unary), let .not(unary):
+            return unary.getFields()
+        case let .plus(left, right), let .minus(left, right),
+             let .times(left, right), let .by(left, right), let .mod(left, right),
+             let .equal(left, right), let .different(left, right),
+             let .lessThan(left, right), let .lessThanEqual(left, right),
+             let .greaterThan(left, right), let .greaterThanEqual(left, right),
+             let .or(left, right), let .and(left, right):
+            return left.getFields().union(right.getFields())
+        // TODO: adding compoud
+        default:
+            return Set()
+        }
+    }
+
     func evaluate(
         with input: Evaluation, and scope: EvaluationScope
     ) -> Result<Evaluation, SemanticError> {
@@ -100,14 +115,18 @@ extension Expression: Evaluable {
             return .success(.string(value))
         case (.nothing, .boolLiteral(let value)):
             return .success(.bool(value))
-        case (input, .nothing), (input, .intLiteral(_)), (input, .floatLiteral(_)), (input, .stringLiteral(_)), (input, .boolLiteral(_)):
+        case (input, .nothing),
+             (input, .intLiteral),
+             (input, .floatLiteral),
+             (input, .stringLiteral),
+             (input, .boolLiteral):
             return .failure(.invalidInputForExpression(
                 location: location, expected: "Nothing", received: input.typeName))
 
         // Unary
         case (input, .positive(let value)):
             let right = value.evaluate(with: .nothing, and: scope)
-            switch (input, right)  {
+            switch (input, right) {
             case (.nothing, .success(.int(let value))):
                 return .success(.int(value))
             case (.nothing, .success(.float(let value))):
@@ -124,7 +143,7 @@ extension Expression: Evaluable {
             }
         case (input, .negative(let value)):
             let right = value.evaluate(with: .nothing, and: scope)
-            switch (input, right)  {
+            switch (input, right) {
             case (.nothing, .success(.int(let value))):
                 return .success(.int(-value))
             case (.nothing, .success(.float(let value))):
@@ -138,6 +157,17 @@ extension Expression: Evaluable {
             case (_, .success(let right)):
                 return .failure(.invalidInputForExpression(
                     location: location, expected: input.typeName, received: right.typeName))
+            }
+        case (.nothing, .not(let value)):
+            let right = value.evaluate(with: .nothing, and: scope)
+            switch right {
+            case .success(.bool(let value)):
+                return .success(.bool(!value))
+            case .success(let value):
+                return .failure(.invalidOperation(
+                    location: location, operation: "not", left: value.typeName, right: "bool"))
+            case let .failure(error):
+                return .failure(error)
             }
 
         // Binary
@@ -203,7 +233,7 @@ extension Expression: Evaluable {
                 return .success(.float(left / right))
             case (.success(let left), .success(let right)):
                 return .failure(.invalidOperation(
-                    location: location, operation: "/",  left: left.typeName, right: right.typeName))
+                    location: location, operation: "/", left: left.typeName, right: right.typeName))
             case (.failure(let left), _):
                 return .failure(left)
             case (_, .failure(let right)):
@@ -218,7 +248,7 @@ extension Expression: Evaluable {
                 return .success(.int(left % right))
             case (.success(let left), .success(let right)):
                 return .failure(.invalidOperation(
-                    location: location, operation: "%",  left: left.typeName, right: right.typeName))
+                    location: location, operation: "%", left: left.typeName, right: right.typeName))
             case (.failure(let left), _):
                 return .failure(left)
             case (_, .failure(let right)):
@@ -239,7 +269,7 @@ extension Expression: Evaluable {
                 return .success(.bool(left == right))
             case (.success(let left), .success(let right)):
                 return .failure(.invalidOperation(
-                    location: location, operation: "=",  left: left.typeName, right: right.typeName))
+                    location: location, operation: "=", left: left.typeName, right: right.typeName))
             case (.failure(let left), _):
                 return .failure(left)
             case (_, .failure(let right)):
@@ -260,7 +290,7 @@ extension Expression: Evaluable {
                 return .success(.bool(left != right))
             case (.success(let left), .success(let right)):
                 return .failure(.invalidOperation(
-                    location: location, operation: "!=",  left: left.typeName, right: right.typeName))
+                    location: location, operation: "!=", left: left.typeName, right: right.typeName))
             case (.failure(let left), _):
                 return .failure(left)
             case (_, .failure(let right)):
@@ -277,7 +307,7 @@ extension Expression: Evaluable {
                 return .success(.bool(left < right))
             case (.success(let left), .success(let right)):
                 return .failure(.invalidOperation(
-                    location: location, operation: "<",  left: left.typeName, right: right.typeName))
+                    location: location, operation: "<", left: left.typeName, right: right.typeName))
             case (.failure(let left), _):
                 return .failure(left)
             case (_, .failure(let right)):
@@ -294,7 +324,7 @@ extension Expression: Evaluable {
                 return .success(.bool(left <= right))
             case (.success(let left), .success(let right)):
                 return .failure(.invalidOperation(
-                    location: location, operation: "<=",  left: left.typeName, right: right.typeName))
+                    location: location, operation: "<=", left: left.typeName, right: right.typeName))
             case (.failure(let left), _):
                 return .failure(left)
             case (_, .failure(let right)):
@@ -311,7 +341,7 @@ extension Expression: Evaluable {
                 return .success(.bool(left > right))
             case (.success(let left), .success(let right)):
                 return .failure(.invalidOperation(
-                    location: location, operation: ">",  left: left.typeName, right: right.typeName))
+                    location: location, operation: ">", left: left.typeName, right: right.typeName))
             case (.failure(let left), _):
                 return .failure(left)
             case (_, .failure(let right)):
@@ -328,7 +358,7 @@ extension Expression: Evaluable {
                 return .success(.bool(left >= right))
             case (.success(let left), .success(let right)):
                 return .failure(.invalidOperation(
-                    location: location, operation: ">=",  left: left.typeName, right: right.typeName))
+                    location: location, operation: ">=", left: left.typeName, right: right.typeName))
             case (.failure(let left), _):
                 return .failure(left)
             case (_, .failure(let right)):
@@ -343,7 +373,7 @@ extension Expression: Evaluable {
                 return .success(.bool(left || right))
             case (.success(let left), .success(let right)):
                 return .failure(.invalidOperation(
-                    location: location, operation: "or",  left: left.typeName, right: right.typeName))
+                    location: location, operation: "or", left: left.typeName, right: right.typeName))
             case (.failure(let left), _):
                 return .failure(left)
             case (_, .failure(let right)):
@@ -358,222 +388,42 @@ extension Expression: Evaluable {
                 return .success(.bool(left && right))
             case (.success(let left), .success(let right)):
                 return .failure(.invalidOperation(
-                    location: location, operation: "and",  left: left.typeName, right: right.typeName))
+                    location: location, operation: "and", left: left.typeName, right: right.typeName))
             case (.failure(let left), _):
                 return .failure(left)
             case (_, .failure(let right)):
                 return .failure(right)
             }
-        case (input, .plus(_, _)),
-             (input, .minus(_, _)),
-             (input, .times(_, _)),
-             (input, .by(_, _)),
-             (input, .mod(_, _)),
-             (input, .equal(_, _)),
-             (input, .different(_,_)),
-             (input, .lessThan(_, _)),
-             (input, .lessThanEqual(_, _)),
-             (input, .greaterThan(_, _)),
-             (input, .greaterThanEqual(_, _)):
-            return .failure(.invalidInputForExpression(location: location, expected: "Nothing", received: input.typeName))
+        case (input, .plus),
+             (input, .minus),
+             (input, .times),
+             (input, .by),
+             (input, .mod),
+             (input, .equal),
+             (input, .different),
+             (input, .lessThan),
+             (input, .lessThanEqual),
+             (input, .greaterThan),
+             (input, .greaterThanEqual):
+            return .failure(.invalidInputForExpression(
+                location: location, expected: "Nothing", received: input.typeName))
 
-
+        case (input, .branched(let branched)):
+            return branched.evaluate(with: input, and: scope)
+        case (input, .piped(let leftExpression, let rightExpression)):
+            let left = leftExpression.evaluate(with: input, and: scope)
+            switch left {
+            case .success(let evaluation):
+                return rightExpression.evaluate(with: evaluation, and: scope)
+            case .failure(let error):
+                return .failure(error)
+            }
         default:
             return .failure(.notImplemented)
         }
     }
 }
-//
-// extension Expression: Evaluable {
-//     func evaluate(
-//         with input: Evaluation, and scope: [String: Evaluation]
-//     ) -> Result<Evaluation, SemanticError> {
-//         switch self {
-//         case let .simple(simple):
-//             simple.evaluate(with: input, and: scope)
-//         case let .call(call):
-//             call.evaluate(with: input, and: scope)
-//         case let .branched(branched):
-//             branched.evaluate(with: input, and: scope)
-//         case let .piped(piped):
-//             piped.evaluate(with: input, and: scope)
-//         }
-//     }
-// }
-//
-// extension Expression.Simple: Evaluable {
-//     func evaluate(
-//         with input: Evaluation, and scope: [String: Evaluation]
-//     ) -> Result<Evaluation, SemanticError> {
-//         // print("evaluating simple \(self) \(input) with scope \(scope)")
-//         return if case .nothing = input {
-//             switch self {
-//             case .nothing:
-//                 .success(.nothing)
-//             case let .intLiteral(int):
-//                 .success(.int(int))
-//             case let .floatLiteral(float):
-//                 .success(.float(float))
-//             case let .stringLiteral(string):
-//                 .success(.string(string))
-//             case let .boolLiteral(bool):
-//                 .success(.bool(bool))
-//             case let .positive(simple):
-//                 simple.evaluate(with: input, and: scope)
-//             case let .negative(simple):
-//                 switch simple.evaluate(with: input, and:scope) {
-//                 case let .success(.int(int)):
-//                     .success(.int(-int))
-//                 case let .success(.float(float)):
-//                     .success(.float(-float))
-//                 default:
-//                     .failure(.invalidOperation)
-//                 }
-//             case let .not(simple):
-//                 switch simple.evaluate(with: input, and: scope) {
-//                 case let .success(.bool(bool)):
-//                     .success(.bool(!bool))
-//                 default:
-//                     .failure(.invalidOperation)
-//                 }
-//             case let .plus(left, right):
-//                 switch (left.evaluate(with: input, and: scope), right.evaluate(with: input, and: scope)) {
-//                 case let (.success(.int(left)), .success(.int(right))):
-//                     .success(.int(left + right))
-//                 case let (.success(.float(left)), .success(.float(right))):
-//                     .success(.float(left + right))
-//                 default:
-//                     .failure(.invalidOperation)
-//                 }
-//             case let .minus(left, right):
-//                 switch (left.evaluate(with: input, and: scope), right.evaluate(with: input, and: scope)) {
-//                 case let (.success(.int(left)), .success(.int(right))):
-//                     .success(.int(left - right))
-//                 case let (.success(.float(left)), .success(.float(right))):
-//                     .success(.float(left - right))
-//                 default:
-//                     .failure(.invalidOperation)
-//                 }
-//             case let .times(left, right):
-//                 switch (left.evaluate(with: input, and: scope), right.evaluate(with: input, and: scope)) {
-//                 case let (.success(.int(left)), .success(.int(right))):
-//                     .success(.int(left * right))
-//                 case let (.success(.float(left)), .success(.float(right))):
-//                     .success(.float(left * right))
-//                 default:
-//                     .failure(.invalidOperation)
-//                 }
-//             case let .by(left, right):
-//                 switch (left.evaluate(with: input, and: scope), right.evaluate(with: input, and: scope)) {
-//                 case let (.success(.int(left)), .success(.int(right))):
-//                     .success(.int(left / right))
-//                 case let (.success(.float(left)), .success(.float(right))):
-//                     .success(.float(left / right))
-//                 default:
-//                     .failure(.invalidOperation)
-//                 }
-//             case let .mod(left, right):
-//                 switch (left.evaluate(with: input, and: scope), right.evaluate(with: input, and: scope)) {
-//                 case let (.success(.int(left)), .success(.int(right))):
-//                     .success(.int(left % right))
-//                 default:
-//                     .failure(.invalidOperation)
-//                 }
-//             case let .equal(left, right):
-//                 switch (left.evaluate(with: input, and: scope), right.evaluate(with: input, and: scope)) {
-//                 case let (.success(.int(left)), .success(.int(right))):
-//                     .success(.bool(left == right))
-//                 case let (.success(.float(left)), .success(.float(right))):
-//                     .success(.bool(left == right))
-//                 case let (.success(.string(left)), .success(.string(right))):
-//                     .success(.bool(left == right))
-//                 default:
-//                     .failure(.invalidOperation)
-//                 }
-//             case let .lessThan(left, right):
-//                 switch (left.evaluate(with: input, and: scope), right.evaluate(with: input, and: scope)) {
-//                 case let (.success(.int(left)), .success(.int(right))):
-//                     .success(.bool(left < right))
-//                 case let (.success(.float(left)), .success(.float(right))):
-//                     .success(.bool(left < right))
-//                 default:
-//                     .failure(.invalidOperation)
-//                 }
-//             case let .lessThanEqual(left, right):
-//                 switch (left.evaluate(with: input, and: scope), right.evaluate(with: input, and: scope)) {
-//                 case let (.success(.int(left)), .success(.int(right))):
-//                     .success(.bool(left <= right))
-//                 case let (.success(.float(left)), .success(.float(right))):
-//                     .success(.bool(left <= right))
-//                 default:
-//                     .failure(.invalidOperation)
-//                 }
-//             case let .greaterThan(left, right):
-//                 switch (left.evaluate(with: input, and: scope), right.evaluate(with: input, and: scope)) {
-//                 case let (.success(.int(left)), .success(.int(right))):
-//                     .success(.bool(left > right))
-//                 case let (.success(.float(left)), .success(.float(right))):
-//                     .success(.bool(left > right))
-//                 default:
-//                     .failure(.invalidOperation)
-//                 }
-//             case let .greaterThanEqual(left, right):
-//                 switch (left.evaluate(with: input, and: scope), right.evaluate(with: input, and: scope)) {
-//                 case let (.success(.int(left)), .success(.int(right))):
-//                     .success(.bool(left >= right))
-//                 case let (.success(.float(left)), .success(.float(right))):
-//                     .success(.bool(left >= right))
-//                 default:
-//                     .failure(.invalidOperation)
-//                 }
-//             case let .or(left, right):
-//                 switch (left.evaluate(with: input, and: scope), right.evaluate(with: input, and: scope)) {
-//                 case let (.success(.bool(left)), .success(.bool(right))):
-//                     .success(.bool(left || right))
-//                 default:
-//                     .failure(.invalidOperation)
-//                 }
-//             case let .and(left, right):
-//                 switch (left.evaluate(with: input, and: scope), right.evaluate(with: input, and: scope)) {
-//                 case let (.success(.bool(left)), .success(.bool(right))):
-//                     .success(.bool(left && right))
-//                 default:
-//                     .failure(.invalidOperation)
-//                 }
-//             case let .field(field):
-//                 if let fieldValue = scope[field] {
-//                     .success(fieldValue)
-//                 } else {
-//                     .failure(.fieldNotInScope(field))
-//                 }
-//             case let .parenthesized(expression):
-//                 expression.evaluate(with: input, and: scope)
-//             default:
-//                 .failure(.notImplemented)
-//             }
-//         } else {
-//             .failure(.invalidInputForExpression)
-//         }
-//     }
-//
 //     func getFields() -> Set<String> {
-//         switch self {
-//             case let .field(field):
-//                 return Set([field])
-//             case let .positive(simple), let .negative(simple), let .not(simple):
-//                 return simple.getFields()
-//             case let .plus(left, right), let .minus(left, right),
-//                  let .times(left, right), let .by(left, right), let .mod(left, right),
-//                  let .equal(left, right), let .different(left, right),
-//                  let .lessThan(left, right), let .lessThanEqual(left, right),
-//                  let .greaterThan(left, right), let .greaterThanEqual(left, right),
-//                  let .or(left, right), let .and(left, right):
-//                 return left.getFields().union(right.getFields())
-//             // TODO: adding compoud
-//             default:
-//                 return Set()
-//         }
-//     }
 // }
 //
 // extension Expression.Call: Evaluable {
@@ -600,74 +450,76 @@ extension Expression: Evaluable {
 //     }
 // }
 //
-// extension Expression.Branched: Evaluable {
-//     func evaluate(
-//         with input: Evaluation, and scope: [String: Evaluation]
-//     ) -> Result<Evaluation, SemanticError> {
-//
-//         // TODO: handle tupe input differently
-//         // print("evaluating branched")
-//         do {
-//             var scope = scope
-//             let branch = try self.branches.filter { branch in
-//                 guard let captureGroupExpression = branch.captureGroup.first else {
-//                     throw SemanticError.noCaptureGroups
-//                 }
-//                 switch captureGroupExpression {
-//                 case let .simple(simple):
-//                     let fields = simple.getFields()
-//                     let scopeFields = Set(scope.keys)
-//                     let capturedInputSet = fields.union(scopeFields).symmetricDifference(scopeFields)
-//                     // print("capturing, expression fields \(fields) scopw fields \(scopeFields) captured \(capturedInputSet)")
-//
-//                     if capturedInputSet.count > 1 {
-//                         throw SemanticError.tooManyFieldsInCaptureGroup
-//                     }
-//                     if capturedInputSet.count == 1, let capturedInput = capturedInputSet.first {
-//                         scope[capturedInput] = input
-//                         if case .field = simple {
-//                             return true
-//                         } else {
-//                             switch simple.evaluate(with: .nothing, and: scope) {
-//                             case let .success(evaluation):
-//                                 return evaluation == .bool(true)
-//                             case let .failure(error):
-//                                 throw error
-//                             }
-//                         }
-//                     } else {
-//                         switch simple.evaluate(with: .nothing, and: scope) {
-//                         case let .success(evaluation):
-//                             return evaluation == input
-//                         case let .failure(error):
-//                             throw error
-//                         }
-//                     }
-//                 case let .call(call):
-//                     // switch call {
-//                     // case let .field(field):
-//                     //     
-//                     // }
-//                     // nested pattern matching
-//                     return true //assign to scope
-//                 default:
-//                     throw SemanticError.invalidCaptureGroup
-//                 }
-//             }.first
-//
-//             switch branch?.body {
-//             case let .simple(simple):
-//                 return simple.evaluate(with: .nothing, and: scope)
-//             default:
-//                 throw SemanticError.notImplemented
-//             }
-//         } catch let error as SemanticError {
-//             return .failure(error)
-//         } catch {
-//             return .failure(.invalidOperation)
-//         }
-//     }
-// }
+
+extension Expression.Branched: Evaluable {
+    func evaluate(
+        with input: Evaluation, and scope: EvaluationScope
+    ) -> Result<Evaluation, SemanticError> {
+        return .success(.nothing)
+
+        // TODO: handle tupe input differently
+        // print("evaluating branched")
+        // do {
+        //     var scope = scope
+        //     let branch = try self.branches.filter { branch in
+        //         guard let captureGroupExpression = branch.captureGroup.first else {
+        //             throw SemanticError.noCaptureGroups
+        //         }
+        //         switch captureGroupExpression {
+        //         case let .simple(simple):
+        //             let fields = simple.getFields()
+        //             let scopeFields = Set(scope.keys)
+        //             let capturedInputSet = fields.union(scopeFields).symmetricDifference(scopeFields)
+        //             // print("capturing, expression fields \(fields) scopw fields \(scopeFields) captured \(capturedInputSet)")
+        //
+        //             if capturedInputSet.count > 1 {
+        //                 throw SemanticError.tooManyFieldsInCaptureGroup
+        //             }
+        //             if capturedInputSet.count == 1, let capturedInput = capturedInputSet.first {
+        //                 scope[capturedInput] = input
+        //                 if case .field = simple {
+        //                     return true
+        //                 } else {
+        //                     switch simple.evaluate(with: .nothing, and: scope) {
+        //                     case let .success(evaluation):
+        //                         return evaluation == .bool(true)
+        //                     case let .failure(error):
+        //                         throw error
+        //                     }
+        //                 }
+        //             } else {
+        //                 switch simple.evaluate(with: .nothing, and: scope) {
+        //                 case let .success(evaluation):
+        //                     return evaluation == input
+        //                 case let .failure(error):
+        //                     throw error
+        //                 }
+        //             }
+        //         case let .call(call):
+        //             // switch call {
+        //             // case let .field(field):
+        //             //     
+        //             // }
+        //             // nested pattern matching
+        //             return true //assign to scope
+        //         default:
+        //             throw SemanticError.invalidCaptureGroup
+        //         }
+        //     }.first
+        //
+        //     switch branch?.body {
+        //     case let .simple(simple):
+        //         return simple.evaluate(with: .nothing, and: scope)
+        //     default:
+        //         throw SemanticError.notImplemented
+        //     }
+        // } catch let error as SemanticError {
+        //     return .failure(error)
+        // } catch {
+        //     return .failure(.invalidOperation)
+        // }
+    }
+}
 //
 // extension Expression.Piped: Evaluable {
 //     func evaluate(

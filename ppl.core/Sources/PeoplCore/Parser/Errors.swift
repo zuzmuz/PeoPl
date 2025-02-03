@@ -24,7 +24,7 @@ enum SemanticError: LocalizedError, Encodable, Equatable {
         case .notImplemented:
             "Not implemented"
         case let .invalidOperation(location, operation, left, right):
-            "Invalid operation \(operation) on \(left) and \(right)"
+            "Invalid operation at \(location) \(operation) on \(left) and \(right)"
         case let .invalidInputForExpression(location, expected, received):
             "Invalid input for expression at \(location.pointRange), expected \(expected), received \(received)"
         case let .typeMismatch(location, left, right):

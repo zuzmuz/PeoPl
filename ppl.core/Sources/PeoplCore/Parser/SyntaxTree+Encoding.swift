@@ -27,7 +27,6 @@ extension Statement: DebugableSyntaxNode {
     }
 }
 
-
 // MARK: - type definitions
 // ------------------------
 

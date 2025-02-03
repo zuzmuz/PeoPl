@@ -252,7 +252,6 @@ extension FunctionDefinition {
         self.outputType = outputType
         guard let child = node.child(byFieldName: CodingKeys.body.rawValue),
               let body = Expression(from: child, in: source) else { return nil }
-        
         self.body = body
     }
 }
@@ -312,7 +311,7 @@ extension FlatNominalType {
     init?(from node: Node, in source: Source) {
         guard let location = node.getLocation(in: source) else { return nil }
         self.location = location
-        
+
         guard let typeNameNode = node.child(byFieldName: FlatNominalType.typeName),
             let typeName = typeNameNode.getString(in: source)
         else { return nil }
