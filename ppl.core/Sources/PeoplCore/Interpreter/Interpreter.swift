@@ -1,40 +1,40 @@
 
-// fileprivate extension String {
-//     func peoplFormat(_ arguments: [Evaluation]) -> String {
-//         var result = self
-//         
-//         for argument in arguments {
-//             result = result.replacingOccurrences(of: "{}", with: argument.describe(formating: ""))
-//         }
-//         
-//         return result
-//     }
-// }
-//
-// enum Evaluation: Encodable, Equatable {
-//     case nothing
-//     case int(Int)
-//     case float(Float)
-//     case string(String)
-//     case bool(Bool)
-//     // case nominalType ...
-//
-//     func describe(formating: String) -> String {
-//         switch self {
-//         case .nothing:
-//             "nothing"
-//         case let .int(int):
-//             "\(int)"
-//         case let .float(float):
-//             String(format: formating, float)
-//         case let .string(string):
-//             string
-//         case let .bool(bool):
-//             "\(bool)"
-//         }
-//     }
-// }
-//
+fileprivate extension String {
+    func peoplFormat(_ arguments: [Evaluation]) -> String {
+        var result = self
+        
+        for argument in arguments {
+            result = result.replacingOccurrences(of: "{}", with: argument.describe(formating: ""))
+        }
+        
+        return result
+    }
+}
+
+enum Evaluation: Encodable, Equatable {
+    case nothing
+    case int(Int)
+    case float(Float)
+    case string(String)
+    case bool(Bool)
+    // case nominalType ...
+
+    func describe(formating: String) -> String {
+        switch self {
+        case .nothing:
+            "nothing"
+        case let .int(int):
+            "\(int)"
+        case let .float(float):
+            String(format: formating, float)
+        case let .string(string):
+            string
+        case let .bool(bool):
+            "\(bool)"
+        }
+    }
+}
+
 // protocol Evaluable {
 //     func evaluate(
 //         with input: Evaluation, and scope: [String: Evaluation]
