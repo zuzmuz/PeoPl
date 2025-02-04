@@ -10,10 +10,6 @@
           {
             "type": "SYMBOL",
             "name": "_statement"
-          },
-          {
-            "type": "STRING",
-            "value": ".."
           }
         ]
       }
@@ -106,6 +102,10 @@
       "type": "SEQ",
       "members": [
         {
+          "type": "STRING",
+          "value": "impl"
+        },
+        {
           "type": "SYMBOL",
           "name": "nominal_type"
         },
@@ -122,6 +122,10 @@
     "constants_statement": {
       "type": "SEQ",
       "members": [
+        {
+          "type": "STRING",
+          "value": "const"
+        },
         {
           "type": "CHOICE",
           "members": [
@@ -187,11 +191,29 @@
       "value": "_*[A-Z][a-zA-Z0-9_]*"
     },
     "param_list": {
-      "type": "REPEAT1",
-      "content": {
-        "type": "SYMBOL",
-        "name": "param_definition"
-      }
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "SYMBOL",
+          "name": "param_definition"
+        },
+        {
+          "type": "REPEAT",
+          "content": {
+            "type": "SEQ",
+            "members": [
+              {
+                "type": "STRING",
+                "value": ","
+              },
+              {
+                "type": "SYMBOL",
+                "name": "param_definition"
+              }
+            ]
+          }
+        }
+      ]
     },
     "param_definition": {
       "type": "SEQ",
@@ -220,8 +242,25 @@
           "type": "CHOICE",
           "members": [
             {
-              "type": "STRING",
-              "value": ","
+              "type": "SEQ",
+              "members": [
+                {
+                  "type": "STRING",
+                  "value": "("
+                },
+                {
+                  "type": "FIELD",
+                  "name": "default_value",
+                  "content": {
+                    "type": "SYMBOL",
+                    "name": "_simple_expression"
+                  }
+                },
+                {
+                  "type": "STRING",
+                  "value": ")"
+                }
+              ]
             },
             {
               "type": "BLANK"
@@ -245,6 +284,10 @@
               "name": "function_definition"
             }
           ]
+        },
+        {
+          "type": "STRING",
+          "value": ".."
         }
       ]
     },

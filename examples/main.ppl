@@ -1,5 +1,4 @@
-func (A::B<C>) Scope.main() => D<E, F, G>
-    Nothing..
 
 
-
+func main() => Nothing
+    Nothing

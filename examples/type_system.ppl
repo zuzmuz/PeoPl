@@ -37,7 +37,7 @@ type Functions
 ** 
 ** Tuple typles (product types)
 type Container
-    tuple: [Type1 Type2 Type3]
+    tuple: [Type1, Type2, Type3]
     ..
 ** 
 ** ** generic types
@@ -45,7 +45,7 @@ type Container
 **     param: T
 **     ..
 ** 
-type MultiGeneric<T U V>
+type MultiGeneric<T, U, V>
     param1: T
     param2: U
     param3: V

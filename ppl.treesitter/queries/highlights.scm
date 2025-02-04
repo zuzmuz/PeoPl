@@ -1,10 +1,12 @@
 
 [
   "type"
+  "const"
 ] @keyword.type
 
 [
  "func"
+ "impl"
 ] @keyword.function
 
 [
@@ -82,8 +84,6 @@
 
 [
   "^"
-  ","
-  ".."
 ] @keyword.operator
 
 [
@@ -99,6 +99,8 @@
  "::"
  ":"
  "."
+ ","
+ ".."
  "->"
  "=>"
 ] @punctuation.delimiter

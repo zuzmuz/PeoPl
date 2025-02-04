@@ -32,7 +32,7 @@ module.exports = grammar({
     source_file: $ => repeat(
       seq(
         $._statement,
-        '..'
+        // '..'
       )
     ),
 
@@ -56,12 +56,14 @@ module.exports = grammar({
     ),
 
     implementation_statement: $ => seq(
+      'impl',
       $.nominal_type,
       '=',
       $.nominal_type,
     ),
 
     constants_statement: $ => seq(
+      'const',
       optional(seq(field('scope', $.nominal_type), '.')),
       field('argument_name', $.argument_name),
       '=',
@@ -74,17 +76,19 @@ module.exports = grammar({
     argument_name: $ => choice('_', /_*[a-z][a-zA-Z0-9_]*/),
     type_name: $ => /_*[A-Z][a-zA-Z0-9_]*/,
 
-    param_list: $ => repeat1($.param_definition),
+    param_list: $ => seq(
+      $.param_definition,
+      repeat(seq(',', $.param_definition))
+    ),
     param_definition: $ => seq(
       field("name", $.argument_name),
       ":",
       field("type", $.type_identifier),
-      // optional(seq(
-      //   '(',
-      //   field("default_value", $._simple_expression),
-      //   ')',
-      // )),
-      optional(',')
+      optional(seq(
+        '(',
+        field("default_value", $._simple_expression),
+        ')',
+      )),
     ),
 
 
@@ -93,6 +97,7 @@ module.exports = grammar({
         $.type_definition,
         $.function_definition,
       ),
+      '..'
     ),
     
     // Type Definitions

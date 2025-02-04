@@ -499,4 +499,50 @@ final class FunctionDefinitionTests: XCTestCase {
         XCTAssertEqual(type32.chain[0].typeName, "F")
         XCTAssertEqual(type33.chain[0].typeName, "G")
     }
+
+    func testReturnLambda() throws {
+        let source = """
+            func (Input) main(param1: {{} -> Nothing, {A, B, D} -> C} -> D) => {E} -> G
+                Nothing..
+        """
+
+        let module = try Module(source: source, path: "main")
+        let statement = module.statements[0]
+        guard case let .functionDefinition(functionDefinition) = statement else {
+            XCTAssertTrue(false)
+            return
+        }
+
+        XCTAssertEqual(functionDefinition.params.count, 1)
+        XCTAssertEqual(functionDefinition.params[0].name, "param1")
+
+        guard case let .lambda(paramType) = functionDefinition.params[0].type else {
+            XCTAssertTrue(false)
+            return
+        }
+
+        XCTAssertEqual(paramType.input.count, 2)
+        XCTAssertEqual(paramType.output.count, 1)
+
+        guard case let .lambda(paramInput1) = paramType.input[0],
+            case let .lambda(paramInput2) = paramType.input[1] else
+        {
+            XCTAssertTrue(false)
+            return
+        }
+        
+        XCTAssertEqual(paramInput1.input.count, 0)
+        XCTAssertEqual(paramInput2.input.count, 3)
+
+        guard case let .lambda(outputType) = functionDefinition.outputType else {
+            XCTAssertTrue(false)
+            return
+        }
+        XCTAssertEqual(outputType.input.count, 1)
+
+        if case let .nominal(ouputInputType) = outputType.input[0] {
+            XCTAssertEqual(ouputInputType.chain.count, 1)
+            XCTAssertEqual(ouputInputType.chain[0].typeName, "E")
+        }
+    }
 }

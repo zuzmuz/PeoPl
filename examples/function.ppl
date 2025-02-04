@@ -2,22 +2,21 @@ namespace [
     AB::CA,
     CD,
     XC
-]..
+]
 
 type TheAmazingStruct<A, C>::B<C>::X<Z>
-    Case2 a: Ex
-    Case3
-    ..
+    Case2 a: Ex,
+    Case3..
 
 type X<Z>
     param: Z
     ..
 
-X<Z> = X<I32>..
+impl X<Z> = X<I32>
 
-A::C::D.x = 3..
+const A::C::D.x = 3
 
-func (TheAmazingStruct<A, C>::B<C>::X<Z>::Case1<T>) A::C.foo(a: C d: D) => Int::B
+func (TheAmazingStruct<A, C>::B<C>::X<Z>::Case1<T>) A::C.foo(a: C, d: D) => Int::B
     |_| "sdfsdff",
     3 + 2 < "s";
     asd(a: s b: s);
@@ -25,4 +24,3 @@ func (TheAmazingStruct<A, C>::B<C>::X<Z>::Case1<T>) A::C.foo(a: C d: D) => Int::
     true;
     false
     ..
-
