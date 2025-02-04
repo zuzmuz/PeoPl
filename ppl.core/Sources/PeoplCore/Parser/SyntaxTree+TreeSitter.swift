@@ -396,6 +396,11 @@ extension Expression.ExpressionType {
 
         case positive = "unary_positive"
         case negative = "unary_negative"
+        case multiplied = "unary_multiply"
+        case divided = "unary_divide"
+        case moduled = "unary_modulo"
+        case anded = "unary_and"
+        case ored = "unary_or"
         case not = "unary_not"
 
         case plus = "binary_plus"
@@ -461,6 +466,16 @@ extension Expression.ExpressionType {
                 self = .positive(operandExpression)
             case "-":
                 self = .negative(operandExpression)
+            case "*":
+                self = .multiplied(operandExpression)
+            case "/":
+                self = .divided(operandExpression)
+            case "%":
+                self = .moduled(operandExpression)
+            case "and":
+                self = .anded(operandExpression)
+            case "or":
+                self = .ored(operandExpression)
             case "not":
                 self = .not(operandExpression)
             default:
@@ -521,8 +536,9 @@ extension Expression.ExpressionType {
             guard let accessedNode = node.child(at: 0),
                   let accessed = Expression.Prefix(from: accessedNode, in: source),
                   let argumentNode = node.child(at: 2),
-                  let argumentName = argumentNode.getString(in: source) else { return nil }
-            self = .access(Expression.Access(accessed: accessed, field: argumentName))
+                  let argumentName = argumentNode.getString(in: source),
+                  let location = node.getLocation(in: source) else { return nil }
+            self = .access(Expression.Access(accessed: accessed, field: argumentName, location: location))
         case CodingKeys.field.rawValue:
             guard let fieldValue = node.getString(in: source) else { return nil }
             self = .field(fieldValue)
@@ -543,6 +559,8 @@ extension Expression.ExpressionType {
 
 extension Expression.Call {
     init?(from node: Node, in source: Source) {
+        guard let location = node.getLocation(in: source) else { return nil }
+        self.location = location
         guard let commandNode = node.child(byFieldName: "command"),
               let command = Expression.Prefix(from: commandNode, in: source) else { return nil }
         self.command = command
@@ -578,6 +596,9 @@ extension Expression.Prefix {
 
 extension Expression.Call.Argument {
     init?(from node: Node, in source: Source) {
+        guard let location = node.getLocation(in: source) else { return nil }
+        self.location = location
+
         guard let nameNode = node.child(byFieldName: "name"),
               let name = nameNode.getString(in: source) else { return nil }
         self.name = name
@@ -592,6 +613,9 @@ extension Expression.Branched {
     static let branch = "branch_expression"
 
     init?(from node: Node, in source: Source) {
+        guard let location = node.getLocation(in: source) else { return nil }
+        self.location = location
+
         self.branches = node.compactMapChildren { child in
             if child.nodeType == Expression.Branched.branch {
                 Expression.Branched.Branch(from: child, in: source)
@@ -609,7 +633,11 @@ extension Expression.Branched {
 }
 
 extension Expression.Branched.Branch {
+
     init?(from node: Node, in source: Source) {
+        guard let location = node.getLocation(in: source) else { return nil }
+        self.location = location
+
         guard let captureGroupNode = node.child(byFieldName: "capture_group") else { return nil }
         self.captureGroup = captureGroupNode.compactMapChildren { child in
             Expression.Prefix(from: child, in: source)

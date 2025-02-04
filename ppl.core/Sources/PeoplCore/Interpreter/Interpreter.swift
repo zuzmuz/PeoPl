@@ -8,12 +8,37 @@ fileprivate extension String {
     }
 }
 
-enum Evaluation: Encodable, Equatable {
+
+enum Evaluation: Encodable, Equatable, Sequence {
+
+    struct Iterator: IteratorProtocol {
+        private var content: [Evaluation]
+        private var index: Int = 0
+
+        init(_ evaluation: Evaluation) {
+            switch evaluation {
+            case .nothing, .int, .float, .string, .bool:
+                content = [evaluation]
+            case let .tuple(evaluations):
+                content = evaluations 
+            }
+        }
+
+        mutating func next() -> Evaluation? {
+            if index >= content.count {
+                return nil
+            }
+            defer { index += 1 }
+            return content[index]
+        }
+    }
+
     case nothing
     case int(Int)
     case float(Float)
     case string(String)
     case bool(Bool)
+    case tuple([Evaluation])
     // case nominalType ...
 
     func describe(formating: String) -> String {
@@ -28,6 +53,8 @@ enum Evaluation: Encodable, Equatable {
             string
         case let .bool(bool):
             "\(bool)"
+        case let .tuple(evaluations):
+            "[\(evaluations.map { $0.describe(formating: formating) }.joined(separator: ", "))]"
         }
     }
 
@@ -43,12 +70,27 @@ enum Evaluation: Encodable, Equatable {
             "String"
         case .bool:
             "Bool"
+        case let .tuple(types):
+            "[\(types.map { $0.typeName }.joined(separator: ", "))]"
         }
+    }
+
+    var count: Int {
+        return switch self {
+        case .nothing, .int, .float, .string, .bool:
+            1
+        case let .tuple(evaluations):
+            evaluations.count
+        }
+    }
+
+    func makeIterator() -> Iterator {
+        return Iterator(self)
     }
 }
 
 struct EvaluationScope {
-    let locals: [String: Evaluation]
+    var locals: [String: Evaluation]
     // let globals: 
 }
 
@@ -168,6 +210,70 @@ extension Expression: Evaluable {
                     location: location, operation: "not", left: value.typeName, right: "bool"))
             case let .failure(error):
                 return .failure(error)
+            }
+
+        case (input, .multiplied(let value)):
+            let right = value.evaluate(with: .nothing, and: scope)
+            switch (input, right) {
+            case (.int(let left), .success(.int(let right))):
+                return .success(.int(left * right))
+            case (.float(let left), .success(.float(let right))):
+                return .success(.float(left * right))
+            case (_, .failure(let error)):
+                return .failure(error)
+            case (_, .success(let right)):
+                return .failure(.invalidInputForExpression(
+                    location: location, expected: input.typeName, received: right.typeName))
+            }
+
+        case (input, .divided(let value)):
+            let right = value.evaluate(with: .nothing, and: scope)
+            switch (input, right) {
+            case (.int(let left), .success(.int(let right))):
+                return .success(.int(left / right))
+            case (.float(let left), .success(.float(let right))):
+                return .success(.float(left / right))
+            case (_, .failure(let error)):
+                return .failure(error)
+            case (_, .success(let right)):
+                return .failure(.invalidInputForExpression(
+                    location: location, expected: input.typeName, received: right.typeName))
+            }
+
+        case (input, .moduled(let value)):
+            let right = value.evaluate(with: .nothing, and: scope)
+            switch (input, right) {
+            case (.int(let left), .success(.int(let right))):
+                return .success(.int(left % right))
+            case (_, .failure(let error)):
+                return .failure(error)
+            case (_, .success(let right)):
+                return .failure(.invalidInputForExpression(
+                    location: location, expected: input.typeName, received: right.typeName))
+            }
+
+        case (input, .anded(let value)):
+            let right = value.evaluate(with: .nothing, and: scope)
+            switch (input, right) {
+            case (.bool(let left), .success(.bool(let right))):
+                return .success(.bool(left && right))
+            case (_, .failure(let error)):
+                return .failure(error)
+            case (_, .success(let right)):
+                return .failure(.invalidInputForExpression(
+                    location: location, expected: input.typeName, received: right.typeName))
+            }
+
+        case (input, .ored(let value)):
+            let right = value.evaluate(with: .nothing, and: scope)
+            switch (input, right) {
+            case (.bool(let left), .success(.bool(let right))):
+                return .success(.bool(left || right))
+            case (_, .failure(let error)):
+                return .failure(error)
+            case (_, .success(let right)):
+                return .failure(.invalidInputForExpression(
+                    location: location, expected: input.typeName, received: right.typeName))
             }
 
         // Binary
@@ -418,8 +524,14 @@ extension Expression: Evaluable {
             case .failure(let error):
                 return .failure(error)
             }
+        case (.nothing, .field(let fieldName)):
+            if let fieldValue = scope.locals[fieldName] {
+                return .success(fieldValue)
+            } else {
+                return .failure(.fieldNotInScope(location: location, fieldName: fieldName))
+            }
         default:
-            return .failure(.notImplemented)
+            return .failure(.notImplemented(location: self.location, description: "wip"))
         }
     }
 }
@@ -451,92 +563,119 @@ extension Expression: Evaluable {
 // }
 //
 
+
 extension Expression.Branched: Evaluable {
+    
+    func evaluateCaptureGroupExpression(
+        with input: Evaluation
+    ) -> Result<Evaluation, SemanticError> {
+        return .success(.nothing)
+    }
+
     func evaluate(
         with input: Evaluation, and scope: EvaluationScope
     ) -> Result<Evaluation, SemanticError> {
-        return .success(.nothing)
+        do {
+            var modifiedScope = scope // needed to capture input set inside the branch capture groups
 
-        // TODO: handle tupe input differently
-        // print("evaluating branched")
-        // do {
-        //     var scope = scope
-        //     let branch = try self.branches.filter { branch in
-        //         guard let captureGroupExpression = branch.captureGroup.first else {
-        //             throw SemanticError.noCaptureGroups
-        //         }
-        //         switch captureGroupExpression {
-        //         case let .simple(simple):
-        //             let fields = simple.getFields()
-        //             let scopeFields = Set(scope.keys)
-        //             let capturedInputSet = fields.union(scopeFields).symmetricDifference(scopeFields)
-        //             // print("capturing, expression fields \(fields) scopw fields \(scopeFields) captured \(capturedInputSet)")
-        //
-        //             if capturedInputSet.count > 1 {
-        //                 throw SemanticError.tooManyFieldsInCaptureGroup
-        //             }
-        //             if capturedInputSet.count == 1, let capturedInput = capturedInputSet.first {
-        //                 scope[capturedInput] = input
-        //                 if case .field = simple {
-        //                     return true
-        //                 } else {
-        //                     switch simple.evaluate(with: .nothing, and: scope) {
-        //                     case let .success(evaluation):
-        //                         return evaluation == .bool(true)
-        //                     case let .failure(error):
-        //                         throw error
-        //                     }
-        //                 }
-        //             } else {
-        //                 switch simple.evaluate(with: .nothing, and: scope) {
-        //                 case let .success(evaluation):
-        //                     return evaluation == input
-        //                 case let .failure(error):
-        //                     throw error
-        //                 }
-        //             }
-        //         case let .call(call):
-        //             // switch call {
-        //             // case let .field(field):
-        //             //     
-        //             // }
-        //             // nested pattern matching
-        //             return true //assign to scope
-        //         default:
-        //             throw SemanticError.invalidCaptureGroup
-        //         }
-        //     }.first
-        //
-        //     switch branch?.body {
-        //     case let .simple(simple):
-        //         return simple.evaluate(with: .nothing, and: scope)
-        //     default:
-        //         throw SemanticError.notImplemented
-        //     }
-        // } catch let error as SemanticError {
-        //     return .failure(error)
-        // } catch {
-        //     return .failure(.invalidOperation)
-        // }
+            let branch = try self.branches.first { branch in
+                guard branch.captureGroup.count == input.count else {
+                    throw SemanticError.captureGroupCountMismatch(
+                        location: branch.location, 
+                        inputCount: input.count,
+                        captureCount: branch.captureGroup.count)
+                }
+
+                return try zip(input, branch.captureGroup).first { input, captureGroup in
+                    switch captureGroup {
+                    case .simple(let expression):
+                        switch (input, expression.expressionType) {
+                        case (_, .field):
+                            return false
+                        case (.int(let input), .intLiteral(let value)):
+                            return input != value
+                        case (_, .intLiteral):
+                            throw SemanticError.typeMismatch(
+                                location: expression.location,
+                                left: input.typeName,
+                                right: "Int")
+                        case (.float(let input), .floatLiteral(let value)):
+                            return input != value
+                        case (_, .floatLiteral):
+                            throw SemanticError.typeMismatch(
+                                location: expression.location,
+                                left: input.typeName,
+                                right: "Float")
+                        case (.string(let input), .stringLiteral(let value)):
+                            return input != value
+                        case (_, .stringLiteral):
+                            throw SemanticError.typeMismatch(
+                                location: expression.location,
+                                left: input.typeName,
+                                right: "String")
+                        case (.bool(let input), .boolLiteral(let value)):
+                            return input != value
+                        case (_, .boolLiteral):
+                            throw SemanticError.typeMismatch(
+                                location: expression.location,
+                                left: input.typeName,
+                                right: "Bool")
+                        case (_, .access), (_, .branched), (_, .piped), (_, .lambda), (_, .tuple):
+                            throw SemanticError.invalidCaptureGroup(
+                                location: expression.location)
+                        default:
+                            let fields = expression.getFields()
+                            let scopeFields = Set(scope.locals.keys)
+                            let capturedInputSet = fields.union(scopeFields).symmetricDifference(scopeFields)
+                            if capturedInputSet.count > 1 {
+                                throw SemanticError.tooManyFieldsInCaptureGroup(
+                                    location: expression.location, fields: Array(capturedInputSet))
+                            } else if capturedInputSet.count == 1, let capturedInput = capturedInputSet.first{
+                                modifiedScope.locals[capturedInput] = input
+                                switch expression.evaluate(with: .nothing, and: modifiedScope) {
+                                case let .success(.bool(value)):
+                                    return !value
+                                case .success:
+                                    throw SemanticError.invalidCaptureGroup(location: expression.location)
+                                case let .failure(error):
+                                    throw error
+                                }
+                            } else {
+                                switch expression.evaluate(with: .nothing, and: modifiedScope) {
+                                case let .success(evaluation):
+                                    return evaluation != input
+                                case let .failure(error):
+                                    throw error
+                                }
+                            }
+                        }
+                    case let .type(nominalType):
+                        throw SemanticError.notImplemented(
+                            location: nominalType.location, description: "type capture group not implemented yet")
+                    }
+                } != nil
+            }
+
+            switch branch?.body {
+            case let .simple(expression):
+                return expression.evaluate(with: .nothing, and: modifiedScope)
+            case let .looped(expression):
+                let result = expression.evaluate(with: .nothing, and: modifiedScope)
+                switch result {
+                case let .success(evaluation):
+                    return self.evaluate(with: evaluation, and: scope)
+                case let .failure(error):
+                    return .failure(error)
+                }
+            case nil:
+                return .failure(.reachedNever(location: self.location))
+            }
+        } catch {
+            if let error = error as? SemanticError {
+                return .failure(error)
+            } else {
+                return .failure(.sourceUnreadable)
+            }
+        }
     }
 }
-//
-// extension Expression.Piped: Evaluable {
-//     func evaluate(
-//         with input: Evaluation, and scope: [String: Evaluation]
-//     ) -> Result<Evaluation, SemanticError> {
-//         // print("piping  input \(input) scope \(scope)")
-//         return switch self {
-//         case let .normal(left, right):
-//             switch left.evaluate(with: input, and: scope) {
-//             case let .success(leftEvaluation):
-//                 right.evaluate(with: leftEvaluation, and: scope)
-//             case let .failure(error):
-//                 .failure(error)
-//             }
-//         case let .unwrapping(left, right):
-//             .failure(.notImplemented)
-//         }
-//     }
-// }
-//

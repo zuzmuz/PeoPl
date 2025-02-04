@@ -85,6 +85,16 @@ extension Expression.ExpressionType: DebugableSyntaxNode {
             try container.encode(expression, forKey: .positive)
         case let .negative(expression):
             try container.encode(expression, forKey: .negative)
+        case let .multiplied(expression):
+            try container.encode(expression, forKey: .multiplied)
+        case let .divided(expression):
+            try container.encode(expression, forKey: .divided)
+        case let .moduled(expression):
+            try container.encode(expression, forKey: .moduled)
+        case let .anded(expression):
+            try container.encode(expression, forKey: .anded)
+        case let .ored(expression):
+            try container.encode(expression, forKey: .ored)
         case let .not(expression):
             try container.encode(expression, forKey: .not)
         case let .plus(left, right):

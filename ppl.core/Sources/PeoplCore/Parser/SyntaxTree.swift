@@ -151,6 +151,13 @@ struct Expression: Encodable, SyntaxNode {
         // Unary
         case positive(Expression)
         case negative(Expression)
+
+        case multiplied(Expression)
+        case divided(Expression)
+        case moduled(Expression)
+        case anded(Expression)
+        case ored(Expression)
+
         case not(Expression)
 
         // Binary
@@ -190,29 +197,34 @@ struct Expression: Encodable, SyntaxNode {
         case type(NominalType)
     }
 
-    struct Call: Encodable {
+    struct Call: Encodable, SyntaxNode {
 
-        struct Argument: Encodable {
+        struct Argument: Encodable, SyntaxNode {
             let name: String
             let value: Expression
+            let location: NodeLocation
         }
 
         let command: Prefix
         let arguments: [Argument]
+        let location: NodeLocation
     }
 
-    struct Access: Encodable {
+    struct Access: Encodable, SyntaxNode {
         let accessed: Prefix
         let field: String
+        let location: NodeLocation
     }
 
-    struct Branched: Encodable {
+    struct Branched: Encodable, SyntaxNode {
         let branches: [Branch]
         let lastBranch: Expression?
+        let location: NodeLocation
 
-        struct Branch: Encodable {
+        struct Branch: Encodable, SyntaxNode {
             let captureGroup: [Prefix]
             let body: Body
+            let location: NodeLocation
 
             enum Body: Encodable {
                 case simple(Expression)
