@@ -19,7 +19,7 @@
       "members": [
         {
           "type": "STRING",
-          "value": "** "
+          "value": "//"
         },
         {
           "type": "PATTERN",

@@ -36,7 +36,7 @@ module.exports = grammar({
       )
     ),
 
-    comment: _ => seq('** ', /(\\+(.|\r?\n)|[^\\\n])*/),
+    comment: _ => seq('//', /(\\+(.|\r?\n)|[^\\\n])*/),
 
     _statement: $ => choice(
       $.namespace_state,
