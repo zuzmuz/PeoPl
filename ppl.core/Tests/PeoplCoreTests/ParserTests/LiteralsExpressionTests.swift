@@ -58,4 +58,26 @@ final class LiteralsExpressionTests: XCTestCase {
             XCTAssertTrue(false)
         }
     }
+
+    func testTuples() throws {
+        let source = """
+            func main() => [A, B, C]
+                [
+                    a: "this thing",
+                    b: "this other thing"
+                ]
+        """
+        let module = try Module(source: source, path: "main")
+        XCTAssertEqual(module.statements.count, 1)
+        let statement = module.statements[0]
+        guard case let .functionDefinition(functionDefinition) = statement else {
+            XCTAssertTrue(false)
+            return
+        }
+
+        let body = functionDefinition.body
+
+        if case let .tuple(expressions) = body.expressionType {
+        }
+    }
 }

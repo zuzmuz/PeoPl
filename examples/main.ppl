@@ -1,4 +1,16 @@
 
+// Input + Extra => Output
 
 func main() => Nothing
-    Nothing
+    [
+        expression1,
+        expression2,
+    ];
+    |a, b|
+        |a < 2|
+            something.whatever(a),
+        |b < 2|
+            sdfsdf.sdfsfs;
+
+
+

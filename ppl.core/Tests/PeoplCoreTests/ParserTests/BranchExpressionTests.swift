@@ -5,7 +5,7 @@ final class BranchExpressionTests: XCTestCase {
     func testIsEven() throws {
         let source = """
                 func main() => String
-                    3;
+                    3 |>
                     |i % 2 = 0| "is even",
                     |_| "is odd"
                     ..
@@ -84,11 +84,12 @@ final class BranchExpressionTests: XCTestCase {
     func testLooping() throws {
         let source = """
                 func print(from: I32, to: I32) => Nothing
-                    from;
+                    from |>
                     |i < to| (
-                        |i % 2 = 0| (i; print(format: "{} is even")),
-                        |i| (i; print(format: "{} is odd"));
-                        +1)^,
+                        |i % 2 = 0| (i |> print(format: "{} is even")),
+                        |i| (i |> print(format: "{} is odd"))
+                        |> +1
+                    )^,
                     Nothing
                     ..
             """

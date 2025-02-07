@@ -142,7 +142,7 @@ module.exports = grammar({
       $.never,
       $.nominal_type,
       $.lambda_structural_type,
-      $.tuple_structural_type,
+      $._tuple_structural_type,
     ),
 
     type_arguments: $ => seq(
@@ -161,10 +161,24 @@ module.exports = grammar({
       repeat(seq('::', $.flat_nominal_type))
     )),
 
-    tuple_structural_type: $ => seq(
+    unnamed_tuple_structural_type: $ => seq(
       '[',
-        seq($.type_identifier, repeat(seq(',', $.type_identifier))),
+        seq($.argument_name, ":", $.type_identifier),
+        repeat(seq(',', $.argument_name, ":", $.type_identifier)),
+        optional(','),
       ']'
+    ),
+    named_tuple_structural_type: $ => seq(
+      '[',
+        $.type_identifier,
+        repeat(seq(',', $.type_identifier)),
+        optional(','),
+      ']'
+    ),
+
+    _tuple_structural_type: $ => choice(
+      $.unnamed_tuple_structural_type,
+      $.unnamed_tuple_structural_type
     ),
 
     lambda_structural_type: $ => seq(
@@ -260,7 +274,7 @@ module.exports = grammar({
         $._single_expression,
         $.unary_expression,
         $.binary_expression,
-        $.tuple_literal,
+        $._tuple_literal,
         $.parenthisized_expression,
         $.lambda_expression,
         $.argument_name,
@@ -284,10 +298,27 @@ module.exports = grammar({
       ')',
     ),
 
-    tuple_literal: $ => seq('[',
-      $._expression,
-      repeat(seq(',', $._expression)),
-    ']'),
+    
+    unnamed_tuple_literal: $ => seq(
+      '[',
+        $._expression,
+        repeat(seq(',', $._expression)),
+        optional(','),
+      ']'
+    ),
+
+    named_tuple_literal: $ => seq(
+      '[',
+        seq($.argument_name, ":", $._expression),
+        repeat(seq(',', $.argument_name, ":", $._expression)),
+        optional(','),
+      ']'
+    ),
+
+    _tuple_literal: $ =>  choice(
+      $.unnamed_tuple_literal,
+      $.named_tuple_literal
+    ),
 
     lambda_expression: $ => seq(
       '{',
@@ -337,6 +368,7 @@ module.exports = grammar({
       $.branch_expression,
       repeat(seq(',', $.branch_expression)),
       optional(seq(',', $._simple_expression)),
+      // ';'
     )),
 
     // a subpipe branch is expression with a capture group
@@ -374,6 +406,6 @@ module.exports = grammar({
         field("right", $._expression),
     )),
 
-    pipe_operator: $ => ';',
+    pipe_operator: $ => '|>',
   }
 });

@@ -122,7 +122,7 @@ enum StructuralType {
         }
     }
 
-    struct Tuple: Encodable, SyntaxNode, Equatable {
+    struct UnnamedTuple: Encodable, SyntaxNode, Equatable {
         let types: [TypeIdentifier]
         let location: NodeLocation
 

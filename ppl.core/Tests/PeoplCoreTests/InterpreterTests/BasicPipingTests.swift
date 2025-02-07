@@ -7,9 +7,9 @@ final class BasicPipingTests: XCTestCase {
     func testArithmetics() throws {
         let source = """
             func (I32) main() => I32
-                -10;
-                + 3 ;
-                * ( 10 / 2);
+                -10 |>
+                + 3 |>
+                * ( 10 / 2) |>
                 % 3..
             """
         let module = try Module(source: source, path: "main")
