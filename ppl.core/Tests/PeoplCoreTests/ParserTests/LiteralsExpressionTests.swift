@@ -77,7 +77,7 @@ final class LiteralsExpressionTests: XCTestCase {
 
         let body = functionDefinition.body
 
-        if case let .tuple(expressions) = body.expressionType {
+        if case let .namedTuple(arguments) = body.expressionType {
         }
     }
 }

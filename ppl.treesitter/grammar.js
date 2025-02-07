@@ -161,14 +161,14 @@ module.exports = grammar({
       repeat(seq('::', $.flat_nominal_type))
     )),
 
-    unnamed_tuple_structural_type: $ => seq(
+    named_tuple_structural_type: $ => seq(
       '[',
-        seq($.argument_name, ":", $.type_identifier),
-        repeat(seq(',', $.argument_name, ":", $.type_identifier)),
+        $.param_definition,
+        repeat(seq(',', $.param_definition)),
         optional(','),
       ']'
     ),
-    named_tuple_structural_type: $ => seq(
+    unnamed_tuple_structural_type: $ => seq(
       '[',
         $.type_identifier,
         repeat(seq(',', $.type_identifier)),

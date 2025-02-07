@@ -627,7 +627,7 @@
         ]
       }
     },
-    "unnamed_tuple_structural_type": {
+    "named_tuple_structural_type": {
       "type": "SEQ",
       "members": [
         {
@@ -635,21 +635,8 @@
           "value": "["
         },
         {
-          "type": "SEQ",
-          "members": [
-            {
-              "type": "SYMBOL",
-              "name": "argument_name"
-            },
-            {
-              "type": "STRING",
-              "value": ":"
-            },
-            {
-              "type": "SYMBOL",
-              "name": "type_identifier"
-            }
-          ]
+          "type": "SYMBOL",
+          "name": "param_definition"
         },
         {
           "type": "REPEAT",
@@ -662,15 +649,7 @@
               },
               {
                 "type": "SYMBOL",
-                "name": "argument_name"
-              },
-              {
-                "type": "STRING",
-                "value": ":"
-              },
-              {
-                "type": "SYMBOL",
-                "name": "type_identifier"
+                "name": "param_definition"
               }
             ]
           }
@@ -693,7 +672,7 @@
         }
       ]
     },
-    "named_tuple_structural_type": {
+    "unnamed_tuple_structural_type": {
       "type": "SEQ",
       "members": [
         {

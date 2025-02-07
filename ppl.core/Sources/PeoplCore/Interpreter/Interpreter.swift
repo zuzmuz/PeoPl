@@ -620,7 +620,9 @@ extension Expression.Branched: Evaluable {
                                 location: expression.location,
                                 left: input.typeName,
                                 right: "Bool")
-                        case (_, .access), (_, .branched), (_, .piped), (_, .lambda), (_, .tuple):
+                        case (_, .access), (_, .branched), 
+                             (_, .piped), (_, .lambda), 
+                             (_, .unnamedTuple), (_, .namedTuple):
                             throw SemanticError.invalidCaptureGroup(
                                 location: expression.location)
                         default:

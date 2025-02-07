@@ -54,7 +54,9 @@ extension TypeIdentifier: DebugableSyntaxNode {
             try "never".encode(to: encoder)
         case let .nominal(nominal):
             try nominal.encode(to: encoder)
-        case let .tuple(tuple):
+        case let .unnamedTuple(tuple):
+            try tuple.encode(to: encoder)
+        case let .namedTuple(tuple):
             try tuple.encode(to: encoder)
         case let .lambda(lambda):
             try lambda.encode(to: encoder)
@@ -123,8 +125,10 @@ extension Expression.ExpressionType: DebugableSyntaxNode {
             try container.encode(["left": left, "right": right], forKey: .or)
         case let .and(left, right):
             try container.encode(["left": left, "right": right], forKey: .and)
-        case let .tuple(expressions):
-            try container.encode(expressions, forKey: .tuple)
+        case let .namedTuple(expressions):
+            try container.encode(expressions, forKey: .namedTuple)
+        case let .unnamedTuple(expressions):
+            try container.encode(expressions, forKey: .unnamedTuple)
         case let .lambda(expression):
             try container.encode(expression, forKey: .lambda)
         case let .call(call):

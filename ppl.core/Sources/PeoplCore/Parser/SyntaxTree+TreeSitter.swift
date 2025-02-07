@@ -267,7 +267,8 @@ extension TypeIdentifier {
         case never = "never"
         case nominal = "nominal_type"
         case lambda = "lambda_structural_type"
-        case tuple = "tuple_structural_type"
+        case namedTuple = "named_tuple_structural_type"
+        case unnamedTuple = "unnamed_tuple_structural_type"
     }
 
     init?(from node: Node, in source: Source) {
@@ -283,9 +284,12 @@ extension TypeIdentifier {
         case CodingKeys.lambda.rawValue:
             guard let lambda = StructuralType.Lambda(from: child, in: source) else { return nil }
             self = .lambda(lambda)
-        case CodingKeys.tuple.rawValue:
-            guard let tuple = StructuralType.Tuple(from: child, in: source) else { return nil }
-            self = .tuple(tuple)
+        case CodingKeys.namedTuple.rawValue:
+            guard let tuple = StructuralType.NamedTuple(from: child, in: source) else { return nil }
+            self = .namedTuple(tuple)
+        case CodingKeys.unnamedTuple.rawValue:
+            guard let tuple = StructuralType.UnnamedTuple(from: child, in: source) else { return nil }
+            self = .unnamedTuple(tuple)
         default:
             return nil
         }
@@ -331,7 +335,7 @@ extension FlatNominalType {
     }
 }
 
-extension StructuralType.Tuple {
+extension StructuralType.UnnamedTuple {
     init?(from node: Node, in source: Source) {
         guard let location = node.getLocation(in: source) else { return nil }
         self.location = location
@@ -339,6 +343,20 @@ extension StructuralType.Tuple {
         self.types = node.compactMapChildren { child in
             if child.nodeType == TypeIdentifier.typeIdentifier {
                 return TypeIdentifier(from: child, in: source)
+            }
+            return nil
+        }
+    }
+}
+
+extension StructuralType.NamedTuple {
+    init?(from node: Node, in source: Source) {
+        guard let location = node.getLocation(in: source) else { return nil }
+        self.location = location
+
+        self.types = node.compactMapChildren { child in
+            if child.nodeType == ParamDefinition.rawValue {
+                return ParamDefinition(from: child, in: source)
             }
             return nil
         }
@@ -418,7 +436,8 @@ extension Expression.ExpressionType {
         case or = "binary_or"
         case and = "binary_and"
 
-        case tuple = "tuple_literal"
+        case unnamedTuple = "unnamed_tuple_literal"
+        case namedTuple = "named_tuple_literal"
         case lambda = "lambda_expression"
 
 
@@ -520,11 +539,16 @@ extension Expression.ExpressionType {
             default:
                 return nil
             }
-        case CodingKeys.tuple.rawValue:
+        case CodingKeys.unnamedTuple.rawValue:
             let expressions = node.compactMapChildren { node in
                 Expression(from: node, in: source)
             }
-            self = .tuple(expressions)
+            self = .unnamedTuple(expressions)
+        case CodingKeys.namedTuple.rawValue:
+            let arguments = node.compactMapChildren { node in
+                Expression.Argument(from: node, in: source)
+            }
+            self = .namedTuple(arguments)
         case CodingKeys.lambda.rawValue:
             guard let expressionNode = node.child(at: 1),
                   let expression = Expression(from: expressionNode, in: source) else { return nil }
@@ -567,7 +591,7 @@ extension Expression.Call {
 
         if let paramListNode = node.child(byFieldName: "params") {
             self.arguments = paramListNode.compactMapChildren { child in
-                Expression.Call.Argument(from: child, in: source)
+                Expression.Argument(from: child, in: source)
             }
         } else {
             self.arguments = []
@@ -594,7 +618,7 @@ extension Expression.Prefix {
     }
 }
 
-extension Expression.Call.Argument {
+extension Expression.Argument {
     init?(from node: Node, in source: Source) {
         guard let location = node.getLocation(in: source) else { return nil }
         self.location = location

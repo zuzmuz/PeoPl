@@ -86,7 +86,8 @@ enum TypeIdentifier: Encodable, Equatable {
     case never
     case nominal(NominalType)
     case lambda(StructuralType.Lambda)
-    case tuple(StructuralType.Tuple)
+    case namedTuple(StructuralType.NamedTuple)
+    case unnamedTuple(StructuralType.UnnamedTuple)
 }
 
 struct FlatNominalType: Encodable, SyntaxNode, Equatable {
@@ -126,8 +127,25 @@ enum StructuralType {
         let types: [TypeIdentifier]
         let location: NodeLocation
 
-        static func == (lhs: Tuple, rhs: Tuple) -> Bool {
+        static func == (lhs: UnnamedTuple, rhs: UnnamedTuple) -> Bool {
             lhs.types == rhs.types
+        }
+
+        static func == (lhs: UnnamedTuple, rhs: NamedTuple) -> Bool {
+            lhs.types == rhs.types.map { $0.type } 
+        }
+    }
+
+    struct NamedTuple: Encodable, SyntaxNode, Equatable {
+        let types: [ParamDefinition]
+        let location: NodeLocation
+
+        static func == (lhs: NamedTuple, rhs: NamedTuple) -> Bool {
+            lhs.types.map { $0.type } == rhs.types.map { $0.type }
+        }
+
+        static func == (lhs: NamedTuple, rhs: UnnamedTuple) -> Bool {
+            lhs.types.map { $0.type } == rhs.types
         }
     }
 }
@@ -180,7 +198,8 @@ struct Expression: Encodable, SyntaxNode {
         case and(left: Expression, right: Expression)
 
         // Compounds
-        case tuple([Expression])
+        case unnamedTuple([Expression])
+        case namedTuple([Argument])
         case lambda(Expression)
 
         // Scope
@@ -197,13 +216,14 @@ struct Expression: Encodable, SyntaxNode {
         case type(NominalType)
     }
 
+    struct Argument: Encodable, SyntaxNode {
+        let name: String
+        let value: Expression
+        let location: NodeLocation
+    }
+
     struct Call: Encodable, SyntaxNode {
 
-        struct Argument: Encodable, SyntaxNode {
-            let name: String
-            let value: Expression
-            let location: NodeLocation
-        }
 
         let command: Prefix
         let arguments: [Argument]

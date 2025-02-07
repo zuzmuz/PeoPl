@@ -186,7 +186,7 @@ final class FunctionDefinitionTests: XCTestCase {
         }
 
         XCTAssertEqual(functionDefinition.name, "main")
-        guard case let .tuple(inputType) = functionDefinition.inputType else {
+        guard case let .unnamedTuple(inputType) = functionDefinition.inputType else {
             XCTAssertTrue(false)
             return
         }
@@ -203,7 +203,7 @@ final class FunctionDefinitionTests: XCTestCase {
         XCTAssertEqual(type3.chain[0].typeName, "C")
         XCTAssertEqual(type4.chain[0].typeName, "D")
 
-        guard case let .tuple(outputType) = functionDefinition.outputType else {
+        guard case let .unnamedTuple(outputType) = functionDefinition.outputType else {
             XCTAssertTrue(false)
             return
         }
@@ -232,7 +232,7 @@ final class FunctionDefinitionTests: XCTestCase {
         }
 
         XCTAssertEqual(functionDefinition.name, "main")
-        guard case let .tuple(inputType) = functionDefinition.inputType else {
+        guard case let .unnamedTuple(inputType) = functionDefinition.inputType else {
             XCTAssertTrue(false)
             return
         }
@@ -248,7 +248,7 @@ final class FunctionDefinitionTests: XCTestCase {
         XCTAssertEqual(type2.chain[1].typeName, "Y")
         XCTAssertEqual(type2.chain[2].typeName, "X")
 
-        guard case let .tuple(outputType) = functionDefinition.outputType else {
+        guard case let .unnamedTuple(outputType) = functionDefinition.outputType else {
             XCTAssertTrue(false)
             return
         }
@@ -337,7 +337,7 @@ final class FunctionDefinitionTests: XCTestCase {
         XCTAssertEqual(inputType.chain[0].typeArguments.count, 0)
         XCTAssertEqual(inputType.chain[1].typeName, "B")
         XCTAssertEqual(inputType.chain[1].typeArguments.count, 2)
-        guard case let .tuple(genericType1) = inputType.chain[1].typeArguments[0],
+        guard case let .unnamedTuple(genericType1) = inputType.chain[1].typeArguments[0],
               case let .nominal(genericType2) = inputType.chain[1].typeArguments[1] else {
             XCTAssertTrue(false)
             return
@@ -364,7 +364,7 @@ final class FunctionDefinitionTests: XCTestCase {
         XCTAssertEqual(genericType2.chain[1].typeArguments.count, 2)
 
         guard case let .nominal(nestedGenericType1) = genericType2.chain[1].typeArguments[0],
-              case let .tuple(nestedGenericType2) = genericType2.chain[1].typeArguments[1] else {
+              case let .unnamedTuple(nestedGenericType2) = genericType2.chain[1].typeArguments[1] else {
             XCTAssertTrue(false)
             return
         }
@@ -374,7 +374,7 @@ final class FunctionDefinitionTests: XCTestCase {
         XCTAssertEqual(nestedGenericType2.types.count, 2)
 
 
-        guard case let .tuple(outputType) = functionDefinition.outputType else {
+        guard case let .unnamedTuple(outputType) = functionDefinition.outputType else {
             XCTAssertTrue(false)
             return
         }
@@ -390,7 +390,7 @@ final class FunctionDefinitionTests: XCTestCase {
 
         guard case let .nominal(genericType1) = type1.chain[1].typeArguments[0],
               case let .nominal(genericType2) = type1.chain[1].typeArguments[1],
-              case let .tuple(genericType3) = type1.chain[1].typeArguments[2] else {
+              case let .unnamedTuple(genericType3) = type1.chain[1].typeArguments[2] else {
             XCTAssertTrue(false)
             return
         }
@@ -466,7 +466,7 @@ final class FunctionDefinitionTests: XCTestCase {
         XCTAssertEqual(functionDefinition.params[2].name, "param3")
 
         guard case let .nominal(type1) = functionDefinition.params[0].type,
-              case let .tuple(type2) = functionDefinition.params[1].type,
+              case let .unnamedTuple(type2) = functionDefinition.params[1].type,
               case let .lambda(type3) = functionDefinition.params[2].type else {
             XCTAssertTrue(false)
             return
