@@ -5,12 +5,9 @@ func main() => Nothing
     [
         expression1,
         expression2,
-    ];
-    |a, b|
-        |a < 2|
-            something.whatever(a),
-        |b < 2|
-            sdfsdf.sdfsfs;
+    ] |>
+    |a, b,
+     c, d| a
 
 
 

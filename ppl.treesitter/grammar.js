@@ -388,7 +388,7 @@ module.exports = grammar({
 
     capture_group: $ => seq(
       choice($._simple_expression, $.nominal_type),
-      repeat(seq(',', $._simple_expression, $.nominal_type)),
+      repeat(seq(',', choice($._simple_expression, $.nominal_type))),
     ),
 
 

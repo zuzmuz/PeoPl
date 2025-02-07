@@ -1597,12 +1597,17 @@
                 "value": ","
               },
               {
-                "type": "SYMBOL",
-                "name": "_simple_expression"
-              },
-              {
-                "type": "SYMBOL",
-                "name": "nominal_type"
+                "type": "CHOICE",
+                "members": [
+                  {
+                    "type": "SYMBOL",
+                    "name": "_simple_expression"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "nominal_type"
+                  }
+                ]
               }
             ]
           }
