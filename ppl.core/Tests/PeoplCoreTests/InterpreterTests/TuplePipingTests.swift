@@ -64,4 +64,20 @@ final class TuplePipingTests: XCTestCase {
         scope = EvaluationScope(locals: ["of": .int(0)])
         XCTAssertEqual(module.evaluate(with: .nothing, and: scope), .success(.int(1)))
     }
+
+    func testingNamedTuples() throws {
+        let source = """
+            func main(of: I32) => I32
+                [a: 1, b: 1] |>
+                |fact, value <= of| ([fact*value, value+1])^,
+                |fact, _| fact
+        """
+        let module = try Module(source: source, path: "main")
+        var scope = EvaluationScope(locals: ["of": .int(4)])
+        XCTAssertEqual(module.evaluate(with: .nothing, and: scope), .success(.int(24)))
+        scope = EvaluationScope(locals: ["of": .int(5)])
+        XCTAssertEqual(module.evaluate(with: .nothing, and: scope), .success(.int(120)))
+        scope = EvaluationScope(locals: ["of": .int(0)])
+        XCTAssertEqual(module.evaluate(with: .nothing, and: scope), .success(.int(1)))
+    }
 }

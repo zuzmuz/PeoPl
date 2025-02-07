@@ -309,8 +309,8 @@ module.exports = grammar({
 
     named_tuple_literal: $ => seq(
       '[',
-        seq($.argument_name, ":", $._expression),
-        repeat(seq(',', $.argument_name, ":", $._expression)),
+        $.call_param,
+        repeat(seq(',', $.call_param)),
         optional(','),
       ']'
     ),
