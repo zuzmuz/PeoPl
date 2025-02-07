@@ -95,8 +95,16 @@ enum Evaluation: Encodable, Equatable, Sequence {
 
 struct EvaluationScope {
     var locals: [String: Evaluation]
-    // TODO: String is the function identifier, should be a hash of function name and scope
-    let functions: [String: FunctionDefinition] = [:]
+    let functions: Set<FunctionDefinition>
+
+    init(locals: [String: Evaluation]) {
+        self.init(locals: locals, functions: Set())
+    }
+
+    init(locals: [String: Evaluation], functions: Set<FunctionDefinition>) {
+        self.locals = locals
+        self.functions = functions
+    }
 }
 
 

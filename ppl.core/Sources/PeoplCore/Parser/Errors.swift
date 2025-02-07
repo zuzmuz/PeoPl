@@ -3,6 +3,7 @@ import Foundation
 enum SemanticError: LocalizedError, Encodable, Equatable {
     case sourceUnreadable
     case mainFunctionNotFound
+    case duplicateDefinitions(locations: [NodeLocation])
     case reachedNever(location: NodeLocation)
     case notImplemented(location: NodeLocation, description: String)
     case invalidOperation(location: NodeLocation, operation: String, left: String, right: String)
@@ -21,6 +22,8 @@ enum SemanticError: LocalizedError, Encodable, Equatable {
             "Source unreadable"
         case .mainFunctionNotFound:
             "Main function not found"
+        case let .duplicateDefinitions(locations):
+            "Duplicate definitions \(locations.map { $0.pointRange })"
         case let .reachedNever(location):
             "Reached never \(location.pointRange)"
         case let .notImplemented(location, description):

@@ -2,7 +2,7 @@ import XCTest
 @testable import PeoplCore
 
 final class MultipleDefinitionTests: XCTestCase {
-    func testIsEven() throws {
+    func testCalling() throws {
         let source = """
                 func other() => String
                     "other"

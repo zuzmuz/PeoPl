@@ -3,6 +3,7 @@ extension Project: Evaluable {
     func evaluate(
         with input: Evaluation, and scope: EvaluationScope
     ) -> Result<Evaluation, SemanticError> {
+
         let functions = self.modules.flatMap { (name, module) in
             module.statements.compactMap { statement in
                 if case let .functionDefinition(function) = statement { 
@@ -12,15 +13,29 @@ extension Project: Evaluable {
             }
         }
 
-        // let functionsDictionary = functions.reduce(into: [:]) { accumulated, function in
-        //     if 
-        //     accumulated[function.name] = function
-        // }
-        // 
-        // let main = func
+        let functionsDictionary = functions.reduce(into: [:]) { accumulated, function in
+            accumulated[function] = (accumulated[function] ?? []) + [function.location]
+        }
 
+        let duplicates = functionsDictionary.filter { $1.count > 1 }
 
-        return .success(.nothing)
+        if duplicates.count > 0 {
+            return .failure(.duplicateDefinitions(locations: duplicates.flatMap { key, value in
+                value
+            }))
+        }
+        
+        // TODO: maybe should consider pattern matching on input and scope
+        let main = functionsDictionary.filter { key, value in key.name == "main" }
+
+        guard let main = main.first?.key else {
+            return .failure(.mainFunctionNotFound)
+        }
+
+        let modifiedScope = EvaluationScope(
+            locals: scope.locals, 
+            functions: scope.functions.union(functionsDictionary.keys))
+        return main.body.evaluate(with: input, and: modifiedScope)
     }
 }
 
