@@ -97,9 +97,3 @@ struct EvaluationScope {
     var locals: [String: Evaluation]
     // let globals: 
 }
-
-protocol Evaluable {
-    func evaluate(
-        with input: Evaluation, and scope: EvaluationScope
-    ) -> Result<Evaluation, SemanticError>
-}

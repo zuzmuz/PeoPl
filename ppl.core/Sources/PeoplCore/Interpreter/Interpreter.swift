@@ -1,3 +1,9 @@
+protocol Evaluable {
+    func evaluate(
+        with input: Evaluation, and scope: EvaluationScope
+    ) -> Result<Evaluation, SemanticError>
+}
+
 fileprivate extension String {
     func peoplFormat(_ arguments: [Evaluation]) -> String {
         var result = self
@@ -467,6 +473,8 @@ extension Expression: Evaluable {
         }
     }
 }
+
+
 //     func getFields() -> Set<String> {
 // }
 //
