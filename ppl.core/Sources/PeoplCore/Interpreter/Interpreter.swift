@@ -590,7 +590,8 @@ extension Expression.Branched: Evaluable {
                     switch captureGroup {
                     case .simple(let expression):
                         switch (input, expression.expressionType) {
-                        case (_, .field):
+                        case (_, .field(let value)):
+                            modifiedScope.locals[value] = input
                             return false
                         case (.int(let input), .intLiteral(let value)):
                             return input != value
@@ -632,7 +633,7 @@ extension Expression.Branched: Evaluable {
                             if capturedInputSet.count > 1 {
                                 throw SemanticError.tooManyFieldsInCaptureGroup(
                                     location: expression.location, fields: Array(capturedInputSet))
-                            } else if capturedInputSet.count == 1, let capturedInput = capturedInputSet.first{
+                            } else if capturedInputSet.count == 1, let capturedInput = capturedInputSet.first {
                                 modifiedScope.locals[capturedInput] = input
                                 switch expression.evaluate(with: .nothing, and: modifiedScope) {
                                 case let .success(.bool(value)):
@@ -655,7 +656,7 @@ extension Expression.Branched: Evaluable {
                         throw SemanticError.notImplemented(
                             location: nominalType.location, description: "type capture group not implemented yet")
                     }
-                } != nil
+                } == nil
             }
 
             switch branch?.body {

@@ -8,4 +8,5 @@
 - object methods
 - optional chaining
 - named params
+- implicit in field (if expression contains in field, it will automatically capture input)
 

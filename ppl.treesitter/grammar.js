@@ -97,7 +97,7 @@ module.exports = grammar({
         $.type_definition,
         $.function_definition,
       ),
-      '..'
+      // '..'
     ),
     
     // Type Definitions

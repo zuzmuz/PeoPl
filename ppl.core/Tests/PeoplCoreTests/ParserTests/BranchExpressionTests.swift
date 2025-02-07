@@ -8,7 +8,6 @@ final class BranchExpressionTests: XCTestCase {
                     3 |>
                     |i % 2 = 0| "is even",
                     |_| "is odd"
-                    ..
             """
         let module = try Module(source: source, path: "main")
 
@@ -91,7 +90,6 @@ final class BranchExpressionTests: XCTestCase {
                         |> +1
                     )^,
                     Nothing
-                    ..
             """
         let module = try Module(source: source, path: "main")
 

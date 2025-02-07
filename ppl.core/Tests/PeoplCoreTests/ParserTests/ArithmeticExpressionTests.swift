@@ -6,7 +6,7 @@ final class ArithmeticsExpressionTests: XCTestCase {
     func testNothing() throws {
         let source = """
                 func main() => Nothing
-                    Nothing..
+                    Nothing
             """
         let module = try Module(source: source, path: "main")
 
@@ -28,7 +28,7 @@ final class ArithmeticsExpressionTests: XCTestCase {
     func testNever() throws {
         let source = """
                 func main() => Never
-                    Never..
+                    Never
             """
         let module = try Module(source: source, path: "main")
 
@@ -50,7 +50,7 @@ final class ArithmeticsExpressionTests: XCTestCase {
     func testArithmetics() throws {
         let source = """
                 func main() => I32
-                    5-2+3*4-6*5/2+1+10%3..
+                    5-2+3*4-6*5/2+1+10%3
             """
         let module = try Module(source: source, path: "main")
 
@@ -151,7 +151,7 @@ final class ArithmeticsExpressionTests: XCTestCase {
     func testComparisonEqual() throws {
         let source = """
                 func main() => I32
-                    -5+10+3 = 2*3 + 10/2..
+                    -5+10+3 = 2*3 + 10/2
             """
         let module = try Module(source: source, path: "main")
 
@@ -212,7 +212,7 @@ final class ArithmeticsExpressionTests: XCTestCase {
     func testParenthisizedUnaries() throws {
         let source = """
                 func main() => I32
-                    not((+4) * (-5) / (-6) > (-3) % (-2))..
+                    not((+4) * (-5) / (-6) > (-3) % (-2))
             """
         let module = try Module(source: source, path: "main")
 
@@ -268,7 +268,6 @@ final class ArithmeticsExpressionTests: XCTestCase {
         let source = """
                 func main() => I32
                     2 > 0 and 10 < 11 or 5 >= 3 and 6 <= 4 or 1 != 3
-                    ..
             """
         let module = try Module(source: source, path: "main")
 
@@ -347,7 +346,6 @@ final class ArithmeticsExpressionTests: XCTestCase {
                     1.1 * 3.1
                     = -3.2 / 4.2
                     )
-                    ..
             """
         let module = try Module(source: source, path: "main")
 
@@ -400,7 +398,6 @@ final class ArithmeticsExpressionTests: XCTestCase {
                     ((2 + 3) * 4 or 5 / ( 6 - 7))
                     and
                     (8 or 9)
-                    ..
             """
         let module = try Module(source: source, path: "main")
 

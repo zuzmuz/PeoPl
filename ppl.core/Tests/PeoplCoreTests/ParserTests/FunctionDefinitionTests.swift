@@ -6,7 +6,7 @@ final class FunctionDefinitionTests: XCTestCase {
     func testSimple() throws {
         let source = """
             func main() => Nothing
-                Nothing..
+                Nothing
         """
         let module = try Module(source: source, path: "main")
         XCTAssertEqual(module.statements.count, 1)
@@ -26,7 +26,7 @@ final class FunctionDefinitionTests: XCTestCase {
     func testScoped1() throws {
         let source = """
             func Scope.main() => Nothing
-                Nothing..
+                Nothing
         """
         let module = try Module(source: source, path: "main")
         XCTAssertEqual(module.statements.count, 1)
@@ -49,7 +49,7 @@ final class FunctionDefinitionTests: XCTestCase {
     func testScoped2() throws {
         let source = """
             func Scope1::Scope2.main() => Nothing
-                Nothing..
+                Nothing
         """
         let module = try Module(source: source, path: "main")
         XCTAssertEqual(module.statements.count, 1)
@@ -74,7 +74,7 @@ final class FunctionDefinitionTests: XCTestCase {
     func testScoped10() throws {
         let source = """
             func Scope1::Scope2::Scope3::Scope4::Scope5::Scope6::Scope7::Scope8::Scope9::Scope10.main() => Nothing
-                Nothing..
+                Nothing
         """
         let module = try Module(source: source, path: "main")
         XCTAssertEqual(module.statements.count, 1)
@@ -115,7 +115,7 @@ final class FunctionDefinitionTests: XCTestCase {
     func testInput() throws {
         let source = """
             func (Input) Scope.main() => Nothing
-                Nothing..
+                Nothing
         """
         let module = try Module(source: source, path: "main")
         XCTAssertEqual(module.statements.count, 1)
@@ -144,7 +144,7 @@ final class FunctionDefinitionTests: XCTestCase {
     func testNestedInput() throws {
         let source = """
             func (Nested::Input) Scope.main() => Nothing
-                Nothing..
+                Nothing
         """
         let module = try Module(source: source, path: "main")
         XCTAssertEqual(module.statements.count, 1)
@@ -175,7 +175,7 @@ final class FunctionDefinitionTests: XCTestCase {
     func testTuplesAsInputAndOutput() throws {
         let source = """
             func ([A, B, C, D]) Scope.main() => [E, F]
-                Nothing..
+                Nothing
         """
         let module = try Module(source: source, path: "main")
         XCTAssertEqual(module.statements.count, 1)
@@ -221,7 +221,7 @@ final class FunctionDefinitionTests: XCTestCase {
     func testTuplesAsInputAndOutputScoped() throws {
         let source = """
             func ([A::Z, B::Y::X]) Scope.main() => [E::W, F::V::U]
-                Nothing..
+                Nothing
         """
         let module = try Module(source: source, path: "main")
         XCTAssertEqual(module.statements.count, 1)
@@ -269,7 +269,7 @@ final class FunctionDefinitionTests: XCTestCase {
     func testGenericsInput() throws {
         let source = """
             func (A::B<C>) Scope.main() => D<E, F, G>
-                Nothing..
+                Nothing
         """
         let module = try Module(source: source, path: "main")
         XCTAssertEqual(module.statements.count, 1)
@@ -318,7 +318,7 @@ final class FunctionDefinitionTests: XCTestCase {
     func testComplicatedGeneric() throws {
         let source = """
             func (A::B<[C::D<E>, F], G::H<I, [J, K]>>) Scope.main() => [L::M<N, O, [P, Q]>]
-                Nothing..
+                Nothing
         """
         let module = try Module(source: source, path: "main")
         let statement = module.statements[0]
@@ -410,7 +410,7 @@ final class FunctionDefinitionTests: XCTestCase {
     func testFunctionParams() throws {
         let source = """
             func (Input) main(param1: A, param2: B) => Nothing
-                Nothing..
+                Nothing
         """
 
         let module = try Module(source: source, path: "main")
@@ -443,7 +443,7 @@ final class FunctionDefinitionTests: XCTestCase {
     func testFunctionParamsComplicated() throws {
         let source = """
             func (Input) main(param1: A::B, param2: [C<D>, Q], param3: {E, F} -> G) => Nothing
-                Nothing..
+                Nothing
         """
 
         let module = try Module(source: source, path: "main")
@@ -503,7 +503,7 @@ final class FunctionDefinitionTests: XCTestCase {
     func testReturnLambda() throws {
         let source = """
             func (Input) main(param1: {{} -> Nothing, {A, B, D} -> C} -> D) => {E} -> G
-                Nothing..
+                Nothing
         """
 
         let module = try Module(source: source, path: "main")

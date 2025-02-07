@@ -6,7 +6,7 @@ final class PipeAndCallsExpressionTests: XCTestCase {
         let source = """
                 func main() => Nothing
                     "Hello World" |>
-                    print()..
+                    print()
             """
         let module = try Module(source: source, path: "main")
 
@@ -38,7 +38,7 @@ final class PipeAndCallsExpressionTests: XCTestCase {
             func main() => Nothing
                 (1 + 2) * 3 |>
                 print(format: "the operations value is {}")
-                ..
+                
         """
         let module = try Module(source: source, path: "main")
 
@@ -88,7 +88,6 @@ final class PipeAndCallsExpressionTests: XCTestCase {
                 A::B.some_function(a: 1, b: 3) |>
                 C.another(c: true) |>
                 D::E::F.final(d: "one", e: "two", f: "three")
-                ..
         """
         let module = try Module(source: source, path: "main")
 

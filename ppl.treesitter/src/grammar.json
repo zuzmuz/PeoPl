@@ -284,10 +284,6 @@
               "name": "function_definition"
             }
           ]
-        },
-        {
-          "type": "STRING",
-          "value": ".."
         }
       ]
     },
