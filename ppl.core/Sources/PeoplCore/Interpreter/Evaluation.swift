@@ -95,5 +95,14 @@ enum Evaluation: Encodable, Equatable, Sequence {
 
 struct EvaluationScope {
     var locals: [String: Evaluation]
-    // let globals: 
+    // TODO: String is the function identifier, should be a hash of function name and scope
+    let functions: [String: FunctionDefinition] = [:]
 }
+
+
+protocol Evaluable {
+    func evaluate(
+        with input: Evaluation, and scope: EvaluationScope
+    ) -> Result<Evaluation, SemanticError>
+}
+

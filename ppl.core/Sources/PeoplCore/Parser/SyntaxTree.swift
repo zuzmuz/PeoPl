@@ -24,7 +24,7 @@ protocol SyntaxNode {
 }
 
 struct Project: Encodable {
-    let modules: [Module]
+    let modules: [String: Module]
 }
 
 struct Module: Encodable {
@@ -81,7 +81,7 @@ struct FunctionDefinition: Encodable, SyntaxNode {
 // MARK: - types
 // -------------
 
-enum TypeIdentifier: Encodable, Equatable {
+enum TypeIdentifier: Encodable {
     case nothing
     case never
     case nominal(NominalType)
@@ -90,63 +90,35 @@ enum TypeIdentifier: Encodable, Equatable {
     case unnamedTuple(StructuralType.UnnamedTuple)
 }
 
-struct FlatNominalType: Encodable, SyntaxNode, Equatable {
+struct FlatNominalType: Encodable, SyntaxNode {
     static let typeName = "type_name"
     static let typeArguments = "type_arguments"
     var typeName: String
     var typeArguments: [TypeIdentifier]
     var location: NodeLocation
-
-    static func == (lhs: FlatNominalType, rhs: FlatNominalType) -> Bool {
-        lhs.typeName == rhs.typeName && lhs.typeArguments == rhs.typeArguments
-    }
 }
 
-struct NominalType: Encodable, SyntaxNode, Equatable {
+struct NominalType: Encodable, SyntaxNode {
     static let flatNominalType = "flat_nominal_type"
     var chain: [FlatNominalType]
     var location: NodeLocation
-
-    static func == (lhs: NominalType, rhs: NominalType) -> Bool {
-        lhs.chain == rhs.chain
-    }
 }
 
 enum StructuralType {
-    struct Lambda: Encodable, SyntaxNode, Equatable {
+    struct Lambda: Encodable, SyntaxNode {
         let input: [TypeIdentifier]
         let output: [TypeIdentifier]
         let location: NodeLocation
-
-        static func == (lhs: Lambda, rhs: Lambda) -> Bool {
-            lhs.input == rhs.input && lhs.output == rhs.output
-        }
     }
 
-    struct UnnamedTuple: Encodable, SyntaxNode, Equatable {
+    struct UnnamedTuple: Encodable, SyntaxNode {
         let types: [TypeIdentifier]
         let location: NodeLocation
-
-        static func == (lhs: UnnamedTuple, rhs: UnnamedTuple) -> Bool {
-            lhs.types == rhs.types
-        }
-
-        static func == (lhs: UnnamedTuple, rhs: NamedTuple) -> Bool {
-            lhs.types == rhs.types.map { $0.type } 
-        }
     }
 
-    struct NamedTuple: Encodable, SyntaxNode, Equatable {
+    struct NamedTuple: Encodable, SyntaxNode {
         let types: [ParamDefinition]
         let location: NodeLocation
-
-        static func == (lhs: NamedTuple, rhs: NamedTuple) -> Bool {
-            lhs.types.map { $0.type } == rhs.types.map { $0.type }
-        }
-
-        static func == (lhs: NamedTuple, rhs: UnnamedTuple) -> Bool {
-            lhs.types.map { $0.type } == rhs.types
-        }
     }
 }
 

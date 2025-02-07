@@ -1,37 +1,3 @@
-protocol Evaluable {
-    func evaluate(
-        with input: Evaluation, and scope: EvaluationScope
-    ) -> Result<Evaluation, SemanticError>
-}
-
-fileprivate extension String {
-    func peoplFormat(_ arguments: [Evaluation]) -> String {
-        var result = self
-        for argument in arguments {
-            result = result.replacingOccurrences(of: "{}", with: argument.describe(formating: ""))
-        }
-        return result
-    }
-}
-
-
-extension Module: Evaluable {
-    func evaluate(
-        with input: Evaluation, and scope: EvaluationScope
-    ) -> Result<Evaluation, SemanticError> {
-        let main = self.statements.filter { statement in
-            if case let .functionDefinition(functionDefinition) = statement {
-                return functionDefinition.name == "main"
-            }
-            return false
-        }
-        guard main.count == 1, let main = main.first, case let .functionDefinition(main) = main else {
-            return .failure(.mainFunctionNotFound)
-        }
-        return main.body.evaluate(with: input, and: scope)
-    }
-}
-
 extension Expression: Evaluable {
     func getFields() -> Set<String> {
         switch self.expressionType {
