@@ -12,6 +12,13 @@ struct NodeLocation: Encodable, Equatable {
     let pointRange: Range<Point>
     let range: Range<Int>
     let sourceName: String
+
+    static let nowhere = NodeLocation(
+        pointRange: Point(
+            line: 0, column: 0)..<Point(
+            line: 0, column: 0),
+        range: 0..<0,
+        sourceName: "")
 }
 
 struct Source {
@@ -195,8 +202,6 @@ struct Expression: Encodable, SyntaxNode {
     }
 
     struct Call: Encodable, SyntaxNode {
-
-
         let command: Prefix
         let arguments: [Argument]
         let location: NodeLocation

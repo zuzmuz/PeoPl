@@ -1,7 +1,7 @@
 
 enum Evaluation: Encodable, Equatable, Sequence {
 
-    struct Argument: Encodable, Equatable {
+    struct NamedEvaluation: Encodable, Equatable {
         let name: String
         let value: Evaluation
     }
@@ -36,7 +36,7 @@ enum Evaluation: Encodable, Equatable, Sequence {
     case string(String)
     case bool(Bool)
     case unnamedTuple([Evaluation])
-    case namedTuple([Argument])
+    case namedTuple([NamedEvaluation])
     // case nominalType ...
 
     func describe(formating: String) -> String {
@@ -55,6 +55,74 @@ enum Evaluation: Encodable, Equatable, Sequence {
             "[\(evaluations.map { $0.describe(formating: formating) }.joined(separator: ", "))]"
         case let .namedTuple(evaluations):
             "[\(evaluations.map { "\($0.name): \($0.value.describe(formating: formating))" }.joined(separator: ", "))]"
+        }
+    }
+
+    var typeIdentifier: TypeIdentifier {
+        return switch self {
+        case .nothing:
+            .nominal(
+                NominalType(
+                    chain: [
+                        FlatNominalType(
+                            typeName: "Nothing",
+                            typeArguments: [],
+                            location: .nowhere)
+                        ],
+                    location: .nowhere))
+        case .int:
+            .nominal(
+                NominalType(
+                    chain: [
+                        FlatNominalType(
+                            typeName: "I32",
+                            typeArguments: [],
+                            location: .nowhere)
+                        ],
+                    location: .nowhere))
+        case .float:
+            .nominal(
+                NominalType(
+                    chain: [
+                        FlatNominalType(
+                            typeName: "F64",
+                            typeArguments: [],
+                            location: .nowhere)
+                        ],
+                    location: .nowhere))
+        case .string:
+            .nominal(
+                NominalType(
+                    chain: [
+                        FlatNominalType(
+                            typeName: "String",
+                            typeArguments: [],
+                            location: .nowhere)
+                        ],
+                    location: .nowhere))
+        case .bool:
+            .nominal(
+                NominalType(
+                    chain: [
+                        FlatNominalType(
+                            typeName: "Bool",
+                            typeArguments: [],
+                            location: .nowhere)
+                        ],
+                    location: .nowhere))
+        case .unnamedTuple(let evaluations):
+            .unnamedTuple(.init(
+                types: evaluations.map { $0.typeIdentifier },
+                location: .nowhere))
+        case .namedTuple(let evaluations):
+            .namedTuple(.init(
+                types: evaluations.map { 
+                    ParamDefinition(
+                        name: $0.name,
+                        type: $0.value.typeIdentifier,
+                        location: .nowhere)
+                },
+                location: .nowhere))
         }
     }
 
@@ -95,13 +163,17 @@ enum Evaluation: Encodable, Equatable, Sequence {
 
 struct EvaluationScope {
     var locals: [String: Evaluation]
-    let functions: Set<FunctionDefinition>
+    let functions: [FunctionDefinition: Expression]
 
-    init(locals: [String: Evaluation]) {
-        self.init(locals: locals, functions: Set())
+    init() {
+        self.init(locals: [:], functions: [:])
     }
 
-    init(locals: [String: Evaluation], functions: Set<FunctionDefinition>) {
+    init(locals: [String: Evaluation]) {
+        self.init(locals: locals, functions: [:])
+    }
+
+    init(locals: [String: Evaluation], functions: [FunctionDefinition: Expression]) {
         self.locals = locals
         self.functions = functions
     }

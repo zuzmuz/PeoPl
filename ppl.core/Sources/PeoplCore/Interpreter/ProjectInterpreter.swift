@@ -34,7 +34,11 @@ extension Project: Evaluable {
 
         let modifiedScope = EvaluationScope(
             locals: scope.locals, 
-            functions: scope.functions.union(functionsDictionary.keys))
+            functions: scope.functions.merging(functionsDictionary.reduce(into: [:]) { acc, function in 
+                acc[function.key] = function.key.body
+            }, uniquingKeysWith: { $1 })
+        )
+
         return main.body.evaluate(with: input, and: modifiedScope)
     }
 }

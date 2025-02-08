@@ -10,8 +10,10 @@ final class MultipleDefinitionTests: XCTestCase {
                     other()
             """
         let module = try Module(source: source, path: "main")
+        let project = Project(modules: ["main": module])
 
         XCTAssertEqual(module.statements.count, 2)
-        let statement = module.statements[0]
+        let scope = EvaluationScope()
+        XCTAssertEqual(project.evaluate(with: .nothing, and: scope), .success(.string("other")))
     }
 }

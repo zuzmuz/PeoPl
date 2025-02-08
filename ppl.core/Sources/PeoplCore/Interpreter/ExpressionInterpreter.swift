@@ -411,6 +411,8 @@ extension Expression: Evaluable {
             } else {
                 return .failure(.fieldNotInScope(location: location, fieldName: fieldName))
             }
+        case (input, .call(let call)):
+            return call.evaluate(with: input, and: scope)
         case (.nothing, .unnamedTuple(let expressions)):
             let results = expressions.map { $0.evaluate(with: input, and: scope) }
             if case let .failure(error) = (results.first { (try? $0.get()) == nil }) {
@@ -427,7 +429,7 @@ extension Expression: Evaluable {
             }
             return .success(.namedTuple(results.compactMap { result in
                 if let evaluation = try? result.1.get() {
-                    return Evaluation.Argument(name: result.0, value: evaluation)
+                    return Evaluation.NamedEvaluation(name: result.0, value: evaluation)
                 }
                 return nil
             }))

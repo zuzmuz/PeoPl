@@ -1,12 +1,5 @@
 
 extension Expression.Branched: Evaluable {
-    
-    func evaluateCaptureGroupExpression(
-        with input: Evaluation
-    ) -> Result<Evaluation, SemanticError> {
-        return .success(.nothing)
-    }
-
     func evaluate(
         with input: Evaluation, and scope: EvaluationScope
     ) -> Result<Evaluation, SemanticError> {

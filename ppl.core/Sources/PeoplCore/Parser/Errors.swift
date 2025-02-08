@@ -13,8 +13,17 @@ enum SemanticError: LocalizedError, Encodable, Equatable {
     case captureGroupCountMismatch(location: NodeLocation, inputCount: Int, captureCount: Int)
     case invalidCaptureGroup(location: NodeLocation)
     case tooManyFieldsInCaptureGroup(location: NodeLocation, fields: [String])
-    // case combination([SemanticError])
+    case combination([SemanticError])
     // case multipleDefinitions(type: NominalType)
+
+    static func combine(errors: [SemanticError]) -> SemanticError {
+        return .combination(errors.flatMap { error in
+            if case let .combination(errors) = error {
+                return errors
+            }
+            return [error]
+        })
+    }
 
     var errorDescription: String? {
         switch self {
@@ -44,8 +53,8 @@ enum SemanticError: LocalizedError, Encodable, Equatable {
             "Too many fields in capture group at \(location.pointRange), with fields \(fields.joined(separator: ", "))"
         // case .multipleDefinitions:
         //     "Muliplte definition"
-        // case let .combination(errors):
-        //     errors.compactMap { $0.errorDescription }.joined(separator: "\n")
+        case let .combination(errors):
+            errors.compactMap { $0.errorDescription }.joined(separator: "\n")
         }
     }
 }
