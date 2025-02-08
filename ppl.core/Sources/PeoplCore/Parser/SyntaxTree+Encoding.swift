@@ -1,16 +1,16 @@
 import Foundation
 
-protocol DebugableSyntaxNode /*: Encodable, CustomStringConvertible*/ {
+protocol DebugableSyntaxNode: Encodable, CustomStringConvertible {
 }
 
 extension DebugableSyntaxNode {
-    // var description: String {
-    //     let encoder = JSONEncoder()
-    //     encoder.outputFormatting = .prettyPrinted
-    //     guard let encoded = try? encoder.encode(self),
-    //         let description = String(data: encoded, encoding: .utf8) else { return "description failed" }
-    //     return description
-    // }
+    var description: String {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .prettyPrinted
+        guard let encoded = try? encoder.encode(self),
+            let description = String(data: encoded, encoding: .utf8) else { return "description failed" }
+        return description
+    }
 }
 // MARK: - the syntax tree source
 // ------------------------------

@@ -61,15 +61,7 @@ enum Evaluation: Encodable, Equatable, Sequence {
     var typeIdentifier: TypeIdentifier {
         return switch self {
         case .nothing:
-            .nominal(
-                NominalType(
-                    chain: [
-                        FlatNominalType(
-                            typeName: "Nothing",
-                            typeArguments: [],
-                            location: .nowhere)
-                        ],
-                    location: .nowhere))
+                .nothing
         case .int:
             .nominal(
                 NominalType(

@@ -20,6 +20,7 @@ extension Expression.Branched: Evaluable {
                         switch (input, expression.expressionType) {
                         case (_, .field(let value)):
                             modifiedScope.locals[value] = input
+                            print("field \(value) set to \(input)")
                             return false
                         case (.int(let input), .intLiteral(let value)):
                             return input != value
@@ -65,6 +66,7 @@ extension Expression.Branched: Evaluable {
                                 modifiedScope.locals[capturedInput] = input
                                 switch expression.evaluate(with: .nothing, and: modifiedScope) {
                                 case let .success(.bool(value)):
+                                    print("expression \(expression) evaluated to \(value)")
                                     return !value
                                 case .success:
                                     throw SemanticError.invalidCaptureGroup(location: expression.location)

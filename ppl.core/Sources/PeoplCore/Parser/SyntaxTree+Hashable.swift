@@ -15,6 +15,8 @@ extension FunctionDefinition: Hashable {
     func hash(into hasher: inout Hasher) {
         hasher.combine(self.name)
         hasher.combine(self.scope)
+        hasher.combine(self.params)
+        hasher.combine(self.inputType)
     }
 
     static func == (lhs: FunctionDefinition, rhs: FunctionDefinition) -> Bool {

@@ -46,6 +46,12 @@ extension Expression.Call: Evaluable {
                     location: .nowhere)
 
                 if let functionBody = scope.functions[functionDefinition] {
+                    var scope = scope
+                    scope.locals = zip(
+                        self.arguments, argumentsEvaluations
+                    ).reduce(into: [:]) { acc, evaluation in
+                        acc[evaluation.0.name] = evaluation.1
+                    }
                     return functionBody.evaluate(with: input, and: scope)
                 } else {
                     // TODO: error should be function not in scope
