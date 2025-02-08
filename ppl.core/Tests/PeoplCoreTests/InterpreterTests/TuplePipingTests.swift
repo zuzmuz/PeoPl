@@ -8,7 +8,7 @@ final class TuplePipingTests: XCTestCase {
             func main() => I32
                 [0, 1] |>
                 |i, _| i
-            """
+        """
         let module = try Module(source: source, path: "main")
         let scope = EvaluationScope(locals: [:])
 
@@ -20,7 +20,7 @@ final class TuplePipingTests: XCTestCase {
             func main(a: I32, b: I32) => I32
                 [a*3, b-2] |>
                 |i, j| i%j
-            """
+        """
         let module = try Module(source: source, path: "main")
 
         var scope = EvaluationScope(locals: ["a": .int(6), "b": .int(5)])
