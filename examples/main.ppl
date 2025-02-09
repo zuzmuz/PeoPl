@@ -4,7 +4,7 @@
 func factorial(of: I32) => I32
     of |>
     |value <= 1| 1,
-    |value| 3.factorial(of: 2* 3 + whatev(done: value) - 4 * hii())
+    |value| value * value - 1.factorial()
 
 
 

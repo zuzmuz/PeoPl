@@ -75,4 +75,50 @@ final class MultipleDefinitionTests: XCTestCase {
         XCTAssertEqual(project.evaluate(with: .int(1), and: scope), .success(.int(1)))
         XCTAssertEqual(project.evaluate(with: .int(0), and: scope), .success(.int(1)))
     }
+
+    func testCallWithInputAccessed() throws {
+        let source = """
+            func (I32) factorial() => I32
+                |value <= 1| 1,
+                |value| value * (value - 1).factorial()
+            func (I32) main() => I32
+                factorial()
+        """
+        let module = try Module(source: source, path: "main")
+        let project = Project(modules: ["main": module])
+
+        XCTAssertEqual(module.statements.count, 2)
+        let scope = EvaluationScope()
+        XCTAssertEqual(project.evaluate(with: .int(5), and: scope), .success(.int(120)))
+        XCTAssertEqual(project.evaluate(with: .int(4), and: scope), .success(.int(24)))
+        XCTAssertEqual(project.evaluate(with: .int(3), and: scope), .success(.int(6)))
+        XCTAssertEqual(project.evaluate(with: .int(2), and: scope), .success(.int(2)))
+        XCTAssertEqual(project.evaluate(with: .int(1), and: scope), .success(.int(1)))
+        XCTAssertEqual(project.evaluate(with: .int(0), and: scope), .success(.int(1)))
+    }
+
+    func testFactorialWithTCO() throws { // Not really
+        let source = """
+            func (I32) factorial() => I32
+                factorial(acc: 1)
+
+            func (I32) factorial(acc: I32) => I32
+                |input <= 1| acc,
+                |input| (input-1).factorial(acc: acc*input)
+
+            func (I32) main() => I32
+                factorial()
+        """
+        let module = try Module(source: source, path: "main")
+        let project = Project(modules: ["main": module])
+
+        XCTAssertEqual(module.statements.count, 3)
+        let scope = EvaluationScope()
+        XCTAssertEqual(project.evaluate(with: .int(5), and: scope), .success(.int(120)))
+        XCTAssertEqual(project.evaluate(with: .int(4), and: scope), .success(.int(24)))
+        XCTAssertEqual(project.evaluate(with: .int(3), and: scope), .success(.int(6)))
+        XCTAssertEqual(project.evaluate(with: .int(2), and: scope), .success(.int(2)))
+        XCTAssertEqual(project.evaluate(with: .int(1), and: scope), .success(.int(1)))
+        XCTAssertEqual(project.evaluate(with: .int(0), and: scope), .success(.int(1)))
+    }
 }

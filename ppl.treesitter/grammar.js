@@ -353,12 +353,13 @@ module.exports = grammar({
       ":",
       field("value", $._expression),
     ),
-
-    access_expression: $ => seq(
+    
+    // Precedences here are necessary for accessing parenthesized expression
+    access_expression: $ => prec.left(PREC.ACCESS, seq(
       field("accessed", choice($._simple_expression, $.nominal_type)),
       '.',
       field("argument_name", $.argument_name),
-    ),
+    )),
 
     // a subpipe is one contained expression
     // it can contain multiple subpipe branch expression separated by ,

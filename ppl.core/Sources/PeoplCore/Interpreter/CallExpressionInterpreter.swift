@@ -1,8 +1,48 @@
 // extension Expression.Access: Evaluable {
+//     func evaluate(
+//         with input: Evaluation, and scope: EvaluationScope
+//     ) -> Result<Evaluation, SemanticError> {
+//         
+//     }
 // }
 
 
 extension Expression.Call: Evaluable {
+    private func evaluateFunction(
+        inputType: TypeIdentifier,
+        scope namespace: NominalType?,
+        name functionName: String,
+        with input: Evaluation,
+        and scope: EvaluationScope,
+        argumentsEvaluations: [Evaluation]
+    ) -> Result<Evaluation, SemanticError> {
+
+        let functionDefinition = FunctionDefinition(
+            inputType: inputType,
+            scope: namespace,
+            name: functionName,
+            params: zip(self.arguments, argumentsEvaluations).map { argument, evaluation in
+                ParamDefinition(
+                    name: argument.name,
+                    type: evaluation.typeIdentifier,
+                    location: .nowhere)
+            },
+            outputType: .nothing,
+            body: .init(location: .nowhere, expressionType: .nothing),
+            location: .nowhere)
+
+        if let functionBody = scope.functions[functionDefinition] {
+            var scope = scope
+            scope.locals = zip(
+                self.arguments, argumentsEvaluations
+            ).reduce(into: [:]) { acc, evaluation in
+                acc[evaluation.0.name] = evaluation.1
+            }
+            return functionBody.evaluate(with: input, and: scope)
+        }
+        return .failure(.fieldNotInScope(location: location, fieldName: functionName))
+    }
+
     func evaluate(
         with input: Evaluation, and scope: EvaluationScope
     ) -> Result<Evaluation, SemanticError> {
@@ -30,33 +70,34 @@ extension Expression.Call: Evaluable {
         case let .simple(expression):
             switch expression.expressionType {
             case let .field(functionName):
-
-                let functionDefinition = FunctionDefinition(
+                return evaluateFunction(
                     inputType: input.typeIdentifier,
                     scope: nil,
                     name: functionName,
-                    params: zip(self.arguments, argumentsEvaluations).map { argument, evaluation in
-                        ParamDefinition(
-                            name: argument.name,
-                            type: evaluation.typeIdentifier,
-                            location: .nowhere)
-                    },
-                    outputType: .nothing,
-                    body: .init(location: .nowhere, expressionType: .nothing),
-                    location: .nowhere)
-
-                if let functionBody = scope.functions[functionDefinition] {
-                    var scope = scope
-                    scope.locals = zip(
-                        self.arguments, argumentsEvaluations
-                    ).reduce(into: [:]) { acc, evaluation in
-                        acc[evaluation.0.name] = evaluation.1
+                    with: input,
+                    and: scope,
+                    argumentsEvaluations: argumentsEvaluations)
+            case let .access(access):
+                let callee: Evaluation
+                switch access.accessed  {
+                case let .simple(expression):
+                    let result = expression.evaluate(with: input, and: scope)
+                    if case let .success(evaluation) = result {
+                        callee = evaluation
+                    } else {
+                        return result
                     }
-                    return functionBody.evaluate(with: input, and: scope)
-                } else {
-                    // TODO: error should be function not in scope
-                    return .failure(.fieldNotInScope(location: location, fieldName: functionName))
+                case let .type(type):
+                    return .failure(.notImplemented(location: location, description: "constants"))
                 }
+
+                return evaluateFunction(
+                    inputType: callee.typeIdentifier,
+                    scope: nil,
+                    name: access.field,
+                    with: callee,
+                    and: scope,
+                    argumentsEvaluations: argumentsEvaluations)
             default:
                 return .failure(.notImplemented(location: location, description: "non nominal callables"))
             }
