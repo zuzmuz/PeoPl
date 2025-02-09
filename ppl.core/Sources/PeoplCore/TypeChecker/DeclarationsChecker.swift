@@ -21,7 +21,9 @@ struct TypeDeclarationChecker {
         self.typesIdentifiers = [
             Builtins.i32: Builtins.i32,
             Builtins.f64: Builtins.f64,
-            Builtins.string: Builtins.string
+            Builtins.string: Builtins.string,
+            .nothing(location: .nowhere): .nothing(location: .nowhere),
+            .never(location: .nowhere): .never(location: .nowhere)
         ]
     }
 
@@ -80,12 +82,26 @@ struct FunctionDeclarationChecker {
                         type: function.inputType,
                         typesInScope: typeDeclarationChecker.typesIdentifiers.keys))
             }
+            function.params.forEach { param in
+                if typeDeclarationChecker.typesIdentifiers[param.type] == nil {
+                    errors.append(
+                        FunctionSemanticError.typeNotInScope(
+                            location: param.location,
+                            type: param.type,
+                            typesInScope: typeDeclarationChecker.typesIdentifiers.keys))
+                }
+            }
+            if typeDeclarationChecker.typesIdentifiers[function.outputType] == nil {
+                errors.append(
+                    FunctionSemanticError.typeNotInScope(
+                        location: function.outputType.location,
+                        type: function.outputType,
+                        typesInScope: typeDeclarationChecker.typesIdentifiers.keys))
+            }
             return errors
-            
         }
 
-
-        self.errors = resolutions.errors
+        self.errors = resolutions.errors + typeCheckErrors
     }
 
     static private func resolveFunctionDefinitions(
