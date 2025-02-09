@@ -61,7 +61,7 @@ enum Evaluation: Encodable, Equatable, Sequence {
     var typeIdentifier: TypeIdentifier {
         return switch self {
         case .nothing:
-                .nothing
+                .nothing(location: .nowhere)
         case .int:
             .nominal(
                 NominalType(

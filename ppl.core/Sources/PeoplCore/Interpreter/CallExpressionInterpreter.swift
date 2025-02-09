@@ -27,7 +27,7 @@ extension Expression.Call: Evaluable {
                     type: evaluation.typeIdentifier,
                     location: .nowhere)
             },
-            outputType: .nothing,
+            outputType: .nothing(location: .nowhere),
             body: .init(location: .nowhere, expressionType: .nothing),
             location: .nowhere)
 

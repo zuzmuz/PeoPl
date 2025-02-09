@@ -2,7 +2,7 @@ import Foundation
 
 protocol SemanticError: LocalizedError {}
 
-enum FunctionSemanticError: SemanticError, Encodable {
+enum FunctionSemanticError: SemanticError {
     case nameNotFound(
         location: NodeLocation,
         name: String,
@@ -20,8 +20,11 @@ enum FunctionSemanticError: SemanticError, Encodable {
         expectedReturnType: TypeIdentifier,
         receivedType: TypeIdentifier)
     case redeclaration(
-        locations: [NodeLocation]
-    )
+        locations: [NodeLocation])
+    case typeNotInScope(
+        location: NodeLocation,
+        type: TypeIdentifier,
+        typesInScope: [TypeIdentifier: TypeIdentifier].Keys)
 }
 
 enum OperationSemanticError: SemanticError, Encodable {

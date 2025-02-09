@@ -215,9 +215,8 @@ extension FunctionDefinition {
             guard let typeIdentifier = TypeIdentifier(from: child, in: source) else { return nil }
             self.inputType = typeIdentifier
         } else {
-            self.inputType = TypeIdentifier.nothing
+            self.inputType = TypeIdentifier.nothing(location: location)
         }
-
         if let child = node.child(byFieldName: CodingKeys.scope.rawValue) {
             guard let scope = NominalType(from: child, in: source) else { return nil }
             self.scope = scope
@@ -272,12 +271,14 @@ extension TypeIdentifier {
     }
 
     init?(from node: Node, in source: Source) {
-        guard let child = node.child(at: 0) else { return nil }
+        guard let child = node.child(at: 0),
+            let location = child.getLocation(in: source) else { return nil }
+
         switch child.nodeType {
         case CodingKeys.nothing.rawValue:
-            self = .nothing
+            self = .nothing(location: location)
         case CodingKeys.never.rawValue:
-            self = .never
+            self = .never(location: location)
         case CodingKeys.nominal.rawValue:
             guard let nominal = NominalType(from: child, in: source) else { return nil }
             self = .nominal(nominal)

@@ -38,11 +38,20 @@ struct Module: Encodable {
     let statements: [Statement]
 }
 
-enum Statement: Encodable {
+enum Statement: Encodable, SyntaxNode {
     case typeDefinition(TypeDefinition)
     case functionDefinition(FunctionDefinition)
     // case implementationStatement(ImplementationStatement)
     // case constantsStatement(ConstantsStatement)
+
+    var location: NodeLocation {
+        return switch self {
+        case let .typeDefinition(typeDefinition):
+            typeDefinition.location
+        case let .functionDefinition(functionDefinition):
+            functionDefinition.location
+        }
+    }
 }
 
 // MARK: - type definitions
@@ -55,7 +64,7 @@ struct ParamDefinition: Encodable, SyntaxNode {
     let location: NodeLocation
 }
 
-enum TypeDefinition: Encodable {
+enum TypeDefinition: Encodable, SyntaxNode {
     case simple(Simple)
     case sum(Sum)
 
@@ -69,6 +78,15 @@ enum TypeDefinition: Encodable {
         let identifier: NominalType
         let cases: [Simple]
         let location: NodeLocation
+    }
+
+    var location: NodeLocation {
+        return switch self {
+        case let .simple(simple):
+            simple.location
+        case let .sum(sum):
+            sum.location
+        }
     }
 }
 
@@ -88,13 +106,30 @@ struct FunctionDefinition: Encodable, SyntaxNode {
 // MARK: - types
 // -------------
 
-enum TypeIdentifier: Encodable, Sendable {
-    case nothing
-    case never
+enum TypeIdentifier: Encodable, SyntaxNode, Sendable {
+    case nothing(location: NodeLocation)
+    case never(location: NodeLocation)
     case nominal(NominalType)
     case lambda(StructuralType.Lambda)
     case namedTuple(StructuralType.NamedTuple)
     case unnamedTuple(StructuralType.UnnamedTuple)
+
+    var location: NodeLocation {
+        return switch self {
+        case let .nothing(location):
+            location
+        case let .never(location):
+            location
+        case let .nominal(nominal):
+            nominal.location
+        case let .lambda(lambda):
+            lambda.location
+        case let .namedTuple(namedTuple):
+            namedTuple.location
+        case let .unnamedTuple(unnamedTuple):
+            unnamedTuple.location
+        }
+    }
 }
 
 struct FlatNominalType: Encodable, SyntaxNode {
