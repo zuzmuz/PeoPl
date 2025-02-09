@@ -88,7 +88,7 @@ struct FunctionDefinition: Encodable, SyntaxNode {
 // MARK: - types
 // -------------
 
-enum TypeIdentifier: Encodable {
+enum TypeIdentifier: Encodable, Sendable {
     case nothing
     case never
     case nominal(NominalType)
@@ -136,7 +136,7 @@ struct Expression: Encodable, SyntaxNode {
     let location: NodeLocation
     let expressionType: ExpressionType
 
-    indirect enum ExpressionType: Encodable {
+    indirect enum ExpressionType: Encodable, Sendable {
         case nothing
         case never
         // Literals
@@ -195,7 +195,7 @@ struct Expression: Encodable, SyntaxNode {
         case type(NominalType)
     }
 
-    struct Argument: Encodable, SyntaxNode {
+    struct Argument: Encodable, SyntaxNode, Sendable {
         let name: String
         let value: Expression
         let location: NodeLocation
