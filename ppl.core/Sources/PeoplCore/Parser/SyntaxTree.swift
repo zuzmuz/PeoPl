@@ -57,7 +57,7 @@ struct ParamDefinition: Encodable, SyntaxNode {
 
 enum TypeDefinition: Encodable {
     case simple(Simple)
-    case meta(Meta)
+    case sum(Sum)
 
     struct Simple: Encodable, SyntaxNode {
         let identifier: NominalType
@@ -65,7 +65,7 @@ enum TypeDefinition: Encodable {
         let location: NodeLocation
     }
 
-    struct Meta: Encodable, SyntaxNode {
+    struct Sum: Encodable, SyntaxNode {
         let identifier: NominalType
         let cases: [Simple]
         let location: NodeLocation

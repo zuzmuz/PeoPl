@@ -133,9 +133,9 @@ extension TypeDefinition {
     init?(from node: Node, in source: Source) {
         guard let child = node.child(at: 1) else { return nil }
         switch child.nodeType {
-        case CodingKeys.meta.rawValue:
-            guard let meta = Meta(from: child, in: source) else { return nil }
-            self = .meta(meta)
+        case CodingKeys.sum.rawValue:
+            guard let sum = Sum(from: child, in: source) else { return nil }
+            self = .sum(sum)
         case CodingKeys.simple.rawValue:
             guard let simple = Simple(from: child, in: source) else { return nil }
             self = .simple(simple)
@@ -146,7 +146,7 @@ extension TypeDefinition {
 
     enum CodingKeys: String, CodingKey {
         case simple = "simple_type_definition"
-        case meta = "meta_type_definition"
+        case sum = "meta_type_definition"
     }
 }
 
@@ -175,7 +175,7 @@ extension TypeDefinition.Simple {
     }
 }
 
-extension TypeDefinition.Meta {
+extension TypeDefinition.Sum {
 
     init?(from node: Node, in source: Source) {
         guard let identifierNode = node.child(at: 0),

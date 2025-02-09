@@ -36,8 +36,8 @@ extension TypeDefinition: DebugableSyntaxNode {
         switch self {
         case let .simple(simple):
             try container.encode(simple, forKey: .simple)
-        case let .meta(meta):
-            try container.encode(meta, forKey: .meta)
+        case let .sum(meta):
+            try container.encode(meta, forKey: .sum)
         }
     }
 }

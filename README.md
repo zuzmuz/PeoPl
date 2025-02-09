@@ -14,6 +14,17 @@ are the most useful programming concepts.
 
 1. [To read about the motivation and philosophy behind the project](docs/motivation.md)
 
+# If you want to try it out
+
+If you have swift installed on mac or linux just clone the project build it, check the tests as examples and try it out.
+
+There's a basic interpreter.
+
+If you use neovim you can build the tree sitter parser and install it manually to the list of neovim parsers,
+also add the highlights.scm file to your treesitter queries folder to have syntax highlighting in neovim.
+
+I'm planning on making a vscode extension once a basic version of an LSP is ready.
+
 # The syntax
 
 ## Hello World
