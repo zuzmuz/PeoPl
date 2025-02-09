@@ -218,8 +218,15 @@ struct Expression: Encodable, SyntaxNode {
         let lastBranch: Expression?
         let location: NodeLocation
 
+        enum CaptureGroup: Encodable {
+            case simple(Expression)
+            case type(NominalType)
+            case paramDefinition(ParamDefinition)
+            case argument(Argument)
+        }
+
         struct Branch: Encodable, SyntaxNode {
-            let captureGroup: [Prefix]
+            let captureGroup: [CaptureGroup]
             let body: Body
             let location: NodeLocation
 

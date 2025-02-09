@@ -27,6 +27,9 @@ module.exports = grammar({
   extras: $ => [
     $.comment, /\s|\\\r?\n/,
   ],
+  conflicts: $ => [
+    [$._single_expression, $.type_identifier],
+  ],
 
   rules: {
     source_file: $ => repeat(
@@ -84,11 +87,11 @@ module.exports = grammar({
       field("name", $.argument_name),
       ":",
       field("type", $.type_identifier),
-      optional(seq(
-        '(',
-        field("default_value", $._simple_expression),
-        ')',
-      )),
+      // optional(seq(
+      //   '(',
+      //   field("default_value", $._simple_expression),
+      //   ')',
+      // )),
     ),
 
 
@@ -388,8 +391,8 @@ module.exports = grammar({
     ),
 
     capture_group: $ => seq(
-      choice($._simple_expression, $.nominal_type),
-      repeat(seq(',', choice($._simple_expression, $.nominal_type))),
+      choice($._simple_expression, $.nominal_type, $.call_param, $.param_definition),
+      repeat(seq(',', choice($._simple_expression, $.nominal_type, $.call_param, $.param_definition))),
     ),
 
 

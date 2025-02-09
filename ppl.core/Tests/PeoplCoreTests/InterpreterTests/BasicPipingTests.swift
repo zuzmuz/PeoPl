@@ -21,7 +21,7 @@ final class BasicPipingTests: XCTestCase {
     func testBranching() throws {
         let source = """
             func (I32) main() => String
-                |i % 2 = 0| "is even",
+                |i: i % 2 = 0| "is even",
                 |_| "is odd"
             """
         let module = try Module(source: source, path: "main")
@@ -98,7 +98,7 @@ final class BasicPipingTests: XCTestCase {
         let source = """
             func main(a: I32, b: I32) => I32
                 a |>
-                |i < b| (i * 2)^,
+                |i: i < b| (i * 2)^,
                 |i| i
         """
         let module = try Module(source: source, path: "main")

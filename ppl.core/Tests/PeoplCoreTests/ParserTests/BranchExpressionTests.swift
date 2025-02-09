@@ -6,7 +6,7 @@ final class BranchExpressionTests: XCTestCase {
         let source = """
                 func main() => String
                     3 |>
-                    |i % 2 = 0| "is even",
+                    |i: i % 2 = 0| "is even",
                     |_| "is odd"
             """
         let module = try Module(source: source, path: "main")
@@ -37,13 +37,14 @@ final class BranchExpressionTests: XCTestCase {
             
             let branch1 = branched.branches[0]
             XCTAssertEqual(branch1.captureGroup.count, 1)
-            if case let .simple(expression) = branch1.captureGroup[0],
-                case let .equal(left, right) = expression.expressionType,
+            if case let .argument(argument) = branch1.captureGroup[0],
+                case let .equal(left, right) = argument.value.expressionType,
                 case let .intLiteral(value3) = right.expressionType,
                 case let .mod(left, right) = left.expressionType,
                 case let .field(value1) = left.expressionType,
                 case let .intLiteral(value2) = right.expressionType
             {
+                XCTAssertEqual(argument.name, "i")
                 XCTAssertEqual(value1, "i")
                 XCTAssertEqual(value2, 2)
                 XCTAssertEqual(value3, 0)

@@ -664,12 +664,39 @@ extension Expression.Branched.Branch {
 
         guard let captureGroupNode = node.child(byFieldName: "capture_group") else { return nil }
         self.captureGroup = captureGroupNode.compactMapChildren { child in
-            Expression.Prefix(from: child, in: source)
+            Expression.Branched.CaptureGroup(from: child, in: source)
         }
 
         guard let bodyNode = node.child(byFieldName: "body"),
               let body = Expression.Branched.Branch.Body(from: bodyNode, in: source) else { return nil }
         self.body = body
+    }
+}
+
+extension Expression.Branched.CaptureGroup {
+    
+    enum CodingKeys: String, CodingKey {
+        case type = "nominal_type"
+        case paramDefinition = "param_definition"
+        case argument = "call_param"
+        case simple
+    }
+    
+    init?(from node: Node, in source: Source) {
+        switch node.nodeType {
+        case CodingKeys.type.rawValue:
+            guard let nominalType = NominalType(from: node, in: source) else { return nil }
+            self = .type(nominalType)
+        case CodingKeys.paramDefinition.rawValue:
+            guard let paramDefinition = ParamDefinition(from: node, in: source) else { return nil }
+            self = .paramDefinition(paramDefinition)
+        case CodingKeys.argument.rawValue:
+            guard let argument = Expression.Argument(from: node, in: source) else { return nil }
+            self = .argument(argument)
+        default:
+            guard let expression = Expression(from: node, in: source) else { return nil }
+            self = .simple(expression)
+        }
     }
 }
 

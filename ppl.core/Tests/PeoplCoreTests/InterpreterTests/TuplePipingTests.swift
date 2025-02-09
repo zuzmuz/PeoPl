@@ -37,7 +37,7 @@ final class TuplePipingTests: XCTestCase {
         let source = """
             func main(from: I32, to: I32) => I32
                 [0, from] |>
-                |sum, value < to| ([sum+value, value+1])^,
+                |sum, value: value < to| ([sum+value, value+1])^,
                 |sum, _| sum
         """
         let module = try Module(source: source, path: "main")
@@ -53,7 +53,7 @@ final class TuplePipingTests: XCTestCase {
         let source = """
             func main(of: I32) => I32
                 [1, 1] |>
-                |fact, value <= of| ([fact*value, value+1])^,
+                |fact, value: value <= of| ([fact*value, value+1])^,
                 |fact, _| fact
         """
         let module = try Module(source: source, path: "main")
@@ -69,7 +69,7 @@ final class TuplePipingTests: XCTestCase {
         let source = """
             func main(of: I32) => I32
                 [a: 1, b: 1] |>
-                |fact, value <= of| ([fact*value, value+1])^,
+                |fact, value: value <= of| ([fact*value, value+1])^,
                 |fact, _| fact
         """
         let module = try Module(source: source, path: "main")

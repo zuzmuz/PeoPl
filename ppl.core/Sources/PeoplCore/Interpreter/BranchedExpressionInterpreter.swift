@@ -14,14 +14,40 @@ extension Expression.Branched: Evaluable {
                         captureCount: branch.captureGroup.count)
                 }
 
+                // NOTE: this method should return nil if the branch's capture group passes
+                // which means that if a capture group passes, we should return false from inside
+                // the filter function, this is why we're evaluating for failure
                 return try zip(input, branch.captureGroup).first { input, captureGroup in
                     switch captureGroup {
+                    case .argument(let argument):
+                        modifiedScope.locals[argument.name] = input
+                        switch argument.value.evaluate(with: .nothing, and: modifiedScope) {
+                        case let .success(.bool(evaluation)):
+                            return !evaluation
+                        case .success:
+                            throw SemanticError.invalidCaptureGroup(location: location)
+                        case let .failure(error):
+                            throw error
+                        }
+                    case .paramDefinition(let paramDefinition):
+                        modifiedScope.locals[paramDefinition.name] = input
+                        // TODO: should check for enum cases if input type is an enum
+                        return input.typeIdentifier != paramDefinition.type
                     case .simple(let expression):
                         switch (input, expression.expressionType) {
                         case (_, .field(let value)):
-                            modifiedScope.locals[value] = input
-                            print("field \(value) set to \(input)")
-                            return false
+                            if let localValue = scope.locals[value] {
+                                if case let .bool(evaluation) = localValue {
+                                    return !evaluation
+                                } else {
+                                    throw SemanticError.invalidCaptureGroup(location: expression.location)
+                                }
+                            } else {
+                                modifiedScope.locals[value] = input
+                                return false
+                            }
+                        case (input, .nothing):
+                            return input != .nothing
                         case (.int(let input), .intLiteral(let value)):
                             return input != value
                         case (_, .intLiteral):
@@ -56,51 +82,37 @@ extension Expression.Branched: Evaluable {
                             throw SemanticError.invalidCaptureGroup(
                                 location: expression.location)
                         default:
-                            let fields = expression.getFields()
-                            let scopeFields = Set(scope.locals.keys)
-                            let capturedInputSet = fields.union(scopeFields).symmetricDifference(scopeFields)
-                            if capturedInputSet.count > 1 {
-                                throw SemanticError.tooManyFieldsInCaptureGroup(
-                                    location: expression.location, fields: Array(capturedInputSet))
-                            } else if capturedInputSet.count == 1, let capturedInput = capturedInputSet.first {
-                                modifiedScope.locals[capturedInput] = input
-                                switch expression.evaluate(with: .nothing, and: modifiedScope) {
-                                case let .success(.bool(value)):
-                                    print("expression \(expression) evaluated to \(value)")
-                                    return !value
-                                case .success:
-                                    throw SemanticError.invalidCaptureGroup(location: expression.location)
-                                case let .failure(error):
-                                    throw error
-                                }
-                            } else {
-                                switch expression.evaluate(with: .nothing, and: modifiedScope) {
-                                case let .success(evaluation):
-                                    return evaluation != input
-                                case let .failure(error):
-                                    throw error
-                                }
+                            switch expression.evaluate(with: .nothing, and: scope) {
+                            case let .success(.bool(evaluation)):
+                                return !evaluation
+                            case .success:
+                                throw SemanticError.invalidCaptureGroup(location: expression.location)
+                            case let .failure(error):
+                                throw error
                             }
                         }
                     case let .type(nominalType):
-                        throw SemanticError.notImplemented(
-                            location: nominalType.location, description: "type capture group not implemented yet")
+                        return input.typeIdentifier != .nominal(nominalType)
                     }
                 } == nil
             }
-
-            switch branch?.body {
-            case let .simple(expression):
-                return expression.evaluate(with: .nothing, and: modifiedScope)
-            case let .looped(expression):
-                let result = expression.evaluate(with: .nothing, and: modifiedScope)
-                switch result {
-                case let .success(evaluation):
-                    return self.evaluate(with: evaluation, and: scope)
-                case let .failure(error):
-                    return .failure(error)
+            
+            if let body = branch?.body {
+                switch body {
+                case let .simple(expression):
+                    return expression.evaluate(with: .nothing, and: modifiedScope)
+                case let .looped(expression):
+                    let result = expression.evaluate(with: .nothing, and: modifiedScope)
+                    switch result {
+                    case let .success(evaluation):
+                        return self.evaluate(with: evaluation, and: scope)
+                    case let .failure(error):
+                        return .failure(error)
+                    }
                 }
-            case nil:
+            } else if let expression = self.lastBranch {
+                return expression.evaluate(with: input, and: scope)
+            } else {
                 return .failure(.reachedNever(location: self.location))
             }
         } catch {
