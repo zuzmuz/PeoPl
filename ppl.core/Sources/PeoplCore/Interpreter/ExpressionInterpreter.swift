@@ -20,7 +20,7 @@ extension Expression: Evaluable {
 
     func evaluate(
         with input: Evaluation, and scope: EvaluationScope
-    ) -> Result<Evaluation, SemanticError> {
+    ) -> Result<Evaluation, RuntimeError> {
         switch (input, self.expressionType) {
         // Never
         case (_, .never):
@@ -441,33 +441,3 @@ extension Expression: Evaluable {
         }
     }
 }
-
-
-//     func getFields() -> Set<String> {
-// }
-//
-// extension Expression.Call: Evaluable {
-//     func evaluate(
-//         with input: Evaluation, and scope: [String: Evaluation]
-//     ) -> Result<Evaluation, SemanticError> {
-//         switch self.command {
-//         case .field("print"):
-//             if let format = (self.arguments.first { $0.name == "format" }) {
-//                 let argument = format.value.evaluate(with: .nothing, and: scope)
-//                 if case let .success(.string(format)) = argument {
-//                     print(format.peoplFormat([input]))
-//                 } else {
-//                     return .failure(.notImplemented)
-//                 }
-//                 return .success(input)
-//             } else {
-//                 print(input.describe(formating: ""))
-//                 return .success(input)
-//             }
-//         default:
-//             return .failure(.notImplemented)
-//         }
-//     }
-// }
-//
-

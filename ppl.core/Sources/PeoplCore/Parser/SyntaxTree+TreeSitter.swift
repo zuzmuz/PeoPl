@@ -52,7 +52,7 @@ extension Module {
 
         let tree = parser.parse(source)
         guard let rootNode = tree?.rootNode else {
-            throw SemanticError.sourceUnreadable
+            throw SyntaxError.sourceUnreadable
         }
 
         let source = Source(content: source, name: path)
@@ -69,7 +69,7 @@ extension Module {
         guard let outputData = try fileHandle?.read(upToCount: Int.max),
             let outputString = String(data: outputData, encoding: .utf8)
         else {
-            throw SemanticError.sourceUnreadable
+            throw SyntaxError.sourceUnreadable
         }
         try self.init(source: outputString, path: path)
     }

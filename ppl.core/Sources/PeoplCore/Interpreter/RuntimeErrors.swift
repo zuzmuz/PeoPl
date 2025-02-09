@@ -1,7 +1,6 @@
 import Foundation
 
-enum SemanticError: LocalizedError, Encodable, Equatable {
-    case sourceUnreadable
+enum RuntimeError: LocalizedError, Encodable, Equatable {
     case mainFunctionNotFound
     case duplicateDefinitions(locations: [NodeLocation])
     case reachedNever(location: NodeLocation)
@@ -13,10 +12,10 @@ enum SemanticError: LocalizedError, Encodable, Equatable {
     case captureGroupCountMismatch(location: NodeLocation, inputCount: Int, captureCount: Int)
     case invalidCaptureGroup(location: NodeLocation)
     case tooManyFieldsInCaptureGroup(location: NodeLocation, fields: [String])
-    case combination([SemanticError])
+    case combination([RuntimeError])
     // case multipleDefinitions(type: NominalType)
 
-    static func combine(errors: [SemanticError]) -> SemanticError {
+    static func combine(errors: [RuntimeError]) -> RuntimeError {
         return .combination(errors.flatMap { error in
             if case let .combination(errors) = error {
                 return errors
@@ -27,8 +26,6 @@ enum SemanticError: LocalizedError, Encodable, Equatable {
 
     var errorDescription: String? {
         switch self {
-        case .sourceUnreadable:
-            "Source unreadable"
         case .mainFunctionNotFound:
             "Main function not found"
         case let .duplicateDefinitions(locations):

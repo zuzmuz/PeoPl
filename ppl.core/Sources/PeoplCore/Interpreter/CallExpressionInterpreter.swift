@@ -1,7 +1,7 @@
 // extension Expression.Access: Evaluable {
 //     func evaluate(
 //         with input: Evaluation, and scope: EvaluationScope
-//     ) -> Result<Evaluation, SemanticError> {
+//     ) -> Result<Evaluation, RuntimeError> {
 //         
 //     }
 // }
@@ -15,7 +15,7 @@ extension Expression.Call: Evaluable {
         with input: Evaluation,
         and scope: EvaluationScope,
         argumentsEvaluations: [Evaluation]
-    ) -> Result<Evaluation, SemanticError> {
+    ) -> Result<Evaluation, RuntimeError> {
 
         let functionDefinition = FunctionDefinition(
             inputType: inputType,
@@ -45,7 +45,7 @@ extension Expression.Call: Evaluable {
 
     func evaluate(
         with input: Evaluation, and scope: EvaluationScope
-    ) -> Result<Evaluation, SemanticError> {
+    ) -> Result<Evaluation, RuntimeError> {
         
         let argumentsResults = self.arguments.map { argument in
             argument.value.evaluate(with: .nothing, and: scope)
@@ -104,6 +104,5 @@ extension Expression.Call: Evaluable {
         case let .type(type):
             return .failure(.notImplemented(location: location, description: "type constructors"))
         }
-        return .failure(.notImplemented(location: location, description: "call expressions"))
     }
 }

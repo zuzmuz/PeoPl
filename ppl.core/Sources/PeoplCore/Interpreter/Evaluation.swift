@@ -175,6 +175,6 @@ struct EvaluationScope {
 protocol Evaluable {
     func evaluate(
         with input: Evaluation, and scope: EvaluationScope
-    ) -> Result<Evaluation, SemanticError>
+    ) -> Result<Evaluation, RuntimeError>
 }
 

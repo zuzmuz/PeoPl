@@ -1,15 +1,14 @@
-
 extension Expression.Branched: Evaluable {
     func evaluate(
         with input: Evaluation, and scope: EvaluationScope
-    ) -> Result<Evaluation, SemanticError> {
+    ) -> Result<Evaluation, RuntimeError> {
         do {
-            var modifiedScope = scope // needed to capture input set inside the branch capture groups
+            var modifiedScope = scope  // needed to capture input set inside the branch capture groups
 
             let branch = try self.branches.first { branch in
                 guard branch.captureGroup.count == input.count else {
-                    throw SemanticError.captureGroupCountMismatch(
-                        location: branch.location, 
+                    throw RuntimeError.captureGroupCountMismatch(
+                        location: branch.location,
                         inputCount: input.count,
                         captureCount: branch.captureGroup.count)
                 }
@@ -17,7 +16,7 @@ extension Expression.Branched: Evaluable {
                 // NOTE: this method should return nil if the branch's capture group passes
                 // which means that if a capture group passes, we should return false from inside
                 // the filter function, this is why we're evaluating for failure
-                return try zip(input, branch.captureGroup).first { input, captureGroup in
+                let failedCaptureGroup = try zip(input, branch.captureGroup).first { (input, captureGroup) in
                     switch captureGroup {
                     case .argument(let argument):
                         modifiedScope.locals[argument.name] = input
@@ -25,7 +24,7 @@ extension Expression.Branched: Evaluable {
                         case let .success(.bool(evaluation)):
                             return !evaluation
                         case .success:
-                            throw SemanticError.invalidCaptureGroup(location: location)
+                            throw RuntimeError.invalidCaptureGroup(location: location)
                         case let .failure(error):
                             throw error
                         }
@@ -40,7 +39,7 @@ extension Expression.Branched: Evaluable {
                                 if case let .bool(evaluation) = localValue {
                                     return !evaluation
                                 } else {
-                                    throw SemanticError.invalidCaptureGroup(location: expression.location)
+                                    throw RuntimeError.invalidCaptureGroup(location: expression.location)
                                 }
                             } else {
                                 modifiedScope.locals[value] = input
@@ -51,42 +50,42 @@ extension Expression.Branched: Evaluable {
                         case (.int(let input), .intLiteral(let value)):
                             return input != value
                         case (_, .intLiteral):
-                            throw SemanticError.typeMismatch(
+                            throw RuntimeError.typeMismatch(
                                 location: expression.location,
                                 left: input.typeName,
                                 right: "Int")
                         case (.float(let input), .floatLiteral(let value)):
                             return input != value
                         case (_, .floatLiteral):
-                            throw SemanticError.typeMismatch(
+                            throw RuntimeError.typeMismatch(
                                 location: expression.location,
                                 left: input.typeName,
                                 right: "Float")
                         case (.string(let input), .stringLiteral(let value)):
                             return input != value
                         case (_, .stringLiteral):
-                            throw SemanticError.typeMismatch(
+                            throw RuntimeError.typeMismatch(
                                 location: expression.location,
                                 left: input.typeName,
                                 right: "String")
                         case (.bool(let input), .boolLiteral(let value)):
                             return input != value
                         case (_, .boolLiteral):
-                            throw SemanticError.typeMismatch(
+                            throw RuntimeError.typeMismatch(
                                 location: expression.location,
                                 left: input.typeName,
                                 right: "Bool")
-                        case (_, .access), (_, .branched), 
-                             (_, .piped), (_, .lambda), 
-                             (_, .unnamedTuple), (_, .namedTuple):
-                            throw SemanticError.invalidCaptureGroup(
+                        case (_, .access), (_, .branched),
+                            (_, .piped), (_, .lambda),
+                            (_, .unnamedTuple), (_, .namedTuple):
+                            throw RuntimeError.invalidCaptureGroup(
                                 location: expression.location)
                         default:
                             switch expression.evaluate(with: .nothing, and: scope) {
                             case let .success(.bool(evaluation)):
                                 return !evaluation
                             case .success:
-                                throw SemanticError.invalidCaptureGroup(location: expression.location)
+                                throw RuntimeError.invalidCaptureGroup(location: expression.location)
                             case let .failure(error):
                                 throw error
                             }
@@ -94,9 +93,10 @@ extension Expression.Branched: Evaluable {
                     case let .type(nominalType):
                         return input.typeIdentifier != .nominal(nominalType)
                     }
-                } == nil
+                }
+                return failedCaptureGroup == nil
             }
-            
+
             if let body = branch?.body {
                 switch body {
                 case let .simple(expression):
@@ -116,11 +116,7 @@ extension Expression.Branched: Evaluable {
                 return .failure(.reachedNever(location: self.location))
             }
         } catch {
-            if let error = error as? SemanticError {
-                return .failure(error)
-            } else {
-                return .failure(.sourceUnreadable)
-            }
+            return .failure(error as! RuntimeError)
         }
     }
 }

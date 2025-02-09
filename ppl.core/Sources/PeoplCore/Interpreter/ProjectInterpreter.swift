@@ -2,7 +2,7 @@
 extension Project: Evaluable {
     func evaluate(
         with input: Evaluation, and scope: EvaluationScope
-    ) -> Result<Evaluation, SemanticError> {
+    ) -> Result<Evaluation, RuntimeError> {
 
         let functions = self.modules.flatMap { (name, module) in
             module.statements.compactMap { statement in
@@ -47,7 +47,7 @@ extension Project: Evaluable {
 extension Module: Evaluable {
     func evaluate(
         with input: Evaluation, and scope: EvaluationScope
-    ) -> Result<Evaluation, SemanticError> {
+    ) -> Result<Evaluation, RuntimeError> {
         let main = self.statements.filter { statement in
             if case let .functionDefinition(functionDefinition) = statement {
                 return functionDefinition.name == "main"
