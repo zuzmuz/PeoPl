@@ -15,11 +15,13 @@ one file execution with list of statements.
 types of acceptable statements
 > 0.0.0
 - definitions
-    - type definitions
     - function definitions
 > 0.1.0
+- definitions
+    - type definitions
+> 0.2.0
 - constant declarations
-> 0.5.0
+> 0.30.0
 - implementation declarations
 
 # Statements
@@ -28,6 +30,22 @@ A statement can either be a type definition or a function definition
 followed by a "..".
 The ".." signifies the end of a statement.
 
+# Function definitions
+
+> 0.0.0
+
+Functions are blocks of processing.
+They take an input, extra arguments, and return an output.
+
+```ppl
+
+func (InputType) function_name(arg1: Arg, arg2: Arg3) => ReturnType
+    // function body
+    ..
+```
+
+The input type can be ommitted if the input type is Nothing.
+
 # Type definitions
 
 ## Simple Types
@@ -35,7 +53,7 @@ The ".." signifies the end of a statement.
 Simple types are nominal types that act as defined structures.
 They are equivalent to records (data classes), or tuples with named arguments.
 
-> 0.0.0
+> 0.1.0
 ```ppl
 type MyType
     arg1: Arg1
@@ -77,7 +95,7 @@ References, (or boxes), are not yet supported.
 
 ---
 
-> 0.0.1
+> 0.1.1
 Types can be nested
 
 ```ppl
@@ -93,7 +111,7 @@ Nesting is useful for name collisions and scoping of type names.
 
 ---
 
-> 0.2.0
+> 0.10.0
 
 Types can be parametrizable with generic argument types.
 
@@ -140,7 +158,7 @@ type TopGeneric::Bottom<T>
 
 ## Enum Types
 
-> 0.1.0
+> 0.4.0
 
 Enum types, or sum types are like simple types but can be any one of listed types in Enum
 
@@ -218,7 +236,7 @@ The other type is structural types, and they are
 
 ### Tuples
 
-> 0.0.1
+> 0.0.0
 
 Tuples are structures with unnamed members and are therefore non nominal.
 
@@ -236,7 +254,7 @@ Tuples can contain any type inside of them (generic, enum ...) and any number of
 
 ### Lambdas
 
-> 0.5.0
+> 0.20.0
 
 Lambdas are anonymous functions, that behave like regular functions but do not have extra arguments,
 just input and output.
@@ -252,16 +270,3 @@ O is the output
 
 Just like tuples, the inputs and outputs can be any type.
 
-# Function definitions
-
-Functions are blocks of processing.
-They take an input, extra arguments, and return an output.
-
-```ppl
-
-func (InputType) function_name(arg1: Arg, arg2: Arg3) => ReturnType
-    ** function body
-    ..
-```
-
-The input type can be ommitted if the input type is Nothing.

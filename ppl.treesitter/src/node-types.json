@@ -700,11 +700,6 @@
     }
   },
   {
-    "type": "comment",
-    "named": true,
-    "fields": {}
-  },
-  {
     "type": "comparative_operator",
     "named": true,
     "fields": {}
@@ -1838,10 +1833,6 @@
     "named": false
   },
   {
-    "type": "//",
-    "named": false
-  },
-  {
     "type": ":",
     "named": false
   },
@@ -1891,6 +1882,10 @@
   },
   {
     "type": "and_operator",
+    "named": true
+  },
+  {
+    "type": "comment",
     "named": true
   },
   {
