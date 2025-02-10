@@ -39,7 +39,6 @@ extension Project: DeclarationContext {
     }
 }
 
-
 struct TypeDeclarationChecker {
     let types: [TypeDefinition: TypeDefinition]
     let typesIdentifiers: [TypeIdentifier: TypeIdentifier]
@@ -60,10 +59,9 @@ struct TypeDeclarationChecker {
     // }
 }
 
-
 struct FunctionDeclarationChecker {
     let functions: [FunctionDefinition: FunctionDefinition]
-    let functionsSymbols: [String: [FunctionDefinition]]
+    let functionsSymbols: [FunctionIdentifier: [FunctionDefinition]]
     let inputFunctions: [TypeIdentifier: [FunctionDefinition]]
     let errors: [SemanticError]
 
@@ -76,7 +74,8 @@ struct FunctionDeclarationChecker {
         self.functions = resolutions.functions
 
         self.functionsSymbols = self.functions.reduce(into: [:]) { acc, element in
-            acc[element.key.name] = (acc[element.key.name] ?? []) + [element.key]
+            acc[element.key.functionIdentifier] =
+                (acc[element.key.functionIdentifier] ?? []) + [element.key]
         }
         self.inputFunctions = self.functions.reduce(into: [:]) { acc, element in
             acc[element.key.inputType] = (acc[element.key.inputType] ?? []) + [element.key]

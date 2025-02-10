@@ -200,11 +200,13 @@ extension FunctionDefinition {
 
     enum CodingKeys: String, CodingKey {
         case inputType = "input_type"
-        case scope
-        case name
+        case functionIdentifier = "function_identifier"
         case params
         case outputType = "output_type"
         case body
+
+        static let scope = "scope"
+        static let name = "name"
     }
 
     init?(from node: Node, in source: Source) {
@@ -217,19 +219,19 @@ extension FunctionDefinition {
         } else {
             self.inputType = TypeIdentifier.nothing(location: location)
         }
-        if let child = node.child(byFieldName: CodingKeys.scope.rawValue) {
-            guard let scope = NominalType(from: child, in: source) else { return nil }
-            self.scope = scope
+        let scope: NominalType?
+        if let child = node.child(byFieldName: CodingKeys.scope) {
+            scope = NominalType(from: child, in: source)
         } else {
-            self.scope = nil
+            scope = nil
         }
 
-        guard let child = node.child(byFieldName: CodingKeys.name.rawValue),
+        guard let child = node.child(byFieldName: CodingKeys.name),
             let name = child.getString(in: source)
         else {
             return nil
         }
-        self.name = name
+        self.functionIdentifier = FunctionIdentifier(scope: scope, name: name)
 
         self.params =
             if let child = node.child(byFieldName: CodingKeys.params.rawValue) {

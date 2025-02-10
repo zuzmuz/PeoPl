@@ -26,7 +26,9 @@ extension Project: Evaluable {
         }
         
         // TODO: maybe should consider pattern matching on input and scope
-        let main = functionsDictionary.filter { key, value in key.name == "main" }
+        let main = functionsDictionary.filter { key, value in
+            key.functionIdentifier.name == "main"
+        }
 
         guard let main = main.first?.key else {
             return .failure(.mainFunctionNotFound)
@@ -50,7 +52,7 @@ extension Module: Evaluable {
     ) -> Result<Evaluation, RuntimeError> {
         let main = self.statements.filter { statement in
             if case let .functionDefinition(functionDefinition) = statement {
-                return functionDefinition.name == "main"
+                return functionDefinition.functionIdentifier.name == "main"
             }
             return false
         }

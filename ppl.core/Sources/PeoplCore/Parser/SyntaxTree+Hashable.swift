@@ -52,19 +52,27 @@ extension TypeDefinition.Sum: Hashable {
     }
 }
 
-extension FunctionDefinition: Hashable {
+extension FunctionIdentifier: Hashable {
     func hash(into hasher: inout Hasher) {
         hasher.combine(self.name)
         hasher.combine(self.scope)
-        hasher.combine(self.params)
+    }
+    static func == (lhs: FunctionIdentifier, rhs: FunctionIdentifier) -> Bool {
+        lhs.name == rhs.name && lhs.scope == rhs.scope
+    }
+}
+
+extension FunctionDefinition: Hashable {
+    func hash(into hasher: inout Hasher) {
         hasher.combine(self.inputType)
+        hasher.combine(self.functionIdentifier)
+        hasher.combine(self.params)
     }
 
     static func == (lhs: FunctionDefinition, rhs: FunctionDefinition) -> Bool {
-        lhs.name == rhs.name &&
-        lhs.scope == rhs.scope &&
-        lhs.params == rhs.params &&
-        lhs.inputType == rhs.inputType
+        lhs.inputType == rhs.inputType &&
+        lhs.functionIdentifier == rhs.functionIdentifier &&
+        lhs.params == rhs.params
     }
 }
 

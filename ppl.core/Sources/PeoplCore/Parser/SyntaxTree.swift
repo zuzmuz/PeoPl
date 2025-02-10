@@ -99,10 +99,14 @@ enum TypeDefinition: Encodable, SyntaxNode {
 // MARK: - function definitions
 // ----------------------------
 
-struct FunctionDefinition: Encodable, SyntaxNode {
-    let inputType: TypeIdentifier
+struct FunctionIdentifier: Encodable {
     let scope: NominalType?
     let name: String
+}
+
+struct FunctionDefinition: Encodable, SyntaxNode {
+    let inputType: TypeIdentifier
+    let functionIdentifier: FunctionIdentifier
     let params: [ParamDefinition]
     let outputType: TypeIdentifier
     let body: Expression
@@ -174,8 +178,8 @@ enum StructuralType {
 // -------------------
 
 struct Expression: Encodable, SyntaxNode {
-    let location: NodeLocation
     let expressionType: ExpressionType
+    let location: NodeLocation
 
     indirect enum ExpressionType: Encodable, Sendable {
         case nothing
@@ -247,6 +251,7 @@ struct Expression: Encodable, SyntaxNode {
         let arguments: [Argument]
         let location: NodeLocation
     }
+
 
     struct Access: Encodable, SyntaxNode {
         let accessed: Prefix

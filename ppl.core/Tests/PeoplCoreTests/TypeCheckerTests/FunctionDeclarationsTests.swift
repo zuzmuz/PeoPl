@@ -22,8 +22,8 @@ final class FunctionDeclarationsTests: XCTestCase {
         XCTAssertEqual(checker.functions.count, 3)
         XCTAssertEqual(checker.functionsSymbols.count, 2)
 
-        if let hiFunction = checker.functionsSymbols["hi"],
-            let mainFunction = checker.functionsSymbols["main"]
+        if let hiFunction = checker.functionsSymbols[.init(scope: nil, name: "hi")],
+            let mainFunction = checker.functionsSymbols[.init(scope: nil, name: "main")]
         {
             XCTAssertEqual(hiFunction.count, 2)
             XCTAssertEqual(mainFunction.count, 1)
@@ -74,8 +74,8 @@ final class FunctionDeclarationsTests: XCTestCase {
         XCTAssertEqual(checker.functions.count, 2)
         XCTAssertEqual(checker.functionsSymbols.count, 2)
 
-        if let hiFunction = checker.functionsSymbols["hi"],
-            let mainFunction = checker.functionsSymbols["main"]
+        if let hiFunction = checker.functionsSymbols[.init(scope: nil, name: "hi")],
+            let mainFunction = checker.functionsSymbols[.init(scope: nil, name: "main")]
         {
             XCTAssertEqual(hiFunction.count, 1)
             XCTAssertEqual(mainFunction.count, 1)
@@ -119,9 +119,9 @@ final class FunctionDeclarationsTests: XCTestCase {
         XCTAssertEqual(checker.functions.count, 4)
         XCTAssertEqual(checker.functionsSymbols.count, 3)
 
-        if let hiFunction = checker.functionsSymbols["hi"],
-            let byeFunction = checker.functionsSymbols["bye"],
-            let mainFunction = checker.functionsSymbols["main"]
+        if let hiFunction = checker.functionsSymbols[.init(scope: nil, name: "hi")],
+            let byeFunction = checker.functionsSymbols[.init(scope: nil, name: "bye")],
+            let mainFunction = checker.functionsSymbols[.init(scope: nil, name: "main")]
         {
             XCTAssertEqual(hiFunction.count, 1)
             XCTAssertEqual(byeFunction.count, 2)

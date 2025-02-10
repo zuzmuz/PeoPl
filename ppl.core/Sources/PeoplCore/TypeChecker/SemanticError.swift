@@ -3,18 +3,6 @@ import Foundation
 protocol SemanticError: LocalizedError {}
 
 enum FunctionSemanticError: SemanticError {
-    case nameNotFound(
-        location: NodeLocation,
-        name: String,
-        extra: String)
-    case inputMismatch(
-        location: NodeLocation,
-        inputType: TypeIdentifier,
-        validInputs: [TypeIdentifier])
-    case argumentMismatch(
-        location: NodeLocation,
-        givenArguments: [Expression.Argument],
-        expectedArguments: [[Expression.Argument]])
     case returnTypeMismatch(
         location: NodeLocation,
         expectedReturnType: TypeIdentifier,
@@ -27,15 +15,25 @@ enum FunctionSemanticError: SemanticError {
         typesInScope: [TypeIdentifier: TypeIdentifier].Keys)
 }
 
-enum OperationSemanticError: SemanticError, Encodable {
-    case typeMismatch(
-        location: NodeLocation,
-        leftType: TypeIdentifier,
-        rightType: TypeIdentifier)
+
+enum ExpressionSemanticError: SemanticError, Encodable {
     case inputMismatch(
-        location: NodeLocation,
+        expression: Expression,
         expected: TypeIdentifier,
         received: TypeIdentifier)
+    case invalidOperation(
+        expression: Expression,
+        leftType: TypeIdentifier,
+        rightType: TypeIdentifier)
+    case undifinedFunctionOnInput(
+        expression: Expression,
+        input: TypeIdentifier,
+        function: FunctionIdentifier)
+    case argumentMismatch(
+        location: Expression.Call,
+        givenArguments: [Expression.Argument],
+        inputType: TypeIdentifier,
+        FunctionIdentifier: FunctionIdentifier)
 }
 
 enum CaptureGroupSemanticError: SemanticError, Encodable {
@@ -51,11 +49,4 @@ enum CaptureGroupSemanticError: SemanticError, Encodable {
 
 enum BranchingSemanticError: SemanticError, Encodable {
     case branchingNotExhaustive(location: NodeLocation)
-}
-
-enum ScopeSemanticError: SemanticError, Encodable {
-    case fieldNotInScope(
-        location: NodeLocation,
-        field: String,
-        fieldsInScope: [String])
 }

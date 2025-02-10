@@ -10,8 +10,7 @@
 extension Expression.Call: Evaluable {
     private func evaluateFunction(
         inputType: TypeIdentifier,
-        scope namespace: NominalType?,
-        name functionName: String,
+        functionIdentifier: FunctionIdentifier,
         with input: Evaluation,
         and scope: EvaluationScope,
         argumentsEvaluations: [Evaluation]
@@ -19,8 +18,7 @@ extension Expression.Call: Evaluable {
 
         let functionDefinition = FunctionDefinition(
             inputType: inputType,
-            scope: namespace,
-            name: functionName,
+            functionIdentifier: functionIdentifier,
             params: zip(self.arguments, argumentsEvaluations).map { argument, evaluation in
                 ParamDefinition(
                     name: argument.name,
@@ -28,7 +26,7 @@ extension Expression.Call: Evaluable {
                     location: .nowhere)
             },
             outputType: .nothing(location: .nowhere),
-            body: .init(location: .nowhere, expressionType: .nothing),
+            body: .init(expressionType: .nothing, location: .nowhere),
             location: .nowhere)
 
         if let functionBody = scope.functions[functionDefinition] {
@@ -40,7 +38,8 @@ extension Expression.Call: Evaluable {
             }
             return functionBody.evaluate(with: input, and: scope)
         }
-        return .failure(.fieldNotInScope(location: location, fieldName: functionName))
+        // TODO: better handling of the function identifier
+        return .failure(.fieldNotInScope(location: location, fieldName: functionIdentifier.name))
     }
 
     func evaluate(
@@ -72,8 +71,7 @@ extension Expression.Call: Evaluable {
             case let .field(functionName):
                 return evaluateFunction(
                     inputType: input.typeIdentifier,
-                    scope: nil,
-                    name: functionName,
+                    functionIdentifier: .init(scope: nil, name: functionName),
                     with: input,
                     and: scope,
                     argumentsEvaluations: argumentsEvaluations)
@@ -93,8 +91,7 @@ extension Expression.Call: Evaluable {
 
                 return evaluateFunction(
                     inputType: callee.typeIdentifier,
-                    scope: nil,
-                    name: access.field,
+                    functionIdentifier: .init(scope: nil, name: access.field),
                     with: callee,
                     and: scope,
                     argumentsEvaluations: argumentsEvaluations)

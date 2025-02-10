@@ -6,13 +6,15 @@ final class FunctionSignatureTests: XCTestCase {
     func testHashableSignatureSimple() throws {
         let functionDefinition = FunctionDefinition(
             inputType: .simpleNominalType(name: "I32"),
-            scope: nil,
-            name: "my_function",
+            functionIdentifier: .init(
+                scope: nil,
+                name: "my_function"
+            ),
             params: [],
             outputType: .simpleNominalType(name: "String"),
             body: .init(
-                location: .nowhere,
-                expressionType: .nothing),
+                expressionType: .nothing,
+                location: .nowhere),
             location: .nowhere)
 
         let source = """
@@ -34,8 +36,10 @@ final class FunctionSignatureTests: XCTestCase {
     func testHashableSignatureAdvanced() throws {
         let functionDefinition = FunctionDefinition(
             inputType: .simpleTuple(names: ["Type1", "Type2"]),
-            scope: .init(chain: [.init(typeName: "Scope", typeArguments: [], location: .nowhere)], location: .nowhere),
-            name: "my_function",
+            functionIdentifier: .init(
+                scope: .init(chain: [.init(typeName: "Scope", typeArguments: [], location: .nowhere)], location: .nowhere),
+                name: "my_function"
+            ),
             params: [
                 .init(
                     name: "first",
@@ -48,8 +52,8 @@ final class FunctionSignatureTests: XCTestCase {
             ],
             outputType: .nothing(location: .nowhere),
             body: .init(
-                location: .nowhere,
-                expressionType: .nothing),
+                expressionType: .nothing,
+                location: .nowhere),
             location: .nowhere)
 
         var source = """
