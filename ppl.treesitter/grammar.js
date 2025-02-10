@@ -190,7 +190,7 @@ module.exports = grammar({
 
     _tuple_structural_type: $ => choice(
       $.unnamed_tuple_structural_type,
-      $.unnamed_tuple_structural_type
+      $.named_tuple_structural_type
     ),
 
     lambda_structural_type: $ => seq(

@@ -718,7 +718,7 @@
         },
         {
           "type": "SYMBOL",
-          "name": "unnamed_tuple_structural_type"
+          "name": "named_tuple_structural_type"
         }
       ]
     },

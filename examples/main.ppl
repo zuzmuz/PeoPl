@@ -1,10 +1,10 @@
 
 // Input + Extra => Output
 
-            func main(from: I32, to: I32) => I32
-                [0, from] |>
-                |a: 3, value: value| ([sum+value, value+1])^,
-                |sum, _| sum
+func main(from: [a: I32, c: B], to: I32) => [a: I32, b: I32]
+    [0, from] |>
+    |a: 3, value: value| ([sum+value, value+1])^,
+    |sum, _| sum
 
 
 

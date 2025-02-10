@@ -1160,6 +1160,21 @@
     }
   },
   {
+    "type": "named_tuple_structural_type",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "param_definition",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "namespace_state",
     "named": true,
     "fields": {},
@@ -1575,6 +1590,10 @@
       "types": [
         {
           "type": "lambda_structural_type",
+          "named": true
+        },
+        {
+          "type": "named_tuple_structural_type",
           "named": true
         },
         {

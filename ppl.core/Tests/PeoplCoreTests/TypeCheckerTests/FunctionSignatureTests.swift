@@ -32,7 +32,7 @@ final class FunctionSignatureTests: XCTestCase {
     }
 
     func testHashableSignatureAdvanced() throws {
-        let functionDefintion = FunctionDefinition(
+        let functionDefinition = FunctionDefinition(
             inputType: .simpleTuple(names: ["Type1", "Type2"]),
             scope: .init(chain: [.init(typeName: "Scope", typeArguments: [], location: .nowhere)], location: .nowhere),
             name: "my_function",
@@ -51,5 +51,35 @@ final class FunctionSignatureTests: XCTestCase {
                 location: .nowhere,
                 expressionType: .nothing),
             location: .nowhere)
+
+        var source = """
+            func ([Type1, Type2]) Scope.my_function(first: [a: Arg, b: Brg], second: {T, Y} -> O) => Nothing
+                Nothing
+            """
+        var module = try Module(source: source, path: "main")
+
+        guard let myFunction = module.statements.first,
+            case let .functionDefinition(myFunction) = myFunction
+        else {
+            XCTAssertTrue(false)
+            return
+        }
+
+        XCTAssertEqual(functionDefinition, myFunction)
+
+        source = """
+            func ([Type1, Type3]) Scope.my_function(first: [a: Arg, b: Brg], second: {T, Y} -> O) => Nothing
+                Nothing
+            """
+        module = try Module(source: source, path: "main")
+
+        guard let myFunction = module.statements.first,
+            case let .functionDefinition(myFunction) = myFunction
+        else {
+            XCTAssertTrue(false)
+            return
+        }
+
+        XCTAssertNotEqual(functionDefinition, myFunction)
     }
 }
