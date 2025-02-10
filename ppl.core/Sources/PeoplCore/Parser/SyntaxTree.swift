@@ -1,7 +1,7 @@
 // MARK: - the syntax tree source
 // ------------------------------
 
-struct NodeLocation: Encodable, Equatable {
+struct NodeLocation: Encodable, Equatable, Comparable {
     struct Point: Comparable, Encodable, Equatable {
         let line: Int
         let column: Int
@@ -12,6 +12,12 @@ struct NodeLocation: Encodable, Equatable {
     let pointRange: Range<Point>
     let range: Range<Int>
     let sourceName: String
+
+    static func < (lhs: NodeLocation, rhs: NodeLocation) -> Bool {
+        lhs.sourceName < rhs.sourceName ||
+        lhs.sourceName == rhs.sourceName &&
+        lhs.pointRange.lowerBound < rhs.pointRange.lowerBound
+    }
 
     static let nowhere = NodeLocation(
         pointRange: Point(

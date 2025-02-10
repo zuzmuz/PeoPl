@@ -1,27 +1,6 @@
-
 protocol DeclarationContext {
     func getFunctionDefinitions() -> [FunctionDefinition]
     func getTypeDefinitions() -> [TypeDefinition]
-}
-
-struct TypeDeclarationChecker {
-    let types: [TypeDefinition: TypeDefinition]
-    let typesIdentifiers: [TypeIdentifier: TypeIdentifier]
-    init(context: some DeclarationContext) {
-        // TODO: here should also be handled the dependencies and whatnots
-        self.types = [:]
-        self.typesIdentifiers = [
-            Builtins.i32: Builtins.i32,
-            Builtins.f64: Builtins.f64,
-            Builtins.string: Builtins.string,
-            .nothing(location: .nowhere): .nothing(location: .nowhere),
-            .never(location: .nowhere): .never(location: .nowhere)
-        ]
-    }
-
-    // TODO: for building independent files
-    // init(module: Module) {
-    // }
 }
 
 extension Module: DeclarationContext {
@@ -36,7 +15,13 @@ extension Module: DeclarationContext {
     }
 
     func getTypeDefinitions() -> [TypeDefinition] {
-        return []
+        return self.statements.compactMap { statement in
+            if case let .typeDefinition(typeDefinition) = statement {
+                return typeDefinition
+            } else {
+                return nil
+            }
+        }
     }
 }
 
@@ -48,9 +33,33 @@ extension Project: DeclarationContext {
     }
 
     func getTypeDefinitions() -> [TypeDefinition] {
-        return []
+        return self.modules.flatMap { source, module in
+            return module.getTypeDefinitions()
+        }
     }
 }
+
+
+struct TypeDeclarationChecker {
+    let types: [TypeDefinition: TypeDefinition]
+    let typesIdentifiers: [TypeIdentifier: TypeIdentifier]
+    init(context: some DeclarationContext) {
+        // TODO: here should also be handled the dependencies and whatnots
+        self.types = [:]
+        self.typesIdentifiers = [
+            Builtins.i32: Builtins.i32,
+            Builtins.f64: Builtins.f64,
+            Builtins.string: Builtins.string,
+            .nothing(location: .nowhere): .nothing(location: .nowhere),
+            .never(location: .nowhere): .never(location: .nowhere),
+        ]
+    }
+
+    // TODO: for building independent files
+    // init(module: Module) {
+    // }
+}
+
 
 struct FunctionDeclarationChecker {
     let functions: [FunctionDefinition: FunctionDefinition]
@@ -58,7 +67,7 @@ struct FunctionDeclarationChecker {
     let inputFunctions: [TypeIdentifier: [FunctionDefinition]]
     let errors: [SemanticError]
 
-    init(context: Project, typeDeclarationChecker: TypeDeclarationChecker) {
+    init(context: some DeclarationContext, typeDeclarationChecker: TypeDeclarationChecker) {
         let definitions = context.getFunctionDefinitions()
         let resolutions = FunctionDeclarationChecker.resolveFunctionDefinitions(
             definitions: definitions,
@@ -107,8 +116,10 @@ struct FunctionDeclarationChecker {
     static private func resolveFunctionDefinitions(
         definitions: [FunctionDefinition],
         typeDeclarationChecker: TypeDeclarationChecker
-    ) -> (functions: [FunctionDefinition: FunctionDefinition],
-          errors: [SemanticError]) {
+    ) -> (
+        functions: [FunctionDefinition: FunctionDefinition],
+        errors: [SemanticError]
+    ) {
 
         let functionsLocations = definitions.reduce(into: [:]) { acc, function in
             acc[function] = (acc[function] ?? []) + [function]
@@ -122,10 +133,9 @@ struct FunctionDeclarationChecker {
             }
         }
 
-        let functions = functionsLocations.compactMapValues { functions in 
+        let functions = functionsLocations.compactMapValues { functions in
             return functions.first
         }
         return (functions: functions, errors: errors)
     }
 }
-
