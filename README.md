@@ -14,6 +14,27 @@ are the most useful programming concepts.
 
 1. [To read about the motivation and philosophy behind the project](docs/motivation.md)
 
+The project is in early devolopment, there is a basic incomplete interpreter and an incomplete typechecker.
+
+## The basics
+
+PeoPl is a statically typed compiled functional programming language with a bash influence.
+It is an expression only language, which means no statements are allowed in blocks, only top level statements like function and type deckarations are allowed.
+
+It uses the pipe operator `|>` found in FP to perform functional chaining, however it uses object method syntax.
+
+It is influence by shell scripting languages where a command takes an input (usually from stdin), with extra arguments,
+and produces an output (usually to stdout).
+
+The input of functions is treated differently from function arguments (unlike with regular FP languages), therefor, the syntax resembles Go like function declarations.
+It takes concepts from swift, rust, go, elixir, kotlin, haskell.
+
+# Why
+
+Just for fun.
+
+But also a thought experiment. Can I create a minimal programming language with just the most basic concepts but at the same time create something useful. 
+
 # If you want to try it out
 
 If you have swift installed on mac or linux just clone the project build it, check the tests as examples and try it out.
@@ -59,30 +80,7 @@ and produces an output.
 In Peopl, like in functional programming languages, expressions are pure, they do not produce side effects,
 they do not manipulate any global state.
 
-### Literals
-
-The most basic example is a literal, like `2`, `3.14`, `true`, `"some string"`.
-
-These are expressions that take nothing as input, but produce an integer, a float, a boolean, a string respectively.
-
-### Arithmetic expressions
-
-The things we learn in math like `3 + 4`, `1.41 / 2.78`.
-They're also expressions that don't take input, but produces a value.
-
-### Named Functions
-
-You know what I'm talking about
-
-### Ternary expressions or pattern matching switch statements
-
-The fact is that you don't really need statements to do branching.
-
-We all used the ternary operator in some programming language.
-`result = some_condition ? value_if_true : value_if_false`
-
-The ternary expression evaluates to something, even though it does branching, 
-it is a concise way of writing conditional branching without if statements.
+Int, float and string literals are expressions, as well as basic arithmetic expressions, function calls, branching with pattern matching etc...
 
 ## Are expressions enough
 
@@ -90,8 +88,11 @@ Yeah, the body of a function in Peopl is just a list of expressions, each expres
 
 Assignments are not necessary, our monkey brains need them to create temporary intermediate values so that the code is simpler to read.
 But, with a different nicer syntax, they can be omitted. Assignments are basically like labeling, slapping a label on a value.
+Assignments where modifying an object are different though, they're basically mutations. Mutations can be avoided, at least explicitly.
+The compiler can perform inplace mutation if certain criteria are met, but like in FP languages, mutation is basically creating a new object,
+with some modifications.
 
-If statements can be branching expressions.
+'If statements' can be branching expressions.
 
 Functional programming already doesn't have loops and use recursion instead.
 
