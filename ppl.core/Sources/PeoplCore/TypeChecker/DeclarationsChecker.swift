@@ -1,21 +1,13 @@
 
-struct TypeChecker {
-    let typeSymbols: [String]
-
-    func symbolCheck() {
-    }
-
-    func typeChecks() {
-    }
-
-    func functionCheck() {
-    }
+protocol DeclarationContext {
+    func getFunctionDefinitions() -> [FunctionDefinition]
+    func getTypeDefinitions() -> [TypeDefinition]
 }
 
 struct TypeDeclarationChecker {
     let types: [TypeDefinition: TypeDefinition]
     let typesIdentifiers: [TypeIdentifier: TypeIdentifier]
-    init(project: Project) {
+    init(context: some DeclarationContext) {
         // TODO: here should also be handled the dependencies and whatnots
         self.types = [:]
         self.typesIdentifiers = [
@@ -32,7 +24,7 @@ struct TypeDeclarationChecker {
     // }
 }
 
-extension Module {
+extension Module: DeclarationContext {
     func getFunctionDefinitions() -> [FunctionDefinition] {
         return self.statements.compactMap { statement in
             if case let .functionDefinition(functionDefinition) = statement {
@@ -42,13 +34,21 @@ extension Module {
             }
         }
     }
+
+    func getTypeDefinitions() -> [TypeDefinition] {
+        return []
+    }
 }
 
-extension Project {
+extension Project: DeclarationContext {
     func getFunctionDefinitions() -> [FunctionDefinition] {
         return self.modules.flatMap { source, module in
             return module.getFunctionDefinitions()
         }
+    }
+
+    func getTypeDefinitions() -> [TypeDefinition] {
+        return []
     }
 }
 
@@ -58,8 +58,8 @@ struct FunctionDeclarationChecker {
     let inputFunctions: [TypeIdentifier: [FunctionDefinition]]
     let errors: [SemanticError]
 
-    init(project: Project, typeDeclarationChecker: TypeDeclarationChecker) {
-        let definitions = project.getFunctionDefinitions()
+    init(context: Project, typeDeclarationChecker: TypeDeclarationChecker) {
+        let definitions = context.getFunctionDefinitions()
         let resolutions = FunctionDeclarationChecker.resolveFunctionDefinitions(
             definitions: definitions,
             typeDeclarationChecker: typeDeclarationChecker)
