@@ -30,10 +30,14 @@ enum ExpressionSemanticError: SemanticError, Encodable {
         input: TypeIdentifier,
         function: FunctionIdentifier)
     case argumentMismatch(
-        location: Expression.Call,
+        expression: Expression,
         givenArguments: [Expression.Argument],
         inputType: TypeIdentifier,
         FunctionIdentifier: FunctionIdentifier)
+    case reachedNever(
+        expression: Expression)
+    case unsupportedYet(
+        expression: Expression)
 }
 
 enum CaptureGroupSemanticError: SemanticError, Encodable {

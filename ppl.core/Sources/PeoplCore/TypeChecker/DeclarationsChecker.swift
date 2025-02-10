@@ -61,8 +61,8 @@ struct TypeDeclarationChecker {
 
 struct FunctionDeclarationChecker {
     let functions: [FunctionDefinition: FunctionDefinition]
-    let functionsSymbols: [FunctionIdentifier: [FunctionDefinition]]
-    let inputFunctions: [TypeIdentifier: [FunctionDefinition]]
+    let functionsIdentifiers: [FunctionIdentifier: [FunctionDefinition]]
+    let functionsInputTypeIdentifiers: [TypeIdentifier: [FunctionDefinition]]
     let errors: [SemanticError]
 
     init(context: some DeclarationContext, typeDeclarationChecker: TypeDeclarationChecker) {
@@ -73,11 +73,11 @@ struct FunctionDeclarationChecker {
 
         self.functions = resolutions.functions
 
-        self.functionsSymbols = self.functions.reduce(into: [:]) { acc, element in
+        self.functionsIdentifiers = self.functions.reduce(into: [:]) { acc, element in
             acc[element.key.functionIdentifier] =
                 (acc[element.key.functionIdentifier] ?? []) + [element.key]
         }
-        self.inputFunctions = self.functions.reduce(into: [:]) { acc, element in
+        self.functionsInputTypeIdentifiers = self.functions.reduce(into: [:]) { acc, element in
             acc[element.key.inputType] = (acc[element.key.inputType] ?? []) + [element.key]
         }
 

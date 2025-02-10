@@ -20,10 +20,10 @@ final class FunctionDeclarationsTests: XCTestCase {
         
         XCTAssertEqual(checker.errors.count, 0)
         XCTAssertEqual(checker.functions.count, 3)
-        XCTAssertEqual(checker.functionsSymbols.count, 2)
+        XCTAssertEqual(checker.functionsIdentifiers.count, 2)
 
-        if let hiFunction = checker.functionsSymbols[.init(scope: nil, name: "hi")],
-            let mainFunction = checker.functionsSymbols[.init(scope: nil, name: "main")]
+        if let hiFunction = checker.functionsIdentifiers[.init(scope: nil, name: "hi")],
+            let mainFunction = checker.functionsIdentifiers[.init(scope: nil, name: "main")]
         {
             XCTAssertEqual(hiFunction.count, 2)
             XCTAssertEqual(mainFunction.count, 1)
@@ -32,9 +32,9 @@ final class FunctionDeclarationsTests: XCTestCase {
             XCTAssertTrue(false)
         }
 
-        XCTAssertEqual(checker.inputFunctions.count, 1)
+        XCTAssertEqual(checker.functionsInputTypeIdentifiers.count, 1)
 
-        if let nothingInputFunctions = checker.inputFunctions[.nothing(location: .nowhere)] {
+        if let nothingInputFunctions = checker.functionsInputTypeIdentifiers[.nothing(location: .nowhere)] {
             XCTAssertEqual(nothingInputFunctions.count, 3)
         } else {
             XCTAssertTrue(false)
@@ -72,10 +72,10 @@ final class FunctionDeclarationsTests: XCTestCase {
         }
 
         XCTAssertEqual(checker.functions.count, 2)
-        XCTAssertEqual(checker.functionsSymbols.count, 2)
+        XCTAssertEqual(checker.functionsIdentifiers.count, 2)
 
-        if let hiFunction = checker.functionsSymbols[.init(scope: nil, name: "hi")],
-            let mainFunction = checker.functionsSymbols[.init(scope: nil, name: "main")]
+        if let hiFunction = checker.functionsIdentifiers[.init(scope: nil, name: "hi")],
+            let mainFunction = checker.functionsIdentifiers[.init(scope: nil, name: "main")]
         {
             XCTAssertEqual(hiFunction.count, 1)
             XCTAssertEqual(mainFunction.count, 1)
@@ -84,9 +84,9 @@ final class FunctionDeclarationsTests: XCTestCase {
             XCTAssertTrue(false)
         }
 
-        XCTAssertEqual(checker.inputFunctions.count, 1)
+        XCTAssertEqual(checker.functionsInputTypeIdentifiers.count, 1)
 
-        if let nothingInputFunctions = checker.inputFunctions[.nothing(location: .nowhere)] {
+        if let nothingInputFunctions = checker.functionsInputTypeIdentifiers[.nothing(location: .nowhere)] {
             XCTAssertEqual(nothingInputFunctions.count, 2)
         } else {
             XCTAssertTrue(false)
@@ -117,11 +117,11 @@ final class FunctionDeclarationsTests: XCTestCase {
         XCTAssertEqual(checker.errors.count, 2)
 
         XCTAssertEqual(checker.functions.count, 4)
-        XCTAssertEqual(checker.functionsSymbols.count, 3)
+        XCTAssertEqual(checker.functionsIdentifiers.count, 3)
 
-        if let hiFunction = checker.functionsSymbols[.init(scope: nil, name: "hi")],
-            let byeFunction = checker.functionsSymbols[.init(scope: nil, name: "bye")],
-            let mainFunction = checker.functionsSymbols[.init(scope: nil, name: "main")]
+        if let hiFunction = checker.functionsIdentifiers[.init(scope: nil, name: "hi")],
+            let byeFunction = checker.functionsIdentifiers[.init(scope: nil, name: "bye")],
+            let mainFunction = checker.functionsIdentifiers[.init(scope: nil, name: "main")]
         {
             XCTAssertEqual(hiFunction.count, 1)
             XCTAssertEqual(byeFunction.count, 2)
@@ -131,6 +131,6 @@ final class FunctionDeclarationsTests: XCTestCase {
             XCTAssertTrue(false)
         }
 
-        XCTAssertEqual(checker.inputFunctions.count, 1)
+        XCTAssertEqual(checker.functionsInputTypeIdentifiers.count, 1)
     }
 }
