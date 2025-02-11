@@ -7,7 +7,7 @@ extension Expression: TypeChecker {
 
         switch (input, self.expressionType) {
         // Never
-        case (_, .never):
+        case (_, .never), (.never, _):
             throw .reachedNever(expression: self)
         //Nothing
         case (.nothing, .nothing):
@@ -22,11 +22,11 @@ extension Expression: TypeChecker {
             return Builtins.string
         case (.nothing, .boolLiteral):
             return Builtins.bool
-        case (input, .nothing),
-            (input, .intLiteral),
-            (input, .floatLiteral),
-            (input, .stringLiteral),
-            (input, .boolLiteral):
+        case (_, .nothing),
+            (_, .intLiteral),
+            (_, .floatLiteral),
+            (_, .stringLiteral),
+            (_, .boolLiteral):
             throw .inputMismatch(
                 expression: self,
                 expected: .nothing(location: .nowhere),
@@ -258,303 +258,29 @@ extension Expression: TypeChecker {
         case let (input, .call(call)):
             return try call.checkType(with: input, localScope: localScope, context: context)
         case let (input, .access(access)):
-            break
-        case let (input, .field(field)):
-            break
+            throw .unsupportedYet("accessed fields")
+        case let (.nothing, .field(field)):
+            if let fieldType = localScope.fields[field] {
+                return fieldType
+            } else {
+                throw .fieldNotInScope(expression: self)
+            }
+        case (_, .field):
+            throw .inputMismatch(
+                expression: self,
+                expected: .nothing(location: .nowhere),
+                received: input)
         case let (input, .branched(branched)):
-            break
+            return try branched.checkType(with: input, localScope: localScope, context: context)
         case let (input, .piped(leftExpression, rightExpression)):
-            break
-            
-            
-
-
-
-
-
-        //
-        // // Binary
-        // case (.nothing, .plus(let leftExpression, let rightExpression)):
-        //     let left = leftExpression.evaluate(with: input, and: scope)
-        //     let right = rightExpression.evaluate(with: input, and: scope)
-        //
-        //     switch (left, right) {
-        //     case (.success(.int(let left)), .success(.int(let right))):
-        //         return .success(.int(left + right))
-        //     case (.success(.float(let left)), .success(.float(let right))):
-        //         return .success(.float(left + right))
-        //     case (.success(let left), .success(let right)):
-        //         return .failure(.invalidOperation(
-        //             location: location, operation: "+", left: left.typeName, right: right.typeName))
-        //     case (.failure(let left), _):
-        //         return .failure(left)
-        //     case (_, .failure(let right)):
-        //         return .failure(right)
-        //     }
-        // case (.nothing, .minus(let leftExpression, let rightExpression)):
-        //     let left = leftExpression.evaluate(with: input, and: scope)
-        //     let right = rightExpression.evaluate(with: input, and: scope)
-        //
-        //     switch (left, right) {
-        //     case (.success(.int(let left)), .success(.int(let right))):
-        //         return .success(.int(left - right))
-        //     case (.success(.float(let left)), .success(.float(let right))):
-        //         return .success(.float(left - right))
-        //     case (.success(let left), .success(let right)):
-        //         return .failure(.invalidOperation(
-        //             location: location, operation: "-", left: left.typeName, right: right.typeName))
-        //     case (.failure(let left), _):
-        //         return .failure(left)
-        //     case (_, .failure(let right)):
-        //         return .failure(right)
-        //     }
-        // case (.nothing, .times(let leftExpression, let rightExpression)):
-        //     let left = leftExpression.evaluate(with: input, and: scope)
-        //     let right = rightExpression.evaluate(with: input, and: scope)
-        //
-        //     switch (left, right) {
-        //     case (.success(.int(let left)), .success(.int(let right))):
-        //         return .success(.int(left * right))
-        //     case (.success(.float(let left)), .success(.float(let right))):
-        //         return .success(.float(left * right))
-        //     case (.success(let left), .success(let right)):
-        //         return .failure(.invalidOperation(
-        //         location: location, operation: "*", left: left.typeName, right: right.typeName))
-        //     case (.failure(let left), _):
-        //         return .failure(left)
-        //     case (_, .failure(let right)):
-        //         return .failure(right)
-        //     }
-        // case (.nothing, .by(let leftExpression, let rightExpression)):
-        //     let left = leftExpression.evaluate(with: input, and: scope)
-        //     let right = rightExpression.evaluate(with: input, and: scope)
-        //
-        //     switch (left, right) {
-        //     case (.success(.int(let left)), .success(.int(let right))):
-        //         return .success(.int(left / right))
-        //     case (.success(.float(let left)), .success(.float(let right))):
-        //         return .success(.float(left / right))
-        //     case (.success(let left), .success(let right)):
-        //         return .failure(.invalidOperation(
-        //             location: location, operation: "/", left: left.typeName, right: right.typeName))
-        //     case (.failure(let left), _):
-        //         return .failure(left)
-        //     case (_, .failure(let right)):
-        //         return .failure(right)
-        //     }
-        // case (.nothing, .mod(let leftExpression, let rightExpression)):
-        //     let left = leftExpression.evaluate(with: input, and: scope)
-        //     let right = rightExpression.evaluate(with: input, and: scope)
-        //
-        //     switch (left, right) {
-        //     case (.success(.int(let left)), .success(.int(let right))):
-        //         return .success(.int(left % right))
-        //     case (.success(let left), .success(let right)):
-        //         return .failure(.invalidOperation(
-        //             location: location, operation: "%", left: left.typeName, right: right.typeName))
-        //     case (.failure(let left), _):
-        //         return .failure(left)
-        //     case (_, .failure(let right)):
-        //         return .failure(right)
-        //     }
-        // case (.nothing, .equal(let leftExpression, let rightExpression)):
-        //     let left = leftExpression.evaluate(with: input, and: scope)
-        //     let right = rightExpression.evaluate(with: input, and: scope)
-        //
-        //     switch (left, right) {
-        //     case (.success(.int(let left)), .success(.int(let right))):
-        //         return .success(.bool(left == right))
-        //     case (.success(.float(let left)), .success(.float(let right))):
-        //         return .success(.bool(left == right))
-        //     case (.success(.string(let left)), .success(.string(let right))):
-        //         return .success(.bool(left == right))
-        //     case (.success(.bool(let left)), .success(.bool(let right))):
-        //         return .success(.bool(left == right))
-        //     case (.success(let left), .success(let right)):
-        //         return .failure(.invalidOperation(
-        //             location: location, operation: "=", left: left.typeName, right: right.typeName))
-        //     case (.failure(let left), _):
-        //         return .failure(left)
-        //     case (_, .failure(let right)):
-        //         return .failure(right)
-        //     }
-        // case (.nothing, .different(let leftExpression, let rightExpression)):
-        //     let left = leftExpression.evaluate(with: input, and: scope)
-        //     let right = rightExpression.evaluate(with: input, and: scope)
-        //
-        //     switch (left, right) {
-        //     case (.success(.int(let left)), .success(.int(let right))):
-        //         return .success(.bool(left != right))
-        //     case (.success(.float(let left)), .success(.float(let right))):
-        //         return .success(.bool(left != right))
-        //     case (.success(.string(let left)), .success(.string(let right))):
-        //         return .success(.bool(left != right))
-        //     case (.success(.bool(let left)), .success(.bool(let right))):
-        //         return .success(.bool(left != right))
-        //     case (.success(let left), .success(let right)):
-        //         return .failure(.invalidOperation(
-        //             location: location, operation: "!=", left: left.typeName, right: right.typeName))
-        //     case (.failure(let left), _):
-        //         return .failure(left)
-        //     case (_, .failure(let right)):
-        //         return .failure(right)
-        //     }
-        // case (.nothing, .lessThan(let leftExpression, let rightExpression)):
-        //     let left = leftExpression.evaluate(with: input, and: scope)
-        //     let right = rightExpression.evaluate(with: input, and: scope)
-        //
-        //     switch (left, right) {
-        //     case (.success(.int(let left)), .success(.int(let right))):
-        //         return .success(.bool(left < right))
-        //     case (.success(.float(let left)), .success(.float(let right))):
-        //         return .success(.bool(left < right))
-        //     case (.success(let left), .success(let right)):
-        //         return .failure(.invalidOperation(
-        //             location: location, operation: "<", left: left.typeName, right: right.typeName))
-        //     case (.failure(let left), _):
-        //         return .failure(left)
-        //     case (_, .failure(let right)):
-        //         return .failure(right)
-        //     }
-        // case (.nothing, .lessThanEqual(let leftExpression, let rightExpression)):
-        //     let left = leftExpression.evaluate(with: input, and: scope)
-        //     let right = rightExpression.evaluate(with: input, and: scope)
-        //
-        //     switch (left, right) {
-        //     case (.success(.int(let left)), .success(.int(let right))):
-        //         return .success(.bool(left <= right))
-        //     case (.success(.float(let left)), .success(.float(let right))):
-        //         return .success(.bool(left <= right))
-        //     case (.success(let left), .success(let right)):
-        //         return .failure(.invalidOperation(
-        //             location: location, operation: "<=", left: left.typeName, right: right.typeName))
-        //     case (.failure(let left), _):
-        //         return .failure(left)
-        //     case (_, .failure(let right)):
-        //         return .failure(right)
-        //     }
-        // case (.nothing, .greaterThan(let leftExpression, let rightExpression)):
-        //     let left = leftExpression.evaluate(with: input, and: scope)
-        //     let right = rightExpression.evaluate(with: input, and: scope)
-        //
-        //     switch (left, right) {
-        //     case (.success(.int(let left)), .success(.int(let right))):
-        //         return .success(.bool(left > right))
-        //     case (.success(.float(let left)), .success(.float(let right))):
-        //         return .success(.bool(left > right))
-        //     case (.success(let left), .success(let right)):
-        //         return .failure(.invalidOperation(
-        //             location: location, operation: ">", left: left.typeName, right: right.typeName))
-        //     case (.failure(let left), _):
-        //         return .failure(left)
-        //     case (_, .failure(let right)):
-        //         return .failure(right)
-        //     }
-        // case (.nothing, .greaterThanEqual(let leftExpression, let rightExpression)):
-        //     let left = leftExpression.evaluate(with: input, and: scope)
-        //     let right = rightExpression.evaluate(with: input, and: scope)
-        //
-        //     switch (left, right) {
-        //     case (.success(.int(let left)), .success(.int(let right))):
-        //         return .success(.bool(left >= right))
-        //     case (.success(.float(let left)), .success(.float(let right))):
-        //         return .success(.bool(left >= right))
-        //     case (.success(let left), .success(let right)):
-        //         return .failure(.invalidOperation(
-        //             location: location, operation: ">=", left: left.typeName, right: right.typeName))
-        //     case (.failure(let left), _):
-        //         return .failure(left)
-        //     case (_, .failure(let right)):
-        //         return .failure(right)
-        //     }
-        // case (.nothing, .or(let leftExpression, let rightExpression)):
-        //     let left = leftExpression.evaluate(with: input, and: scope)
-        //     let right = rightExpression.evaluate(with: input, and: scope)
-        //
-        //     switch (left, right) {
-        //     case (.success(.bool(let left)), .success(.bool(let right))):
-        //         return .success(.bool(left || right))
-        //     case (.success(let left), .success(let right)):
-        //         return .failure(.invalidOperation(
-        //             location: location, operation: "or", left: left.typeName, right: right.typeName))
-        //     case (.failure(let left), _):
-        //         return .failure(left)
-        //     case (_, .failure(let right)):
-        //         return .failure(right)
-        //     }
-        // case (.nothing, .and(let leftExpression, let rightExpression)):
-        //    let left = leftExpression.evaluate(with: input, and: scope)
-        //     let right = rightExpression.evaluate(with: input, and: scope)
-        //
-        //     switch (left, right) {
-        //     case (.success(.bool(let left)), .success(.bool(let right))):
-        //         return .success(.bool(left && right))
-        //     case (.success(let left), .success(let right)):
-        //         return .failure(.invalidOperation(
-        //             location: location, operation: "and", left: left.typeName, right: right.typeName))
-        //     case (.failure(let left), _):
-        //         return .failure(left)
-        //     case (_, .failure(let right)):
-        //         return .failure(right)
-        //     }
-        // case (input, .plus),
-        //      (input, .minus),
-        //      (input, .times),
-        //      (input, .by),
-        //      (input, .mod),
-        //      (input, .equal),
-        //      (input, .different),
-        //      (input, .lessThan),
-        //      (input, .lessThanEqual),
-        //      (input, .greaterThan),
-        //      (input, .greaterThanEqual):
-        //     return .failure(.invalidInputForExpression(
-        //         location: location, expected: "Nothing", received: input.typeName))
-        //
-        // case (input, .branched(let branched)):
-        //     return branched.evaluate(with: input, and: scope)
-        // case (input, .piped(let leftExpression, let rightExpression)):
-        //     let left = leftExpression.evaluate(with: input, and: scope)
-        //     switch left {
-        //     case .success(let evaluation):
-        //         return rightExpression.evaluate(with: evaluation, and: scope)
-        //     case .failure(let error):
-        //         return .failure(error)
-        //     }
-        // case (.nothing, .field(let fieldName)):
-        //     if let fieldValue = scope.locals[fieldName] {
-        //         return .success(fieldValue)
-        //     } else {
-        //         return .failure(.fieldNotInScope(location: location, fieldName: fieldName))
-        //     }
-        // case (input, .call(let call)):
-        //     return call.evaluate(with: input, and: scope)
-        // case (.nothing, .unnamedTuple(let expressions)):
-        //     let results = expressions.map { $0.evaluate(with: input, and: scope) }
-        //     if case let .failure(error) = (results.first { (try? $0.get()) == nil }) {
-        //         return .failure(error)
-        //     }
-        //     return .success(.unnamedTuple(results.compactMap { try? $0.get() }))
-        // case (input, .unnamedTuple):
-        //     return .failure(.invalidInputForExpression(
-        //         location: location, expected: "Nothing", received: input.typeName))
-        // case (.nothing, .namedTuple(let expressions)):
-        //     let results = expressions.map { ($0.name, $0.value.evaluate(with: input, and: scope)) }
-        //     if case let .failure(error) = (results.first { (try? $0.1.get()) == nil })?.1 {
-        //         return .failure(error)
-        //     }
-        //     return .success(.namedTuple(results.compactMap { result in
-        //         if let evaluation = try? result.1.get() {
-        //             return Evaluation.NamedEvaluation(name: result.0, value: evaluation)
-        //         }
-        //         return nil
-        //     }))
-        // case (input, .namedTuple):
-        //     return .failure(.invalidInputForExpression(
-        //         location: location, expected: "Nothing", received: input.typeName))
-        default:
-            return .simpleNominalType(name: "invalid")
+            let leftType = try leftExpression.checkType(
+                with: input,
+                localScope: localScope,
+                context: context)
+            return try rightExpression.checkType(
+                with: leftType,
+                localScope: localScope,
+                context: context)
         }
-        return .simpleNominalType(name: "invalid")
     }
 }

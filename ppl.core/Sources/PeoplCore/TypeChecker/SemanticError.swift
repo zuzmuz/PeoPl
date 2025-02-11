@@ -40,6 +40,8 @@ enum ExpressionSemanticError: SemanticError, Encodable {
         givenArguments: [ParamDefinition],
         inputType: TypeIdentifier,
         function: FunctionIdentifier)
+    case fieldNotInScope(
+        expression: Expression)
     case reachedNever(
         expression: Expression)
     case unsupportedYet(String)
