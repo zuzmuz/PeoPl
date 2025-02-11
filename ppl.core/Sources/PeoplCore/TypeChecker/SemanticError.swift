@@ -42,17 +42,20 @@ enum ExpressionSemanticError: SemanticError, Encodable {
         function: FunctionIdentifier)
     case fieldNotInScope(
         expression: Expression)
+    case captureGroupCountMismatch(
+        branch: Expression.Branched.Branch,
+        inputType: TypeIdentifier,
+        captureGroupCount: Int)
+    case loopedExpressionTypeMismatch(
+        expression: Expression,
+        expectedType: TypeIdentifier,
+        receivedType: TypeIdentifier)
     case reachedNever(
         expression: Expression)
     case unsupportedYet(String)
 }
 
 enum CaptureGroupSemanticError: SemanticError, Encodable {
-    case groupCountMismatch(
-        location: NodeLocation,
-        inputType: TypeIdentifier,
-        inputCount: Int,
-        captureGroupCount: Int)
     case invalidType(
         location: NodeLocation,
         type: TypeIdentifier)
