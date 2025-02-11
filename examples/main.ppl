@@ -1,10 +1,16 @@
 
 // Input + Extra => Output
+func factorial(value: I32) => I32
+    |value <=1| 1,
+    |_| value * factorial(value: value - 1)
 
-func main(from: [a: I32, c: B], to: I32) => [a: I32, b: I32]
-    [0, from] |>
-    |a: 3, value: value| ([sum+value, value+1])^,
+func sum(from: I32, to: I32) => I32
+    [ 0, from ] |>
+    |sum, i: i <= to| ([sum+i, i+1])^,
     |sum, _| sum
+    
 
-
+func main() => I32
+    sum(from: 1, to: 4)
+    
 

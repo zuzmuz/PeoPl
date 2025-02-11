@@ -158,6 +158,7 @@ struct NominalType: Encodable, SyntaxNode {
 
 enum StructuralType {
     struct Lambda: Encodable, SyntaxNode {
+        // TODO: input and output should be 1 and multiple inputs should be tupled
         let input: [TypeIdentifier]
         let output: [TypeIdentifier]
         let location: NodeLocation
@@ -180,6 +181,8 @@ enum StructuralType {
 struct Expression: Encodable, SyntaxNode {
     let expressionType: ExpressionType
     let location: NodeLocation
+
+    static let empty = Expression(expressionType: .nothing, location: .nowhere)
 
     indirect enum ExpressionType: Encodable, Sendable {
         case nothing

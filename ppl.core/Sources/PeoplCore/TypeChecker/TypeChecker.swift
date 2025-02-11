@@ -3,8 +3,9 @@ struct LocalScope {
 }
 
 struct TypeCheckerContext {
-    let functionsIdentifiers: [FunctionIdentifier: FunctionDefinition]
-    let functionsInputTypeIdentifiers: [FunctionIdentifier: FunctionDefinition]
+    let functions: [FunctionDefinition: FunctionDefinition]
+    let functionsIdentifiers: [FunctionIdentifier: [FunctionDefinition]]
+    let functionsInputTypeIdentifiers: [TypeIdentifier: [FunctionDefinition]]
 }
 
 protocol TypeChecker {

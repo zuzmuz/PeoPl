@@ -25,19 +25,24 @@ enum ExpressionSemanticError: SemanticError, Encodable {
         expression: Expression,
         leftType: TypeIdentifier,
         rightType: TypeIdentifier)
-    case undifinedFunctionOnInput(
+    case callingUncallable(
         expression: Expression,
+        type: TypeIdentifier)
+    case undifienedFunction(
+        call: Expression.Call,
+        function: FunctionIdentifier)
+    case undifinedFunctionOnInput(
+        call: Expression.Call,
         input: TypeIdentifier,
         function: FunctionIdentifier)
     case argumentMismatch(
-        expression: Expression,
-        givenArguments: [Expression.Argument],
+        call: Expression.Call,
+        givenArguments: [ParamDefinition],
         inputType: TypeIdentifier,
-        FunctionIdentifier: FunctionIdentifier)
+        function: FunctionIdentifier)
     case reachedNever(
         expression: Expression)
-    case unsupportedYet(
-        expression: Expression)
+    case unsupportedYet(String)
 }
 
 enum CaptureGroupSemanticError: SemanticError, Encodable {

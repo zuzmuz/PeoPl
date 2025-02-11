@@ -254,9 +254,9 @@ extension Expression: TypeChecker {
                 expected: .nothing(location: .nowhere),
                 received: input)
         case let (_, .lambda(expression)):
-            throw .unsupportedYet(expression: self)
-        case let (input, .call(access)):
-            break
+            throw .unsupportedYet("lambda expression")
+        case let (input, .call(call)):
+            return try call.checkType(with: input, localScope: localScope, context: context)
         case let (input, .access(access)):
             break
         case let (input, .field(field)):
