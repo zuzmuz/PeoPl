@@ -91,6 +91,8 @@ extension TypeIdentifier: Hashable {
             hasher.combine(tuple)
         case let .namedTuple(tuple):
             hasher.combine(tuple)
+        case let .union(union):
+            hasher.combine(union)
         }
     }
 
@@ -108,6 +110,8 @@ extension TypeIdentifier: Hashable {
         case let (.unnamedTuple(lhs), .unnamedTuple(rhs)):
             return lhs == rhs
         case let (.namedTuple(lhs), .namedTuple(rhs)):
+            return lhs == rhs
+        case let (.union(lhs), .union(rhs)):
             return lhs == rhs
         default:
             return false
@@ -174,3 +178,14 @@ extension StructuralType.NamedTuple: Hashable {
         lhs.types.map { $0.type } == rhs.types
     }
 }
+
+extension UnionType: Hashable {
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(self.types)
+    }
+
+    static func == (lhs: UnionType, rhs: UnionType) -> Bool {
+        lhs.types == rhs.types
+    }
+}
+

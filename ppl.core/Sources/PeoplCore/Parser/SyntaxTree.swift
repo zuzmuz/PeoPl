@@ -117,12 +117,13 @@ struct FunctionDefinition: Encodable, SyntaxNode {
 // -------------
 
 enum TypeIdentifier: Encodable, SyntaxNode, Sendable {
-    case nothing(location: NodeLocation)
-    case never(location: NodeLocation)
+    case nothing(location: NodeLocation = .nowhere)
+    case never(location: NodeLocation = .nowhere)
     case nominal(NominalType)
     case lambda(StructuralType.Lambda)
     case namedTuple(StructuralType.NamedTuple)
     case unnamedTuple(StructuralType.UnnamedTuple)
+    case union(UnionType)
 
     var location: NodeLocation {
         return switch self {
@@ -138,6 +139,8 @@ enum TypeIdentifier: Encodable, SyntaxNode, Sendable {
             namedTuple.location
         case let .unnamedTuple(unnamedTuple):
             unnamedTuple.location
+        case let .union(unionType):
+            unionType.location
         }
     }
 }
@@ -173,6 +176,11 @@ enum StructuralType {
         let types: [ParamDefinition]
         let location: NodeLocation
     }
+}
+
+struct UnionType: Encodable, SyntaxNode {
+    let types: [TypeIdentifier]
+    let location: NodeLocation
 }
 
 // MARK: - Expressions

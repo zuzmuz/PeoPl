@@ -53,7 +53,12 @@ extension Expression.Branched: TypeChecker {
                 return .never(location: .nowhere)
             }
         }
-
+        
+        // let distinctTypes = Set(unionType)
+        // if distinctTypes.count > 1 {
+        //     return .nominal(.init(chain: [.init(typeName: "Union)
+        //         distinctTypes.filter { $0 != .never(location: .nowhere }
+        // }
 
         throw .unsupportedYet("branched expression")
     }

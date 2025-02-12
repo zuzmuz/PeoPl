@@ -37,7 +37,4 @@ extension TypeIdentifier {
             output: [TypeIdentifier.simpleNominalType(name: output)],
             location: .nowhere))
     }
-    // static func union(types: [TypeIdentifier]) {
-    //     return .nominal(
-    // }
 }

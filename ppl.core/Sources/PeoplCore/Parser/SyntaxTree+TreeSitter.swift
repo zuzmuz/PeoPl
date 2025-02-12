@@ -270,6 +270,7 @@ extension TypeIdentifier {
         case lambda = "lambda_structural_type"
         case namedTuple = "named_tuple_structural_type"
         case unnamedTuple = "unnamed_tuple_structural_type"
+        case union = "Union"
     }
 
     init?(from node: Node, in source: Source) {
@@ -283,7 +284,14 @@ extension TypeIdentifier {
             self = .never(location: location)
         case CodingKeys.nominal.rawValue:
             guard let nominal = NominalType(from: child, in: source) else { return nil }
-            self = .nominal(nominal)
+            if nominal.chain.count == 1, 
+                let union = nominal.chain.first, 
+                union.typeName == CodingKeys.union.rawValue && union.typeArguments.count > 0
+            {
+                self = .union(UnionType(types: union.typeArguments, location: nominal.location))
+            } else {
+                self = .nominal(nominal)
+            }
         case CodingKeys.lambda.rawValue:
             guard let lambda = StructuralType.Lambda(from: child, in: source) else { return nil }
             self = .lambda(lambda)

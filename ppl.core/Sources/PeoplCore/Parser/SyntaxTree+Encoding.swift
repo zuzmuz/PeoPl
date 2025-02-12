@@ -60,6 +60,8 @@ extension TypeIdentifier: DebugableSyntaxNode {
             try tuple.encode(to: encoder)
         case let .lambda(lambda):
             try lambda.encode(to: encoder)
+        case let .union(union):
+            try union.encode(to: encoder)
         }
     }
 }
