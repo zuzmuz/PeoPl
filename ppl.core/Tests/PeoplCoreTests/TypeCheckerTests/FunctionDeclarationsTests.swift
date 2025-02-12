@@ -34,7 +34,7 @@ final class FunctionDeclarationsTests: XCTestCase {
 
         XCTAssertEqual(checker.functionsInputTypeIdentifiers.count, 1)
 
-        if let nothingInputFunctions = checker.functionsInputTypeIdentifiers[.nothing(location: .nowhere)] {
+        if let nothingInputFunctions = checker.functionsInputTypeIdentifiers[.nothing()] {
             XCTAssertEqual(nothingInputFunctions.count, 3)
         } else {
             XCTAssertTrue(false)
@@ -86,7 +86,7 @@ final class FunctionDeclarationsTests: XCTestCase {
 
         XCTAssertEqual(checker.functionsInputTypeIdentifiers.count, 1)
 
-        if let nothingInputFunctions = checker.functionsInputTypeIdentifiers[.nothing(location: .nowhere)] {
+        if let nothingInputFunctions = checker.functionsInputTypeIdentifiers[.nothing()] {
             XCTAssertEqual(nothingInputFunctions.count, 2)
         } else {
             XCTAssertTrue(false)

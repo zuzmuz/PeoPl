@@ -17,10 +17,10 @@ final class FunctionDefinitionTests: XCTestCase {
         }
 
         XCTAssertEqual(functionDefinition.functionIdentifier.name, "main")
-        XCTAssertEqual(functionDefinition.inputType, TypeIdentifier.nothing(location: .nowhere))
+        XCTAssertEqual(functionDefinition.inputType, TypeIdentifier.nothing())
         XCTAssertEqual(functionDefinition.functionIdentifier.scope, nil)
         XCTAssertEqual(functionDefinition.params.count, 0)
-        XCTAssertEqual(functionDefinition.outputType, TypeIdentifier.nothing(location: .nowhere))
+        XCTAssertEqual(functionDefinition.outputType, TypeIdentifier.nothing())
     }
 
     func testScoped1() throws {
@@ -37,13 +37,13 @@ final class FunctionDefinitionTests: XCTestCase {
         }
 
         XCTAssertEqual(functionDefinition.functionIdentifier.name, "main")
-        XCTAssertEqual(functionDefinition.inputType, TypeIdentifier.nothing(location: .nowhere))
+        XCTAssertEqual(functionDefinition.inputType, TypeIdentifier.nothing())
         XCTAssertNotEqual(functionDefinition.functionIdentifier.scope, nil)
         XCTAssertEqual(functionDefinition.functionIdentifier.scope!.chain.count, 1)
         XCTAssertEqual(functionDefinition.functionIdentifier.scope!.chain[0].typeName, "Scope")
         XCTAssertEqual(functionDefinition.functionIdentifier.scope!.chain[0].typeArguments.count, 0)
         XCTAssertEqual(functionDefinition.params.count, 0)
-        XCTAssertEqual(functionDefinition.outputType, TypeIdentifier.nothing(location: .nowhere))
+        XCTAssertEqual(functionDefinition.outputType, TypeIdentifier.nothing())
     }
 
     func testScoped2() throws {
@@ -60,7 +60,7 @@ final class FunctionDefinitionTests: XCTestCase {
         }
 
         XCTAssertEqual(functionDefinition.functionIdentifier.name, "main")
-        XCTAssertEqual(functionDefinition.inputType, TypeIdentifier.nothing(location: .nowhere))
+        XCTAssertEqual(functionDefinition.inputType, TypeIdentifier.nothing())
         XCTAssertNotEqual(functionDefinition.functionIdentifier.scope, nil)
         XCTAssertEqual(functionDefinition.functionIdentifier.scope!.chain.count, 2)
         XCTAssertEqual(functionDefinition.functionIdentifier.scope!.chain[0].typeName, "Scope1")
@@ -68,7 +68,7 @@ final class FunctionDefinitionTests: XCTestCase {
         XCTAssertEqual(functionDefinition.functionIdentifier.scope!.chain[1].typeName, "Scope2")
         XCTAssertEqual(functionDefinition.functionIdentifier.scope!.chain[1].typeArguments.count, 0)
         XCTAssertEqual(functionDefinition.params.count, 0)
-        XCTAssertEqual(functionDefinition.outputType, TypeIdentifier.nothing(location: .nowhere))
+        XCTAssertEqual(functionDefinition.outputType, TypeIdentifier.nothing())
     }
 
     func testScoped10() throws {
@@ -85,7 +85,7 @@ final class FunctionDefinitionTests: XCTestCase {
         }
 
         XCTAssertEqual(functionDefinition.functionIdentifier.name, "main")
-        XCTAssertEqual(functionDefinition.inputType, TypeIdentifier.nothing(location: .nowhere))
+        XCTAssertEqual(functionDefinition.inputType, TypeIdentifier.nothing())
         XCTAssertNotEqual(functionDefinition.functionIdentifier.scope, nil)
         XCTAssertEqual(functionDefinition.functionIdentifier.scope!.chain.count, 10)
         XCTAssertEqual(functionDefinition.functionIdentifier.scope!.chain[0].typeName, "Scope1")
@@ -109,7 +109,7 @@ final class FunctionDefinitionTests: XCTestCase {
         XCTAssertEqual(functionDefinition.functionIdentifier.scope!.chain[9].typeName, "Scope10")
         XCTAssertEqual(functionDefinition.functionIdentifier.scope!.chain[9].typeArguments.count, 0)
         XCTAssertEqual(functionDefinition.params.count, 0)
-        XCTAssertEqual(functionDefinition.outputType, TypeIdentifier.nothing(location: .nowhere))
+        XCTAssertEqual(functionDefinition.outputType, TypeIdentifier.nothing())
     }
 
     func testInput() throws {
@@ -138,7 +138,7 @@ final class FunctionDefinitionTests: XCTestCase {
         XCTAssertEqual(functionDefinition.functionIdentifier.scope!.chain[0].typeName, "Scope")
         XCTAssertEqual(functionDefinition.functionIdentifier.scope!.chain[0].typeArguments.count, 0)
         XCTAssertEqual(functionDefinition.params.count, 0)
-        XCTAssertEqual(functionDefinition.outputType, TypeIdentifier.nothing(location: .nowhere))
+        XCTAssertEqual(functionDefinition.outputType, TypeIdentifier.nothing())
     }
 
     func testNestedInput() throws {
@@ -169,7 +169,7 @@ final class FunctionDefinitionTests: XCTestCase {
         XCTAssertEqual(functionDefinition.functionIdentifier.scope!.chain[0].typeName, "Scope")
         XCTAssertEqual(functionDefinition.functionIdentifier.scope!.chain[0].typeArguments.count, 0)
         XCTAssertEqual(functionDefinition.params.count, 0)
-        XCTAssertEqual(functionDefinition.outputType, TypeIdentifier.nothing(location: .nowhere))
+        XCTAssertEqual(functionDefinition.outputType, TypeIdentifier.nothing())
     }
 
     func testTuplesAsInputAndOutput() throws {

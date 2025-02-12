@@ -29,7 +29,7 @@ extension Expression: TypeChecker {
             (_, .boolLiteral):
             throw .inputMismatch(
                 expression: self,
-                expected: .nothing(location: .nowhere),
+                expected: .nothing(),
                 received: input)
 
         // Unary
@@ -37,7 +37,7 @@ extension Expression: TypeChecker {
         case let (input, .positive(expression)),
             let (input, .negative(expression)):
             let right = try expression.checkType(
-                with: .nothing(location: .nowhere),
+                with: .nothing(),
                 localScope: localScope,
                 context: context)
 
@@ -59,7 +59,7 @@ extension Expression: TypeChecker {
             let (input, .divided(expression)):
 
             let right = try expression.checkType(
-                with: .nothing(location: .nowhere),
+                with: .nothing(),
                 localScope: localScope,
                 context: context)
             switch (input, right) {
@@ -74,7 +74,7 @@ extension Expression: TypeChecker {
             }
         case let (input, .moduled(expression)):
             let right = try expression.checkType(
-                with: .nothing(location: .nowhere),
+                with: .nothing(),
                 localScope: localScope,
                 context: context)
             switch (input, right) {
@@ -89,7 +89,7 @@ extension Expression: TypeChecker {
         case let (input, .anded(expression)),
             let (input, .ored(expression)):
             let right = try expression.checkType(
-                with: .nothing(location: .nowhere),
+                with: .nothing(),
                 localScope: localScope,
                 context: context)
             switch (input, right) {
@@ -103,7 +103,7 @@ extension Expression: TypeChecker {
             }
         case let (input, .not(expression)):
             let right = try expression.checkType(
-                with: .nothing(location: .nowhere),
+                with: .nothing(),
                 localScope: localScope,
                 context: context)
             switch (input, right) {
@@ -227,12 +227,12 @@ extension Expression: TypeChecker {
             (_, .greaterThan), (_, .greaterThanEqual), (_, .or), (_, .and):
             throw .inputMismatch(
                 expression: self,
-                expected: .nothing(location: .nowhere),
+                expected: .nothing(),
                 received: input)
         case let (.nothing, .unnamedTuple(expressions)):
             let typeIdentifiers = try expressions.map { expression throws(ExpressionSemanticError) in
                 return try expression.checkType(
-                    with: .nothing(location: .nowhere),
+                    with: .nothing(),
                     localScope: localScope,
                     context: context)
             }
@@ -242,7 +242,7 @@ extension Expression: TypeChecker {
                 return ParamDefinition(
                     name: argument.name, 
                     type: try argument.value.checkType(
-                        with: .nothing(location: .nowhere),
+                        with: .nothing(),
                         localScope: localScope,
                         context: context),
                     location: .nowhere)
@@ -251,7 +251,7 @@ extension Expression: TypeChecker {
         case (_, .namedTuple), (_, .unnamedTuple):
             throw .inputMismatch(
                 expression: self,
-                expected: .nothing(location: .nowhere),
+                expected: .nothing(),
                 received: input)
         case let (_, .lambda(expression)):
             throw .unsupportedYet("lambda expression")
@@ -268,7 +268,7 @@ extension Expression: TypeChecker {
         case (_, .field):
             throw .inputMismatch(
                 expression: self,
-                expected: .nothing(location: .nowhere),
+                expected: .nothing(),
                 received: input)
         case let (input, .branched(branched)):
             return try branched.checkType(with: input, localScope: localScope, context: context)

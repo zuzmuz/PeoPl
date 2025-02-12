@@ -40,7 +40,7 @@ extension Expression.Call: TypeChecker {
             ParamDefinition(
                 name: argument.name,
                 type: try argument.value.checkType(
-                    with: .nothing(location: .nowhere),
+                    with: .nothing(),
                     localScope: localScope,
                     context: context),
                 location: .nowhere)
@@ -58,7 +58,7 @@ extension Expression.Call: TypeChecker {
             inputType: calleeInputType,
             functionIdentifier: functionIdentifier,
             params: argumentsTypes,
-            outputType: .nothing(location: .nowhere),
+            outputType: .nothing(),
             body: .empty,
             location: .nowhere)
 

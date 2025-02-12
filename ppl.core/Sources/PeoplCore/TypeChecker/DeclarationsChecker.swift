@@ -49,8 +49,8 @@ struct TypeDeclarationChecker {
             Builtins.i32: Builtins.i32,
             Builtins.f64: Builtins.f64,
             Builtins.string: Builtins.string,
-            .nothing(location: .nowhere): .nothing(location: .nowhere),
-            .never(location: .nowhere): .never(location: .nowhere),
+            .nothing(): .nothing(),
+            .never(): .never(),
         ]
     }
 

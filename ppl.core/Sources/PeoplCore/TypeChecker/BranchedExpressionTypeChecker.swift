@@ -35,12 +35,12 @@ extension Expression.Branched: TypeChecker {
             switch branch.body {
             case let .simple(expression):
                 return try expression.checkType(
-                    with: .nothing(location: .nowhere),
+                    with: .nothing(),
                     localScope: localScope,
                     context: context)
             case let .looped(expression):
                 let loopedExpressionType = try expression.checkType(
-                    with: .nothing(location: .nowhere),
+                    with: .nothing(),
                     localScope: localScope,
                     context: context)
                 if loopedExpressionType != input {
@@ -50,16 +50,17 @@ extension Expression.Branched: TypeChecker {
                         receivedType: loopedExpressionType
                     )
                 }
-                return .never(location: .nowhere)
+                return .never()
             }
         }
         
-        // let distinctTypes = Set(unionType)
-        // if distinctTypes.count > 1 {
-        //     return .nominal(.init(chain: [.init(typeName: "Union)
-        //         distinctTypes.filter { $0 != .never(location: .nowhere }
-        // }
-
-        throw .unsupportedYet("branched expression")
+        let distinctTypes = Set(unionType.filter { $0 != .never() })
+        if distinctTypes.count > 1 {
+            return .union(.init(types: Array(distinctTypes), location: .nowhere))
+        } else if let type = distinctTypes.first {
+            return type
+        } else { // distinctTypes.count == 0
+            return .never()
+        }
     }
 }

@@ -50,7 +50,7 @@ final class FunctionSignatureTests: XCTestCase {
                     type: .simpleLambda(inputs: ["T", "Y"], output: "O"),
                     location: .nowhere)
             ],
-            outputType: .nothing(location: .nowhere),
+            outputType: .nothing(),
             body: .init(
                 expressionType: .nothing,
                 location: .nowhere),
