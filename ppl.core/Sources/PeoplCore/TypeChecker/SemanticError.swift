@@ -54,13 +54,3 @@ enum ExpressionSemanticError: SemanticError, Encodable {
         expression: Expression)
     case unsupportedYet(String)
 }
-
-enum CaptureGroupSemanticError: SemanticError, Encodable {
-    case invalidType(
-        location: NodeLocation,
-        type: TypeIdentifier)
-}
-
-enum BranchingSemanticError: SemanticError, Encodable {
-    case branchingNotExhaustive(location: NodeLocation)
-}

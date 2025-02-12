@@ -167,13 +167,9 @@ extension Expression: TypeChecker {
                 with: input,
                 localScope: localScope,
                 context: context)
-            switch (left, right) {
-            case (Builtins.i32, Builtins.i32),
-                (Builtins.f64, Builtins.f64),
-                (Builtins.string, Builtins.string),
-                (Builtins.bool, Builtins.bool):
+            if left == right {
                 return Builtins.bool
-            default:
+            } else {
                 throw .invalidOperation(
                     expression: self,
                     leftType: input,

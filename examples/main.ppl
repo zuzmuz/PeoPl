@@ -6,7 +6,7 @@ func factorial(value: I32) => I32
 
 func sum(from: I32, to: I32) => I32
     [ 0, from ] |>
-    |sum, i: i <= to| ([sum+i, i+1])^,
+    |sum, i: i <= to| ([sum+1, i+1])^,
     |sum, _| sum
     
 

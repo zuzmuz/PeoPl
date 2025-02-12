@@ -1,5 +1,5 @@
 
-extension TypeIdentifier {
+extension TypeIdentifier: Sequence {
     static func simpleNominalType(name: String) -> TypeIdentifier {
         return .nominal(
             .init(chain: [.init(typeName: name, typeArguments: [], location: .nowhere)], location: .nowhere)
@@ -36,5 +36,31 @@ extension TypeIdentifier {
             input: inputs.map { TypeIdentifier.simpleNominalType(name: $0) },
             output: [TypeIdentifier.simpleNominalType(name: output)],
             location: .nowhere))
+    }
+
+    func makeIterator() -> TypeIdentifierIterator {
+        return TypeIdentifierIterator(self)
+    }
+}
+
+struct TypeIdentifierIterator: IteratorProtocol {
+    private var content: [TypeIdentifier]
+    private var index: Int = 0
+
+    init(_ typeIdentifier: TypeIdentifier) {
+        switch typeIdentifier {
+        case .nothing, .never, .nominal, .lambda, .union:
+            content = [typeIdentifier]
+        case let .unnamedTuple(tuple):
+            content = tuple.types
+        case let .namedTuple(tuple):
+            content = tuple.types.map { $0.type }
+        }
+    }
+
+    mutating func next() -> TypeIdentifier? {
+        guard index < content.count else { return nil }
+        defer { index += 1 }
+        return content[index]
     }
 }
