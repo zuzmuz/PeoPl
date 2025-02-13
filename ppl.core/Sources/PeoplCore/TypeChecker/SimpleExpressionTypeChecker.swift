@@ -136,7 +136,7 @@ extension Expression: TypeChecker {
             default:
                 throw .invalidOperation(
                     expression: self,
-                    leftType: input,
+                    leftType: left,
                     rightType: right)
             }
         case let (.nothing, .mod(leftExpression, rightExpression)):
@@ -154,7 +154,7 @@ extension Expression: TypeChecker {
             default:
                 throw .invalidOperation(
                     expression: self,
-                    leftType: input,
+                    leftType: left,
                     rightType: right)
             }
         case let (.nothing, .equal(leftExpression, rightExpression)),
@@ -172,7 +172,7 @@ extension Expression: TypeChecker {
             } else {
                 throw .invalidOperation(
                     expression: self,
-                    leftType: input,
+                    leftType: left,
                     rightType: right)
             }
 
@@ -195,7 +195,7 @@ extension Expression: TypeChecker {
             default:
                 throw .invalidOperation(
                     expression: self,
-                    leftType: input,
+                    leftType: left,
                     rightType: right)
             }
 
@@ -215,7 +215,7 @@ extension Expression: TypeChecker {
             default:
                 throw .invalidOperation(
                     expression: self,
-                    leftType: input,
+                    leftType: left,
                     rightType: right)
             }
         case (_, .plus), (_, .minus), (_, .times), (_, .by), (_, .mod),
