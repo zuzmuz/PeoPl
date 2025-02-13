@@ -1,15 +1,6 @@
 {
-  "originHash" : "bd8173148b1f3e9baf81889dba0861973136fa54405c6c531d770f865f3b3f50",
+  "originHash" : "3e9dc7a5c6ed16ba2437e744b217da2bf1688e831d37ebb00a94203b523e89e7",
   "pins" : [
-    {
-      "identity" : "llvmswift",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/llvm-swift/LLVMSwift",
-      "state" : {
-        "revision" : "071246791bd677e869aba4be694ef1e4d789adfb",
-        "version" : "0.8.0"
-      }
-    },
     {
       "identity" : "swifttreesitter",
       "kind" : "remoteSourceControl",
