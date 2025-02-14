@@ -2,7 +2,7 @@ extension Expression.Branched: TypeChecker {
     func checkType(
         with input: TypeIdentifier,
         localScope: LocalScope,
-        context: TypeCheckerContext
+        context: borrowing TypeCheckerContext
     ) throws(ExpressionSemanticError) -> TypeIdentifier {
         let unionType = try self.branches.map { branch throws(ExpressionSemanticError) in
             

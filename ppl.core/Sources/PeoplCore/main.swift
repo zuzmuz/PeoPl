@@ -3,8 +3,8 @@ import Foundation
 
 do {
     let module = try Module(path: "/Users/zuz/Desktop/Muz/coding/peopl/examples/main.ppl")
-    module.llvmBuild()
-
+    var llvm = LLVM.Builder(name: "main")
+    module.llvmBuildStatement(llvm: &llvm)
 
     // let jsonEncoder = JSONEncoder()
     // jsonEncoder.outputFormatting = .prettyPrinted

@@ -2,7 +2,7 @@ extension Expression: TypeChecker {
     func checkType(
         with input: TypeIdentifier,
         localScope: LocalScope,
-        context: TypeCheckerContext
+        context: borrowing TypeCheckerContext
     ) throws(ExpressionSemanticError) -> TypeIdentifier {
 
         switch (input, self.expressionType) {
