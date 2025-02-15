@@ -126,3 +126,16 @@ to check if the value is even. If the capture block expression passes, the expre
 The execution chooses the first capture block that passes. 
 
 An important thing to notice is that the branches should be exhaustive, which means they should cover all possible branches that evaluates to a value.
+
+## Algebraic types
+
+Because PeoPl doesn't support assignments, it uses structural data types to model multiple variable assignments.
+Create tuples to handle multiple variable.
+
+```ppl
+// unnamed tuples can be destructured by capturing its content
+func () => Nothing
+    [ expression1(), expression2() ] |>
+    |a, b| /* expression using a and b as labels for the past expression*/ a + b
+```
+
