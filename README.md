@@ -6,47 +6,32 @@ pronounced people, or pee pee ell, whatever you like
 stylized as PeoPl
 is the people's language
 
-# No really what is it about
 
-My motivation was to boil down programming concepts to its essentials.
-It is a very opinionated project on what (in my opinion)
-are the most useful programming concepts.
-
-1. [To read about the motivation and philosophy behind the project](docs/motivation.md)
-
-The project is in early devolopment, there is a basic incomplete interpreter and an incomplete typechecker.
-
-## The basics
-
-PeoPl is a statically typed compiled functional programming language with a bash influence.
-It is an expression only language, which means no statements are allowed in blocks, only top level statements like function and type deckarations are allowed.
-
-It uses the pipe operator `|>` found in FP to perform functional chaining, however it uses object method syntax.
-
-It is influence by shell scripting languages where a command takes an input (usually from stdin), with extra arguments,
-and produces an output (usually to stdout).
-
-The input of functions is treated differently from function arguments (unlike with regular FP languages), therefor, the syntax resembles Go like function declarations.
-It takes concepts from swift, rust, go, elixir, kotlin, haskell.
+The project is in early development, there is a basic incomplete interpreter and an incomplete type checker.
 
 # Why
 
 Just for fun.
 
-But also a thought experiment. Can I create a minimal programming language with just the most basic concepts but at the same time create something useful. 
-
-# If you want to try it out
-
-If you have swift installed on mac or linux just clone the project build it, check the tests as examples and try it out.
-
-There's a basic interpreter.
-
-If you use neovim you can build the tree sitter parser and install it manually to the list of neovim parsers,
-also add the highlights.scm file to your treesitter queries folder to have syntax highlighting in neovim.
-
-I'm planning on making a vscode extension once a basic version of an LSP is ready.
+But also a thought experiment.
+Can I create a minimal programming language with just the most basic concepts but at the same time create something useful.
 
 # The syntax
+
+## The basics
+
+PeoPl is a statically typed compiled functional programming language.
+It is an expression only language, which means no statements are allowed in blocks,
+only top level statements like function and type declarations are allowed, and function blocks only contain expressions.
+
+Expressions are chained using the pipe operator `|>`. 
+
+Functions take an input, extra arguments and return an output.
+PeoPl treats the main input of the function differently from other arguments,
+which gives the possibility of OOP style object methods.
+
+It doesn't use curly braces to delimit scope.
+It is not needed because there's no standalone statements like assignments and loops.
 
 ## Hello World
 
@@ -72,30 +57,6 @@ Statements usually are:
 
 These don't exist in Peopl in the traditional sense. Let's see how they're replaced.
 
-## What is an expression
-
-An expression is a block of code that evaluates to a certain value.
-Think of it as a processing unit, that takes in an input, with extra parameters,
-and produces an output.
-In Peopl, like in functional programming languages, expressions are pure, they do not produce side effects,
-they do not manipulate any global state.
-
-Int, float and string literals are expressions, as well as basic arithmetic expressions, function calls, branching with pattern matching etc...
-
-## Are expressions enough
-
-Yeah, the body of a function in Peopl is just a list of expressions, each expression's output is the next's expression's input.
-
-Assignments are not necessary, our monkey brains need them to create temporary intermediate values so that the code is simpler to read.
-But, with a different nicer syntax, they can be omitted. Assignments are basically like labeling, slapping a label on a value.
-Assignments where modifying an object are different though, they're basically mutations. Mutations can be avoided, at least explicitly.
-The compiler can perform inplace mutation if certain criteria are met, but like in FP languages, mutation is basically creating a new object,
-with some modifications.
-
-'If statements' can be branching expressions.
-
-Functional programming already doesn't have loops and use recursion instead.
-
 ## Example
 
 ```ppl
@@ -104,6 +65,7 @@ func main(integer: I32) => I32
     to_string() |>
     |value| value = value.reverse()
 ```
+
 This function checks if an integer is a palindrome.
 The integer is piped to the function to_string() which transform the integer into a string.
 Then the output of to_string is captured and given the label `value`, then the string is compared to its reverse.
@@ -164,7 +126,3 @@ to check if the value is even. If the capture block expression passes, the expre
 The execution chooses the first capture block that passes. 
 
 An important thing to notice is that the branches should be exhaustive, which means they should cover all possible branches that evaluates to a value.
-
-# Wanna know more
-
-That's all I got currently, the project is in early development.
