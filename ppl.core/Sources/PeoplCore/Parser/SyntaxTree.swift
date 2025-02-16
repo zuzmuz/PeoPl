@@ -210,7 +210,6 @@ struct Expression: Encodable, SyntaxNode {
         self.typeIdentifier = typeIdentifier
     }
 
-    static let empty = Expression(expressionType: .nothing, location: .nowhere)
 
     indirect enum ExpressionType: Encodable, Sendable {
         case nothing
@@ -221,21 +220,21 @@ struct Expression: Encodable, SyntaxNode {
         case stringLiteral(String)
         case boolLiteral(Bool)
 
-        enum Operator: Encodable {
-            case plus
-            case minus
-            case times
-            case by
-            case modulo
-            case not
-            case and
-            case or
-            case equal
-            case different
-            case lessThan
-            case lessThanOrEqual
-            case greaterThan
-            case greaterThanOrEqual
+        enum Operator: String, Encodable {
+            case plus = "+"
+            case minus = "-"
+            case times = "*"
+            case by = "/"
+            case modulo = "%"
+            case not = "not"
+            case and = "and"
+            case or = "or"
+            case equal = "="
+            case different = "!="
+            case lessThan = "<"
+            case lessThanOrEqual = "<="
+            case greaterThan = ">"
+            case greaterThanOrEqual = ">="
         }
 
         // Unary
@@ -271,6 +270,26 @@ struct Expression: Encodable, SyntaxNode {
         let command: Prefix
         let arguments: [Argument]
         let location: NodeLocation
+        let typeIdentifier: TypeIdentifier
+
+        init(command: Prefix, arguments: [Argument], location: NodeLocation) {
+            self.command = command
+            self.arguments = arguments
+            self.location = location
+            self.typeIdentifier = .unkown() 
+        }
+
+        init(
+            command: Prefix,
+            arguments: [Argument],
+            location: NodeLocation,
+            typeIdentifier: TypeIdentifier
+        ) {
+            self.command = command
+            self.arguments = arguments
+            self.location = location
+            self.typeIdentifier = typeIdentifier 
+        }
     }
 
 
@@ -284,6 +303,27 @@ struct Expression: Encodable, SyntaxNode {
         let branches: [Branch]
         let lastBranch: Expression?
         let location: NodeLocation
+        let typeIdentifier: TypeIdentifier
+
+        init(branches: [Branch], lastBranch: Expression?, location: NodeLocation) {
+            self.branches = branches
+            self.lastBranch = lastBranch
+            self.location = location
+            self.typeIdentifier = .unkown()
+        }
+
+        init(
+            branches: [Branch],
+            lastBranch: Expression?,
+            location: NodeLocation,
+            typeIdentifier: TypeIdentifier
+        ) {
+            self.branches = branches
+            self.lastBranch = lastBranch
+            self.location = location
+            self.typeIdentifier = typeIdentifier
+        }
+
 
         enum CaptureGroup: Encodable {
             case simple(Expression)
@@ -296,6 +336,26 @@ struct Expression: Encodable, SyntaxNode {
             let captureGroup: [CaptureGroup]
             let body: Body
             let location: NodeLocation
+            let typeIdentifier: TypeIdentifier
+
+            init(captureGroup: [CaptureGroup], body: Body, location: NodeLocation) {
+                self.captureGroup = captureGroup
+                self.body = body
+                self.location = location
+                self.typeIdentifier = .unkown()
+            }
+
+            init(
+                captureGroup: [CaptureGroup],
+                body: Body,
+                location: NodeLocation,
+                typeIdentifier: TypeIdentifier
+            ) {
+                self.captureGroup = captureGroup
+                self.body = body
+                self.location = location
+                self.typeIdentifier = typeIdentifier
+            }
 
             enum Body: Encodable {
                 case simple(Expression)

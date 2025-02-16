@@ -587,6 +587,8 @@ extension Expression.Call {
         } else {
             self.arguments = []
         }
+
+        self.typeIdentifier = .unkown()
     }
 }
 
@@ -644,6 +646,8 @@ extension Expression.Branched {
         } else {
             nil
         }
+
+        self.typeIdentifier = .unkown()
     }
 }
 
@@ -661,6 +665,8 @@ extension Expression.Branched.Branch {
         guard let bodyNode = node.child(byFieldName: "body"),
               let body = Expression.Branched.Branch.Body(from: bodyNode, in: source) else { return nil }
         self.body = body
+
+        self.typeIdentifier = .unkown()
     }
 }
 

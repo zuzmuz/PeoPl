@@ -64,3 +64,8 @@ struct TypeIdentifierIterator: IteratorProtocol {
         return content[index]
     }
 }
+
+extension Expression {
+    static let empty = Expression(expressionType: .nothing, location: .nowhere)
+    static let never = Expression(expressionType: .never, location: .nowhere)
+}

@@ -1,27 +1,39 @@
 extension Expression.Call: TypeChecker {
     func checkType(
-        with input: TypeIdentifier,
+        with input: Expression,
         localScope: LocalScope,
         context: borrowing TypeCheckerContext
-    ) throws(ExpressionSemanticError) -> Expression {
+    ) throws(ExpressionSemanticError) -> Expression.Call {
         let functionIdentifier: FunctionIdentifier
-        let callee: Expression?
-        let calleeInputType: TypeIdentifier
+        let callee: Expression
+        let typedCommand: Expression.Prefix
         switch self.command {
         case let .simple(expression):
             switch expression.expressionType {
             case let .field(functionName):
                 functionIdentifier = FunctionIdentifier(scope: nil, name: functionName)
-                calleeInputType = input
+                callee = input
+                typedCommand = self.command
             case let .access(access):
                 switch access.accessed {
                 case let .type(type):
                     functionIdentifier = FunctionIdentifier(scope: type, name: access.field)
-                    calleeInputType = input
-                case let .simple(expression):
-                    callee = try expression.checkType(
+                    callee = input
+                    typedCommand = self.command
+                case let .simple(accessedExpression):
+                    let typedExpression = try accessedExpression.checkType(
                         with: input, localScope: localScope, context: context)
                     functionIdentifier = FunctionIdentifier(scope: nil, name: access.field)
+                    callee = typedExpression
+                    typedCommand = .simple(
+                        .init(
+                            expressionType: .access(
+                                .init(
+                                    accessed: .simple(typedExpression),
+                                    field: access.field,
+                                    location: access.location)),
+                            location: expression.location,
+                            typeIdentifier: typedExpression.typeIdentifier))
                 }
             case let .lambda(lambda):
                 throw .unsupportedYet("Direct lambda calls")
@@ -29,42 +41,52 @@ extension Expression.Call: TypeChecker {
                 throw .callingUncallable(
                     expression: expression,
                     type: try expression.checkType(
-                        with: input, localScope: localScope, context: context)
+                        with: input, localScope: localScope, context: context).typeIdentifier
                 )
             }
         case let .type(type):
             throw .unsupportedYet("Type initializers")
         }
         
-        
-        let argumentsTypes = try self.arguments.map { argument throws(ExpressionSemanticError) in
-            ParamDefinition(
+        let typedArguments = try self.arguments.map { argument throws(ExpressionSemanticError) in
+            Expression.Argument(
                 name: argument.name,
-                type: try argument.value.checkType(
-                    with: .nothing(),
+                value: try argument.value.checkType(
+                    with: .empty,
                     localScope: localScope,
                     context: context),
+                location: argument.location)
+        }
+        let paramDefintions = try typedArguments.map { argument throws(ExpressionSemanticError) in
+            ParamDefinition(
+                name: argument.name,
+                type: argument.value.typeIdentifier,
                 location: .nowhere)
         }
 
         if functionIdentifier.scope == nil, 
             let localFunction = localScope.fields[functionIdentifier.name],
-            case let .lambda(lambda) = localFunction 
+            case let .lambda(lambda) = localFunction
         { // might be calling a local lambda
             // TODO: implement lambda call type checking
             throw .unsupportedYet("Calling a lambda")
         }
 
         let functionDefinition = FunctionDefinition(
-            inputType: calleeInputType,
+            inputType: callee.typeIdentifier,
             functionIdentifier: functionIdentifier,
-            params: argumentsTypes,
+            params: paramDefintions,
             outputType: .nothing(),
             body: .empty,
             location: .nowhere)
 
         if let function = context.functions[functionDefinition] {
-            return function.outputType
+            // return function.outputType
+            return .init(
+                command: typedCommand,
+                arguments: typedArguments,
+                location: self.location,
+                typeIdentifier: function.outputType)
         }
 
         // Handling different errors
@@ -75,7 +97,7 @@ extension Expression.Call: TypeChecker {
             throw .undifienedFunction(call: self, function: functionIdentifier)
         }
 
-        if let inputTypeFunctions = context.functionsInputTypeIdentifiers[calleeInputType] {
+        if let inputTypeFunctions = context.functionsInputTypeIdentifiers[callee.typeIdentifier] {
             let validFunctionsForInput = inputTypeFunctions.filter { 
                 $0.functionIdentifier == functionDefinition.functionIdentifier
             }
@@ -83,20 +105,20 @@ extension Expression.Call: TypeChecker {
             if validFunctionsForInput.count == 0 {
                 throw .undifinedFunctionOnInput(
                     call: self,
-                    input: calleeInputType,
+                    input: callee.typeIdentifier,
                     function: functionDefinition.functionIdentifier
                 )
             }
 
             throw .argumentMismatch(
                 call: self,
-                givenArguments: argumentsTypes,
-                inputType: calleeInputType,
+                givenArguments: paramDefintions,
+                inputType: callee.typeIdentifier,
                 function: functionIdentifier)
         } else {
             throw .undifinedFunctionOnInput(
                 call: self,
-                input: calleeInputType,
+                input: callee.typeIdentifier,
                 function: functionIdentifier)
 
         }

@@ -1,19 +1,21 @@
 extension Expression.Branched: TypeChecker {
     func checkType(
-        with input: TypeIdentifier,
+        with input: Expression,
         localScope: LocalScope,
         context: borrowing TypeCheckerContext
-    ) throws(ExpressionSemanticError) -> Expression {
-        let unionType = try self.branches.map { branch throws(ExpressionSemanticError) in
+    ) throws(ExpressionSemanticError) -> Expression.Branched {
+
+        let typedBranches: [Expression.Branched.Branch] = try self.branches.map {
+            branch throws(ExpressionSemanticError) in
             
             // checking if capture group count matches input
-            switch (input, branch.captureGroup.count) {
+            switch (input.typeIdentifier, branch.captureGroup.count) {
             case (.nothing, let count) where count > 1,
                 (.nominal, let count) where count != 1,
                 (.lambda, let count) where count != 1:
                 throw .captureGroupCountMismatch(
                     branch: branch,
-                    inputType: input,
+                    inputType: input.typeIdentifier,
                     captureGroupCount: branch.captureGroup.count
                 )
             // for some reason swift doesn't support having all these expression together, and fallthrough isn't working
@@ -21,21 +23,19 @@ extension Expression.Branched: TypeChecker {
             where count != unnamedTuple.types.count && count != 1:
                 throw .captureGroupCountMismatch(
                     branch: branch,
-                    inputType: input,
+                    inputType: input.typeIdentifier,
                     captureGroupCount: branch.captureGroup.count
                 )
             case (.namedTuple(let namedTuple), let count)
             where count != namedTuple.types.count && count != 1:
                 throw .captureGroupCountMismatch(
                     branch: branch,
-                    inputType: input,
+                    inputType: input.typeIdentifier,
                     captureGroupCount: branch.captureGroup.count
                 )
             default:
                 break
             }
-
-            // TODO: add captured fields to local scope for branch body
 
             var scopeFields = localScope.fields
             
@@ -45,17 +45,17 @@ extension Expression.Branched: TypeChecker {
                 switch captureGroup {
                 case let .simple(expression):
                     if case let .field(field) = expression.expressionType {
-                        scopeFields[field] = input
+                        scopeFields[field] = input.typeIdentifier
                     }
                 case let .paramDefinition(param):
                     scopeFields[param.name] = param.type // WARN: not sure about this
                 case let .argument(argument):
-                    scopeFields[argument.name] = input
+                    scopeFields[argument.name] = input.typeIdentifier
                 default:
                     break
                 }
             } else {
-                zip(branch.captureGroup, input).forEach { captureGroup, input in
+                zip(branch.captureGroup, input.typeIdentifier).forEach { captureGroup, input in
                     switch captureGroup {
                     case let .simple(expression):
                         if case let .field(field) = expression.expressionType {
@@ -75,35 +75,77 @@ extension Expression.Branched: TypeChecker {
 
             switch branch.body {
             case let .simple(expression):
-                return try expression.checkType(
-                    with: .nothing(),
+                let typedBranchExpression = try expression.checkType(
+                    with: .empty,
                     localScope: localScope,
                     context: context)
+                return .init(
+                    captureGroup: branch.captureGroup,
+                    body: .simple(typedBranchExpression),
+                    location: branch.location,
+                    typeIdentifier: typedBranchExpression.typeIdentifier)
             case let .looped(expression):
-                let loopedExpressionType = try expression.checkType(
-                    with: .nothing(),
+                let typedLoopedExpression = try expression.checkType(
+                    with: .empty,
                     localScope: localScope,
                     context: context)
-                if loopedExpressionType != input {
+                if typedLoopedExpression.typeIdentifier != input.typeIdentifier {
                     throw .loopedExpressionTypeMismatch(
                         expression: expression,
-                        expectedType: input,
-                        receivedType: loopedExpressionType
+                        expectedType: input.typeIdentifier,
+                        receivedType: typedLoopedExpression.typeIdentifier
                     )
                 }
-                return .never()
+                return .init(
+                    captureGroup: branch.captureGroup,
+                    body: .looped(typedLoopedExpression),
+                    location: branch.location,
+                    typeIdentifier: .never())
             }
         }
         // TODO: verify exhaustiveness of
+        
+        let typedLastBranch: Expression? = if let lastBranch {
+            try lastBranch.checkType(
+                with: .empty,
+                localScope: localScope,
+                context: context)
+        } else {
+            nil
+        }
 
-
-        let distinctTypes = Set(unionType.filter { $0 != .never() })
+        var distinctTypes: Set<TypeIdentifier> = Set(typedBranches.compactMap { branch in
+            if branch.typeIdentifier == .never() {
+                return nil
+            } else {
+                return branch.typeIdentifier
+            }
+        })
+        
+        if let typedLastBranch {
+            distinctTypes = distinctTypes.union([typedLastBranch.typeIdentifier])
+        }
         if distinctTypes.count > 1 {
-            return .union(.init(types: Array(distinctTypes), location: .nowhere))
+            return .init(
+                branches: typedBranches,
+                lastBranch: typedLastBranch,
+                location: location,
+                typeIdentifier: .union(
+                    .init(
+                        types: Array(distinctTypes),
+                        location: .nowhere)))
         } else if let type = distinctTypes.first {
-            return type
-        } else {  // distinctTypes.count == 0
-            return .never()
+            return .init(
+                branches: typedBranches,
+                lastBranch: typedLastBranch,
+                location: location,
+                typeIdentifier: type)
+        } else {
+            return .init(
+                branches: typedBranches,
+                lastBranch: typedLastBranch,
+                location: location,
+                typeIdentifier: .never())
         }
     }
 }

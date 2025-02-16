@@ -8,12 +8,12 @@ extension Expression: TypeChecker {
     }
 
     func checkType(
-        with input: TypeIdentifier,
+        with input: Expression,
         localScope: LocalScope,
         context: borrowing TypeCheckerContext
     ) throws(ExpressionSemanticError) -> Expression {
 
-        switch (input, self.expressionType) {
+        switch (input.typeIdentifier, self.expressionType) {
         // Never
         case (_, .never), (.never, _):
             throw .reachedNever(expression: self)
@@ -38,13 +38,13 @@ extension Expression: TypeChecker {
             throw .inputMismatch(
                 expression: self,
                 expected: .nothing(),
-                received: input)
+                received: input.typeIdentifier)
 
         // Unary
         // TODO: consider operator overload
         case let (input, .unary(op, expression)):
             let right = try expression.checkType(
-                with: .nothing(),
+                with: .empty,
                 localScope: localScope,
                 context: context)
 
@@ -70,7 +70,7 @@ extension Expression: TypeChecker {
                     leftType: input,
                     rightType: right.typeIdentifier)
             }
-        case let (input, .binary(op, leftExpression, rightExpression)):
+        case let (.nothing, .binary(op, leftExpression, rightExpression)):
             let left = try leftExpression.checkType(
                 with: input,
                 localScope: localScope,
@@ -117,10 +117,12 @@ extension Expression: TypeChecker {
                     leftType: left.typeIdentifier,
                     rightType: right.typeIdentifier)
             }
+        case let (_, .binary):
+            throw .inputMismatch(expression: self, expected: .nothing(), received: input.typeIdentifier)
         case let (.nothing, .unnamedTuple(expressions)):
             let typedExpressions = try expressions.map { expression throws(ExpressionSemanticError) in
                 try expression.checkType(
-                    with: .nothing(),
+                    with: .empty,
                     localScope: localScope,
                     context: context)
             }
@@ -136,7 +138,7 @@ extension Expression: TypeChecker {
                 Expression.Argument(
                     name: argument.name,
                     value: try argument.value.checkType(
-                        with: .nothing(), localScope: localScope, context: context),
+                        with: .empty, localScope: localScope, context: context),
                     location: argument.location)
             }
             let paramDefinitions = typedArguments.map { argument in
@@ -154,17 +156,21 @@ extension Expression: TypeChecker {
             throw .inputMismatch(
                 expression: self,
                 expected: .nothing(),
-                received: input)
+                received: input.typeIdentifier)
 
         case let (_, .lambda(expression)):
             throw .unsupportedYet("lambda expression")
-        case let (input, .call(call)):
-            return try call.checkType(with: input, localScope: localScope, context: context)
-        case let (input, .access(access)):
+        case let (_, .call(call)):
+            let typedCall = try call.checkType(with: input, localScope: localScope, context: context)
+            return .init(
+                expressionType: .call(typedCall),
+                location: typedCall.location,
+                typeIdentifier: typedCall.typeIdentifier)
+        case (_, .access(_)):
             throw .unsupportedYet("accessed fields")
         case let (.nothing, .field(field)):
             if let fieldType = localScope.fields[field] {
-                return fieldType
+                return self.with(typeIdentifier: fieldType)
             } else {
                 throw .fieldNotInScope(expression: self)
             }
@@ -172,18 +178,26 @@ extension Expression: TypeChecker {
             throw .inputMismatch(
                 expression: self,
                 expected: .nothing(),
-                received: input)
-        case let (input, .branched(branched)):
-            return try branched.checkType(with: input, localScope: localScope, context: context)
-        case let (input, .piped(leftExpression, rightExpression)):
-            let leftType = try leftExpression.checkType(
+                received: input.typeIdentifier)
+        case let (_, .branched(branched)):
+            let typedBranched = try branched.checkType(with: input, localScope: localScope, context: context)
+            return .init(
+                expressionType: .branched(typedBranched),
+                location: self.location,
+                typeIdentifier: typedBranched.typeIdentifier)
+        case let (_, .piped(leftExpression, rightExpression)):
+            let typedLeftExpression = try leftExpression.checkType(
                 with: input,
                 localScope: localScope,
                 context: context)
-            return try rightExpression.checkType(
-                with: leftType.typeIdentifier,
+            let typedRightExpression = try rightExpression.checkType(
+                with: typedLeftExpression,
                 localScope: localScope,
                 context: context)
+            return .init(
+                expressionType: .piped(left: typedLeftExpression, right: typedRightExpression),
+                location: self.location,
+                typeIdentifier: typedRightExpression.typeIdentifier)
         }
     }
 }

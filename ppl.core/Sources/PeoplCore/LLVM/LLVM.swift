@@ -122,10 +122,6 @@ extension Expression: LLVM.ValueBuilder {
                 LLVMInt1TypeInContext(llvm.context),
                 value ? 1 : 0,
                 0)
-        case let .plus(left: leftExpression, right: rightExpression):
-            let left = try leftExpression.llvmBuildValue(llvm: &llvm)
-            let right = try rightExpression.llvmBuildValue(llvm: &llvm)
-            return LLVMBuildAdd(llvm.builder, left, right, "")
         default:
             throw .unsupportedExpression(self)
         }
