@@ -21,7 +21,7 @@ final class ExpressionTypeCheckingTests: XCTestCase {
         
         do {
             let inferredType = try mainFunction.body.checkType(
-                with: .nothing(),
+                with: .empty,
                 localScope: LocalScope(
                     fields: [:]
                 ),
@@ -31,7 +31,7 @@ final class ExpressionTypeCheckingTests: XCTestCase {
                     functionsInputTypeIdentifiers: [:]
                 )
             )
-            XCTAssertEqual(inferredType, Builtins.bool)
+            XCTAssertEqual(inferredType.typeIdentifier, Builtins.bool)
         } catch {
             XCTAssertTrue(false)
         }
@@ -54,7 +54,7 @@ final class ExpressionTypeCheckingTests: XCTestCase {
 
         do throws(ExpressionSemanticError) {
             let _ = try mainFunction.body.checkType(
-                with: .nothing(),
+                with: .empty,
                 localScope: LocalScope(
                     fields: [:]
                 ),
@@ -67,7 +67,7 @@ final class ExpressionTypeCheckingTests: XCTestCase {
             XCTAssertTrue(false)
         } catch {
             guard case let .invalidOperation(expression, leftType, rightType) = error,
-                case let .equal(leftExpression, rightExpression) = expression.expressionType,
+                case let .binary(.equal, leftExpression, rightExpression) = expression.expressionType,
                 case let .field(left) = leftExpression.expressionType,
                 case let .intLiteral(right) = rightExpression.expressionType
             else {

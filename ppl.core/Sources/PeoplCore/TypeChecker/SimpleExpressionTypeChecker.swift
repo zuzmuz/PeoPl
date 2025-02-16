@@ -88,8 +88,12 @@ extension Expression: TypeChecker {
                 (.plus, Builtins.f64, Builtins.f64),
                 (.minus, Builtins.f64, Builtins.f64),
                 (.times, Builtins.f64, Builtins.f64),
-                (.by, Builtins.f64, Builtins.f64),
-                (.and, Builtins.bool, Builtins.bool),
+                (.by, Builtins.f64, Builtins.f64):
+                return .init(
+                    expressionType: .binary(op, left: left, right: right),
+                    location: self.location,
+                    typeIdentifier: right.typeIdentifier)
+            case (.and, Builtins.bool, Builtins.bool),
                 (.or, Builtins.bool, Builtins.bool),
                 (.equal, Builtins.i32, Builtins.i32),
                 (.different, Builtins.i32, Builtins.i32),
@@ -110,7 +114,7 @@ extension Expression: TypeChecker {
                 return .init(
                     expressionType: .binary(op, left: left, right: right),
                     location: self.location,
-                    typeIdentifier: right.typeIdentifier)
+                    typeIdentifier: Builtins.bool)
             default:
                 throw .invalidOperation(
                     expression: self,

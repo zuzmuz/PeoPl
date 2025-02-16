@@ -66,6 +66,6 @@ struct TypeIdentifierIterator: IteratorProtocol {
 }
 
 extension Expression {
-    static let empty = Expression(expressionType: .nothing, location: .nowhere)
-    static let never = Expression(expressionType: .never, location: .nowhere)
+    static let empty = Expression(expressionType: .nothing, location: .nowhere, typeIdentifier: .nothing())
+    static let never = Expression(expressionType: .never, location: .nowhere, typeIdentifier: .never())
 }

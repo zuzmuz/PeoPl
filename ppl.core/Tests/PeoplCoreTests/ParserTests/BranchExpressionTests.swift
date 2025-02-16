@@ -38,9 +38,9 @@ final class BranchExpressionTests: XCTestCase {
             let branch1 = branched.branches[0]
             XCTAssertEqual(branch1.captureGroup.count, 1)
             if case let .argument(argument) = branch1.captureGroup[0],
-                case let .equal(left, right) = argument.value.expressionType,
+                case let .binary(.equal, left, right) = argument.value.expressionType,
                 case let .intLiteral(value3) = right.expressionType,
-                case let .mod(left, right) = left.expressionType,
+                case let .binary(.modulo, left, right) = left.expressionType,
                 case let .field(value1) = left.expressionType,
                 case let .intLiteral(value2) = right.expressionType
             {
@@ -131,7 +131,7 @@ final class BranchExpressionTests: XCTestCase {
         XCTAssertEqual(branch.captureGroup.count, 1)
 
         if case let .simple(expression) = branch.captureGroup[0],
-            case let .lessThan(left, right) = expression.expressionType,
+            case let .binary(.lessThan, left, right) = expression.expressionType,
             case let .field(value1) = left.expressionType,
             case let .field(value2) = right.expressionType
         {
@@ -147,7 +147,7 @@ final class BranchExpressionTests: XCTestCase {
         }
 
         if case let .piped(left, right) = expression.expressionType,
-            case let .positive(unary) = right.expressionType,
+            case let .unary(.plus, unary) = right.expressionType,
             case let .intLiteral(value) = unary.expressionType,
             case let .branched(branched) = left.expressionType
         {

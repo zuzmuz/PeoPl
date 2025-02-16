@@ -53,9 +53,9 @@ final class PipeAndCallsExpressionTests: XCTestCase {
 
         if case let .piped(left, right) = body.expressionType,
             case let .call(call) = right.expressionType,
-            case let .times(left, right) = left.expressionType,
+            case let .binary(.times, left, right) = left.expressionType,
             case let .intLiteral(value3) = right.expressionType,
-            case let .plus(left, right) = left.expressionType,
+            case let .binary(.plus, left, right) = left.expressionType,
             case let .intLiteral(value1) = left.expressionType,
             case let .intLiteral(value2) = right.expressionType,
             case let .simple(command) = call.command,
