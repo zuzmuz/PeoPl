@@ -25,21 +25,155 @@ I can go into more details about this later, but here is a list of examples.
 
 1. inheritance:
     it's bad. Or at least, not as useful as you might initially expect.
-    Inheritance is just anonymous composition. Not even. It's implicit composition.
-    I don't like implicitness when it can lead to ambiguity.
-    When a class inherit from another, it is basically the same as just adding a member
-    field to the class, which doesn't have a name (however it can sometime have the implicit 
-    "super" name).
-    Anonymous composition might be useful sometimes, but a lot of problems arise.
-    For instance
-    - multiple inheritance creates a lot of semantics issues
-      and that's why it is not allowed in languages like Java and Objective C.
-    - it allows function overriding, which means every object needs to have
-      a virtual functions table, so that objects know which methods to call on runtime.
-    - inheritance chains makes code harder to read. Some members can be part of a super class.
-      Therefor, you'll have to hunt down method or member definitions,
-      and it invites you to write fragmented code.
-    - the `protected` keyword is basically a useless concept.
+    I have a strong opinion on the subject, I genuinely believe that inheritance does not have
+    one single redeeming aspect.
+
+### A tangent on inheritance
+
+Before justifying my dislike of inheritance, let's first try to define what it is.
+Before defining what inheritance is, let's first talk about types.
+
+One of the first thing you learn about programming are data types.
+Types are mainly two things:
+
+- Memory layout or representation of data
+- Defined behavior on the data
+
+1. First, let's address the first point.
+
+We thing of types as specific structure of data. An 32 bit signed integer, for example,
+is represented by 4 bytes, the first bit usually represent the sign of the number,
+the rest encode a number that can go from 0 to 2^31.
+A single precision float number following the IEEE 754 standard for encoding
+would be represented by 32 bits, where the first bit is the sign (s), the next 8 define the exponent (e),
+the rest the 23 the fraction (p). Together, they represent decimal numbers using this formula `s*p*2^e`.
+
+Integers and floating numbers (alongside booleans, and raw bytes) are usually considered primitive types.
+More complicated types can be created by joining and structuring primitives together.
+These structures are then given labels or names (typealiases), which are then used in programs.
+
+2. Another way of representing types is by thinking of algorithms that can be applied on these types,
+their behavior. For example, integer division or modulo can be represented as algorithm that can be applied on integers.
+Multiplication is also an algorithm that can be applied on numbers, integers, real numbers,
+but also complex numbers, matrices, quaternions etc...
+
+Thus, we come to the conclusion that it is a useful abstraction of grouping types together, as being similar.
+
+#### Subtyping
+
+So, now that we addressed types, the next step is to talk about subtypes.
+Let's first consider lists.
+
+In programming we have two different data structures that can represent the same element,
+array lists and linked lists. They're both similar in the sense that they can have the same behavior.
+
+I can access elements in array lists and linked lists, I can sort both of them.
+But, the data layout or memory representation of each of these data types is completely different.
+The array list stores its elements in a contiguous buffer, while the linked list store each element in a node,
+with each node pointing to the next element.
+
+It use a useful abstraction though, to consider both array lists and linked lists as being subtypes of an abstract type,
+being the collection.
+
+The Liskov substitution principle, is an important definition of behavioral subtyping.
+It states that if A is a subtype of B, then B can be replaced by A in a program, and the program should behave in the same way.
+
+#### How do we represent subtyping
+
+Alright now that we defined types and subtypes, we can talk about inheritance.
+
+It is clear that subtyping, most of the time, defines the behavior of objects.
+Rarely does it states anything about the data layout or memory representation of the objects.
+A linked list and array list have completely different data layout, but behaves in a similar manner.
+
+So what does inheritance do?
+
+One bad aspect of OOP, is that it merged ambiguously the data representation of types with their expected behavior.
+It might be an intuitive thing to do at first. But, in my experience,
+I found it much more useful to have a healthy separation between the two.
+
+The bad habit habit of representing everything with objects led to the prolification of these weirdly named types,
+like the managers, providers, factories, builders, services, handlers, visitors, observers etc...
+
+Sometimes we end up creating objects that don't have any meaningful data layout, they just define behavior.
+
+But I'm not talking about OOP here, I'm specifically talking about inheritance.
+
+#### Classes
+
+In OOP, we define classes, that define the data layout of our types as well as their behavior.
+
+Inheritance gives us the ability to embed types inside each others. When a class A inherits from class B,
+it takes the data layout of the B, and possibly extends it with its own data, but also it takes all methods of class B.
+
+In simple terms, inheritance is just anonymous composition. Not even. It's implicit composition.
+I don't like implicitness when it can lead to ambiguity.
+When a class inherit from another, it is basically the same as just adding a member
+field to the class, which doesn't have a name (however it can sometime have the implicit "super" name).
+
+#### Inheritance vs composition
+
+We've all heard that we should prefer composition over inheritance. I would say that inheritance is just fancy composition.
+This is a simple example.
+
+```cpp
+// Inheritance
+
+class Parent {};
+
+class Child: public Parent {
+  public:
+    Child(): Parent() {}
+};
+
+// Composition
+
+class Composite {
+  public:
+    Parent parent;
+    Child(): parent() {}
+}
+```
+
+Can you tell me what's the difference between the `Child` and the `Composite`?
+
+Both, child and composite need to construct parent when they're constructed, because in both cases,
+parent is part of the object. The difference is that in the first case the parent part of the child doesn't have a name.
+It can be implicitly accessed, from inside and outside the child.
+
+But I would argue that the explicitness of composition is almost desired every time over the implicitness of inheritance.
+
+- It clarifies the data layout of objects, some class members can be defined in the parent class, if accessed from the subclass,
+it will make code harder to understand, obfuscating the source of the accessed methods.
+- Multiple inheritance creates a lot of semantic issues, this is why it is not allowed in languages like Java and Objective C.
+- Inheritance chains makes code harder to read. You'll have to hunt down definitions across multiple object.
+
+#### Extending behavior
+
+Alright so extending data is not a good idea almost everytime. You rarely need to extend objects by adding extra data to them.
+When you need to do that you actually need to compose objects.
+
+But what about behavior.
+
+One would argue that extending behavior is a useful thing. It is, but using inheritance to model subtyping is a bad idea.
+More on that later, but first ...
+
+#### A rant about abstract classes
+
+I really, really hate abstract classes, theoretically and practically.
+Abstract classes don't mean a thing, they're should've been called incomplete classes, because they can have state in them,
+and they can have defined behavior, but not all of its behavior is defined.
+
+I can't think of one single scenario where abstract classes are useful. In languages like c++ they might be the only way of
+defining interfaces with default behavior, in java luckily they added interfaces with default methods implementations.
+
+But think of it, why would I ever need an abstract class? I don't think it's a useful way of modeling objects.
+I can think of objects that can't live on their own, they need to part of something else, alright it makes sense,
+but why would I need to inherit these classes? It's much more helpful to think of objects as being a composition of smaller objects,
+smaller concrete well defined objects, which on their own can't do anything useful, but they do concrete things. 
+
+### Back to the ugly things
+
 2. mutable variables:
     mutable variables might be necessary at a low level.
     Maybe it's because this is how computers work. You have registers with values,

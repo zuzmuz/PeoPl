@@ -5,7 +5,8 @@ extension Expression.Call: TypeChecker {
         context: borrowing TypeCheckerContext
     ) throws(ExpressionSemanticError) -> Expression {
         let functionIdentifier: FunctionIdentifier
-        let callee: Expression
+        let callee: Expression?
+        let calleeInputType: TypeIdentifier
         switch self.command {
         case let .simple(expression):
             switch expression.expressionType {
