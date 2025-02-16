@@ -264,6 +264,7 @@ extension TypeIdentifier {
     static let typeIdentifier = "type_identifier"
 
     enum CodingKeys: String, CodingKey {
+        case unkown = "unkown"
         case nothing = "nothing"
         case never = "never"
         case nominal = "nominal_type"
@@ -409,6 +410,8 @@ extension Expression {
             guard let expressionType = Expression.ExpressionType(from: node, in: source) else { return nil }
             self.expressionType = expressionType
         }
+
+        self.typeIdentifier = .unkown()
     }
 }
 
@@ -423,29 +426,8 @@ extension Expression.ExpressionType {
         case stringLiteral = "string_literal"
         case boolLiteral = "bool_literal"
 
-        case positive = "unary_positive"
-        case negative = "unary_negative"
-        case multiplied = "unary_multiply"
-        case divided = "unary_divide"
-        case moduled = "unary_modulo"
-        case anded = "unary_and"
-        case ored = "unary_or"
-        case not = "unary_not"
-
-        case plus = "binary_plus"
-        case minus = "binary_minus"
-        case times = "binary_times"
-        case by = "binary_by"
-        case mod = "binary_mod"
-
-        case equal = "binary_equal"
-        case different = "binary_different"
-        case lessThan = "binary_less_than"
-        case lessThanEqual = "binary_less_than_or_equal"
-        case greaterThan = "binary_greater_than"
-        case greaterThanEqual = "binary_greater_than_or_equal"
-        case or = "binary_or"
-        case and = "binary_and"
+        case unary = "unary_expression"
+        case binary = "binary_expression"
 
         case unnamedTuple = "unnamed_tuple_literal"
         case namedTuple = "named_tuple_literal"
@@ -459,8 +441,6 @@ extension Expression.ExpressionType {
         case branched = "branched_expression"
         case piped = "piped_expression"
 
-        static let unaryExpression = "unary_expression"
-        static let binaryExpression = "binary_expression"
     }
 
     init?(from node: Node, in source: Source) {
@@ -484,7 +464,7 @@ extension Expression.ExpressionType {
             guard let boolText = node.getString(in: source),
                   let boolValue = Bool(boolText) else { return nil }
             self = .boolLiteral(boolValue)
-        case CodingKeys.unaryExpression:
+        case CodingKeys.unary.rawValue:
             guard let operatorNode = node.child(byFieldName: "operator"),
                   let operatorValue = operatorNode.getString(in: source),
                   let operandNode = node.child(byFieldName: "operand"),
@@ -493,25 +473,25 @@ extension Expression.ExpressionType {
             }
             switch operatorValue {
             case "+":
-                self = .positive(operandExpression)
+                self = .unary(.plus, expression: operandExpression)
             case "-":
-                self = .negative(operandExpression)
+                self = .unary(.minus, expression: operandExpression)
             case "*":
-                self = .multiplied(operandExpression)
+                self = .unary(.times, expression: operandExpression)
             case "/":
-                self = .divided(operandExpression)
+                self = .unary(.by, expression: operandExpression)
             case "%":
-                self = .moduled(operandExpression)
+                self = .unary(.modulo, expression: operandExpression)
             case "and":
-                self = .anded(operandExpression)
+                self = .unary(.and, expression: operandExpression)
             case "or":
-                self = .ored(operandExpression)
+                self = .unary(.or, expression: operandExpression)
             case "not":
-                self = .not(operandExpression)
+                self = .unary(.not, expression: operandExpression)
             default:
                 return nil
             }
-        case CodingKeys.binaryExpression:
+        case CodingKeys.binary.rawValue:
             guard let leftNode = node.child(byFieldName: "left"),
                   let leftExpression = Expression(from: leftNode, in: source),
                   let operatorNode = node.child(byFieldName: "operator"),
@@ -522,31 +502,31 @@ extension Expression.ExpressionType {
             }
             switch operatorValue {
             case "+":
-                self = .plus(left: leftExpression, right: rightExpression)
+                self = .binary(.plus, left: leftExpression, right: rightExpression)
             case "-":
-                self = .minus(left: leftExpression, right: rightExpression)
+                self = .binary(.minus, left: leftExpression, right: rightExpression)
             case "*":
-                self = .times(left: leftExpression, right: rightExpression)
+                self = .binary(.times, left: leftExpression, right: rightExpression)
             case "/":
-                self = .by(left: leftExpression, right: rightExpression)
+                self = .binary(.by, left: leftExpression, right: rightExpression)
             case "%":
-                self = .mod(left: leftExpression, right: rightExpression)
+                self = .binary(.modulo, left: leftExpression, right: rightExpression)
             case "=":
-                self = .equal(left: leftExpression, right: rightExpression)
+                self = .binary(.equal, left: leftExpression, right: rightExpression)
             case "!=":
-                self = .different(left: leftExpression, right: rightExpression)
+                self = .binary(.different, left: leftExpression, right: rightExpression)
             case "<":
-                self = .lessThan(left: leftExpression, right: rightExpression)
+                self = .binary(.lessThan, left: leftExpression, right: rightExpression)
             case "<=":
-                self = .lessThanEqual(left: leftExpression, right: rightExpression)
+                self = .binary(.lessThanOrEqual, left: leftExpression, right: rightExpression)
             case ">":
-                self = .greaterThan(left: leftExpression, right: rightExpression)
+                self = .binary(.greaterThan, left: leftExpression, right: rightExpression)
             case ">=":
-                self = .greaterThanEqual(left: leftExpression, right: rightExpression)
+                self = .binary(.greaterThanOrEqual, left: leftExpression, right: rightExpression)
             case "or":
-                self = .or(left: leftExpression, right: rightExpression)
+                self = .binary(.or, left: leftExpression, right: rightExpression)
             case "and":
-                self = .and(left: leftExpression, right: rightExpression)
+                self = .binary(.and, left: leftExpression, right: rightExpression)
             default:
                 return nil
             }

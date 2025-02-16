@@ -3,7 +3,7 @@ extension Expression.Branched: TypeChecker {
         with input: TypeIdentifier,
         localScope: LocalScope,
         context: borrowing TypeCheckerContext
-    ) throws(ExpressionSemanticError) -> TypeIdentifier {
+    ) throws(ExpressionSemanticError) -> Expression {
         let unionType = try self.branches.map { branch throws(ExpressionSemanticError) in
             
             // checking if capture group count matches input

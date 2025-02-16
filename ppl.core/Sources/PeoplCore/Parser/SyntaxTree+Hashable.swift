@@ -79,6 +79,8 @@ extension FunctionDefinition: Hashable {
 extension TypeIdentifier: Hashable {
     func hash(into hasher: inout Hasher) {
         switch self {
+        case .unkown:
+            hasher.combine("unkown")
         case .nothing:
             hasher.combine("nothing")
         case .never:
@@ -98,6 +100,8 @@ extension TypeIdentifier: Hashable {
 
     static func == (lhs: TypeIdentifier, rhs: TypeIdentifier) -> Bool {
         switch (lhs, rhs) {
+        case (.unkown, .unkown):
+            return true
         case (.nothing, .nothing):
             return true
         case (.never, .never):

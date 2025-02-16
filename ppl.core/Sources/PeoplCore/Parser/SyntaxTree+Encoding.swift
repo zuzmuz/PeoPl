@@ -48,6 +48,8 @@ extension TypeDefinition: DebugableSyntaxNode {
 extension TypeIdentifier: DebugableSyntaxNode {
     func encode(to encoder: any Encoder) throws {
         switch self {
+        case .unkown:
+            try "unkown".encode(to: encoder)
         case .nothing:
             try "nothing".encode(to: encoder)
         case .never:
@@ -69,6 +71,18 @@ extension TypeIdentifier: DebugableSyntaxNode {
 // MARK: - Expressions
 // -------------------
 
+struct UnaryEncodable: Encodable {
+    let op: Expression.ExpressionType.Operator
+    let expression: Expression
+}
+
+struct BinaryEncodable: Encodable {
+    let op: Expression.ExpressionType.Operator
+    let left: Expression
+    let right: Expression
+}
+
+
 extension Expression.ExpressionType: DebugableSyntaxNode {
     func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
@@ -85,48 +99,10 @@ extension Expression.ExpressionType: DebugableSyntaxNode {
             try container.encode(value, forKey: .stringLiteral)
         case let .boolLiteral(value):
             try container.encode(value, forKey: .boolLiteral)
-        case let .positive(expression):
-            try container.encode(expression, forKey: .positive)
-        case let .negative(expression):
-            try container.encode(expression, forKey: .negative)
-        case let .multiplied(expression):
-            try container.encode(expression, forKey: .multiplied)
-        case let .divided(expression):
-            try container.encode(expression, forKey: .divided)
-        case let .moduled(expression):
-            try container.encode(expression, forKey: .moduled)
-        case let .anded(expression):
-            try container.encode(expression, forKey: .anded)
-        case let .ored(expression):
-            try container.encode(expression, forKey: .ored)
-        case let .not(expression):
-            try container.encode(expression, forKey: .not)
-        case let .plus(left, right):
-            try container.encode(["left": left, "right": right], forKey: .plus)
-        case let .minus(left, right):
-            try container.encode(["left": left, "right": right], forKey: .minus)
-        case let .times(left, right):
-            try container.encode(["left": left, "right": right], forKey: .times)
-        case let .by(left, right):
-            try container.encode(["left": left, "right": right], forKey: .by)
-        case let .mod(left, right):
-            try container.encode(["left": left, "right": right], forKey: .mod)
-        case let .equal(left, right):
-            try container.encode(["left": left, "right": right], forKey: .equal)
-        case let .different(left, right):
-            try container.encode(["left": left, "right": right], forKey: .different)
-        case let .lessThan(left, right):
-            try container.encode(["left": left, "right": right], forKey: .lessThan)
-        case let .lessThanEqual(left, right):
-            try container.encode(["left": left, "right": right], forKey: .lessThanEqual)
-        case let .greaterThan(left, right):
-            try container.encode(["left": left, "right": right], forKey: .greaterThan)
-        case let .greaterThanEqual(left, right):
-            try container.encode(["left": left, "right": right], forKey: .greaterThanEqual)
-        case let .or(left, right):
-            try container.encode(["left": left, "right": right], forKey: .or)
-        case let .and(left, right):
-            try container.encode(["left": left, "right": right], forKey: .and)
+        case let .unary(op, expression):
+            try container.encode(UnaryEncodable(op: op, expression: expression), forKey: .unary)
+        case let .binary(op, left, right):
+            try container.encode(BinaryEncodable(op: op, left: left, right: right), forKey: .binary)
         case let .namedTuple(expressions):
             try container.encode(expressions, forKey: .namedTuple)
         case let .unnamedTuple(expressions):

@@ -49,7 +49,7 @@ struct TypeIdentifierIterator: IteratorProtocol {
 
     init(_ typeIdentifier: TypeIdentifier) {
         switch typeIdentifier {
-        case .nothing, .never, .nominal, .lambda, .union:
+        case .unkown, .nothing, .never, .nominal, .lambda, .union:
             content = [typeIdentifier]
         case let .unnamedTuple(tuple):
             content = tuple.types

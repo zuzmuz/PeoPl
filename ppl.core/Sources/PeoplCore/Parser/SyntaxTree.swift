@@ -117,6 +117,7 @@ struct FunctionDefinition: Encodable, SyntaxNode {
 // -------------
 
 enum TypeIdentifier: Encodable, SyntaxNode, Sendable {
+    case unkown(location: NodeLocation = .nowhere)
     case nothing(location: NodeLocation = .nowhere)
     case never(location: NodeLocation = .nowhere)
     case nominal(NominalType)
@@ -127,6 +128,8 @@ enum TypeIdentifier: Encodable, SyntaxNode, Sendable {
 
     var location: NodeLocation {
         return switch self {
+        case let .unkown(location):
+            location
         case let .nothing(location):
             location
         case let .never(location):
@@ -189,6 +192,23 @@ struct UnionType: Encodable, SyntaxNode {
 struct Expression: Encodable, SyntaxNode {
     let expressionType: ExpressionType
     let location: NodeLocation
+    let typeIdentifier: TypeIdentifier
+
+    init(expressionType: ExpressionType, location: NodeLocation) {
+        self.expressionType = expressionType
+        self.location = location
+        self.typeIdentifier = .unkown(location: .nowhere) 
+    }
+
+    init(
+        expressionType: ExpressionType,
+        location: NodeLocation,
+        typeIdentifier: TypeIdentifier
+    ) {
+        self.expressionType = expressionType
+        self.location = location
+        self.typeIdentifier = typeIdentifier
+    }
 
     static let empty = Expression(expressionType: .nothing, location: .nowhere)
 
@@ -201,36 +221,26 @@ struct Expression: Encodable, SyntaxNode {
         case stringLiteral(String)
         case boolLiteral(Bool)
 
+        enum Operator: Encodable {
+            case plus
+            case minus
+            case times
+            case by
+            case modulo
+            case not
+            case and
+            case or
+            case equal
+            case different
+            case lessThan
+            case lessThanOrEqual
+            case greaterThan
+            case greaterThanOrEqual
+        }
+
         // Unary
-        case positive(Expression)
-        case negative(Expression)
-
-        case multiplied(Expression)
-        case divided(Expression)
-        case moduled(Expression)
-        case anded(Expression)
-        case ored(Expression)
-
-        case not(Expression)
-
-        // Binary
-        // Additives
-        case plus(left: Expression, right: Expression)
-        case minus(left: Expression, right: Expression)
-        // Multiplicatives
-        case times(left: Expression, right: Expression)
-        case by(left: Expression, right: Expression)
-        case mod(left: Expression, right: Expression)
-        // Comparatives
-        case equal(left: Expression, right: Expression)
-        case different(left: Expression, right: Expression)
-        case lessThan(left: Expression, right: Expression)
-        case lessThanEqual(left: Expression, right: Expression)
-        case greaterThan(left: Expression, right: Expression)
-        case greaterThanEqual(left: Expression, right: Expression)
-        // Logical
-        case or(left: Expression, right: Expression)
-        case and(left: Expression, right: Expression)
+        case unary(Operator, expression: Expression)
+        case binary(Operator, left: Expression, right: Expression)
 
         // Compounds
         case unnamedTuple([Expression])

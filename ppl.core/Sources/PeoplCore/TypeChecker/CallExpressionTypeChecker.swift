@@ -3,9 +3,9 @@ extension Expression.Call: TypeChecker {
         with input: TypeIdentifier,
         localScope: LocalScope,
         context: borrowing TypeCheckerContext
-    ) throws(ExpressionSemanticError) -> TypeIdentifier {
+    ) throws(ExpressionSemanticError) -> Expression {
         let functionIdentifier: FunctionIdentifier
-        let calleeInputType: TypeIdentifier
+        let callee: Expression
         switch self.command {
         case let .simple(expression):
             switch expression.expressionType {
@@ -18,7 +18,7 @@ extension Expression.Call: TypeChecker {
                     functionIdentifier = FunctionIdentifier(scope: type, name: access.field)
                     calleeInputType = input
                 case let .simple(expression):
-                    calleeInputType = try expression.checkType(
+                    callee = try expression.checkType(
                         with: input, localScope: localScope, context: context)
                     functionIdentifier = FunctionIdentifier(scope: nil, name: access.field)
                 }

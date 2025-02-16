@@ -1,5 +1,5 @@
 struct LocalScope {
-    let fields: [String: TypeIdentifier]
+    let fields: [String: Expression]
 }
 
 struct TypeCheckerContext: ~Copyable {
@@ -13,5 +13,5 @@ protocol TypeChecker {
         with input: TypeIdentifier,
         localScope: LocalScope,
         context: borrowing TypeCheckerContext
-    ) throws(ExpressionSemanticError) -> TypeIdentifier
+    ) throws(ExpressionSemanticError) -> Expression
 }
