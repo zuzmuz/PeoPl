@@ -82,4 +82,41 @@ final class ExpressionTypeCheckingTests: XCTestCase {
             XCTAssertEqual(right, 3)
         }
     }
+
+    func testTupleSucceed() throws {
+        let source = """
+            func main() => Bool
+                3 * 2 -1 /6 |>
+                |value| [ value > 2, value ] |>
+                |true, x| ["bigger than 2", x, true],
+                |_| ["larger", 3, false]
+            """
+        let module = try Module(source: source, path: "main")
+        guard case let .functionDefinition(mainFunction) = module.statements.first else {
+            XCTAssertTrue(false)
+            return
+        }
+
+        do throws(ExpressionSemanticError) {
+            let inferredType = try mainFunction.body.checkType(
+                with: .empty,
+                localScope: LocalScope(
+                    fields: [:]
+                ),
+                context: TypeCheckerContext(
+                    functions: [:],
+                    functionsIdentifiers: [:],
+                    functionsInputTypeIdentifiers: [:]
+                )
+            )
+            
+            XCTAssertEqual(inferredType.typeIdentifier, TypeIdentifier.unnamedTuple(.init(types: [
+                    Builtins.string, Builtins.i32, Builtins.bool
+                ],
+                location: .nowhere)))
+
+        } catch {
+            XCTAssertTrue(false)
+        }
+    }
 }

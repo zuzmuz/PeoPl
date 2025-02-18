@@ -44,19 +44,27 @@ struct TypeDeclarationChecker {
     let typesIdentifiers: [TypeIdentifier: TypeIdentifier]
     init(context: some DeclarationContext) {
         // TODO: here should also be handled the dependencies and whatnots
+
+        let definitions = context.getTypeDefinitions()
         self.types = [:]
         self.typesIdentifiers = [
             Builtins.i32: Builtins.i32,
             Builtins.f64: Builtins.f64,
             Builtins.string: Builtins.string,
+            Builtins.bool: Builtins.bool,
             .nothing(): .nothing(),
             .never(): .never(),
         ]
     }
 
-    // TODO: for building independent files
-    // init(module: Module) {
-    // }
+    static private func resolveTypeDefinitions(
+        definitions: [TypeDefinition]
+    ) -> (
+        types: [TypeDefinition: TypeDefinition],
+        errors: [SemanticError]
+    ) {
+        return ([:], [])
+    }
 }
 
 struct FunctionDeclarationChecker {
