@@ -15,6 +15,15 @@ enum FunctionSemanticError: SemanticError {
         typesInScope: [TypeIdentifier: TypeIdentifier].Keys)
 }
 
+enum TypeSemanticError: SemanticError {
+    case redeclaration(
+        locations: [NodeLocation])
+    case cyclicType(
+        // type: TypeDefinition, // TODO: should save the cyclic path of types
+        cyclicType: NominalType
+    )
+}
+
 
 enum ExpressionSemanticError: SemanticError, Encodable {
     case inputMismatch(

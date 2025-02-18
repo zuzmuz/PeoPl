@@ -42,6 +42,7 @@ extension Project: DeclarationContext {
 struct TypeDeclarationChecker {
     let types: [TypeDefinition: TypeDefinition]
     let typesIdentifiers: [TypeIdentifier: TypeIdentifier]
+    let typeDefinitions: [NominalType: TypeDefinition]
     init(context: some DeclarationContext) {
         // TODO: here should also be handled the dependencies and whatnots
 
@@ -55,6 +56,7 @@ struct TypeDeclarationChecker {
             .nothing(): .nothing(),
             .never(): .never(),
         ]
+        self.typeDefinitions = [:]
     }
 
     static private func resolveTypeDefinitions(
@@ -63,7 +65,91 @@ struct TypeDeclarationChecker {
         types: [TypeDefinition: TypeDefinition],
         errors: [SemanticError]
     ) {
-        return ([:], [])
+        let typesLocations = definitions.reduce(into: [:]) { acc, type in
+            acc[type] = (acc[type] ?? []) + [type]
+        }
+
+        let errors = typesLocations.compactMap { type, types in
+            if types.count > 1 {
+                return TypeSemanticError.redeclaration(locations: types.map { $0.location })
+            } else {
+                return nil
+            }
+        }
+
+        let types = typesLocations.compactMapValues { types in
+            return types.first
+        }
+        
+        return (types: types, errors: errors)
+    }
+
+    static private func detectCircularDependencies(
+        types: [NominalType: TypeDefinition]
+    ) -> [TypeSemanticError] {
+        
+        // TODO: we also need to check for circular dependency in tuples
+
+        enum NodeState {
+            case visiting
+            case visited
+        }
+
+        var nodeStates: [NominalType: NodeState] = [:]
+        var cycles: [TypeSemanticError] = []
+
+        func checkCyclicalDependency(typeIdentifier: TypeIdentifier) {
+            switch typeIdentifier {
+            case let .nominal(nominal):
+                checkCyclicalDependency(nominal: nominal)
+            case let .unnamedTuple(tuple):
+                tuple.types.forEach { typeIdentifier in
+                    checkCyclicalDependency(typeIdentifier: typeIdentifier)
+                }
+            case let .namedTuple(tuple):
+                tuple.types.forEach { tupleParam in
+                    checkCyclicalDependency(typeIdentifier: tupleParam.type)
+                }
+            case let .union(union):
+                union.types.forEach { typeIdentifier in
+                    checkCyclicalDependency(typeIdentifier: typeIdentifier)
+                }
+            default:
+                break
+            }
+        }
+
+        func checkCyclicalDependency(nominal: NominalType) {
+            if nodeStates[nominal] == .visited {
+                return
+            }
+            if nodeStates[nominal] == .visiting {
+                cycles.append(.cyclicType(cyclicType: nominal))
+                return 
+            }
+            nodeStates[nominal] = .visiting
+            guard let typeDefinition = types[nominal] else { return /*type checker should catch this error*/ }
+
+            switch typeDefinition {
+            case let .simple(simple):
+                simple.params.forEach { param in
+                    checkCyclicalDependency(typeIdentifier: param.type)
+                }
+            case let .sum(sum):
+                sum.cases.forEach { simpleCase in
+                    simpleCase.params.forEach { param in
+                        checkCyclicalDependency(typeIdentifier: param.type)
+                    }
+                }
+            }
+            nodeStates[nominal] = .visited
+        }
+        
+        types.forEach { nominal, typeDefinition in
+            checkCyclicalDependency(nominal: nominal)
+        }
+
+        return []
     }
 }
 
