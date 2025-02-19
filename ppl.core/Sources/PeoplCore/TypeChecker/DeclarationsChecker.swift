@@ -61,6 +61,7 @@ extension Project: DeclarationContext {
 struct TypeDeclarationChecker {
     let types: [TypeDefinition: TypeDefinition]
     let typeDefinitions: [NominalType: TypeDefinition]
+    let errors: [TypeSemanticError]
 
     init(context: some DeclarationContext, builtins: some DeclarationContext) {
         // TODO: here should also be handled the dependencies and whatnots
@@ -78,22 +79,24 @@ struct TypeDeclarationChecker {
             }
         }
 
+        let circularDependencies = TypeDeclarationChecker.detectCyclicalDependencies(types: self.typeDefinitions)
 
+        self.errors = resolutions.errors + circularDependencies
     }
 
     static private func resolveTypeDefinitions(
         definitions: [TypeDefinition]
     ) -> (
         types: [TypeDefinition: TypeDefinition],
-        errors: [SemanticError]
+        errors: [TypeSemanticError]
     ) {
         let typesLocations = definitions.reduce(into: [:]) { acc, type in
             acc[type] = (acc[type] ?? []) + [type]
         }
 
-        let errors = typesLocations.compactMap { type, types in
+        let errors: [TypeSemanticError] = typesLocations.compactMap { type, types in
             if types.count > 1 {
-                return TypeSemanticError.redeclaration(locations: types.map { $0.location })
+                return .redeclaration(locations: types.map { $0.location })
             } else {
                 return nil
             }
@@ -106,7 +109,7 @@ struct TypeDeclarationChecker {
         return (types: types, errors: errors)
     }
 
-    static private func detectCircularDependencies(
+    static private func detectCyclicalDependencies(
         types: [NominalType: TypeDefinition]
     ) -> [TypeSemanticError] {
         
@@ -180,7 +183,7 @@ struct FunctionDeclarationChecker {
 
     let operators: [OperatorOverloadDefinition: OperatorOverloadDefinition]
 
-    let errors: [SemanticError]
+    let errors: [FunctionSemanticError]
 
     init(
         context: some DeclarationContext,
@@ -209,12 +212,12 @@ struct FunctionDeclarationChecker {
         }
 
         let functionTypeCheckErrors = self.functions.flatMap { function, _ in
-            var errors: [SemanticError] = []
+            var errors: [FunctionSemanticError] = []
             
             function.inputType.getNominalTypesFromIdentifier().forEach { type in
                 if typeDeclarationChecker.typeDefinitions[type] == nil {
                     errors.append(
-                        FunctionSemanticError.typeNotInScope(
+                        .typeNotInScope(
                             location: type.location,
                             type: type,
                             typesInScope: typeDeclarationChecker.typeDefinitions.keys))
@@ -224,7 +227,7 @@ struct FunctionDeclarationChecker {
                 param.type.getNominalTypesFromIdentifier().forEach { type in
                     if typeDeclarationChecker.typeDefinitions[type] == nil {
                         errors.append(
-                            FunctionSemanticError.typeNotInScope(
+                            .typeNotInScope(
                                 location: type.location,
                                 type: type,
                                 typesInScope: typeDeclarationChecker.typeDefinitions.keys))
@@ -234,7 +237,7 @@ struct FunctionDeclarationChecker {
             function.outputType.getNominalTypesFromIdentifier().forEach { type in
                 if typeDeclarationChecker.typeDefinitions[type] == nil {
                     errors.append(
-                        FunctionSemanticError.typeNotInScope(
+                        .typeNotInScope(
                             location: type.location,
                             type: type,
                             typesInScope: typeDeclarationChecker.typeDefinitions.keys))
@@ -244,12 +247,12 @@ struct FunctionDeclarationChecker {
         }
 
         let operatorTypeCheckErrors = self.operators.flatMap { function, _ in
-            var errors: [SemanticError]
+            var errors: [FunctionSemanticError] = []
 
             function.left.type.getNominalTypesFromIdentifier().forEach { type in
                 if typeDeclarationChecker.typeDefinitions[type] == nil {
                     errors.append(
-                        FunctionSemanticError.typeNotInScope(
+                        .typeNotInScope(
                             location: type.location,
                             type: type,
                             typesInScope: typeDeclarationChecker.typeDefinitions.keys))
@@ -259,7 +262,7 @@ struct FunctionDeclarationChecker {
             function.right.type.getNominalTypesFromIdentifier().forEach { type in
                 if typeDeclarationChecker.typeDefinitions[type] == nil {
                     errors.append(
-                        FunctionSemanticError.typeNotInScope(
+                        .typeNotInScope(
                             location: type.location,
                             type: type,
                             typesInScope: typeDeclarationChecker.typeDefinitions.keys))
@@ -268,7 +271,6 @@ struct FunctionDeclarationChecker {
 
             return errors
         }
-
         self.errors = functionResolutions.errors + functionTypeCheckErrors + operatorTypeCheckErrors
     }
 
@@ -277,15 +279,15 @@ struct FunctionDeclarationChecker {
         typeDeclarationChecker: TypeDeclarationChecker
     ) -> (
         functions: [Definition: Definition],
-        errors: [SemanticError]
+        errors: [FunctionSemanticError]
     ) where Definition: Hashable, Definition: SyntaxNode {
         let functionsLocations = definitions.reduce(into: [:]) { acc, function in
             acc[function] = (acc[function] ?? []) + [function]
         }
 
-        let errors = functionsLocations.compactMap { function, functions in
+        let errors: [FunctionSemanticError] = functionsLocations.compactMap { function, functions in
             if functions.count > 1 {
-                return FunctionSemanticError.redeclaration(locations: functions.map { $0.location })
+                return .redeclaration(locations: functions.map { $0.location })
             } else {
                 return nil
             }
