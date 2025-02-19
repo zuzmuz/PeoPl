@@ -40,8 +40,8 @@ extension Project: Evaluable {
                 acc[function.key] = function.key.body
             }, uniquingKeysWith: { $1 })
         )
-
-        return main.body.evaluate(with: input, and: modifiedScope)
+        // WARN: handle function linking in the future
+        return main.body!.evaluate(with: input, and: modifiedScope)
     }
 }
 
@@ -59,7 +59,7 @@ extension Module: Evaluable {
         guard main.count == 1, let main = main.first, case let .functionDefinition(main) = main else {
             return .failure(.mainFunctionNotFound)
         }
-        return main.body.evaluate(with: input, and: scope)
+        return main.body!.evaluate(with: input, and: scope)
     }
 }
 

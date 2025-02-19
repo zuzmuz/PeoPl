@@ -22,7 +22,9 @@ extension Statement: DebugableSyntaxNode {
         case let .typeDefinition(definition):
             try container.encode(definition, forKey: .typeDefinition)
         case let .functionDefinition(definition):
-            try container.encode(definition, forKey: .functionDefinition)
+            try container.encode(definition, forKey: .normalfunctionDefinition)
+        case let .operatorOverloadDefinition(definition):
+            try container.encode(definition, forKey: .operatorOverloadDefinition)
         }
     }
 }
@@ -72,12 +74,12 @@ extension TypeIdentifier: DebugableSyntaxNode {
 // -------------------
 
 struct UnaryEncodable: Encodable {
-    let op: Expression.ExpressionType.Operator
+    let op: Operator
     let expression: Expression
 }
 
 struct BinaryEncodable: Encodable {
-    let op: Expression.ExpressionType.Operator
+    let op: Operator
     let left: Expression
     let right: Expression
 }

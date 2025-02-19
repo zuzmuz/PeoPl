@@ -19,7 +19,7 @@ final class ArithmeticsExpressionTests: XCTestCase {
 
         let body = functionDefinition.body
 
-        guard case .nothing = body.expressionType else {
+        guard case .nothing = body?.expressionType else {
             XCTAssertTrue(false)
             return
         }
@@ -41,7 +41,7 @@ final class ArithmeticsExpressionTests: XCTestCase {
 
         let body = functionDefinition.body
 
-        guard case .never = body.expressionType else {
+        guard case .never = body?.expressionType else {
             XCTAssertTrue(false)
             return
         }
@@ -63,7 +63,7 @@ final class ArithmeticsExpressionTests: XCTestCase {
 
         let body = functionDefinition.body
 
-        guard case let .binary(.plus, left, right) = body.expressionType else {
+        guard case let .binary(.plus, left, right) = body?.expressionType else {
             XCTAssertTrue(false)
             return
         }
@@ -164,7 +164,7 @@ final class ArithmeticsExpressionTests: XCTestCase {
 
         let body = functionDefinition.body
 
-        guard case let .binary(.equal, left, right) = body.expressionType else {
+        guard case let .binary(.equal, left, right) = body?.expressionType else {
             XCTAssertTrue(false)
             return
         }
@@ -225,7 +225,7 @@ final class ArithmeticsExpressionTests: XCTestCase {
 
         let body = functionDefinition.body
 
-        guard case let .unary(.not, unary) = body.expressionType else {
+        guard case let .unary(.not, unary) = body?.expressionType else {
             XCTAssertTrue(false)
             return
         }
@@ -280,7 +280,7 @@ final class ArithmeticsExpressionTests: XCTestCase {
 
         let body = functionDefinition.body
 
-        guard case let .binary(.or, left, right) = body.expressionType else {
+        guard case let .binary(.or, left, right) = body?.expressionType else {
             XCTAssertTrue(false)
             return
         }
@@ -358,7 +358,7 @@ final class ArithmeticsExpressionTests: XCTestCase {
 
         let body = functionDefinition.body
 
-        guard case let .unary(.not, unary) = body.expressionType else {
+        guard case let .unary(.not, unary) = body?.expressionType else {
             XCTAssertTrue(false)
             return
         }
@@ -410,7 +410,7 @@ final class ArithmeticsExpressionTests: XCTestCase {
 
         let body = functionDefinition.body
         
-        guard case let .binary(.and, left, right) = body.expressionType else {
+        guard case let .binary(.and, left, right) = body?.expressionType else {
             XCTAssertTrue(false)
             return
         }

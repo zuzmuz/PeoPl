@@ -136,6 +136,10 @@ module.exports = grammar({
     
     function_definition: $ => seq(
       'func',
+      choice($.operator_overload_definition, $.normal_function_definition)
+    ),
+
+    normal_function_definition: $ => seq(
       optional(seq('(', field("input_type", $.type_identifier), ')')),
       field("scope", optional(seq($.nominal_type, '.'))),
       field("name", $.argument_name),
@@ -143,8 +147,18 @@ module.exports = grammar({
       seq('(', field("params", optional($.param_list)), ')'),
       '=>',
       field("output_type", $.type_identifier),
-      field("body", $._expression),
+      optional(field("body", $._expression)),
     ),
+
+    operator_overload_definition: $ => seq(
+      field("left_type", $.param_definition),
+      field("operator", choice($.multiplicative_operator, $.additive_operator, $.comparative_operator)),
+      field("right_type", $.param_definition),
+      '=>',
+      field("output_type", $.type_identifier),
+      optional(field("body", $._expression)),
+    ),
+
 
     // Types
     // -----

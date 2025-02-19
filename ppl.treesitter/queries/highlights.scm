@@ -36,23 +36,27 @@
   (["<" ">"] @punctuation.bracket))
 
 (function_definition
-  name: (argument_name) @function)
+  (normal_function_definition
+    name: (argument_name) @function))
 
 (function_definition
-  input_type: (type_identifier
-                (nominal_type
-                  (flat_nominal_type
-                    (type_name) @type))))
+  (normal_function_definition
+    input_type: (type_identifier
+                  (nominal_type
+                    (flat_nominal_type
+                      (type_name) @type)))))
 (function_definition
-  output_type: (type_identifier
-                (nominal_type
-                  (flat_nominal_type
-                    (type_name) @type))))
+  (normal_function_definition
+    output_type: (type_identifier
+                   (nominal_type
+                     (flat_nominal_type
+                       (type_name) @type)))))
 
 (function_definition
-  scope: (nominal_type 
-           (flat_nominal_type 
-             (type_name) @namespace)))
+  (normal_function_definition
+    scope: (nominal_type 
+             (flat_nominal_type 
+               (type_name) @namespace))))
 
 (constants_statement
   (nominal_type

@@ -47,7 +47,9 @@ struct TypeDeclarationChecker {
         // TODO: here should also be handled the dependencies and whatnots
 
         let definitions = context.getTypeDefinitions()
-        self.types = [:]
+        let resolutions = TypeDeclarationChecker.resolveTypeDefinitions(definitions: definitions)
+
+        self.types = resolutions.types
         self.typesIdentifiers = [
             Builtins.i32: Builtins.i32,
             Builtins.f64: Builtins.f64,
@@ -88,8 +90,6 @@ struct TypeDeclarationChecker {
         types: [NominalType: TypeDefinition]
     ) -> [TypeSemanticError] {
         
-        // TODO: we also need to check for circular dependency in tuples
-
         enum NodeState {
             case visiting
             case visited
@@ -149,7 +149,7 @@ struct TypeDeclarationChecker {
             checkCyclicalDependency(nominal: nominal)
         }
 
-        return []
+        return cycles
     }
 }
 

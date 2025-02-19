@@ -19,7 +19,7 @@ final class PipeAndCallsExpressionTests: XCTestCase {
 
         let body = functionDefinition.body
 
-        if case let .piped(left, right) = body.expressionType,
+        if case let .piped(left, right) = body?.expressionType,
             case let .stringLiteral(left) = left.expressionType,
             case let .call(call) = right.expressionType,
             case let .simple(command) = call.command,
@@ -51,7 +51,7 @@ final class PipeAndCallsExpressionTests: XCTestCase {
 
         let body = functionDefinition.body
 
-        if case let .piped(left, right) = body.expressionType,
+        if case let .piped(left, right) = body?.expressionType,
             case let .call(call) = right.expressionType,
             case let .binary(.times, left, right) = left.expressionType,
             case let .intLiteral(value3) = right.expressionType,
@@ -100,7 +100,7 @@ final class PipeAndCallsExpressionTests: XCTestCase {
 
         let body = functionDefinition.body
 
-        if case let .piped(left, right) = body.expressionType,
+        if case let .piped(left, right) = body?.expressionType,
             case let .call(call3) = right.expressionType,
             case let .piped(left, right) = left.expressionType,
             case let .call(call1) = left.expressionType,

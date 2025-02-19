@@ -64,7 +64,15 @@ extension Statement: LLVM.StatementBuilder {
             definition.llvmBuildStatement(llvm: &llvm)
         case .typeDefinition(let definition):
             definition.llvmBuildStatement(llvm: &llvm)
+        case .operatorOverloadDefinition(let definition):
+            definition.llvmBuildStatement(llvm: &llvm)
         }
+    }
+}
+
+extension OperatorOverloadDefinition: LLVM.StatementBuilder {
+    func llvmBuildStatement(llvm: inout LLVM.Builder) {
+
     }
 }
 

@@ -369,6 +369,24 @@
           "type": "CHOICE",
           "members": [
             {
+              "type": "SYMBOL",
+              "name": "operator_overload_definition"
+            },
+            {
+              "type": "SYMBOL",
+              "name": "normal_function_definition"
+            }
+          ]
+        }
+      ]
+    },
+    "normal_function_definition": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "CHOICE",
+          "members": [
+            {
               "type": "SEQ",
               "members": [
                 {
@@ -485,12 +503,90 @@
           }
         },
         {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "FIELD",
+              "name": "body",
+              "content": {
+                "type": "SYMBOL",
+                "name": "_expression"
+              }
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
+        }
+      ]
+    },
+    "operator_overload_definition": {
+      "type": "SEQ",
+      "members": [
+        {
           "type": "FIELD",
-          "name": "body",
+          "name": "left_type",
           "content": {
             "type": "SYMBOL",
-            "name": "_expression"
+            "name": "param_definition"
           }
+        },
+        {
+          "type": "FIELD",
+          "name": "operator",
+          "content": {
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "SYMBOL",
+                "name": "multiplicative_operator"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "additive_operator"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "comparative_operator"
+              }
+            ]
+          }
+        },
+        {
+          "type": "FIELD",
+          "name": "right_type",
+          "content": {
+            "type": "SYMBOL",
+            "name": "param_definition"
+          }
+        },
+        {
+          "type": "STRING",
+          "value": "=>"
+        },
+        {
+          "type": "FIELD",
+          "name": "output_type",
+          "content": {
+            "type": "SYMBOL",
+            "name": "type_identifier"
+          }
+        },
+        {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "FIELD",
+              "name": "body",
+              "content": {
+                "type": "SYMBOL",
+                "name": "_expression"
+              }
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
         }
       ]
     },

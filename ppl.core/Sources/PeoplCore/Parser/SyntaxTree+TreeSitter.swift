@@ -78,9 +78,11 @@ extension Module {
 extension Statement {
     enum CodingKeys: String, CodingKey {
         case typeDefinition = "type_definition"
-        case functionDefinition = "function_definition"
+        case normalfunctionDefinition = "normal_function_definition"
+        case operatorOverloadDefinition = "operator_overload_definition"
         // case implementationStatement
         // case constantsStatement
+        static let functionDefinition = "function_definition"
     }
 
     init?(from node: Node, in source: Source) {
@@ -88,11 +90,22 @@ extension Statement {
         case CodingKeys.typeDefinition.rawValue:
             guard let typeDefinition = TypeDefinition(from: node, in: source) else { return nil }
             self = .typeDefinition(typeDefinition)
-        case CodingKeys.functionDefinition.rawValue:
-            guard let functionDefinition = FunctionDefinition(from: node, in: source) else {
+        case CodingKeys.functionDefinition:
+            guard let child = node.child(at: 1) else { return nil }
+            switch child.nodeType {
+            case CodingKeys.normalfunctionDefinition.rawValue:
+                guard let functionDefinition = FunctionDefinition(from: child, in: source) else {
+                    return nil
+                }
+                self = .functionDefinition(functionDefinition)
+            case CodingKeys.operatorOverloadDefinition.rawValue:
+                guard let operatorOverloadDefinition = OperatorOverloadDefinition(from: child, in: source) else {
+                    return nil
+                }
+                self = .operatorOverloadDefinition(operatorOverloadDefinition)
+            default:
                 return nil
             }
-            self = .functionDefinition(functionDefinition)
         // case "implementation_statement":
         //     self = .implementationStatement(.init(from: node, in: source))
         // case "constants_statement":
@@ -251,9 +264,55 @@ extension FunctionDefinition {
             return nil
         }
         self.outputType = outputType
-        guard let child = node.child(byFieldName: CodingKeys.body.rawValue),
-              let body = Expression(from: child, in: source) else { return nil }
-        self.body = body
+        if let child = node.child(byFieldName: CodingKeys.body.rawValue),
+            let body = Expression(from: child, in: source)
+        {
+            self.body = body
+        } else {
+            self.body = nil
+        }
+    }
+}
+
+extension OperatorOverloadDefinition {
+    enum CodingKeys: String, CodingKey {
+        case left = "left_type"
+        case right = "right_type"
+        case op = "operator"
+        case outputType = "output_type"
+        case body
+    }
+
+    init?(from node: Node, in source: Source) {
+        guard let location = node.getLocation(in: source) else { return nil }
+        self.location = location
+
+        guard let child = node.child(byFieldName: CodingKeys.left.rawValue),
+            let leftParamDefinition = ParamDefinition(from: child, in: source) else { return nil }
+        self.left = leftParamDefinition
+
+        guard let child = node.child(byFieldName: CodingKeys.op.rawValue),
+            let name = child.getString(in: source),
+            let op = Operator(rawValue: name) else { return nil }
+        self.op = op
+
+        guard let child = node.child(byFieldName: CodingKeys.right.rawValue),
+            let rightParamDefinition = ParamDefinition(from: child, in: source) else { return nil }
+        self.right = rightParamDefinition
+        
+        guard let child = node.child(byFieldName: CodingKeys.outputType.rawValue),
+            let outputType = TypeIdentifier(from: child, in: source)
+        else {
+            return nil
+        }
+        self.outputType = outputType
+        if let child = node.child(byFieldName: CodingKeys.body.rawValue),
+            let body = Expression(from: child, in: source)
+        {
+            self.body = body
+        } else {
+            self.body = nil
+        }
     }
 }
 

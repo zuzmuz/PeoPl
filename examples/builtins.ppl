@@ -1,0 +1,90 @@
+type I8
+type I16
+type I32
+type I64
+type F16
+type F32
+type F64
+type Bool
+type String
+
+func left: I8 + right: I8 => I8
+func left: I8 * right: I8 => I8
+func left: I8 - right: I8 => I8
+func left: I8 / right: I8 => I8
+func left: I8 % right: I8 => I8
+func left: I8 < right: I8 => Bool
+func left: I8 > right: I8 => Bool
+func left: I8 <= right: I8 => Bool
+func left: I8 >= right: I8 => Bool
+func left: I8 = right: I8 => Bool
+func left: I8 != right: I8 => Bool
+
+func left: I16 + right: I16 => I16
+func left: I16 * right: I16 => I16
+func left: I16 - right: I16 => I16
+func left: I16 / right: I16 => I16
+func left: I16 % right: I16 => I16
+func left: I16 < right: I16 => Bool
+func left: I16 > right: I16 => Bool
+func left: I16 <= right: I16 => Bool
+func left: I16 >= right: I16 => Bool
+func left: I16 = right: I16 => Bool
+func left: I16 != right: I16 => Bool
+
+func left: I32 + right: I32 => I32
+func left: I32 * right: I32 => I32
+func left: I32 - right: I32 => I32
+func left: I32 / right: I32 => I32
+func left: I32 % right: I32 => I32
+func left: I32 < right: I32 => Bool
+func left: I32 > right: I32 => Bool
+func left: I32 <= right: I32 => Bool
+func left: I32 >= right: I32 => Bool
+func left: I32 = right: I32 => Bool
+func left: I32 != right: I32 => Bool
+
+func left: I64 + right: I64 => I64
+func left: I64 * right: I64 => I64
+func left: I64 - right: I64 => I64
+func left: I64 / right: I64 => I64
+func left: I64 % right: I64 => I64
+func left: I64 < right: I64 => Bool
+func left: I64 > right: I64 => Bool
+func left: I64 <= right: I64 => Bool
+func left: I64 >= right: I64 => Bool
+func left: I64 = right: I64 => Bool
+func left: I64 != right: I64 => Bool
+
+func left: F16 + right: F16 => F16
+func left: F16 * right: F16 => F16
+func left: F16 - right: F16 => F16
+func left: F16 / right: F16 => F16
+func left: F16 < right: F16 => Bool
+func left: F16 > right: F16 => Bool
+func left: F16 <= right: F16 => Bool
+func left: F16 >= right: F16 => Bool
+func left: F16 = right: F16 => Bool
+func left: F16 != right: F16 => Bool
+
+func left: F32 + right: F32 => F32
+func left: F32 * right: F32 => F32
+func left: F32 - right: F32 => F32
+func left: F32 / right: F32 => F32
+func left: F32 < right: F32 => Bool
+func left: F32 > right: F32 => Bool
+func left: F32 <= right: F32 => Bool
+func left: F32 >= right: F32 => Bool
+func left: F32 = right: F32 => Bool
+func left: F32 != right: F32 => Bool
+
+func left: F64 + right: F64 => F64
+func left: F64 * right: F64 => F64
+func left: F64 - right: F64 => F64
+func left: F64 / right: F64 => F64
+func left: F64 < right: F64 => Bool
+func left: F64 > right: F64 => Bool
+func left: F64 <= right: F64 => Bool
+func left: F64 >= right: F64 => Bool
+func left: F64 = right: F64 => Bool
+func left: F64 != right: F64 => Bool

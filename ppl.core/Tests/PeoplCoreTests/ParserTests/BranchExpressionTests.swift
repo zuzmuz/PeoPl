@@ -20,7 +20,7 @@ final class BranchExpressionTests: XCTestCase {
 
         let body = functionDefinition.body
 
-        guard case let .piped(left, right) = body.expressionType else {
+        guard case let .piped(left, right) = body?.expressionType else {
             XCTAssertTrue(false)
             return
         }
@@ -103,7 +103,7 @@ final class BranchExpressionTests: XCTestCase {
 
         let body = functionDefinition.body
 
-        guard case let .piped(left, right) = body.expressionType else {
+        guard case let .piped(left, right) = body?.expressionType else {
             XCTAssertTrue(false)
             return
         }

@@ -28,7 +28,7 @@ final class ExpressionTypeCheckingWithFunctionCallsTests: XCTestCase {
         }
         
         do {
-            let inferredType = try mainFunction.first!.body.checkType(
+            let inferredType = try mainFunction.first!.body!.checkType(
                 with: .empty,
                 localScope: LocalScope(
                     fields: [:]

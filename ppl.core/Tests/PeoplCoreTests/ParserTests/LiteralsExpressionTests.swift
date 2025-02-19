@@ -18,7 +18,7 @@ final class LiteralsExpressionTests: XCTestCase {
 
         let body = functionDefinition.body
 
-        if case let .binary(.different, left, right) = body.expressionType,
+        if case let .binary(.different, left, right) = body?.expressionType,
             case let .stringLiteral(left) = left.expressionType,
             case let .stringLiteral(right) = right.expressionType
         {
@@ -44,7 +44,7 @@ final class LiteralsExpressionTests: XCTestCase {
 
         let body = functionDefinition.body
 
-        if case let .binary(.or, left, right) = body.expressionType,
+        if case let .binary(.or, left, right) = body?.expressionType,
             case let .boolLiteral(value1) = left.expressionType,
             case let .binary(.and, left, right) = right.expressionType,
             case let .boolLiteral(value2) = left.expressionType,
@@ -77,7 +77,7 @@ final class LiteralsExpressionTests: XCTestCase {
 
         let body = functionDefinition.body
 
-        if case let .namedTuple(arguments) = body.expressionType {
+        if case let .namedTuple(arguments) = body?.expressionType {
         }
     }
 }

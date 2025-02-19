@@ -47,6 +47,7 @@ struct Module: Encodable {
 enum Statement: Encodable, SyntaxNode {
     case typeDefinition(TypeDefinition)
     case functionDefinition(FunctionDefinition)
+    case operatorOverloadDefinition(OperatorOverloadDefinition)
     // case implementationStatement(ImplementationStatement)
     // case constantsStatement(ConstantsStatement)
 
@@ -56,6 +57,8 @@ enum Statement: Encodable, SyntaxNode {
             typeDefinition.location
         case let .functionDefinition(functionDefinition):
             functionDefinition.location
+        case let .operatorOverloadDefinition(operatorOverloadDefinition):
+            operatorOverloadDefinition.location
         }
     }
 }
@@ -99,6 +102,23 @@ enum TypeDefinition: Encodable, SyntaxNode {
 // MARK: - function definitions
 // ----------------------------
 
+enum Operator: String, Encodable {
+    case plus = "+"
+    case minus = "-"
+    case times = "*"
+    case by = "/"
+    case modulo = "%"
+    case not = "not"
+    case and = "and"
+    case or = "or"
+    case equal = "="
+    case different = "!="
+    case lessThan = "<"
+    case lessThanOrEqual = "<="
+    case greaterThan = ">"
+    case greaterThanOrEqual = ">="
+}
+
 struct FunctionIdentifier: Encodable {
     let scope: NominalType?
     let name: String
@@ -109,7 +129,16 @@ struct FunctionDefinition: Encodable, SyntaxNode {
     let functionIdentifier: FunctionIdentifier
     let params: [ParamDefinition]
     let outputType: TypeIdentifier
-    let body: Expression
+    let body: Expression?
+    let location: NodeLocation
+}
+
+struct OperatorOverloadDefinition: Encodable, SyntaxNode {
+    let left: ParamDefinition
+    let op: Operator
+    let right: ParamDefinition
+    let outputType: TypeIdentifier
+    let body: Expression?
     let location: NodeLocation
 }
 
@@ -219,23 +248,6 @@ struct Expression: Encodable, SyntaxNode {
         case floatLiteral(Float)
         case stringLiteral(String)
         case boolLiteral(Bool)
-
-        enum Operator: String, Encodable {
-            case plus = "+"
-            case minus = "-"
-            case times = "*"
-            case by = "/"
-            case modulo = "%"
-            case not = "not"
-            case and = "and"
-            case or = "or"
-            case equal = "="
-            case different = "!="
-            case lessThan = "<"
-            case lessThanOrEqual = "<="
-            case greaterThan = ">"
-            case greaterThanOrEqual = ">="
-        }
 
         // Unary
         case unary(Operator, expression: Expression)
