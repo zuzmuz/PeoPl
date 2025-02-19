@@ -16,8 +16,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - run: cd ppl.core
     - name: Build
+      working-directory: ./ppl.core
       run: swift build -v
     - name: Run tests
+      working-directory: ./ppl.core
       run: swift test -v
