@@ -15,12 +15,15 @@ final class ExpressionTypeCheckingWithFunctionCallsTests: XCTestCase {
             """
 
         let module = try Module(source: source, path: "main")
+        let builtins = Builtins.getDeclarationContext()
 
         let declarationsChecker = FunctionDeclarationChecker(
-            context: module, typeDeclarationChecker: .init(context: module))
+            context: module,
+            builtins: builtins,
+            typeDeclarationChecker: .init(context: module, builtins: builtins))
 
         XCTAssertEqual(declarationsChecker.errors.count, 0)
-        XCTAssertEqual(declarationsChecker.functions.count, 2)
+        XCTAssertEqual(declarationsChecker.functions.count, 82)
 
         guard let mainFunction = declarationsChecker.functionsIdentifiers[.init(scope: nil, name: "main")] else {
             XCTAssertTrue(false)

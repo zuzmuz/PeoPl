@@ -14,13 +14,16 @@ final class FunctionDeclarationsTests: XCTestCase {
             """
 
         let module = try Module(source: source, path: "main")
+        let builtins = Builtins.getDeclarationContext()
 
         let checker = FunctionDeclarationChecker(
-            context: module, typeDeclarationChecker: .init(context: module))
+            context: module,
+            builtins: builtins,
+            typeDeclarationChecker: .init(context: module, builtins: builtins))
         
         XCTAssertEqual(checker.errors.count, 0)
-        XCTAssertEqual(checker.functions.count, 3)
-        XCTAssertEqual(checker.functionsIdentifiers.count, 2)
+        XCTAssertEqual(checker.functions.count, 83)
+        XCTAssertEqual(checker.functionsIdentifiers.count, 13)
 
         if let hiFunction = checker.functionsIdentifiers[.init(scope: nil, name: "hi")],
             let mainFunction = checker.functionsIdentifiers[.init(scope: nil, name: "main")]
@@ -32,7 +35,7 @@ final class FunctionDeclarationsTests: XCTestCase {
             XCTAssertTrue(false)
         }
 
-        XCTAssertEqual(checker.functionsInputTypeIdentifiers.count, 1)
+        XCTAssertEqual(checker.functionsInputTypeIdentifiers.count, 9)
 
         if let nothingInputFunctions = checker.functionsInputTypeIdentifiers[.nothing()] {
             XCTAssertEqual(nothingInputFunctions.count, 3)
@@ -52,9 +55,12 @@ final class FunctionDeclarationsTests: XCTestCase {
         """
 
         let module = try Module(source: source, path: "main")
+        let builtins = Builtins.getDeclarationContext()
 
         let checker = FunctionDeclarationChecker(
-            context: module, typeDeclarationChecker: .init(context: module))
+            context: module,
+            builtins: builtins,
+            typeDeclarationChecker: .init(context: module, builtins: builtins))
 
         XCTAssertEqual(checker.errors.count, 1)
 
@@ -71,8 +77,8 @@ final class FunctionDeclarationsTests: XCTestCase {
             XCTAssertTrue(false)
         }
 
-        XCTAssertEqual(checker.functions.count, 2)
-        XCTAssertEqual(checker.functionsIdentifiers.count, 2)
+        XCTAssertEqual(checker.functions.count, 82)
+        XCTAssertEqual(checker.functionsIdentifiers.count, 13)
 
         if let hiFunction = checker.functionsIdentifiers[.init(scope: nil, name: "hi")],
             let mainFunction = checker.functionsIdentifiers[.init(scope: nil, name: "main")]
@@ -84,7 +90,7 @@ final class FunctionDeclarationsTests: XCTestCase {
             XCTAssertTrue(false)
         }
 
-        XCTAssertEqual(checker.functionsInputTypeIdentifiers.count, 1)
+        XCTAssertEqual(checker.functionsInputTypeIdentifiers.count, 9)
 
         if let nothingInputFunctions = checker.functionsInputTypeIdentifiers[.nothing()] {
             XCTAssertEqual(nothingInputFunctions.count, 2)
@@ -110,14 +116,17 @@ final class FunctionDeclarationsTests: XCTestCase {
             """
 
         let module = try Module(source: source, path: "main")
-
+        let builtins = Builtins.getDeclarationContext()
+        
         let checker = FunctionDeclarationChecker(
-            context: module, typeDeclarationChecker: .init(context: module))
+            context: module,
+            builtins: builtins,
+            typeDeclarationChecker: .init(context: module, builtins: builtins))
 
         XCTAssertEqual(checker.errors.count, 2)
 
-        XCTAssertEqual(checker.functions.count, 4)
-        XCTAssertEqual(checker.functionsIdentifiers.count, 3)
+        XCTAssertEqual(checker.functions.count, 84)
+        XCTAssertEqual(checker.functionsIdentifiers.count, 14)
 
         if let hiFunction = checker.functionsIdentifiers[.init(scope: nil, name: "hi")],
             let byeFunction = checker.functionsIdentifiers[.init(scope: nil, name: "bye")],
@@ -131,6 +140,6 @@ final class FunctionDeclarationsTests: XCTestCase {
             XCTAssertTrue(false)
         }
 
-        XCTAssertEqual(checker.functionsInputTypeIdentifiers.count, 1)
+        XCTAssertEqual(checker.functionsInputTypeIdentifiers.count, 9)
     }
 }
