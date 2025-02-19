@@ -41,6 +41,24 @@ extension TypeIdentifier: Sequence {
     func makeIterator() -> TypeIdentifierIterator {
         return TypeIdentifierIterator(self)
     }
+
+    func getNominalTypesFromIdentifier() -> [NominalType] {
+        // NOTE: this might not be efficient
+        switch self {
+        case let .nominal(nominal):
+            return [nominal]
+        case let .unnamedTuple(tuple):
+            return tuple.types.flatMap { $0.getNominalTypesFromIdentifier() }
+        case let .namedTuple(tuple):
+            return tuple.types.flatMap { $0.type.getNominalTypesFromIdentifier() }
+        case let .lambda(lambda):
+            return (lambda.input + lambda.output).flatMap { $0.getNominalTypesFromIdentifier() }
+        case let .union(union):
+            return union.types.flatMap { $0.getNominalTypesFromIdentifier() }
+        default:
+            return []
+        }
+    }
 }
 
 struct TypeIdentifierIterator: IteratorProtocol {

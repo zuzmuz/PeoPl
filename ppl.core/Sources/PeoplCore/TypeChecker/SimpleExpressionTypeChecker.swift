@@ -20,7 +20,7 @@ extension Expression: TypeChecker {
         //Nothing
         case (.nothing, .nothing):
             return self.with(typeIdentifier: .nothing())
-
+        // TODO: think of generic int type for automatic inference
         // Literals
         case (.nothing, .intLiteral):
             return self.with(typeIdentifier: Builtins.i32)

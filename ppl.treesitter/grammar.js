@@ -151,7 +151,7 @@ module.exports = grammar({
     ),
 
     operator_overload_definition: $ => seq(
-      field("left_type", $.param_definition),
+      optional(field("left_type", $.param_definition)),
       field("operator", choice($.multiplicative_operator, $.additive_operator, $.comparative_operator)),
       field("right_type", $.param_definition),
       '=>',

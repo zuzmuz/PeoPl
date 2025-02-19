@@ -1,9 +1,21 @@
 protocol DeclarationContext {
+    func getOperatorOverloadDefinitions() -> [OperatorOverloadDefinition]
     func getFunctionDefinitions() -> [FunctionDefinition]
     func getTypeDefinitions() -> [TypeDefinition]
 }
 
 extension Module: DeclarationContext {
+
+    func getOperatorOverloadDefinitions() -> [OperatorOverloadDefinition] {
+        return self.statements.compactMap { statement in
+            if case let .operatorOverloadDefinition(operatorOverloadDefinition) = statement {
+                return operatorOverloadDefinition
+            } else {
+                return nil
+            }
+        }
+    }
+
     func getFunctionDefinitions() -> [FunctionDefinition] {
         return self.statements.compactMap { statement in
             if case let .functionDefinition(functionDefinition) = statement {
@@ -26,6 +38,13 @@ extension Module: DeclarationContext {
 }
 
 extension Project: DeclarationContext {
+    
+    func getOperatorOverloadDefinitions() -> [OperatorOverloadDefinition] {
+        return self.modules.flatMap { source, module in
+            return module.getOperatorOverloadDefinitions()
+        }
+    }
+
     func getFunctionDefinitions() -> [FunctionDefinition] {
         return self.modules.flatMap { source, module in
             return module.getFunctionDefinitions()
@@ -41,24 +60,25 @@ extension Project: DeclarationContext {
 
 struct TypeDeclarationChecker {
     let types: [TypeDefinition: TypeDefinition]
-    let typesIdentifiers: [TypeIdentifier: TypeIdentifier]
     let typeDefinitions: [NominalType: TypeDefinition]
-    init(context: some DeclarationContext) {
-        // TODO: here should also be handled the dependencies and whatnots
 
-        let definitions = context.getTypeDefinitions()
+    init(context: some DeclarationContext, builtins: some DeclarationContext) {
+        // TODO: here should also be handled the dependencies and whatnots
+        
+        let definitions = context.getTypeDefinitions() + builtins.getTypeDefinitions()
         let resolutions = TypeDeclarationChecker.resolveTypeDefinitions(definitions: definitions)
 
         self.types = resolutions.types
-        self.typesIdentifiers = [
-            Builtins.i32: Builtins.i32,
-            Builtins.f64: Builtins.f64,
-            Builtins.string: Builtins.string,
-            Builtins.bool: Builtins.bool,
-            .nothing(): .nothing(),
-            .never(): .never(),
-        ]
-        self.typeDefinitions = [:]
+        self.typeDefinitions = resolutions.types.reduce(into: [:]) { acc, element in
+            switch element.value {
+            case let .simple(simple):
+                acc[simple.identifier] = element.key
+            case let .sum(sum):
+                acc[sum.identifier] = element.key
+            }
+        }
+
+
     }
 
     static private func resolveTypeDefinitions(
@@ -157,15 +177,28 @@ struct FunctionDeclarationChecker {
     let functions: [FunctionDefinition: FunctionDefinition]
     let functionsIdentifiers: [FunctionIdentifier: [FunctionDefinition]]
     let functionsInputTypeIdentifiers: [TypeIdentifier: [FunctionDefinition]]
+
+    let operators: [OperatorOverloadDefinition: OperatorOverloadDefinition]
+
     let errors: [SemanticError]
 
-    init(context: some DeclarationContext, typeDeclarationChecker: TypeDeclarationChecker) {
-        let definitions = context.getFunctionDefinitions()
-        let resolutions = FunctionDeclarationChecker.resolveFunctionDefinitions(
-            definitions: definitions,
+    init(
+        context: some DeclarationContext,
+        builtins: some DeclarationContext,
+        typeDeclarationChecker: TypeDeclarationChecker
+    ) {
+        let functionDefinitions = context.getFunctionDefinitions() + builtins.getFunctionDefinitions()
+        let functionResolutions = FunctionDeclarationChecker.resolveDefinitions(
+            definitions: functionDefinitions,
             typeDeclarationChecker: typeDeclarationChecker)
 
-        self.functions = resolutions.functions
+        let operatorDefinitions = context.getOperatorOverloadDefinitions() + builtins.getOperatorOverloadDefinitions()
+        let operatorResolutions = FunctionDeclarationChecker.resolveDefinitions(
+            definitions: operatorDefinitions,
+            typeDeclarationChecker: typeDeclarationChecker)
+
+        self.functions = functionResolutions.functions
+        self.operators = operatorResolutions.functions
 
         self.functionsIdentifiers = self.functions.reduce(into: [:]) { acc, element in
             acc[element.key.functionIdentifier] =
@@ -175,45 +208,77 @@ struct FunctionDeclarationChecker {
             acc[element.key.inputType] = (acc[element.key.inputType] ?? []) + [element.key]
         }
 
-        let typeCheckErrors = self.functions.flatMap { function, _ in
+        let functionTypeCheckErrors = self.functions.flatMap { function, _ in
             var errors: [SemanticError] = []
-            if typeDeclarationChecker.typesIdentifiers[function.inputType] == nil {
-                errors.append(
-                    FunctionSemanticError.typeNotInScope(
-                        location: function.inputType.location,
-                        type: function.inputType,
-                        typesInScope: typeDeclarationChecker.typesIdentifiers.keys))
-            }
-            function.params.forEach { param in
-                if typeDeclarationChecker.typesIdentifiers[param.type] == nil {
+            
+            function.inputType.getNominalTypesFromIdentifier().forEach { type in
+                if typeDeclarationChecker.typeDefinitions[type] == nil {
                     errors.append(
                         FunctionSemanticError.typeNotInScope(
-                            location: param.location,
-                            type: param.type,
-                            typesInScope: typeDeclarationChecker.typesIdentifiers.keys))
+                            location: type.location,
+                            type: type,
+                            typesInScope: typeDeclarationChecker.typeDefinitions.keys))
                 }
             }
-            if typeDeclarationChecker.typesIdentifiers[function.outputType] == nil {
-                errors.append(
-                    FunctionSemanticError.typeNotInScope(
-                        location: function.outputType.location,
-                        type: function.outputType,
-                        typesInScope: typeDeclarationChecker.typesIdentifiers.keys))
+            function.params.forEach { param in
+                param.type.getNominalTypesFromIdentifier().forEach { type in
+                    if typeDeclarationChecker.typeDefinitions[type] == nil {
+                        errors.append(
+                            FunctionSemanticError.typeNotInScope(
+                                location: type.location,
+                                type: type,
+                                typesInScope: typeDeclarationChecker.typeDefinitions.keys))
+                    }
+                }
+            }
+            function.outputType.getNominalTypesFromIdentifier().forEach { type in
+                if typeDeclarationChecker.typeDefinitions[type] == nil {
+                    errors.append(
+                        FunctionSemanticError.typeNotInScope(
+                            location: type.location,
+                            type: type,
+                            typesInScope: typeDeclarationChecker.typeDefinitions.keys))
+                }
             }
             return errors
         }
 
-        self.errors = resolutions.errors + typeCheckErrors
+        let operatorTypeCheckErrors = self.operators.flatMap { function, _ in
+            var errors: [SemanticError]
+
+            function.left.type.getNominalTypesFromIdentifier().forEach { type in
+                if typeDeclarationChecker.typeDefinitions[type] == nil {
+                    errors.append(
+                        FunctionSemanticError.typeNotInScope(
+                            location: type.location,
+                            type: type,
+                            typesInScope: typeDeclarationChecker.typeDefinitions.keys))
+                }
+            }
+
+            function.right.type.getNominalTypesFromIdentifier().forEach { type in
+                if typeDeclarationChecker.typeDefinitions[type] == nil {
+                    errors.append(
+                        FunctionSemanticError.typeNotInScope(
+                            location: type.location,
+                            type: type,
+                            typesInScope: typeDeclarationChecker.typeDefinitions.keys))
+                }
+            }
+
+            return errors
+        }
+
+        self.errors = functionResolutions.errors + functionTypeCheckErrors + operatorTypeCheckErrors
     }
 
-    static private func resolveFunctionDefinitions(
-        definitions: [FunctionDefinition],
+    static private func resolveDefinitions<Definition>(
+        definitions: [Definition],
         typeDeclarationChecker: TypeDeclarationChecker
     ) -> (
-        functions: [FunctionDefinition: FunctionDefinition],
+        functions: [Definition: Definition],
         errors: [SemanticError]
-    ) {
-
+    ) where Definition: Hashable, Definition: SyntaxNode {
         let functionsLocations = definitions.reduce(into: [:]) { acc, function in
             acc[function] = (acc[function] ?? []) + [function]
         }
@@ -225,7 +290,6 @@ struct FunctionDeclarationChecker {
                 return nil
             }
         }
-
         let functions = functionsLocations.compactMapValues { functions in
             return functions.first
         }

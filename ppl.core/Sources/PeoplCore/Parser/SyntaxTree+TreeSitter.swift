@@ -287,9 +287,17 @@ extension OperatorOverloadDefinition {
         guard let location = node.getLocation(in: source) else { return nil }
         self.location = location
 
-        guard let child = node.child(byFieldName: CodingKeys.left.rawValue),
-            let leftParamDefinition = ParamDefinition(from: child, in: source) else { return nil }
-        self.left = leftParamDefinition
+        if let child = node.child(byFieldName: CodingKeys.left.rawValue),
+            let leftParamDefinition = ParamDefinition(from: child, in: source)
+        {
+            self.left = leftParamDefinition
+        } else {
+            self.left = ParamDefinition(
+                name: "left",
+                type: .nothing(location: location),
+                location: location)
+        }
+        
 
         guard let child = node.child(byFieldName: CodingKeys.op.rawValue),
             let name = child.getString(in: source),

@@ -11,8 +11,8 @@ enum FunctionSemanticError: SemanticError {
         locations: [NodeLocation])
     case typeNotInScope(
         location: NodeLocation,
-        type: TypeIdentifier,
-        typesInScope: [TypeIdentifier: TypeIdentifier].Keys)
+        type: NominalType,
+        typesInScope: [NominalType: TypeDefinition].Keys)
 }
 
 enum TypeSemanticError: SemanticError {
@@ -22,6 +22,7 @@ enum TypeSemanticError: SemanticError {
         // type: TypeDefinition, // TODO: should save the cyclic path of types
         cyclicType: NominalType
     )
+    case unsupportedYet(String)
 }
 
 

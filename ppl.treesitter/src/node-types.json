@@ -1303,7 +1303,7 @@
       },
       "left_type": {
         "multiple": false,
-        "required": true,
+        "required": false,
         "types": [
           {
             "type": "param_definition",

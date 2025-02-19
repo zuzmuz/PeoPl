@@ -524,12 +524,20 @@
       "type": "SEQ",
       "members": [
         {
-          "type": "FIELD",
-          "name": "left_type",
-          "content": {
-            "type": "SYMBOL",
-            "name": "param_definition"
-          }
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "FIELD",
+              "name": "left_type",
+              "content": {
+                "type": "SYMBOL",
+                "name": "param_definition"
+              }
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
         },
         {
           "type": "FIELD",

@@ -2,6 +2,10 @@ type I8
 type I16
 type I32
 type I64
+type U8
+type U16
+type U32
+type U64
 type F16
 type F32
 type F64
@@ -55,6 +59,55 @@ func left: I64 <= right: I64 => Bool
 func left: I64 >= right: I64 => Bool
 func left: I64 = right: I64 => Bool
 func left: I64 != right: I64 => Bool
+
+
+func left: U8 + right: U8 => I8
+func left: U8 * right: U8 => I8
+func left: U8 - right: U8 => I8
+func left: U8 / right: U8 => I8
+func left: U8 % right: U8 => I8
+func left: U8 < right: U8 => Bool
+func left: U8 > right: U8 => Bool
+func left: U8 <= right: U8 => Bool
+func left: U8 >= right: U8 => Bool
+func left: U8 = right: U8 => Bool
+func left: U8 != right: U8 => Bool
+
+func left: U16 + right: U16 => I16
+func left: U16 * right: U16 => I16
+func left: U16 - right: U16 => I16
+func left: U16 / right: U16 => I16
+func left: U16 % right: U16 => I16
+func left: U16 < right: U16 => Bool
+func left: U16 > right: U16 => Bool
+func left: U16 <= right: U16 => Bool
+func left: U16 >= right: U16 => Bool
+func left: U16 = right: U16 => Bool
+func left: U16 != right: U16 => Bool
+
+func left: U32 + right: U32 => I32
+func left: U32 * right: U32 => I32
+func left: U32 - right: U32 => I32
+func left: U32 / right: U32 => I32
+func left: U32 % right: U32 => I32
+func left: U32 < right: U32 => Bool
+func left: U32 > right: U32 => Bool
+func left: U32 <= right: U32 => Bool
+func left: U32 >= right: U32 => Bool
+func left: U32 = right: U32 => Bool
+func left: U32 != right: U32 => Bool
+
+func left: U64 + right: U64 => I64
+func left: U64 * right: U64 => I64
+func left: U64 - right: U64 => I64
+func left: U64 / right: U64 => I64
+func left: U64 % right: U64 => I64
+func left: U64 < right: U64 => Bool
+func left: U64 > right: U64 => Bool
+func left: U64 <= right: U64 => Bool
+func left: U64 >= right: U64 => Bool
+func left: U64 = right: U64 => Bool
+func left: U64 != right: U64 => Bool
 
 func left: F16 + right: F16 => F16
 func left: F16 * right: F16 => F16
