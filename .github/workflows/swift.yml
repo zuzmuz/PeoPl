@@ -16,6 +16,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+    - name: Setup Swift
+      uses: SwiftyLab/setup-swift@latest
     - name: Build
       working-directory: ./ppl.core
       run: swift build -v
