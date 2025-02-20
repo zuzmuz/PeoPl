@@ -89,8 +89,7 @@ module.exports = grammar({
     type_name: $ => /_*[A-Z][a-zA-Z0-9_]*/,
 
     param_list: $ => seq(
-      $.param_definition,
-      repeat(seq(',', $.param_definition))
+      repeat1(seq($.param_definition, optional(',')))
     ),
     param_definition: $ => seq(
       field("name", $.argument_name),

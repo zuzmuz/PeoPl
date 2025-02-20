@@ -2,6 +2,24 @@ import Foundation
 
 protocol SemanticError: LocalizedError {}
 
+enum TypeSemanticError: SemanticError {
+    case redeclaration(
+        locations: [NodeLocation])
+    case shadowing(
+        location: NodeLocation,
+        module: String,
+        typeDefinition: TypeDefinition)
+    case typeNotInScope(
+        location: NodeLocation,
+        type: NominalType,
+        typesInScope: [NominalType: TypeDefinition].Keys)
+    case cyclicType(
+        // type: TypeDefinition, // TODO: should save the cyclic path of types
+        cyclicType: NominalType
+    )
+    case unsupportedYet(String)
+}
+
 enum FunctionSemanticError: SemanticError {
     case returnTypeMismatch(
         location: NodeLocation,
@@ -14,17 +32,6 @@ enum FunctionSemanticError: SemanticError {
         type: NominalType,
         typesInScope: [NominalType: TypeDefinition].Keys)
 }
-
-enum TypeSemanticError: SemanticError {
-    case redeclaration(
-        locations: [NodeLocation])
-    case cyclicType(
-        // type: TypeDefinition, // TODO: should save the cyclic path of types
-        cyclicType: NominalType
-    )
-    case unsupportedYet(String)
-}
-
 
 enum ExpressionSemanticError: SemanticError, Encodable {
     case inputMismatch(

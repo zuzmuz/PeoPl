@@ -1,4 +1,4 @@
-extension Expression: TypeChecker {
+extension Expression: ExpressionTypeChecker {
 
     func with(typeIdentifier: TypeIdentifier) -> Expression {
         return .init(
@@ -10,7 +10,7 @@ extension Expression: TypeChecker {
     func checkType(
         with input: Expression,
         localScope: LocalScope,
-        context: borrowing TypeCheckerContext
+        context: borrowing SemanticContext
     ) throws(ExpressionSemanticError) -> Expression {
 
         switch (input.typeIdentifier, self.expressionType) {

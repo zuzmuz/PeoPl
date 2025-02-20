@@ -1,8 +1,8 @@
-extension Expression.Call: TypeChecker {
+extension Expression.Call: ExpressionTypeChecker {
     func checkType(
         with input: Expression,
         localScope: LocalScope,
-        context: borrowing TypeCheckerContext
+        context: borrowing SemanticContext
     ) throws(ExpressionSemanticError) -> Expression.Call {
         let functionIdentifier: FunctionIdentifier
         let callee: Expression

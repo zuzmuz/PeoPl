@@ -1,8 +1,8 @@
-extension Expression.Branched: TypeChecker {
+extension Expression.Branched: ExpressionTypeChecker {
     func checkType(
         with input: Expression,
         localScope: LocalScope,
-        context: borrowing TypeCheckerContext
+        context: borrowing SemanticContext
     ) throws(ExpressionSemanticError) -> Expression.Branched {
 
         let typedBranches: [Expression.Branched.Branch] = try self.branches.map {

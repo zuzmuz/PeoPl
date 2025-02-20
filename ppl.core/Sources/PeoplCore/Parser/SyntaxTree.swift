@@ -97,6 +97,26 @@ enum TypeDefinition: Encodable, SyntaxNode {
             sum.location
         }
     }
+
+    var identifier: NominalType {
+        return switch self {
+        case let .simple(simple):
+            simple.identifier
+        case let .sum(sum):
+            sum.identifier
+        }
+    }
+
+    var allParams: [ParamDefinition] {
+        return switch self {
+        case let .simple(simple):
+            simple.params
+        case let .sum(sum):
+            sum.cases.flatMap { simple in
+                simple.params
+            }
+        }
+    }
 }
 
 // MARK: - function definitions

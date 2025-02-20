@@ -113,7 +113,7 @@ Like this `|first_value, second_value|`.
 While capturing the input, you can also do some pattern matching on it like this.
 
 ```ppl
-func (I32) is_even() => Bool
+func (I32) is_even() => String
     |value: value % 2 = 0| "is even",
     |_| "is odd"
 ```
