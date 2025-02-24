@@ -121,7 +121,7 @@ module.exports = grammar({
 
     enum_type_definition: $ => seq(
       field('meta_type', $.nominal_type),
-      field('case_type', repeat1($.simple_type_definition)),
+      field('case_type', repeat1($.simple_type_definitio)),
     ),
 
     simple_type_definition: $ => seq(
