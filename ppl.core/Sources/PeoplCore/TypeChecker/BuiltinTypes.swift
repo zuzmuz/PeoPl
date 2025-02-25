@@ -240,7 +240,31 @@ enum Builtins {
         func (U64) to_f32() => F32
         func (U64) to_f64() => F64
         """
-    static func getDeclarationContext() -> some DeclarationContext {
-        return try! Module(source: builtinSource, path: "builtin")
+    static func getBuiltinContext() -> SemanticContext {
+        let builtins = try! Module(source: builtinSource, path: "builtin")
+        let emptyContext = SemanticContext(
+            types: [:],
+            functions: [:],
+            functionsIdentifiers: [:],
+            functionsInputTypeIdentifiers: [:],
+            operators: [:])
+
+
+        let typesContext = builtins.resolveTypeDefinitions(builtins: emptyContext)
+        let context = SemanticContext(
+            types: typesContext.typesDefinitions,
+            functions: [:],
+            functionsIdentifiers: [:],
+            functionsInputTypeIdentifiers: [:],
+            operators: [:])
+        let functionsContext = builtins.resolveFunctionDefinitions(
+            context: context,
+            builtins: emptyContext)
+        return SemanticContext(
+            types: typesContext.typesDefinitions,
+            functions: functionsContext.functions,
+            functionsIdentifiers: functionsContext.functionsIdentifiers,
+            functionsInputTypeIdentifiers: functionsContext.functionsInputTypeIdentifiers,
+            operators: functionsContext.operators)
     }
 }

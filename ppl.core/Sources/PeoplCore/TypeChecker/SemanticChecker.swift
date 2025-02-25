@@ -346,7 +346,7 @@ protocol FunctionSignatureChecker {
 extension Project: TypeDeclarationChecker, FunctionDeclarationChecker {
     func getTypeDeclarations() -> [TypeDefinition] {
         return self.modules.flatMap { source, module in
-            return module.getTypeDefinitions()
+            return module.getTypeDeclarations()
         }
     }
 
