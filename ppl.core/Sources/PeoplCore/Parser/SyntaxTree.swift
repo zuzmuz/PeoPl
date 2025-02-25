@@ -167,6 +167,8 @@ struct OperatorOverloadDefinition: Encodable, SyntaxNode {
 
 enum TypeIdentifier: Encodable, SyntaxNode, Sendable {
     case unkown(location: NodeLocation = .nowhere)
+    // case undefinedNumber(location: NodeLocation = .nowhere)
+    // case undefinedDecimalNumber(location: NodeLocation = .nowhere)
     case nothing(location: NodeLocation = .nowhere)
     case never(location: NodeLocation = .nowhere)
     case nominal(NominalType)
@@ -179,6 +181,10 @@ enum TypeIdentifier: Encodable, SyntaxNode, Sendable {
         return switch self {
         case let .unkown(location):
             location
+        // case let .undefinedNumber(location):
+        //     location
+        // case let .undefinedDecimalNumber(location):
+        //     location
         case let .nothing(location):
             location
         case let .never(location):

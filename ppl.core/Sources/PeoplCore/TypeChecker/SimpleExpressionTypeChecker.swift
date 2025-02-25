@@ -23,6 +23,9 @@ extension Expression: ExpressionTypeChecker {
         // TODO: think of generic int type for automatic inference
         // Literals
         case (.nothing, .intLiteral):
+            // TODO: consider undefined number type (with resetriction),
+            // for example 10 can be an I8, I16 .. but also U8 ...
+            // however 300 can not be I8, interesting logic
             return self.with(typeIdentifier: Builtins.i32)
         case (.nothing, .floatLiteral):
             return self.with(typeIdentifier: Builtins.f64)
@@ -42,6 +45,8 @@ extension Expression: ExpressionTypeChecker {
 
         // Unary
         // TODO: consider operator overload
+        // TODO: typechecking with unresolved number types
+        // this is tricky, cause I should make sure that the number can be expressed as type
         case let (input, .unary(op, expression)):
             let right = try expression.checkType(
                 with: .empty,
@@ -50,6 +55,7 @@ extension Expression: ExpressionTypeChecker {
 
             switch (input, op, right.typeIdentifier) {
             case (.nothing, .plus, Builtins.i32),
+                // TODO: continuation on the undefined number type, undefined numbers with - prefix will automatically become signed.
                 (.nothing, .minus, Builtins.i32),
                 (.nothing, .plus, Builtins.f64),
                 (.nothing, .minus, Builtins.f64),
