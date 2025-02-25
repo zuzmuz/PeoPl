@@ -36,7 +36,7 @@ final class ExpressionTypeCheckingWithFunctionCallsTests: XCTestCase {
                 operators: [:]
             )
             let inferredType = try mainFunction.first!.body!.checkType(
-                with: .empty,
+                with: .nothing(),
                 localScope: LocalScope(
                     fields: [:]
                 ),

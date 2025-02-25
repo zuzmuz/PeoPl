@@ -21,7 +21,7 @@ final class ExpressionTypeCheckingTests: XCTestCase {
         
         do {
             let inferredType = try mainFunction.body!.checkType(
-                with: .empty,
+                with: .nothing(),
                 localScope: LocalScope(
                     fields: [:]
                 ),
@@ -50,7 +50,7 @@ final class ExpressionTypeCheckingTests: XCTestCase {
 
         do throws(ExpressionSemanticError) {
             let _ = try mainFunction.body!.checkType(
-                with: .empty,
+                with: .nothing(),
                 localScope: LocalScope(
                     fields: [:]
                 ),
@@ -91,7 +91,7 @@ final class ExpressionTypeCheckingTests: XCTestCase {
 
         do throws(ExpressionSemanticError) {
             let inferredType = try mainFunction.body!.checkType(
-                with: .empty,
+                with: .nothing(),
                 localScope: LocalScope(
                     fields: [:]
                 ),
