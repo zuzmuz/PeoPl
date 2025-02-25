@@ -15,32 +15,32 @@ final class ExpressionTypeCheckingWithFunctionCallsTests: XCTestCase {
             """
 
         let module = try Module(source: source, path: "main")
-        let builtins = Builtins.getDeclarationContext()
+        let builtins = Builtins.getBuiltinContext()
 
-        let declarationsChecker = FunctionDeclarationChecker(
-            context: module,
-            builtins: builtins,
-            typeDeclarationChecker: .init(context: module, builtins: builtins))
+        let checker = module.resolveFunctionDefinitions(context: .empty, builtins: builtins)
 
-        XCTAssertEqual(declarationsChecker.errors.count, 0)
-        XCTAssertEqual(declarationsChecker.functions.count, 82)
+        XCTAssertEqual(checker.errors.count, 0)
+        XCTAssertEqual(checker.functions.count, 2)
 
-        guard let mainFunction = declarationsChecker.functionsIdentifiers[.init(scope: nil, name: "main")] else {
+        guard let mainFunction = checker.functionsIdentifiers[.init(scope: nil, name: "main")] else {
             XCTAssertTrue(false)
             return
         }
         
         do {
+            let context = SemanticContext(
+                types: [:],
+                functions: checker.functions,
+                functionsIdentifiers: checker.functionsIdentifiers,
+                functionsInputTypeIdentifiers: checker.functionsInputTypeIdentifiers,
+                operators: [:]
+            )
             let inferredType = try mainFunction.first!.body!.checkType(
                 with: .empty,
                 localScope: LocalScope(
                     fields: [:]
                 ),
-                context: TypeCheckerContext(
-                    functions: declarationsChecker.functions,
-                    functionsIdentifiers: declarationsChecker.functionsIdentifiers,
-                    functionsInputTypeIdentifiers: declarationsChecker.functionsInputTypeIdentifiers
-                )
+                context: context
             )
             XCTAssertEqual(inferredType.typeIdentifier, Builtins.bool)
         } catch {

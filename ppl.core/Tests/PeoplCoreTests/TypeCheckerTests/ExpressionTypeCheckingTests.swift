@@ -25,11 +25,7 @@ final class ExpressionTypeCheckingTests: XCTestCase {
                 localScope: LocalScope(
                     fields: [:]
                 ),
-                context: TypeCheckerContext(
-                    functions: [:],
-                    functionsIdentifiers: [:],
-                    functionsInputTypeIdentifiers: [:]
-                )
+                context: .empty
             )
             XCTAssertEqual(inferredType.typeIdentifier, Builtins.bool)
         } catch {
@@ -58,11 +54,7 @@ final class ExpressionTypeCheckingTests: XCTestCase {
                 localScope: LocalScope(
                     fields: [:]
                 ),
-                context: TypeCheckerContext(
-                    functions: [:],
-                    functionsIdentifiers: [:],
-                    functionsInputTypeIdentifiers: [:]
-                )
+                context: .empty
             )
             XCTAssertTrue(false)
         } catch {
@@ -103,11 +95,7 @@ final class ExpressionTypeCheckingTests: XCTestCase {
                 localScope: LocalScope(
                     fields: [:]
                 ),
-                context: TypeCheckerContext(
-                    functions: [:],
-                    functionsIdentifiers: [:],
-                    functionsInputTypeIdentifiers: [:]
-                )
+                context: .empty
             )
             
             XCTAssertEqual(inferredType.typeIdentifier, TypeIdentifier.unnamedTuple(.init(types: [

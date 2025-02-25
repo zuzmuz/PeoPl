@@ -242,13 +242,7 @@ enum Builtins {
         """
     static func getBuiltinContext() -> SemanticContext {
         let builtins = try! Module(source: builtinSource, path: "builtin")
-        let emptyContext = SemanticContext(
-            types: [:],
-            functions: [:],
-            functionsIdentifiers: [:],
-            functionsInputTypeIdentifiers: [:],
-            operators: [:])
-
+        let emptyContext = SemanticContext.empty
 
         let typesContext = builtins.resolveTypeDefinitions(builtins: emptyContext)
         let context = SemanticContext(

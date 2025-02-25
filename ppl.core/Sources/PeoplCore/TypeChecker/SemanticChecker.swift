@@ -9,6 +9,14 @@ struct SemanticContext {
     let functionsIdentifiers: [FunctionIdentifier: [FunctionDefinition]]
     let functionsInputTypeIdentifiers: [TypeIdentifier: [FunctionDefinition]]
     let operators: [OperatorOverloadDefinition: OperatorOverloadDefinition]
+
+    static let empty = SemanticContext(
+        types: [:],
+        functions: [:],
+        functionsIdentifiers: [:],
+        functionsInputTypeIdentifiers: [:],
+        operators: [:]
+    )
 }
 
 
