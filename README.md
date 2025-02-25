@@ -73,6 +73,15 @@ Then the output of to_string is captured and given the label `value`, then the s
 Notice that I'm using just one = instead of ==. I might get heat over this decision, but because there is no assignments in Peopl,
 the equality operator is used for what it actually means.
 
+```ppl
+func gcd(a: I32, b: I32) => I32
+    |a = b| a,
+    |a < b| gcd(a: a, b: b-a),
+    |_| gcd(a: a-b, b: b)
+```
+
+This is an implementation of greatest common divisor.
+
 ## Function declarations/definitions
 
 A function signature looks like the following
@@ -96,13 +105,45 @@ These are the extra arguments needed for the function
 
 Well it is obviously the output type.
 
+## Piping
+
+In functional programming languages, there's no object methods, rather, a function takes all its input as function arguments.
+To avoid ugly nesting of function calls, FP languages uses the pipe operator, to pass the value of the expression as first argument to the next function call.
+
+PeoPl takes this concept further. Taking influence from shell scripting and OOP, every function in PeoPl has a main input,
+which is syntactically treated differently from other function arguments.
+
+The function main input is anonymous and implicit. It behaves similarly to `this` or `self` in OOP languages.
+
+This distinction is useful because it allows both syntax, object methods and piping, simultaneously.
+
+`input.method` is equivalent to `input |> method`.
+
+The difference then is in operator precedence
+- the "`.`" has high precedence, the highest of any operator. In `a + b.c()` the addition is applied after the function call on a.
+- the "`|>`" has low precedence, the lowest of any operator. In `a + b |> c()` the addition is applied first, then the result of a + b is piped into function c.
+
+The use of both syntax allows to more expressiveness. Giving the same semantics to object method chaining and also piping.
+
+
 ## Capturing
+
+However, piping is much more flexible then basic method chaining. Because of its low precedence, `|>` allows to separate expressions more clearly.
+
+This allows the language to apply pattern matching on inputs.
+
+Peopl uses the same syntax flavor to perform assignments and branching, without the need for special keywords.
+
+Assignments, which is storing temporary variables while labeling them, and branching, which is executing an expression if a condition is met,
+
+```ppl
+expression |> |var_name| /*expression using var_name*/
+```
 
 Because Peopl doesn't support assignments, it gives you a consistent syntax to represent value capturing and pattern matching.
 
-Use the `|var_name|` after the pipe operator (by the way this is the pipe operator `|>`).
-
-This syntax will capture the output of the past expression and slap a name to it.
+Use the `|var_name|` after the pipe operator, to label the input of the current expression. Capturing the input by giving it a name, will consume the implicit input.
+By consuming the input, an expression which takes no input can then follow the capture group.
 
 If the past expression produces multiple results (as a tuple, we'll see this later) each value of the tuple can be caught separately.
 
