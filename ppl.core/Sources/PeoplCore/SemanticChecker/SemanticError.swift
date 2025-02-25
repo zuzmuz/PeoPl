@@ -21,10 +21,6 @@ enum TypeSemanticError: SemanticError {
 }
 
 enum FunctionSemanticError: SemanticError {
-    case returnTypeMismatch(
-        location: NodeLocation,
-        expectedReturnType: TypeIdentifier,
-        receivedType: TypeIdentifier)
     case redeclaration(
         locations: [NodeLocation])
     case typeNotInScope(
@@ -69,5 +65,12 @@ enum ExpressionSemanticError: SemanticError, Encodable {
         receivedType: TypeIdentifier)
     case reachedNever(
         expression: Expression)
+    case returnTypeMismatch(
+        functionDefinition: FunctionDefinition,
+        expectedReturnType: TypeIdentifier,
+        receivedType: TypeIdentifier)
+    case emptyFunctionBody(
+        functionDefinition: FunctionDefinition
+    )
     case unsupportedYet(String)
 }

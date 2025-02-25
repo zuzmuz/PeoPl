@@ -17,6 +17,31 @@ struct SemanticContext {
         functionsInputTypeIdentifiers: [:],
         operators: [:]
     )
+
+    func typeCheckFunctionsDefinitions() -> [ExpressionSemanticError] {
+        let errors = self.functions.compactMap { (definition, _) -> ExpressionSemanticError? in
+            do throws(ExpressionSemanticError) {
+                guard let bodyInferredType = try definition.body?.checkType(
+                    with: .empty,
+                    localScope: LocalScope(fields: [:]),
+                    context: self
+                ) else { return .emptyFunctionBody(functionDefinition: definition) }
+                // WARN: currently returning error for empty bodies,
+                // should handle template methods for contracts or interfaces
+                if bodyInferredType.typeIdentifier != definition.outputType {
+                    return .returnTypeMismatch(
+                        functionDefinition: definition,
+                        expectedReturnType: definition.outputType,
+                        receivedType: bodyInferredType.typeIdentifier)
+                } else {
+                    return nil
+                }
+            } catch {
+                return error
+            }
+        }
+        return errors
+    }
 }
 
 
@@ -42,6 +67,32 @@ protocol TypeDeclarationChecker {
         errors: [TypeSemanticError]
     )
 }
+
+protocol FunctionDeclarationChecker {
+    func getFunctionDeclarations() -> [FunctionDefinition]
+    func getOperatorOverloadDeclarations() -> [OperatorOverloadDefinition]
+
+    func resolveFunctionDefinitions(
+        context: borrowing SemanticContext,
+        builtins: borrowing SemanticContext
+    ) -> (
+        functions: [FunctionDefinition: FunctionDefinition],
+        functionsIdentifiers: [FunctionIdentifier: [FunctionDefinition]],
+        functionsInputTypeIdentifiers: [TypeIdentifier: [FunctionDefinition]],
+        operators: [OperatorOverloadDefinition: OperatorOverloadDefinition],
+        errors: [FunctionSemanticError]
+    )
+}
+
+
+protocol ExpressionTypeChecker {
+    func checkType(
+        with input: Expression,
+        localScope: LocalScope,
+        context: borrowing SemanticContext
+    ) throws(ExpressionSemanticError) -> Self
+}
+
 
 enum NodeState {
     case visiting
@@ -178,21 +229,6 @@ extension TypeDeclarationChecker {
     }
 }
 
-protocol FunctionDeclarationChecker {
-    func getFunctionDeclarations() -> [FunctionDefinition]
-    func getOperatorOverloadDeclarations() -> [OperatorOverloadDefinition]
-
-    func resolveFunctionDefinitions(
-        context: borrowing SemanticContext,
-        builtins: borrowing SemanticContext
-    ) -> (
-        functions: [FunctionDefinition: FunctionDefinition],
-        functionsIdentifiers: [FunctionIdentifier: [FunctionDefinition]],
-        functionsInputTypeIdentifiers: [TypeIdentifier: [FunctionDefinition]],
-        operators: [OperatorOverloadDefinition: OperatorOverloadDefinition],
-        errors: [FunctionSemanticError]
-    )
-}
 
 extension FunctionDeclarationChecker {
     func resolveFunctionDefinitions(
@@ -338,19 +374,6 @@ extension FunctionDeclarationChecker {
     }
 }
 
-
-protocol ExpressionTypeChecker {
-    func checkType(
-        with input: Expression,
-        localScope: LocalScope,
-        context: borrowing SemanticContext
-    ) throws(ExpressionSemanticError) -> Self
-}
-
-protocol FunctionSignatureChecker {
-}
-
-
 extension Project: TypeDeclarationChecker, FunctionDeclarationChecker {
     func getTypeDeclarations() -> [TypeDefinition] {
         return self.modules.flatMap { source, module in
@@ -402,4 +425,3 @@ extension Module: TypeDeclarationChecker, FunctionDeclarationChecker {
         }
     }
 }
-// TODO: type checking steps
