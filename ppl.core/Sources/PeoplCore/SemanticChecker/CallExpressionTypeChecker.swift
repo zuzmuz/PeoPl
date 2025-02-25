@@ -1,11 +1,11 @@
 extension Expression.Call: ExpressionTypeChecker {
     func checkType(
-        with input: Expression,
+        with input: TypeIdentifier,
         localScope: LocalScope,
         context: borrowing SemanticContext
     ) throws(ExpressionSemanticError) -> Expression.Call {
         let functionIdentifier: FunctionIdentifier
-        let callee: Expression
+        let callee: TypeIdentifier
         let typedCommand: Expression.Prefix
         switch self.command {
         case let .simple(expression):
@@ -24,7 +24,7 @@ extension Expression.Call: ExpressionTypeChecker {
                     let typedExpression = try accessedExpression.checkType(
                         with: input, localScope: localScope, context: context)
                     functionIdentifier = FunctionIdentifier(scope: nil, name: access.field)
-                    callee = typedExpression
+                    callee = typedExpression.typeIdentifier
                     typedCommand = .simple(
                         .init(
                             expressionType: .access(
@@ -52,7 +52,7 @@ extension Expression.Call: ExpressionTypeChecker {
             Expression.Argument(
                 name: argument.name,
                 value: try argument.value.checkType(
-                    with: .empty,
+                    with: .nothing(),
                     localScope: localScope,
                     context: context),
                 location: argument.location)
@@ -73,7 +73,7 @@ extension Expression.Call: ExpressionTypeChecker {
         }
 
         let functionDefinition = FunctionDefinition(
-            inputType: callee.typeIdentifier,
+            inputType: callee,
             functionIdentifier: functionIdentifier,
             params: paramDefintions,
             outputType: .nothing(),
@@ -97,7 +97,7 @@ extension Expression.Call: ExpressionTypeChecker {
             throw .undifienedFunction(call: self, function: functionIdentifier)
         }
 
-        if let inputTypeFunctions = context.functionsInputTypeIdentifiers[callee.typeIdentifier] {
+        if let inputTypeFunctions = context.functionsInputTypeIdentifiers[callee] {
             let validFunctionsForInput = inputTypeFunctions.filter { 
                 $0.functionIdentifier == functionDefinition.functionIdentifier
             }
@@ -105,7 +105,7 @@ extension Expression.Call: ExpressionTypeChecker {
             if validFunctionsForInput.count == 0 {
                 throw .undifinedFunctionOnInput(
                     call: self,
-                    input: callee.typeIdentifier,
+                    input: callee,
                     function: functionDefinition.functionIdentifier
                 )
             }
@@ -113,12 +113,12 @@ extension Expression.Call: ExpressionTypeChecker {
             throw .argumentMismatch(
                 call: self,
                 givenArguments: paramDefintions,
-                inputType: callee.typeIdentifier,
+                inputType: callee,
                 function: functionIdentifier)
         } else {
             throw .undifinedFunctionOnInput(
                 call: self,
-                input: callee.typeIdentifier,
+                input: callee,
                 function: functionIdentifier)
 
         }

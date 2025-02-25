@@ -247,7 +247,8 @@ struct UnionType: Encodable, SyntaxNode {
 struct Expression: Encodable, SyntaxNode {
     let expressionType: ExpressionType
     let location: NodeLocation
-    let typeIdentifier: TypeIdentifier
+    let typeIdentifier: TypeIdentifier // TODO: Maybe this should not be a stored property like this but part of the expression type
+    // being part of the expression type means no inconsistencies for expression like literal and nothing
 
     init(expressionType: ExpressionType, location: NodeLocation) {
         self.expressionType = expressionType

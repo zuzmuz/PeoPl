@@ -8,12 +8,12 @@ extension Expression: ExpressionTypeChecker {
     }
 
     func checkType(
-        with input: Expression,
+        with input: TypeIdentifier,
         localScope: LocalScope,
         context: borrowing SemanticContext
     ) throws(ExpressionSemanticError) -> Expression {
 
-        switch (input.typeIdentifier, self.expressionType) {
+        switch (input, self.expressionType) {
         // Never
         case (_, .never), (.never, _):
             throw .reachedNever(expression: self)
@@ -41,7 +41,7 @@ extension Expression: ExpressionTypeChecker {
             throw .inputMismatch(
                 expression: self,
                 expected: .nothing(),
-                received: input.typeIdentifier)
+                received: input)
 
         // Unary
         // TODO: consider operator overload
@@ -49,7 +49,7 @@ extension Expression: ExpressionTypeChecker {
         // this is tricky, cause I should make sure that the number can be expressed as type
         case let (input, .unary(op, expression)):
             let right = try expression.checkType(
-                with: .empty,
+                with: .nothing(),
                 localScope: localScope,
                 context: context)
 
@@ -127,12 +127,12 @@ extension Expression: ExpressionTypeChecker {
                     leftType: left.typeIdentifier,
                     rightType: right.typeIdentifier)
             }
-        case let (_, .binary):
-            throw .inputMismatch(expression: self, expected: .nothing(), received: input.typeIdentifier)
+        case (_, .binary):
+            throw .inputMismatch(expression: self, expected: .nothing(), received: input)
         case let (.nothing, .unnamedTuple(expressions)):
             let typedExpressions = try expressions.map { expression throws(ExpressionSemanticError) in
                 try expression.checkType(
-                    with: .empty,
+                    with: .nothing(),
                     localScope: localScope,
                     context: context)
             }
@@ -148,7 +148,7 @@ extension Expression: ExpressionTypeChecker {
                 Expression.Argument(
                     name: argument.name,
                     value: try argument.value.checkType(
-                        with: .empty, localScope: localScope, context: context),
+                        with: .nothing(), localScope: localScope, context: context),
                     location: argument.location)
             }
             let paramDefinitions = typedArguments.map { argument in
@@ -166,7 +166,7 @@ extension Expression: ExpressionTypeChecker {
             throw .inputMismatch(
                 expression: self,
                 expected: .nothing(),
-                received: input.typeIdentifier)
+                received: input)
 
         case let (_, .lambda(expression)):
             throw .unsupportedYet("lambda expression")
@@ -188,7 +188,7 @@ extension Expression: ExpressionTypeChecker {
             throw .inputMismatch(
                 expression: self,
                 expected: .nothing(),
-                received: input.typeIdentifier)
+                received: input)
         case let (_, .branched(branched)):
             let typedBranched = try branched.checkType(with: input, localScope: localScope, context: context)
             return .init(
@@ -201,7 +201,7 @@ extension Expression: ExpressionTypeChecker {
                 localScope: localScope,
                 context: context)
             let typedRightExpression = try rightExpression.checkType(
-                with: typedLeftExpression,
+                with: typedLeftExpression.typeIdentifier,
                 localScope: localScope,
                 context: context)
             return .init(

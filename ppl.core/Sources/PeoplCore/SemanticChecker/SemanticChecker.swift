@@ -22,8 +22,10 @@ struct SemanticContext {
         let errors = self.functions.compactMap { (definition, _) -> ExpressionSemanticError? in
             do throws(ExpressionSemanticError) {
                 guard let bodyInferredType = try definition.body?.checkType(
-                    with: .empty,
-                    localScope: LocalScope(fields: [:]),
+                    with: definition.inputType,
+                    localScope: LocalScope(
+                        fields: definition.params.reduce(into: [:]) { $0[$1.name] = $1.type }
+                    ),
                     context: self
                 ) else { return .emptyFunctionBody(functionDefinition: definition) }
                 // WARN: currently returning error for empty bodies,
@@ -87,7 +89,7 @@ protocol FunctionDeclarationChecker {
 
 protocol ExpressionTypeChecker {
     func checkType(
-        with input: Expression,
+        with input: TypeIdentifier,
         localScope: LocalScope,
         context: borrowing SemanticContext
     ) throws(ExpressionSemanticError) -> Self
@@ -362,6 +364,8 @@ extension FunctionDeclarationChecker {
                 return nil
             }
         }
+
+        // FIX: should handle builtin function redeclaration
 
         let definitions = locations.compactMapValues { definitions in
             return definitions.first

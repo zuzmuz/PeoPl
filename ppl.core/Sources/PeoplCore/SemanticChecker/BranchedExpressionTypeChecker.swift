@@ -1,6 +1,6 @@
 extension Expression.Branched: ExpressionTypeChecker {
     func checkType(
-        with input: Expression,
+        with input: TypeIdentifier,
         localScope: LocalScope,
         context: borrowing SemanticContext
     ) throws(ExpressionSemanticError) -> Expression.Branched {
@@ -9,13 +9,13 @@ extension Expression.Branched: ExpressionTypeChecker {
             branch throws(ExpressionSemanticError) in
             
             // checking if capture group count matches input
-            switch (input.typeIdentifier, branch.captureGroup.count) {
+            switch (input, branch.captureGroup.count) {
             case (.nothing, let count) where count > 1,
                 (.nominal, let count) where count != 1,
                 (.lambda, let count) where count != 1:
                 throw .captureGroupCountMismatch(
                     branch: branch,
-                    inputType: input.typeIdentifier,
+                    inputType: input,
                     captureGroupCount: branch.captureGroup.count
                 )
             // for some reason swift doesn't support having all these expression together, and fallthrough isn't working
@@ -23,14 +23,14 @@ extension Expression.Branched: ExpressionTypeChecker {
             where count != unnamedTuple.types.count && count != 1:
                 throw .captureGroupCountMismatch(
                     branch: branch,
-                    inputType: input.typeIdentifier,
+                    inputType: input,
                     captureGroupCount: branch.captureGroup.count
                 )
             case (.namedTuple(let namedTuple), let count)
             where count != namedTuple.types.count && count != 1:
                 throw .captureGroupCountMismatch(
                     branch: branch,
-                    inputType: input.typeIdentifier,
+                    inputType: input,
                     captureGroupCount: branch.captureGroup.count
                 )
             default:
@@ -45,17 +45,17 @@ extension Expression.Branched: ExpressionTypeChecker {
                 switch captureGroup {
                 case let .simple(expression):
                     if case let .field(field) = expression.expressionType {
-                        scopeFields[field] = input.typeIdentifier
+                        scopeFields[field] = input
                     }
                 case let .paramDefinition(param):
                     scopeFields[param.name] = param.type // WARN: not sure about this
                 case let .argument(argument):
-                    scopeFields[argument.name] = input.typeIdentifier
+                    scopeFields[argument.name] = input
                 default:
                     break
                 }
             } else {
-                zip(branch.captureGroup, input.typeIdentifier).forEach { captureGroup, input in
+                zip(branch.captureGroup, input).forEach { captureGroup, input in
                     switch captureGroup {
                     case let .simple(expression):
                         if case let .field(field) = expression.expressionType {
@@ -76,7 +76,7 @@ extension Expression.Branched: ExpressionTypeChecker {
             switch branch.body {
             case let .simple(expression):
                 let typedBranchExpression = try expression.checkType(
-                    with: .empty,
+                    with: .nothing(),
                     localScope: localScope,
                     context: context)
                 return .init(
@@ -86,13 +86,13 @@ extension Expression.Branched: ExpressionTypeChecker {
                     typeIdentifier: typedBranchExpression.typeIdentifier)
             case let .looped(expression):
                 let typedLoopedExpression = try expression.checkType(
-                    with: .empty,
+                    with: .nothing(),
                     localScope: localScope,
                     context: context)
-                if typedLoopedExpression.typeIdentifier != input.typeIdentifier {
+                if typedLoopedExpression.typeIdentifier != input {
                     throw .loopedExpressionTypeMismatch(
                         expression: expression,
-                        expectedType: input.typeIdentifier,
+                        expectedType: input,
                         receivedType: typedLoopedExpression.typeIdentifier
                     )
                 }
@@ -103,11 +103,11 @@ extension Expression.Branched: ExpressionTypeChecker {
                     typeIdentifier: .never())
             }
         }
-        // TODO: verify exhaustiveness of
+        // FIX: verify exhaustiveness of branches
         
         let typedLastBranch: Expression? = if let lastBranch {
             try lastBranch.checkType(
-                with: .empty,
+                with: .nothing(),
                 localScope: localScope,
                 context: context)
         } else {
