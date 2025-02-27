@@ -36,5 +36,5 @@ We have a proliferation of tools that all do basically the same thing.
     3. [Behavior](#behavior)
 2. Designing type systems
     1. Data
-    2. Objects
+    2. Object
     3. Subtyping

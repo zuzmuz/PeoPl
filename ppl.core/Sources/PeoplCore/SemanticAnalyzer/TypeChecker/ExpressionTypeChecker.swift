@@ -13,6 +13,10 @@ extension Expression: ExpressionTypeChecker {
         context: borrowing SemanticContext
     ) throws(ExpressionSemanticError) -> Expression {
 
+        guard case .unkown = self.typeIdentifier else { // if type is already known
+            return self
+        }
+
         switch (input, self.expressionType) {
         // Never
         case (_, .never), (.never, _):

@@ -19,7 +19,7 @@ struct SemanticContext {
     )
 
     func typeCheckFunctionsDefinitions() -> [ExpressionSemanticError] {
-        let errors = self.functions.compactMap { (definition, _) -> ExpressionSemanticError? in
+        return self.functions.compactMap { (definition, _) -> ExpressionSemanticError? in
             do throws(ExpressionSemanticError) {
                 guard let bodyInferredType = try definition.body?.checkType(
                     with: definition.inputType,
@@ -42,7 +42,6 @@ struct SemanticContext {
                 return error
             }
         }
-        return errors
     }
 }
 

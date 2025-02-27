@@ -1,31 +1,44 @@
 extension Expression.Call: ExpressionTypeChecker {
+
+    enum Callable {
+        case function(
+            identifier: FunctionIdentifier,
+            input: TypeIdentifier,
+            typedCommand: Expression.Prefix)
+        case type(
+            name: NominalType,
+            typedCommand: Expression.Prefix)
+    }
+
     func checkType(
         with input: TypeIdentifier,
         localScope: LocalScope,
         context: borrowing SemanticContext
     ) throws(ExpressionSemanticError) -> Expression.Call {
-        let functionIdentifier: FunctionIdentifier
-        let callee: TypeIdentifier
-        let typedCommand: Expression.Prefix
+        let callable: Callable
         switch self.command {
         case let .simple(expression):
             switch expression.expressionType {
             case let .field(functionName):
-                functionIdentifier = FunctionIdentifier(scope: nil, name: functionName)
-                callee = input
-                typedCommand = self.command
+                callable = .function(
+                    identifier: FunctionIdentifier(scope: nil, name: functionName),
+                    input: input,
+                    typedCommand: self.command)
             case let .access(access):
                 switch access.accessed {
                 case let .type(type):
-                    functionIdentifier = FunctionIdentifier(scope: type, name: access.field)
-                    callee = input
-                    typedCommand = self.command
+                    callable = .function(
+                        identifier: FunctionIdentifier(scope: type, name: access.field),
+                        input: input,
+                        typedCommand: self.command)
                 case let .simple(accessedExpression):
                     let typedExpression = try accessedExpression.checkType(
                         with: input, localScope: localScope, context: context)
-                    functionIdentifier = FunctionIdentifier(scope: nil, name: access.field)
-                    callee = typedExpression.typeIdentifier
-                    typedCommand = .simple(
+
+                    callable = .function(
+                        identifier: FunctionIdentifier(scope: nil, name: access.field),
+                        input: typedExpression.typeIdentifier,
+                        typedCommand: .simple(
                         .init(
                             expressionType: .access(
                                 .init(
@@ -33,7 +46,7 @@ extension Expression.Call: ExpressionTypeChecker {
                                     field: access.field,
                                     location: access.location)),
                             location: expression.location,
-                            typeIdentifier: typedExpression.typeIdentifier))
+                            typeIdentifier: typedExpression.typeIdentifier)))
                 }
             case let .lambda(lambda):
                 throw .unsupportedYet("Direct lambda calls")
@@ -45,7 +58,7 @@ extension Expression.Call: ExpressionTypeChecker {
                 )
             }
         case let .type(type):
-            throw .unsupportedYet("Type initializers")
+            callable = .type(name: type, typedCommand: self.command)
         }
         
         let typedArguments = try self.arguments.map { argument throws(ExpressionSemanticError) in
@@ -57,13 +70,43 @@ extension Expression.Call: ExpressionTypeChecker {
                     context: context),
                 location: argument.location)
         }
-        let paramDefintions = try typedArguments.map { argument throws(ExpressionSemanticError) in
+        let paramDefinitions = try typedArguments.map { argument throws(ExpressionSemanticError) in
             ParamDefinition(
                 name: argument.name,
                 type: argument.value.typeIdentifier,
                 location: .nowhere)
         }
 
+        return switch callable {
+        case let .function(functionIdentifier, callee, typedCommand):
+            try self.typeCheckFunctionCall(
+                functionIdentifier: functionIdentifier,
+                callee: callee,
+                typedCommand: typedCommand,
+                paramDefinitions: paramDefinitions,
+                typedArguments: typedArguments,
+                localScope: localScope,
+                context: context)
+        case let .type(nominalType, typedCommand):
+            try self.typeCheckTypeInitializer(
+                nominalType: nominalType,
+                typedCommand: typedCommand,
+                paramDefinitions: paramDefinitions,
+                typedArguments: typedArguments,
+                localScope: localScope,
+                context: context)
+        }
+    }
+
+    private func typeCheckFunctionCall(
+        functionIdentifier: FunctionIdentifier,
+        callee: TypeIdentifier,
+        typedCommand: Expression.Prefix,
+        paramDefinitions: [ParamDefinition],
+        typedArguments: [Expression.Argument],
+        localScope: LocalScope,
+        context: borrowing SemanticContext
+    ) throws(ExpressionSemanticError) -> Self {
         if functionIdentifier.scope == nil, 
             let localFunction = localScope.fields[functionIdentifier.name],
             case let .lambda(lambda) = localFunction
@@ -75,7 +118,7 @@ extension Expression.Call: ExpressionTypeChecker {
         let functionDefinition = FunctionDefinition(
             inputType: callee,
             functionIdentifier: functionIdentifier,
-            params: paramDefintions,
+            params: paramDefinitions,
             outputType: .nothing(),
             body: .empty,
             location: .nowhere)
@@ -112,7 +155,7 @@ extension Expression.Call: ExpressionTypeChecker {
 
             throw .argumentMismatch(
                 call: self,
-                givenArguments: paramDefintions,
+                givenArguments: paramDefinitions,
                 inputType: callee,
                 function: functionIdentifier)
         } else {
@@ -122,5 +165,17 @@ extension Expression.Call: ExpressionTypeChecker {
                 function: functionIdentifier)
 
         }
+    }
+
+    private func typeCheckTypeInitializer(
+        nominalType: NominalType,
+        typedCommand: Expression.Prefix,
+        paramDefinitions: [ParamDefinition],
+        typedArguments: [Expression.Argument],
+        localScope: LocalScope,
+        context: SemanticContext
+    ) throws(ExpressionSemanticError) -> Self {
+
+        return self
     }
 }
