@@ -41,6 +41,8 @@ enum ExpressionSemanticError: SemanticError, Encodable {
     case callingUncallable(
         expression: Expression,
         type: TypeIdentifier)
+    case undefinedTypeInitializer(
+        nominalType: NominalType)
     case undifienedFunction(
         call: Expression.Call,
         function: FunctionIdentifier)
@@ -53,6 +55,10 @@ enum ExpressionSemanticError: SemanticError, Encodable {
         givenArguments: [ParamDefinition],
         inputType: TypeIdentifier,
         function: FunctionIdentifier)
+    case typeInitializeArgumentMismatch(
+        call: Expression.Call,
+        givenArguments: [ParamDefinition],
+        typeDefinition: TypeDefinition)
     case fieldNotInScope(
         expression: Expression)
     case captureGroupCountMismatch(

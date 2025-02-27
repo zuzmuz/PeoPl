@@ -107,6 +107,7 @@ extension Expression.Call: ExpressionTypeChecker {
         localScope: LocalScope,
         context: borrowing SemanticContext
     ) throws(ExpressionSemanticError) -> Self {
+
         if functionIdentifier.scope == nil, 
             let localFunction = localScope.fields[functionIdentifier.name],
             case let .lambda(lambda) = localFunction
@@ -176,6 +177,20 @@ extension Expression.Call: ExpressionTypeChecker {
         context: SemanticContext
     ) throws(ExpressionSemanticError) -> Self {
 
-        return self
+        guard let typeDefinition = context.types[nominalType] else {
+            throw .undefinedTypeInitializer(nominalType: nominalType)
+        }
+
+        guard paramDefinitions == typeDefinition.allParams else {
+            throw .typeInitializeArgumentMismatch(
+                call: self,
+                givenArguments: paramDefinitions,
+                typeDefinition: typeDefinition)
+        }
+        return .init(
+            command: typedCommand,
+            arguments: typedArguments,
+            location: self.location,
+            typeIdentifier: .nominal(nominalType))
     }
 }
