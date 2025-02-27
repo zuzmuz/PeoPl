@@ -1,8 +1,12 @@
 import Foundation
 
-protocol SemanticError: LocalizedError {}
+enum SemanticError: LocalizedError {
+    case type(TypeSemanticError)
+    case function(FunctionSemanticError)
+    case expression(ExpressionSemanticError)
+}
 
-enum TypeSemanticError: SemanticError {
+enum TypeSemanticError: LocalizedError {
     case redeclaration(
         locations: [NodeLocation])
     case shadowing(
@@ -20,7 +24,7 @@ enum TypeSemanticError: SemanticError {
     case unsupportedYet(String)
 }
 
-enum FunctionSemanticError: SemanticError {
+enum FunctionSemanticError: LocalizedError {
     case redeclaration(
         locations: [NodeLocation])
     case typeNotInScope(
@@ -29,7 +33,7 @@ enum FunctionSemanticError: SemanticError {
         typesInScope: [NominalType: TypeDefinition].Keys)
 }
 
-enum ExpressionSemanticError: SemanticError, Encodable {
+enum ExpressionSemanticError: LocalizedError {
     case inputMismatch(
         expression: Expression,
         expected: TypeIdentifier,
