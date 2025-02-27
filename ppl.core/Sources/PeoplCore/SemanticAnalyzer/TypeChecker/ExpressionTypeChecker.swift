@@ -1,3 +1,12 @@
+protocol ExpressionTypeChecker {
+    func checkType(
+        with input: TypeIdentifier,
+        localScope: LocalScope,
+        context: borrowing SemanticContext
+    ) throws(ExpressionSemanticError) -> Self
+}
+
+
 extension Expression: ExpressionTypeChecker {
 
     func with(typeIdentifier: TypeIdentifier) -> Expression {
