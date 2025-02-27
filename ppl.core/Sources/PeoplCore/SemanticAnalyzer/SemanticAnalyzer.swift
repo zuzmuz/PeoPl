@@ -74,7 +74,7 @@ protocol FunctionDeclarationChecker {
     func getOperatorOverloadDeclarations() -> [OperatorOverloadDefinition]
 
     func resolveFunctionDefinitions(
-        context: borrowing SemanticContext,
+        typesDefinitions: borrowing [NominalType: TypeDefinition],
         builtins: borrowing SemanticContext
     ) -> (
         functions: [FunctionDefinition: FunctionDefinition],
@@ -233,7 +233,7 @@ extension TypeDeclarationChecker {
 
 extension FunctionDeclarationChecker {
     func resolveFunctionDefinitions(
-        context: borrowing SemanticContext,
+        typesDefinitions: borrowing [NominalType: TypeDefinition],
         builtins: borrowing SemanticContext
     ) -> (
         functions: [FunctionDefinition: FunctionDefinition],
@@ -246,14 +246,12 @@ extension FunctionDeclarationChecker {
         let functionDeclarations = self.getFunctionDeclarations()
         let (functions, functionsRedeclarations) = resolveDefinitions(
             declarations: functionDeclarations,
-            context: context)
-
-
+            typesDefinitions: typesDefinitions)
 
         let operatorsDeclarations = self.getOperatorOverloadDeclarations()
         let (operators, operatorsRedeclarations) = resolveDefinitions(
             declarations: operatorsDeclarations,
-            context: context)
+            typesDefinitions: typesDefinitions)
 
         
         let functionsIdentifiers = functions.reduce(into: [:]) { acc, element in
@@ -267,38 +265,38 @@ extension FunctionDeclarationChecker {
         let functionTypeCheckErrors = functions.flatMap { function, _ in
             
             let inputTypeNotInScopeErrors: [FunctionSemanticError] = function.inputType.getNominalTypesFromIdentifier().compactMap { type in
-                if let _ = context.types[type] ?? builtins.types[type] {
+                if let _ = typesDefinitions[type] ?? builtins.types[type] {
                     return nil
                 } else {
                     return FunctionSemanticError.typeNotInScope(
                         location: type.location,
                         type: type,
-                        typesInScope: context.types.keys)
+                        typesInScope: typesDefinitions.keys)
                 }
             }
 
             let paramsTypesNotInScopeErrors = function.params.flatMap { param in
                 let errors: [FunctionSemanticError] = param.type.getNominalTypesFromIdentifier().compactMap { type in
-                    if let _ = context.types[type] ?? builtins.types[type] {
+                    if let _ = typesDefinitions[type] ?? builtins.types[type] {
                         return nil
                     } else {
                         return FunctionSemanticError.typeNotInScope(
                             location: type.location,
                             type: type,
-                            typesInScope: context.types.keys)
+                            typesInScope: typesDefinitions.keys)
                     }
                 }
                 return errors
             }
 
             let outputTypeNotInScopeErrors: [FunctionSemanticError] = function.outputType.getNominalTypesFromIdentifier().compactMap { type in
-                if let _ = context.types[type] ?? builtins.types[type] {
+                if let _ = typesDefinitions[type] ?? builtins.types[type] {
                     return nil
                 } else {
                     return FunctionSemanticError.typeNotInScope(
                         location: type.location,
                         type: type,
-                        typesInScope: context.types.keys)
+                        typesInScope: typesDefinitions.keys)
                 }
             }
 
@@ -307,22 +305,22 @@ extension FunctionDeclarationChecker {
 
         let operatorTypeCheckErrors = operators.flatMap { function, _ in
             let leftTypeNotInScopeErrors = function.left.type.getNominalTypesFromIdentifier().compactMap { type in
-                if let _ = context.types[type] ?? builtins.types[type] {
+                if let _ = typesDefinitions[type] ?? builtins.types[type] {
                     return FunctionSemanticError.typeNotInScope(
                         location: type.location,
                         type: type,
-                        typesInScope: context.types.keys)
+                        typesInScope: typesDefinitions.keys)
                 } else {
                     return nil
                 }
             }
 
             let rightTypNotInScopeErrors = function.right.type.getNominalTypesFromIdentifier().compactMap { type in
-                if let _ = context.types[type] ?? builtins.types[type] {
+                if let _ = typesDefinitions[type] ?? builtins.types[type] {
                     return FunctionSemanticError.typeNotInScope(
                         location: type.location,
                         type: type,
-                        typesInScope: context.types.keys)
+                        typesInScope: typesDefinitions.keys)
                 } else {
                     return nil
                 }
@@ -346,7 +344,7 @@ extension FunctionDeclarationChecker {
 
     private func resolveDefinitions<Declaration>(
         declarations: [Declaration],
-        context: borrowing SemanticContext
+        typesDefinitions: borrowing [NominalType: TypeDefinition]
     ) -> (
         definitions: [Declaration: Declaration],
         errors: [FunctionSemanticError]
@@ -426,5 +424,35 @@ extension Module: TypeDeclarationChecker, FunctionDeclarationChecker {
                 return nil
             }
         }
+    }
+}
+
+protocol SemanticAnalyzer: TypeDeclarationChecker, FunctionDeclarationChecker {
+    func semanticCheck() -> (Self, errors: [SemanticError])
+}
+
+extension SemanticAnalyzer {
+    func semanticCheck() -> (Self, errors: [SemanticError]) {
+        let builtins = Builtins.getBuiltinContext()
+        let (typesDefinitions, typeErrors) = self.resolveTypeDefinitions(builtins: builtins)
+
+        let (
+            functions,
+            functionsIdentifiers,
+            functionsInputTypeIdentifiers,
+            operators,
+            functionErrors
+        ) = self.resolveFunctionDefinitions(
+            typesDefinitions: typesDefinitions,
+            builtins: builtins)
+
+        let semanticContext = SemanticContext(
+            types: typesDefinitions,
+            functions: functions,
+            functionsIdentifiers: functionsIdentifiers,
+            functionsInputTypeIdentifiers: functionsInputTypeIdentifiers,
+            operators: operators)
+
+        return (self, [])
     }
 }

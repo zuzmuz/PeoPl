@@ -17,7 +17,7 @@ final class ExpressionTypeCheckingWithFunctionCallsTests: XCTestCase {
         let module = try Module(source: source, path: "main")
         let builtins = Builtins.getBuiltinContext()
 
-        let checker = module.resolveFunctionDefinitions(context: .empty, builtins: builtins)
+        let checker = module.resolveFunctionDefinitions(typesDefinitions: [:], builtins: builtins)
 
         XCTAssertEqual(checker.errors.count, 0)
         XCTAssertEqual(checker.functions.count, 2)
