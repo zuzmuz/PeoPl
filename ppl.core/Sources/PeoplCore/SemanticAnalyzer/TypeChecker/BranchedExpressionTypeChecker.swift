@@ -48,7 +48,7 @@ extension Expression.Branched: ExpressionTypeChecker {
                         scopeFields[field] = input
                     }
                 case let .paramDefinition(param):
-                    scopeFields[param.name] = param.type // WARN: not sure about this
+                    scopeFields[param.name] = param.type
                 case let .argument(argument):
                     scopeFields[argument.name] = input
                 default:

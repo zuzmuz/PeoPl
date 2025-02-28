@@ -33,10 +33,10 @@ extension Expression: ExpressionTypeChecker {
         //Nothing
         case (.nothing, .nothing):
             return self.with(typeIdentifier: .nothing())
-        // TODO: think of generic int type for automatic inference
+        // NOTE: think of generic int type for automatic inference
         // Literals
         case (.nothing, .intLiteral):
-            // TODO: consider undefined number type (with resetriction),
+            // NOTE: consider undefined number type (with resetriction),
             // for example 10 can be an I8, I16 .. but also U8 ...
             // however 300 can not be I8, interesting logic
             return self.with(typeIdentifier: Builtins.i32)

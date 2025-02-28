@@ -8,7 +8,6 @@
 func (I32) is_pallindrome() => Bool
     to_string |>
     |original| original = original.reverse // saving the original string before the reverse
-    ..
 
 
 // a capture group can be an expression
@@ -18,7 +17,7 @@ func (I32) is_pallindrome() => Bool
 
 
 func (I32) is_even() => String
-    |i % 2 = 0| "is even",
+    |i: i % 2 = 0| "is even",
     |_| "is odd"..
 
 // subbranches are separated by ,
@@ -27,10 +26,9 @@ func (I32) is_even() => String
 
 func print(from: I32, to: I32) => Nothing
     from |>
-    |i < to| (i.print |> +1)^,
-    |i < 3| Nothing,
+    |i: i < to| (i.print |> +1)^,
+    |i: i < 3| Nothing,
     |_| "whatever"
-    ..
 
 // the inside of the looped expression should output
 // the same type of the pipe input.
@@ -48,7 +46,16 @@ func print(from: I32, to: I32) => Nothing
         |> +1
     )^,
     Nothing
-    ..
 
 // capturing is used for pattern mathing
+
+
+func gcd(a: I32, b: I32) => I32
+    |a = b| a,
+    |a < b| gcd(a: a, b: b - a),
+    |a > b| gcd(a: a - b, b: b)
+
+
+
+
 

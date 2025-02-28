@@ -130,6 +130,12 @@ extension Expression: LLVM.ValueBuilder {
                 LLVMInt1TypeInContext(llvm.context),
                 value ? 1 : 0,
                 0)
+        case let .binary(op, left, right):
+            let leftBuildValue = try left.llvmBuildValue(llvm: &llvm)
+            let rightBuildValue = try right.llvmBuildValue(llvm: &llvm)
+
+            let method = switch 4
+
         default:
             throw .unsupportedExpression(self)
         }

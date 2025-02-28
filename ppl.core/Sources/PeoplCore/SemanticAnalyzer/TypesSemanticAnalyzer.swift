@@ -10,10 +10,10 @@ protocol TypeDeclarationChecker {
     /// because types are inline value types
     /// Types do not support indirection (without wrappers)
     /// - Paramerter environment: The existing semantic context,
-    /// contains builtin (for now) TODO: extend with library packages
+    /// contains builtin (for now) NOTE: extend with library packages
     /// - Returns: A tuple containing the sanitized type definitions and any errors that occurred
     func resolveTypeDefinitions(
-        builtins: borrowing SemanticContext // TODO: builtins can be merged with expternals once we figure out namespacing
+        builtins: borrowing SemanticContext // NOTE: builtins can be merged with expternals once we figure out namespacing
         // externals: borrowing [String: SemanticContext]
     ) -> (
         typesDefinitions: [NominalType: TypeDefinition],
@@ -64,7 +64,7 @@ extension TypeDeclarationChecker {
             // } else if let exisitingType = externals.values.compactMap({ $0.types[type] }).first {
             //     return TypeSemanticError.shadowing(
             //         location: typeDefinition.location,
-            //         module: "someone", // TODO: I need to fix this so that I get the module name
+            //         module: "someone", // NOTE: I need to fix this so that I get the module name
             //         typeDefinition: exisitingType)
             } else {
                 return nil
