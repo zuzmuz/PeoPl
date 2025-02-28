@@ -71,6 +71,8 @@ extension TypeDeclarationChecker {
             }
         }
 
+        // TODO: nominal type chain should not contain type arguments, only last one
+
         // detecting invalid members types
         let typesNotInScope = types.flatMap { type, definition in
             return definition.allParams.flatMap { param in
@@ -88,7 +90,7 @@ extension TypeDeclarationChecker {
             }
         }
 
-        let cyclicalDependencies = checkCyclicalDependencies(types: types)    
+        let cyclicalDependencies = checkCyclicalDependencies(types: types, builtins: builtins)
 
         return (
             typesDefinitions: types,
@@ -96,7 +98,10 @@ extension TypeDeclarationChecker {
         )
     }
 
-    private func checkCyclicalDependencies(types: [NominalType: TypeDefinition]) -> [TypeSemanticError] {
+    private func checkCyclicalDependencies(
+        types: [NominalType: TypeDefinition],
+        builtins: SemanticContext
+    ) -> [TypeSemanticError] {
         
         var nodeStates: [NominalType: NodeState] = [:]
         var cycles: [TypeSemanticError] = []
@@ -131,7 +136,7 @@ extension TypeDeclarationChecker {
                 return 
             }
             nodeStates[nominal] = .visiting
-            guard let typeDefinition = types[nominal] else { return /*type checker should catch this error*/ }
+            guard let typeDefinition = types[nominal] ?? builtins.types[nominal] else { return /*type checker should catch this error*/ }
 
             switch typeDefinition {
             case let .simple(simple):

@@ -27,7 +27,7 @@ func (I32) is_even() => String
 
 func print(from: I32, to: I32) => Nothing
     from |>
-    |i < to| i.print^,
+    |i < to| (i.print |> +1)^,
     |i < 3| Nothing,
     |_| "whatever"
     ..
