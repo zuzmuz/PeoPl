@@ -62,10 +62,29 @@ final class TypesAnalyzerTests: XCTestCase {
 
     func testRedeclarations() throws {
         let source = """
-        type User
-            x: I32
-        type User
-            y: I32
-        """
+            type User
+                x: I32
+            type User
+                y: I32
+            """
+        let module = try Module(source: source, path: "main")
+
+        let result = module.semanticCheck()
+
+        switch result {
+        case .errors(let errors):
+            XCTAssertEqual(errors.count, 1)
+            
+            errors.forEach { error in
+                switch error {
+                case .type(.redeclaration):
+                    XCTAssertTrue(true)
+                default:
+                    XCTAssertTrue(false)
+                }
+            }
+        case .context:
+            XCTAssertTrue(false)
+        }
     }
 }
