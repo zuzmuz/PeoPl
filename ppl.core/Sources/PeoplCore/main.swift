@@ -7,7 +7,7 @@ do {
 
     let semanticContext = try module.semanticCheck().get()
     try semanticContext.llvmBuildStatement(llvm: &llvm)
-
+    print("verifying \(llvm.verify())")
     print(llvm.generate())
     // let jsonEncoder = JSONEncoder()
     // jsonEncoder.outputFormatting = .prettyPrinted
