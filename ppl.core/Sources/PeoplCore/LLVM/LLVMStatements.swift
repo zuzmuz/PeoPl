@@ -117,12 +117,13 @@ extension FunctionDefinition: LLVM.StatementBuilder {
         if let body {
             let entryBlock = LLVMAppendBasicBlockInContext(llvm.context, function, "entry")
             LLVMPositionBuilderAtEnd(llvm.builder, entryBlock)
-
-            // for (index, param) in params.enumerated() {
-            //     let paramValue = LLVMGetParam(function, UInt32(index))
-            //     LLVMSetValueName2(paramValue, param.name, param.name.utf8.count)
-            // }
-            let returnValue = try body.llvmBuildValue(llvm: &llvm) //, function: function)
+            var paramValues: [String: LLVMValueRef] = [:]
+            for (index, param) in params.enumerated() {
+                let paramValue = LLVMGetParam(function, UInt32(index))
+                LLVMSetValueName2(paramValue, param.name, param.name.utf8.count)
+                paramValues[param.name] = paramValue
+            }
+            let returnValue = try body.llvmBuildValue(llvm: &llvm, scope: paramValues) //, function: function)
             
             LLVMBuildRet(llvm.builder, returnValue)
         }
