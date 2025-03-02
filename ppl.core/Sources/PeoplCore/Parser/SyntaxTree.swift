@@ -142,6 +142,14 @@ enum Operator: String, Encodable {
 struct FunctionIdentifier: Encodable {
     let scope: NominalType?
     let name: String
+
+    var fullName: String {
+        if let scope {
+            return "\(scope.chain.map { $0.typeName }.joined(separator: ".")).\(name)"
+        } else {
+            return name
+        }
+    }
 }
 
 struct FunctionDefinition: Encodable, SyntaxNode {
@@ -215,6 +223,11 @@ struct NominalType: Encodable, SyntaxNode {
     static let flatNominalType = "flat_nominal_type"
     var chain: [FlatNominalType]
     var location: NodeLocation
+
+    var typeName: String {
+        // WARN: considering no type arguments
+        return chain.map { $0.typeName }.joined(separator: ".")
+    }
 }
 
 enum StructuralType {
