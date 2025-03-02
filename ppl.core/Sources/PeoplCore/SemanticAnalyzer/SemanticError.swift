@@ -6,6 +6,14 @@ enum SemanticError: LocalizedError {
     case expression(ExpressionSemanticError)
 }
 
+extension Array<SemanticError>: Error {
+    // var localizedDescription: String {
+    //     return self.map { error in
+    //         return error.localizedDescription
+    //     }.joined(separator: "\n")
+    // }
+}
+
 enum TypeSemanticError: LocalizedError {
     case redeclaration(
         locations: [NodeLocation])

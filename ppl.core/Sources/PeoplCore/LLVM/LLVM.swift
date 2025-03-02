@@ -24,6 +24,10 @@ extension LLVM {
 
         }
 
+        func generate() -> String {
+            return String(cString: LLVMPrintModuleToString(module))
+        }
+
         deinit {
             LLVMDisposeBuilder(builder)
             LLVMDisposeModule(module)
@@ -48,72 +52,10 @@ extension LLVM {
         case unsupportedExpression(Expression)
         case notImplemented
     }
+
+}
+
     // -lc++ -stdlib=libc++  -L/opt/homebrew/Cellar/llvm/19.1.7/lib -Wl,-search_paths_first -Wl,-headerpad_max_install_names
-}
-extension Module: LLVM.StatementBuilder {
-    func llvmBuildStatement(llvm: inout LLVM.Builder) throws(LLVM.Error) {
-        for statement in self.statements {
-            try statement.llvmBuildStatement(llvm: &llvm)
-        }
-    }
-}
-
-extension Statement: LLVM.StatementBuilder {
-    func llvmBuildStatement(llvm: inout LLVM.Builder) throws(LLVM.Error) {
-        switch self {
-        case .functionDefinition(let definition):
-            try definition.llvmBuildStatement(llvm: &llvm)
-        case .typeDefinition(let definition):
-            try definition.llvmBuildStatement(llvm: &llvm)
-        case .operatorOverloadDefinition(let definition):
-            try definition.llvmBuildStatement(llvm: &llvm)
-        }
-    }
-}
-
-extension OperatorOverloadDefinition: LLVM.StatementBuilder {
-    func llvmBuildStatement(llvm: inout LLVM.Builder) throws(LLVM.Error) {
-
-    }
-}
-
-extension FunctionDefinition: LLVM.StatementBuilder {
-    func llvmBuildStatement(llvm: inout LLVM.Builder) throws(LLVM.Error) {
-        // TODO: well consider scope (maybe generate string from identifier
-
-        let functionName = self.functionIdentifier.fullName
-        var paramTypes = 
-            ([try self.inputType.llvmGetType(llvm: &llvm)] +
-            (try self.params.map { param throws(LLVM.Error) in
-                try param.type.llvmGetType(llvm: &llvm) 
-            })).map { $0 as Optional }
-        // NOTE: should consider variadics (yeah there's those)
-        let outputType = try self.outputType.llvmGetType(llvm: &llvm)
-        let functionType = paramTypes.withUnsafeMutableBufferPointer { buffer in
-            return LLVMFunctionType(outputType, buffer.baseAddress, UInt32(buffer.count), 0)
-        }
-
-        let function = LLVMAddFunction(llvm.builder, functionName, functionType)
-
-        if let body {
-            let entryBlock = LLVMAppendBasicBlockInContext(llvm.context, function, "entry")
-            LLVMPositionBuilderAtEnd(llvm.builder, entryBlock)
-
-            for (index, param) in params.enumerated() {
-                let paramValue = LLVMGetParam(function, UInt32(index))
-                LLVMSetValueName2(paramValue, param.name, param.name.utf8.count)
-            }
-            let returnValue = try body.llvmBuildValue(llvm: &llvm) //, function: function)
-            LLVMBuildRet(llvm.builder, returnValue)
-        }
-    }
-}
-
-extension TypeDefinition: LLVM.StatementBuilder {
-    func llvmBuildStatement(llvm: inout LLVM.Builder) throws(LLVM.Error) {
-
-    }
-}
 
 extension TypeIdentifier: LLVM.TypeBuilder {
     func llvmGetType(llvm: inout LLVM.Builder) throws(LLVM.Error) -> LLVMTypeRef {
@@ -132,12 +74,49 @@ extension TypeIdentifier: LLVM.TypeBuilder {
         case let .nominal(nominal):
             // Look up the struct type by name
             let typeName = nominal.typeName
+
+            switch typeName {
+            // Signed integers
+            case "I8":
+                return LLVMInt8TypeInContext(llvm.context)
+            case "I16":
+                return LLVMInt16TypeInContext(llvm.context)
+            case "I32":
+                return LLVMInt32TypeInContext(llvm.context)
+            case "I64":
+                return LLVMInt64TypeInContext(llvm.context)
+                
+            // Unsigned integers
+            case "U8":
+                return LLVMInt8TypeInContext(llvm.context) // LLVM doesn't distinguish signed/unsigned at type level
+            case "U16":
+                return LLVMInt16TypeInContext(llvm.context)
+            case "U32":
+                return LLVMInt32TypeInContext(llvm.context)
+            case "U64":
+                return LLVMInt64TypeInContext(llvm.context)
+                
+            // Floating point
+            case "F32":
+                return LLVMFloatTypeInContext(llvm.context)
+            case "F64":
+                return LLVMDoubleTypeInContext(llvm.context)
+                
+            // Other common types you might want
+            case "Bool":
+                return LLVMInt1TypeInContext(llvm.context)
+            case "String":
+                // Strings are pointers to i8 in LLVM
+                return LLVMPointerType(LLVMInt8TypeInContext(llvm.context), 0)
+            
+            default:
             if let structType = LLVMGetTypeByName(llvm.module, typeName) {
                 return structType
             }
             // If not found, create a placeholder struct
             let structType = LLVMStructCreateNamed(llvm.context, typeName)
-            return structType! // WARN: don't know if I should force unwrap
+            return structType! // WARN: don't know if I should force unwrap, or even create type here
+            }
         default:
             throw .notImplemented
         }
@@ -200,12 +179,12 @@ extension Expression: LLVM.ValueBuilder {
             return LLVMBuildUnreachable(llvm.builder)
         case let .intLiteral(value):
             return LLVMConstInt(
-                LLVMInt64TypeInContext(llvm.context),
+                try self.typeIdentifier.llvmGetType(llvm: &llvm),
                 UInt64(value < 0 ? -value : value),
                 value < 0 ? 1 : 0)
         case let .floatLiteral(value):
             return LLVMConstReal(
-                LLVMDoubleTypeInContext(llvm.context),
+                try self.typeIdentifier.llvmGetType(llvm: &llvm),
                 Double(value))
         case let .stringLiteral(value):
             // WARN: not sure about this one

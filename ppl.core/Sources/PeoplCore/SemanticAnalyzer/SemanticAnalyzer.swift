@@ -22,6 +22,15 @@ struct SemanticContext {
 enum SemanticAnalysisResult {
     case context(SemanticContext)
     case errors([SemanticError])
+
+    func get() throws -> SemanticContext {
+        switch self {
+        case let .context(context):
+            return context
+        case let .errors(errors):
+            throw errors
+        }
+    }
 }
 
 protocol SemanticAnalyzer: TypeDeclarationChecker, FunctionDeclarationChecker {
