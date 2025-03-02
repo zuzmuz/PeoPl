@@ -152,12 +152,20 @@ extension Expression: LLVM.ValueBuilder {
                     var arguments = try call.arguments.map { argument throws(LLVM.Error) in
                         try argument.value.llvmBuildValue(llvm: &llvm, scope: scope) as Optional
                     }
+                    var paramTypes = try call.arguments.map { argument throws(LLVM.Error) in
+                        try argument.value.typeIdentifier.llvmGetType(llvm: &llvm) as Optional
+                    }
                     let callType = try call.typeIdentifier.llvmGetType(llvm: &llvm)
+
+                    let functionType = paramTypes.withUnsafeMutableBufferPointer { buffer in
+                        return LLVMFunctionType(callType, buffer.baseAddress, UInt32(buffer.count), 0)
+                    }
+                    // FIX: I might need to save the function types for each function name
 
                     return arguments.withUnsafeMutableBufferPointer { buffer in
                         return LLVMBuildCall2(
                             llvm.builder,
-                            callType,
+                            functionType,
                             function,
                             buffer.baseAddress,
                             UInt32(buffer.count),

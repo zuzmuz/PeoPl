@@ -28,6 +28,10 @@ extension LLVM {
             return String(cString: LLVMPrintModuleToString(module))
         }
 
+        func save(to path: String) {
+            LLVMPrintModuleToFile(module, path, nil)
+        }
+
         func verify() -> Bool {
             return  LLVMVerifyFunction(module, LLVMReturnStatusAction) != 0
         }
