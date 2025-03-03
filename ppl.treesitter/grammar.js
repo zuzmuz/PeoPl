@@ -121,7 +121,7 @@ module.exports = grammar({
 
     enum_type_definition: $ => seq(
       field('meta_type', $.nominal_type),
-      field('case_type', repeat1($.simple_type_definitio)),
+      field('case_type', repeat1($.simple_type_definition)),
     ),
 
     simple_type_definition: $ => seq(
@@ -229,7 +229,13 @@ module.exports = grammar({
 
     nothing: $ => 'Nothing',
     never: $ => 'Never',
-    int_literal: $ => /\d+/,
+    int_literal: $ => token(choice(
+        /[0-9][0-9_]*/,
+        /0x[0-9a-fA-F_]+/,
+        /0b[01_]+/,
+        /0o[0-7_]+/,
+    )),
+
     float_literal: $ => /\d+\.\d+/,
     string_literal: $ => /"[^"]*"/,
     bool_literal: $ => choice('true', 'false'),

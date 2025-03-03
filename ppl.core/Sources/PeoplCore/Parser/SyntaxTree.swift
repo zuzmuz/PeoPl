@@ -174,8 +174,6 @@ struct OperatorOverloadDefinition: Encodable, SyntaxNode {
 // -------------
 
 enum TypeIdentifier: Encodable, SyntaxNode, Sendable {
-    // FIX: unkown shouldn't be here
-    case unkown(location: NodeLocation = .nowhere)
     // case undefinedNumber(location: NodeLocation = .nowhere)
     // case undefinedDecimalNumber(location: NodeLocation = .nowhere)
     case nothing(location: NodeLocation = .nowhere)
@@ -188,8 +186,6 @@ enum TypeIdentifier: Encodable, SyntaxNode, Sendable {
 
     var location: NodeLocation {
         return switch self {
-        case let .unkown(location):
-            location
         // case let .undefinedNumber(location):
         //     location
         // case let .undefinedDecimalNumber(location):
@@ -258,6 +254,30 @@ struct UnionType: Encodable, SyntaxNode {
 // MARK: - Expressions
 // -------------------
 
+enum ExpressionType: Encodable {
+    case bool
+    // literals can be any int type based on the constraint
+    case constrainedUInt64 //  > 2^63
+    case constrainedInt64  //  > 2^32
+    case constrainedUInt32 //  > 2^31
+    case constrainedInt32  //  > 2^16
+    case constrainedUInt16 //  > 2^15
+    case constrainedInt16  //  > 2^8
+    case constrainedUInt8  //  > 2^7
+    case constrainedInt8   //  > 0
+}
+enum TypedExpression: Encodable {
+    case nothing
+    case never
+    case intLiteral(value: Int, type: TypeIdentifier)
+    case floatLiteral(value: Float, type: TypeIdentifier)
+    case stringLiteral(value: String)
+    case boolLiteral(value: Bool)
+    case unary(Operator, expression: Expression, type: TypeIdentifier)
+    case binary(Operator, left: Expression, right: Expression, type: TypeIdentifier)
+    case unnamedTuple([TypedExpression], type: TypeIdentifier)
+}
+
 struct Expression: Encodable, SyntaxNode {
     let expressionType: ExpressionType
     let location: NodeLocation
@@ -268,19 +288,7 @@ struct Expression: Encodable, SyntaxNode {
     init(expressionType: ExpressionType, location: NodeLocation) {
         self.expressionType = expressionType
         self.location = location
-        self.typeIdentifier = .unkown(location: .nowhere) 
     }
-
-    init(
-        expressionType: ExpressionType,
-        location: NodeLocation,
-        typeIdentifier: TypeIdentifier
-    ) {
-        self.expressionType = expressionType
-        self.location = location
-        self.typeIdentifier = typeIdentifier
-    }
-
 
     indirect enum ExpressionType: Encodable, Sendable {
         case nothing

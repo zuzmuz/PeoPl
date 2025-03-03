@@ -5,6 +5,6 @@ func add(a: I32, b: I32) => I32
 
 
 func main() => I32
-    add(a: 1, b: 2)
+    add(a: 100_000, b: 2)
 
 
