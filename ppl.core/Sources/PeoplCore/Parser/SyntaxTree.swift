@@ -254,48 +254,22 @@ struct UnionType: Encodable, SyntaxNode {
 // MARK: - Expressions
 // -------------------
 
-enum ExpressionType: Encodable {
-    case bool
-    // literals can be any int type based on the constraint
-    case constrainedUInt64 //  > 2^63
-    case constrainedInt64  //  > 2^32
-    case constrainedUInt32 //  > 2^31
-    case constrainedInt32  //  > 2^16
-    case constrainedUInt16 //  > 2^15
-    case constrainedInt16  //  > 2^8
-    case constrainedUInt8  //  > 2^7
-    case constrainedInt8   //  > 0
-}
-enum TypedExpression: Encodable {
-    case nothing
-    case never
-    case intLiteral(value: Int, type: TypeIdentifier)
-    case floatLiteral(value: Float, type: TypeIdentifier)
-    case stringLiteral(value: String)
-    case boolLiteral(value: Bool)
-    case unary(Operator, expression: Expression, type: TypeIdentifier)
-    case binary(Operator, left: Expression, right: Expression, type: TypeIdentifier)
-    case unnamedTuple([TypedExpression], type: TypeIdentifier)
-}
-
 struct Expression: Encodable, SyntaxNode {
     let expressionType: ExpressionType
     let location: NodeLocation
-    // FIX: the type identifier here should not contain unkown
-    let typeIdentifier: TypeIdentifier // TODO: Maybe this should not be a stored property like this but part of the expression type
-    // being part of the expression type means no inconsistencies for expression like literal and nothing
 
     init(expressionType: ExpressionType, location: NodeLocation) {
         self.expressionType = expressionType
         self.location = location
     }
 
+
     indirect enum ExpressionType: Encodable, Sendable {
         case nothing
         case never
         // Literals
-        case intLiteral(Int)
-        case floatLiteral(Float)
+        case intLiteral(UInt64)
+        case floatLiteral(Double)
         case stringLiteral(String)
         case boolLiteral(Bool)
 
@@ -332,25 +306,11 @@ struct Expression: Encodable, SyntaxNode {
         let command: Prefix
         let arguments: [Argument]
         let location: NodeLocation
-        let typeIdentifier: TypeIdentifier
 
         init(command: Prefix, arguments: [Argument], location: NodeLocation) {
             self.command = command
             self.arguments = arguments
             self.location = location
-            self.typeIdentifier = .unkown() 
-        }
-
-        init(
-            command: Prefix,
-            arguments: [Argument],
-            location: NodeLocation,
-            typeIdentifier: TypeIdentifier
-        ) {
-            self.command = command
-            self.arguments = arguments
-            self.location = location
-            self.typeIdentifier = typeIdentifier 
         }
     }
 
@@ -365,27 +325,12 @@ struct Expression: Encodable, SyntaxNode {
         let branches: [Branch]
         let lastBranch: Expression?
         let location: NodeLocation
-        let typeIdentifier: TypeIdentifier
 
         init(branches: [Branch], lastBranch: Expression?, location: NodeLocation) {
             self.branches = branches
             self.lastBranch = lastBranch
             self.location = location
-            self.typeIdentifier = .unkown()
         }
-
-        init(
-            branches: [Branch],
-            lastBranch: Expression?,
-            location: NodeLocation,
-            typeIdentifier: TypeIdentifier
-        ) {
-            self.branches = branches
-            self.lastBranch = lastBranch
-            self.location = location
-            self.typeIdentifier = typeIdentifier
-        }
-
 
         enum CaptureGroup: Encodable {
             case simple(Expression)
@@ -398,25 +343,11 @@ struct Expression: Encodable, SyntaxNode {
             let captureGroup: [CaptureGroup]
             let body: Body
             let location: NodeLocation
-            let typeIdentifier: TypeIdentifier
 
             init(captureGroup: [CaptureGroup], body: Body, location: NodeLocation) {
                 self.captureGroup = captureGroup
                 self.body = body
                 self.location = location
-                self.typeIdentifier = .unkown()
-            }
-
-            init(
-                captureGroup: [CaptureGroup],
-                body: Body,
-                location: NodeLocation,
-                typeIdentifier: TypeIdentifier
-            ) {
-                self.captureGroup = captureGroup
-                self.body = body
-                self.location = location
-                self.typeIdentifier = typeIdentifier
             }
 
             enum Body: Encodable {

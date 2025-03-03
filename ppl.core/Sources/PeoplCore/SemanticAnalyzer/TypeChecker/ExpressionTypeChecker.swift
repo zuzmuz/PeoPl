@@ -1,30 +1,108 @@
+enum IntValueConstraint {
+    case UInt64
+    case Int64
+    case UInt32
+    case Int32
+    case UInt16
+    case Int16
+    case UInt8
+    case Int8
+
+    init(from value: UInt64) {
+        if value >= 1<<63 {
+            self = .UInt64
+        } else if value >= 1<<32 {
+            self = .Int64
+        } else if value >= 1<<31 {
+            self = .UInt32
+        } else if value >= 1<<16 {
+            self = .Int32
+        } else if value >= 1<<15 {
+            self = .UInt16
+        } else if value >= 1<<8 {
+            self = .Int16
+        } else if value >= 1<<7 {
+            self = .UInt8
+        } else {
+            self = .Int8
+        }
+    }
+}
+
+enum TypedExpressionType {
+    case nothing
+    case never
+    case bool
+    case int(constraint: IntValueConstraint)
+    case float
+    case string
+    case custom(TypeIdentifier)
+}
+
+enum TypedExpression {
+    case nothing
+    case never
+    case intLiteral(value: UInt64, constraint: IntValueConstraint)
+    case floatLiteral(value: Double)
+    case stringLiteral(value: String)
+    case boolLiteral(value: Bool)
+    case unary(Operator, expression: Expression, type: TypedExpressionType)
+    case binary(Operator, left: Expression, right: Expression, type: TypedExpressionType)
+    case unnamedTuple([TypedExpression], type: TypedExpressionType)
+    case namedTuple([Expression.Argument], type: TypedExpressionType)
+    case lambda(Expression, type: TypedExpressionType)
+    case call(Expression.Call, type: TypedExpressionType)
+    case access(Expression.Access, type: TypedExpressionType)
+    case field(String, type: TypedExpressionType)
+    case branched(Expression.Branched, type: TypedExpressionType)
+    case piped(left: Expression, right: Expression, type: TypedExpressionType)
+
+    var type: TypedExpressionType {
+        switch self {
+        case .nothing:
+            return .nothing
+        case .never:
+            return .never
+        case .intLiteral(_, let constraint):
+            return .int(constraint: constraint)
+        case .floatLiteral:
+            return .float
+        case .stringLiteral:
+            return .string
+        case .boolLiteral:
+            return .bool
+        case .unary(_, _, let type),
+            .binary(_, _, _, let type),
+            .unnamedTuple(_, let type),
+            .namedTuple(_, let type),
+            .lambda(_, let type), // WARN: this might not be correct
+            .call(_, let type),
+            .access(_, let type),
+            .field(_, let type),
+            .branched(_, let type),
+            .piped(_, _, let type):
+            return type
+        }
+    }
+}
+
+
+
 protocol ExpressionTypeChecker {
     func checkType(
-        with input: TypeIdentifier,
+        with input: TypedExpressionType,
         localScope: LocalScope,
         context: borrowing SemanticContext
-    ) throws(ExpressionSemanticError) -> Self
+    ) throws(ExpressionSemanticError) -> TypedExpression
 }
 
 
 extension Expression: ExpressionTypeChecker {
-
-    func with(typeIdentifier: TypeIdentifier) -> Expression {
-        return .init(
-            expressionType: self.expressionType,
-            location: self.location,
-            typeIdentifier: typeIdentifier)
-    }
-
     func checkType(
-        with input: TypeIdentifier,
+        with input: TypedExpressionType,
         localScope: LocalScope,
         context: borrowing SemanticContext
-    ) throws(ExpressionSemanticError) -> Expression {
-
-        guard case .unkown = self.typeIdentifier else { // if type is already known
-            return self
-        }
+    ) throws(ExpressionSemanticError) -> TypedExpression {
 
         switch (input, self.expressionType) {
         // Never
@@ -32,20 +110,20 @@ extension Expression: ExpressionTypeChecker {
             throw .reachedNever(expression: self)
         //Nothing
         case (.nothing, .nothing):
-            return self.with(typeIdentifier: .nothing())
+            return .nothing
         // NOTE: think of generic int type for automatic inference
         // Literals
-        case (.nothing, .intLiteral):
+        case (.nothing, .intLiteral(let value)):
             // NOTE: consider undefined number type (with resetriction),
             // for example 10 can be an I8, I16 .. but also U8 ...
             // however 300 can not be I8, interesting logic
-            return self.with(typeIdentifier: Builtins.i32)
-        case (.nothing, .floatLiteral):
-            return self.with(typeIdentifier: Builtins.f64)
-        case (.nothing, .stringLiteral):
-            return self.with(typeIdentifier: Builtins.string)
-        case (.nothing, .boolLiteral):
-            return self.with(typeIdentifier: Builtins.bool)
+            return .intLiteral(value: value, constraint: .init(from: value))
+        case (.nothing, .floatLiteral(let value)):
+            return .floatLiteral(value: value)
+        case (.nothing, .stringLiteral(let value)):
+            return .stringLiteral(value: value)
+        case (.nothing, .boolLiteral(let value)):
+            return .boolLiteral(value: value)
         case (_, .nothing),
             (_, .intLiteral),
             (_, .floatLiteral),
@@ -53,7 +131,7 @@ extension Expression: ExpressionTypeChecker {
             (_, .boolLiteral):
             throw .inputMismatch(
                 expression: self,
-                expected: .nothing(),
+                expected: .nothing,
                 received: input)
 
         // Unary
@@ -62,27 +140,24 @@ extension Expression: ExpressionTypeChecker {
         // this is tricky, cause I should make sure that the number can be expressed as type
         case let (input, .unary(op, expression)):
             let right = try expression.checkType(
-                with: .nothing(),
+                with: .nothing,
                 localScope: localScope,
                 context: context)
 
-            switch (input, op, right.typeIdentifier) {
-            case (.nothing, .plus, Builtins.i32),
+            switch (input, op, right) {
+            case (.nothing, .plus, .intLiteral),
                 // TODO: continuation on the undefined number type, undefined numbers with - prefix will automatically become signed.
-                (.nothing, .minus, Builtins.i32),
-                (.nothing, .plus, Builtins.f64),
-                (.nothing, .minus, Builtins.f64),
-                (.nothing, .not, Builtins.bool),
-                (Builtins.i32, .plus, Builtins.i32),
-                (Builtins.f64, .minus, Builtins.f64),
-                (Builtins.i32, .plus, Builtins.i32),
-                (Builtins.f64, .minus, Builtins.f64),
-                (Builtins.bool, .and, Builtins.bool),
-                (Builtins.bool, .or, Builtins.bool):
-                return .init(
-                    expressionType: .unary(op, expression: right),
-                    location: self.location,
-                    typeIdentifier: right.typeIdentifier)
+                (.nothing, .minus, .intLiteral),
+                (.nothing, .plus, .floatLiteral),
+                (.nothing, .minus, .floatLiteral),
+                (.nothing, .not, .boolLiteral),
+                (.float, .plus, .floatLiteral),
+                (.float, .minus, .floatLiteral),
+                (.bool, .and, .boolLiteral),
+                (.bool, .or, .boolLiteral):
+                return .unary(op, expression: right, type: right)
+            case (.int(let leftConstraint), .plus, .intLiteral(_, let rightConstraint)):
+                
             default:
                 throw .invalidOperation(
                     expression: self,

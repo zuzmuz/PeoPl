@@ -50,8 +50,6 @@ extension TypeDefinition: DebugableSyntaxNode {
 extension TypeIdentifier: DebugableSyntaxNode {
     func encode(to encoder: any Encoder) throws {
         switch self {
-        case .unkown:
-            try "unkown".encode(to: encoder)
         case .nothing:
             try "nothing".encode(to: encoder)
         case .never:

@@ -477,8 +477,6 @@ extension Expression {
             guard let expressionType = Expression.ExpressionType(from: node, in: source) else { return nil }
             self.expressionType = expressionType
         }
-
-        self.typeIdentifier = .unkown()
     }
 }
 
@@ -518,11 +516,11 @@ extension Expression.ExpressionType {
             self = .never
         case CodingKeys.intLiteral.rawValue:
             guard let intText = node.getString(in: source),
-                  let intValue = Int(intText) else { return nil }
+                  let intValue = UInt64(intText) else { return nil } // WARN: check for hex strings
             self = .intLiteral(intValue)
         case CodingKeys.floatLiteral.rawValue:
             guard let floatText = node.getString(in: source),
-                  let floatValue = Float(floatText) else { return nil }
+                  let floatValue = Double(floatText) else { return nil }
             self = .floatLiteral(floatValue)
         case CodingKeys.stringLiteral.rawValue:
             guard let stringValue = node.getString(in: source) else { return nil }
@@ -654,8 +652,6 @@ extension Expression.Call {
         } else {
             self.arguments = []
         }
-
-        self.typeIdentifier = .unkown()
     }
 }
 
@@ -713,8 +709,6 @@ extension Expression.Branched {
         } else {
             nil
         }
-
-        self.typeIdentifier = .unkown()
     }
 }
 
@@ -732,8 +726,6 @@ extension Expression.Branched.Branch {
         guard let bodyNode = node.child(byFieldName: "body"),
               let body = Expression.Branched.Branch.Body(from: bodyNode, in: source) else { return nil }
         self.body = body
-
-        self.typeIdentifier = .unkown()
     }
 }
 

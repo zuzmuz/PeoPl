@@ -44,15 +44,15 @@ enum FunctionSemanticError: LocalizedError {
 enum ExpressionSemanticError: LocalizedError {
     case inputMismatch(
         expression: Expression,
-        expected: TypeIdentifier,
-        received: TypeIdentifier)
+        expected: TypedExpressionType,
+        received: TypedExpressionType)
     case invalidOperation(
         expression: Expression,
-        leftType: TypeIdentifier,
-        rightType: TypeIdentifier)
+        leftType: TypedExpressionType,
+        rightType: TypedExpressionType)
     case callingUncallable(
         expression: Expression,
-        type: TypeIdentifier)
+        type: TypedExpressionType)
     case undefinedTypeInitializer(
         nominalType: NominalType)
     case undifienedFunction(
@@ -60,12 +60,12 @@ enum ExpressionSemanticError: LocalizedError {
         function: FunctionIdentifier)
     case undifinedFunctionOnInput(
         call: Expression.Call,
-        input: TypeIdentifier,
+        input: TypedExpressionType,
         function: FunctionIdentifier)
     case argumentMismatch(
         call: Expression.Call,
         givenArguments: [ParamDefinition],
-        inputType: TypeIdentifier,
+        inputType: TypedExpressionType,
         function: FunctionIdentifier)
     case typeInitializeArgumentMismatch(
         call: Expression.Call,
@@ -75,18 +75,18 @@ enum ExpressionSemanticError: LocalizedError {
         expression: Expression)
     case captureGroupCountMismatch(
         branch: Expression.Branched.Branch,
-        inputType: TypeIdentifier,
+        inputType: TypedExpressionType,
         captureGroupCount: Int)
     case loopedExpressionTypeMismatch(
         expression: Expression,
-        expectedType: TypeIdentifier,
-        receivedType: TypeIdentifier)
+        expectedType: TypedExpressionType,
+        receivedType: TypedExpressionType)
     case reachedNever(
         expression: Expression)
     case returnTypeMismatch(
         functionDefinition: FunctionDefinition,
-        expectedReturnType: TypeIdentifier,
-        receivedType: TypeIdentifier)
+        expectedReturnType: TypedExpressionType,
+        receivedType: TypedExpressionType)
     case emptyFunctionBody(
         functionDefinition: FunctionDefinition
     )
