@@ -174,6 +174,7 @@ struct OperatorOverloadDefinition: Encodable, SyntaxNode {
 // -------------
 
 enum TypeIdentifier: Encodable, SyntaxNode, Sendable {
+    // FIX: unkown shouldn't be here
     case unkown(location: NodeLocation = .nowhere)
     // case undefinedNumber(location: NodeLocation = .nowhere)
     // case undefinedDecimalNumber(location: NodeLocation = .nowhere)
@@ -260,6 +261,7 @@ struct UnionType: Encodable, SyntaxNode {
 struct Expression: Encodable, SyntaxNode {
     let expressionType: ExpressionType
     let location: NodeLocation
+    // FIX: the type identifier here should not contain unkown
     let typeIdentifier: TypeIdentifier // TODO: Maybe this should not be a stored property like this but part of the expression type
     // being part of the expression type means no inconsistencies for expression like literal and nothing
 
