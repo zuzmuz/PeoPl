@@ -1,12 +1,15 @@
-enum IntValueConstraint {
-    case UInt64
-    case Int64
-    case UInt32
-    case Int32
-    case UInt16
-    case Int16
-    case UInt8
+// NOTE: the idea of value constraint is interesting, but I don't
+// want to implement this cause it might interfere with function overloading on Int types
+
+enum IntValueConstraint: Comparable {
     case Int8
+    case UInt8
+    case Int16
+    case UInt16
+    case Int32
+    case UInt32
+    case Int64
+    case UInt64
 
     init(from value: UInt64) {
         if value >= 1<<63 {
@@ -36,26 +39,29 @@ enum TypedExpressionType {
     case int(constraint: IntValueConstraint)
     case float
     case string
-    case custom(TypeIdentifier)
+    case nominal(TypeIdentifier)
+    case unnamedTuple([TypedExpressionType])
+    case namedTuple([String: TypedExpressionType])
+    // case lambda TODO: implement lambdas (someday)
 }
 
-enum TypedExpression {
+indirect enum TypedExpression {
     case nothing
     case never
     case intLiteral(value: UInt64, constraint: IntValueConstraint)
     case floatLiteral(value: Double)
     case stringLiteral(value: String)
     case boolLiteral(value: Bool)
-    case unary(Operator, expression: Expression, type: TypedExpressionType)
-    case binary(Operator, left: Expression, right: Expression, type: TypedExpressionType)
+    case unary(Operator, expression: TypedExpression, type: TypedExpressionType)
+    case binary(Operator, left: TypedExpression, right: TypedExpression, type: TypedExpressionType)
     case unnamedTuple([TypedExpression], type: TypedExpressionType)
-    case namedTuple([Expression.Argument], type: TypedExpressionType)
-    case lambda(Expression, type: TypedExpressionType)
+    case namedTuple([String: TypedExpression], type: TypedExpressionType)
+    case lambda(TypedExpression, type: TypedExpressionType)
     case call(Expression.Call, type: TypedExpressionType)
     case access(Expression.Access, type: TypedExpressionType)
     case field(String, type: TypedExpressionType)
     case branched(Expression.Branched, type: TypedExpressionType)
-    case piped(left: Expression, right: Expression, type: TypedExpressionType)
+    case piped(left: TypedExpression, right: TypedExpression, type: TypedExpressionType)
 
     var type: TypedExpressionType {
         switch self {
@@ -144,25 +150,28 @@ extension Expression: ExpressionTypeChecker {
                 localScope: localScope,
                 context: context)
 
-            switch (input, op, right) {
-            case (.nothing, .plus, .intLiteral),
+            switch (input, op, right.type) {
+            case (.nothing, .plus, .int),
                 // TODO: continuation on the undefined number type, undefined numbers with - prefix will automatically become signed.
-                (.nothing, .minus, .intLiteral),
-                (.nothing, .plus, .floatLiteral),
-                (.nothing, .minus, .floatLiteral),
-                (.nothing, .not, .boolLiteral),
-                (.float, .plus, .floatLiteral),
-                (.float, .minus, .floatLiteral),
-                (.bool, .and, .boolLiteral),
-                (.bool, .or, .boolLiteral):
-                return .unary(op, expression: right, type: right)
-            case (.int(let leftConstraint), .plus, .intLiteral(_, let rightConstraint)):
-                
+                (.nothing, .minus, .int),
+                (.nothing, .plus, .float),
+                (.nothing, .minus, .float),
+                (.nothing, .not, .bool),
+                (.float, .plus, .float),
+                (.float, .minus, .float),
+                (.bool, .and, .bool),
+                (.bool, .or, .bool):
+                return .unary(op, expression: right, type: right.type)
+            case (.int(let leftConstraint), .plus, .int(let rightConstraint)):
+                return .unary(
+                    op,
+                    expression: right,
+                    type: .int(constraint: max(leftConstraint, rightConstraint)))
             default:
                 throw .invalidOperation(
                     expression: self,
                     leftType: input,
-                    rightType: right.typeIdentifier)
+                    rightType: right.type)
             }
         case let (.nothing, .binary(op, leftExpression, rightExpression)):
             let left = try leftExpression.checkType(
@@ -173,87 +182,68 @@ extension Expression: ExpressionTypeChecker {
                 with: input,
                 localScope: localScope,
                 context: context)
-            switch (op, left.typeIdentifier, right.typeIdentifier) {
-            case (.plus, Builtins.i32, Builtins.i32),
-                (.minus, Builtins.i32, Builtins.i32),
-                (.times, Builtins.i32, Builtins.i32),
-                (.by, Builtins.i32, Builtins.i32),
-                (.modulo, Builtins.i32, Builtins.i32),
-                (.plus, Builtins.f64, Builtins.f64),
-                (.minus, Builtins.f64, Builtins.f64),
-                (.times, Builtins.f64, Builtins.f64),
-                (.by, Builtins.f64, Builtins.f64):
-                return .init(
-                    expressionType: .binary(op, left: left, right: right),
-                    location: self.location,
-                    typeIdentifier: right.typeIdentifier)
-            case (.and, Builtins.bool, Builtins.bool),
-                (.or, Builtins.bool, Builtins.bool),
-                (.equal, Builtins.i32, Builtins.i32),
-                (.different, Builtins.i32, Builtins.i32),
-                (.equal, Builtins.f64, Builtins.f64),
-                (.different, Builtins.f64, Builtins.f64),
-                (.equal, Builtins.string, Builtins.string),
-                (.different, Builtins.string, Builtins.string),
-                (.equal, Builtins.bool, Builtins.bool),
-                (.different, Builtins.bool, Builtins.bool),
-                (.lessThan, Builtins.i32, Builtins.i32),
-                (.lessThanOrEqual, Builtins.i32, Builtins.i32),
-                (.greaterThan, Builtins.i32, Builtins.i32),
-                (.greaterThanOrEqual, Builtins.i32, Builtins.i32),
-                (.lessThan, Builtins.f64, Builtins.f64),
-                (.lessThanOrEqual, Builtins.f64, Builtins.f64),
-                (.greaterThan, Builtins.f64, Builtins.f64),
-                (.greaterThanOrEqual, Builtins.f64, Builtins.f64):
-                return .init(
-                    expressionType: .binary(op, left: left, right: right),
-                    location: self.location,
-                    typeIdentifier: Builtins.bool)
+            switch (op, left.type, right.type) {
+            case (.plus, .int(let leftConstraint), .int(let rightConstraint)),
+                (.minus, .int(let leftConstraint), .int(let rightConstraint)),
+                (.times, .int(let leftConstraint), .int(let rightConstraint)),
+                (.by, .int(let leftConstraint), .int(let rightConstraint)),
+                (.modulo, .int(let leftConstraint), .int(let rightConstraint)):
+                return .binary(op, left: left, right: right, type: .int(constraint: max(leftConstraint, rightConstraint)))
+            case (.plus, .float, .float),
+                (.minus, .float, .float),
+                (.times, .float, .float),
+                (.by, .float, .float):
+                return .binary(op, left: left, right: right, type: .float)
+            case (.and, .bool, .bool),
+                (.or, .bool, .bool),
+                (.equal, .int, .int),
+                (.different, .int, .int),
+                (.equal, .float, .float),
+                (.different, .float, .float),
+                (.equal, .string, .string),
+                (.different, .string, .string),
+                (.equal, .bool, .bool),
+                (.different, .bool, .bool),
+                (.lessThan, .int, .int),
+                (.lessThanOrEqual, .int, .int),
+                (.greaterThan, .int, .int),
+                (.greaterThanOrEqual, .int, .int),
+                (.lessThan, .float, .float),
+                (.lessThanOrEqual, .float, .float),
+                (.greaterThan, .float, .float),
+                (.greaterThanOrEqual, .float, .float):
+                return .binary(op, left: left, right: right, type: .bool)
             default:
                 throw .invalidOperation(
                     expression: self,
-                    leftType: left.typeIdentifier,
-                    rightType: right.typeIdentifier)
+                    leftType: left.type,
+                    rightType: right.type)
             }
         case (_, .binary):
-            throw .inputMismatch(expression: self, expected: .nothing(), received: input)
+            throw .inputMismatch(expression: self, expected: .nothing, received: input)
         case let (.nothing, .unnamedTuple(expressions)):
             let typedExpressions = try expressions.map { expression throws(ExpressionSemanticError) in
                 try expression.checkType(
-                    with: .nothing(),
+                    with: .nothing,
                     localScope: localScope,
                     context: context)
             }
-            return .init(
-                expressionType: .unnamedTuple(typedExpressions),
-                location: self.location,
-                typeIdentifier: .unnamedTuple(
-                    .init(
-                        types: typedExpressions.map { $0.typeIdentifier },
-                        location: .nowhere)))
+            return .unnamedTuple(typedExpressions, type: .unnamedTuple(typedExpressions.map { $0.type }))
         case let (.nothing, .namedTuple(arguments)):
             let typedArguments = try arguments.map { argument throws(ExpressionSemanticError) in
-                Expression.Argument(
-                    name: argument.name,
-                    value: try argument.value.checkType(
-                        with: .nothing(), localScope: localScope, context: context),
-                    location: argument.location)
-            }
-            let paramDefinitions = typedArguments.map { argument in
-                ParamDefinition(
-                    name: argument.name,
-                    type: argument.value.typeIdentifier,
-                    location: .nowhere)
+                (name: argument.name, value: try argument.value.checkType(
+                    with: .nothing,
+                    localScope: localScope,
+                    context: context))
+            }.reduce(into: [:]) { partialResult, argument in // this was separated because typed Exceptions don't work properly with reduce
+                partialResult[argument.name] = argument.value
             }
 
-            return .init(
-                expressionType: .namedTuple(typedArguments),
-                location: self.location,
-                typeIdentifier: .namedTuple(.init(types: paramDefinitions, location: .nowhere)))
+            return .namedTuple(typedArguments, type: .namedTuple(typedArguments.mapValues { $0.type }))
         case (_, .namedTuple), (_, .unnamedTuple):
             throw .inputMismatch(
                 expression: self,
-                expected: .nothing(),
+                expected: .nothing,
                 received: input)
 
         case let (_, .lambda(expression)):
