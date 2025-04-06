@@ -67,7 +67,7 @@ struct TypeIdentifierIterator: IteratorProtocol {
 
     init(_ typeIdentifier: TypeIdentifier) {
         switch typeIdentifier {
-        case .unkown, .nothing, .never, .nominal, .lambda, .union:
+        case .nothing, .never, .nominal, .lambda, .union:
             content = [typeIdentifier]
         case let .unnamedTuple(tuple):
             content = tuple.types
@@ -84,6 +84,6 @@ struct TypeIdentifierIterator: IteratorProtocol {
 }
 
 extension Expression {
-    static let empty = Expression(expressionType: .nothing, location: .nowhere, typeIdentifier: .nothing())
-    static let never = Expression(expressionType: .never, location: .nowhere, typeIdentifier: .never())
+    static let empty = Expression(expressionType: .nothing, location: .nowhere)
+    static let never = Expression(expressionType: .never, location: .nowhere)
 }

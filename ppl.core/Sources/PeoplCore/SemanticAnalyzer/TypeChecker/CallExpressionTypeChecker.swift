@@ -14,7 +14,8 @@ extension Expression.Call: ExpressionTypeChecker {
         with input: TypeIdentifier,
         localScope: LocalScope,
         context: borrowing SemanticContext
-    ) throws(ExpressionSemanticError) -> Expression.Call {
+    ) throws(ExpressionSemanticError) -> TypedExpression {
+
         let callable: Callable
         switch self.command {
         case let .simple(expression):
@@ -32,21 +33,8 @@ extension Expression.Call: ExpressionTypeChecker {
                         input: input,
                         typedCommand: self.command)
                 case let .simple(accessedExpression):
-                    let typedExpression = try accessedExpression.checkType(
-                        with: input, localScope: localScope, context: context)
-
-                    callable = .function(
-                        identifier: FunctionIdentifier(scope: nil, name: access.field),
-                        input: typedExpression.typeIdentifier,
-                        typedCommand: .simple(
-                        .init(
-                            expressionType: .access(
-                                .init(
-                                    accessed: .simple(typedExpression),
-                                    field: access.field,
-                                    location: access.location)),
-                            location: expression.location,
-                            typeIdentifier: typedExpression.typeIdentifier)))
+                    // NOTE: this is calling a lambda of an object
+                    throw .unsupportedYet("calling attributes of objects")
                 }
             case let .lambda(lambda):
                 throw .unsupportedYet("Direct lambda calls")
@@ -54,7 +42,7 @@ extension Expression.Call: ExpressionTypeChecker {
                 throw .callingUncallable(
                     expression: expression,
                     type: try expression.checkType(
-                        with: input, localScope: localScope, context: context).typeIdentifier
+                        with: input, localScope: localScope, context: context).type
                 )
             }
         case let .type(type):

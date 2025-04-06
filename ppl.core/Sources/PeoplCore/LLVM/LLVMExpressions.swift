@@ -1,25 +1,22 @@
 import cllvm
 
-extension Expression: LLVM.ValueBuilder {
+extension TypedExpression: LLVM.ValueBuilder {
     func llvmBuildValue(
         llvm: inout LLVM.Builder,
         scope: borrowing [String: LLVMValueRef]
     ) throws(LLVM.Error) -> LLVMValueRef {
         // TODO: generate typeref for builtins to use in literals,
         // also consider using the generic undefined literals (getting type from expression rather assuming the literal)
-        switch expressionType {
+        switch self {
         case .nothing:
             return LLVMConstNull(LLVMVoidTypeInContext(llvm.context))
         case .never:
             return LLVMBuildUnreachable(llvm.builder)
         case let .intLiteral(value):
-            return LLVMConstInt(
-                try self.typeIdentifier.llvmGetType(llvm: &llvm),
-                UInt64(value < 0 ? -value : value),
-                value < 0 ? 1 : 0)
+            return LLVMConstInt(try self.type.llvmGetType(llvm: &llvm), value, 0)
         case let .floatLiteral(value):
             return LLVMConstReal(
-                try self.typeIdentifier.llvmGetType(llvm: &llvm),
+                try self.type.llvmGetType(llvm: &llvm),
                 Double(value))
         case let .stringLiteral(value):
             // WARN: not sure about this one
@@ -29,23 +26,23 @@ extension Expression: LLVM.ValueBuilder {
                 LLVMInt1TypeInContext(llvm.context),
                 value ? 1 : 0,
                 0)
-        case let .binary(op, left, right):
+        case let .binary(op, left, right, type):
             let lhs = try left.llvmBuildValue(llvm: &llvm, scope: scope)
             let rhs = try right.llvmBuildValue(llvm: &llvm, scope: scope)
             
             switch op {
             case .plus:
                 // Check if we're dealing with integers or floating point
-                let leftType = try left.typeIdentifier.llvmGetType(llvm: &llvm)
-                if LLVMGetTypeKind(leftType) == LLVMFloatTypeKind || LLVMGetTypeKind(leftType) == LLVMDoubleTypeKind {
+                let llvmType = try type.llvmGetType(llvm: &llvm)
+                if LLVMGetTypeKind(llvmType) == LLVMFloatTypeKind || LLVMGetTypeKind(llvmType) == LLVMDoubleTypeKind {
                     return LLVMBuildFAdd(llvm.builder, lhs, rhs, "fadd")
                 } else {
                     return LLVMBuildAdd(llvm.builder, lhs, rhs, "add")
                 }
                 
             case .minus:
-                let leftType = try left.typeIdentifier.llvmGetType(llvm: &llvm)
-                if LLVMGetTypeKind(leftType) == LLVMFloatTypeKind || LLVMGetTypeKind(leftType) == LLVMDoubleTypeKind {
+                let llvmType = try left.type.llvmGetType(llvm: &llvm)
+                if LLVMGetTypeKind(llvmType) == LLVMFloatTypeKind || LLVMGetTypeKind(llvmType) == LLVMDoubleTypeKind {
                     return LLVMBuildFSub(llvm.builder, lhs, rhs, "fsub")
                 } else {
                     return LLVMBuildSub(llvm.builder, lhs, rhs, "sub")

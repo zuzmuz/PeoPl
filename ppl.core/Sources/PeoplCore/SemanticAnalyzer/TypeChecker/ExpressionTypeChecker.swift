@@ -1,82 +1,35 @@
-// NOTE: the idea of value constraint is interesting, but I don't
-// want to implement this cause it might interfere with function overloading on Int types
-
-enum IntValueConstraint: Comparable {
-    case Int8
-    case UInt8
-    case Int16
-    case UInt16
-    case Int32
-    case UInt32
-    case Int64
-    case UInt64
-
-    init(from value: UInt64) {
-        if value >= 1<<63 {
-            self = .UInt64
-        } else if value >= 1<<32 {
-            self = .Int64
-        } else if value >= 1<<31 {
-            self = .UInt32
-        } else if value >= 1<<16 {
-            self = .Int32
-        } else if value >= 1<<15 {
-            self = .UInt16
-        } else if value >= 1<<8 {
-            self = .Int16
-        } else if value >= 1<<7 {
-            self = .UInt8
-        } else {
-            self = .Int8
-        }
-    }
-}
-
-enum TypedExpressionType {
-    case nothing
-    case never
-    case bool
-    case int(constraint: IntValueConstraint)
-    case float
-    case string
-    case nominal(TypeIdentifier)
-    case unnamedTuple([TypedExpressionType])
-    case namedTuple([String: TypedExpressionType])
-    // case lambda TODO: implement lambdas (someday)
-}
-
 indirect enum TypedExpression {
     case nothing
     case never
-    case intLiteral(value: UInt64, constraint: IntValueConstraint)
+    case intLiteral(value: UInt64)
     case floatLiteral(value: Double)
     case stringLiteral(value: String)
     case boolLiteral(value: Bool)
-    case unary(Operator, expression: TypedExpression, type: TypedExpressionType)
-    case binary(Operator, left: TypedExpression, right: TypedExpression, type: TypedExpressionType)
-    case unnamedTuple([TypedExpression], type: TypedExpressionType)
-    case namedTuple([String: TypedExpression], type: TypedExpressionType)
-    case lambda(TypedExpression, type: TypedExpressionType)
-    case call(Expression.Call, type: TypedExpressionType)
-    case access(Expression.Access, type: TypedExpressionType)
-    case field(String, type: TypedExpressionType)
-    case branched(Expression.Branched, type: TypedExpressionType)
-    case piped(left: TypedExpression, right: TypedExpression, type: TypedExpressionType)
+    case unary(Operator, expression: TypedExpression, type: TypeIdentifier)
+    case binary(Operator, left: TypedExpression, right: TypedExpression, type: TypeIdentifier)
+    case unnamedTuple([TypedExpression], type: TypeIdentifier)
+    case namedTuple([String: TypedExpression], type: TypeIdentifier)
+    case lambda(TypedExpression, type: TypeIdentifier)
+    case call(Expression.Call, type: TypeIdentifier)
+    case access(Expression.Access, type: TypeIdentifier)
+    case field(String, type: TypeIdentifier)
+    case branched(Expression.Branched, type: TypeIdentifier)
+    case piped(left: TypedExpression, right: TypedExpression, type: TypeIdentifier)
 
-    var type: TypedExpressionType {
+    var type: TypeIdentifier {
         switch self {
         case .nothing:
-            return .nothing
+            return .nothing()
         case .never:
-            return .never
-        case .intLiteral(_, let constraint):
-            return .int(constraint: constraint)
+            return .never()
+        case .intLiteral:
+            return Builtins.i64
         case .floatLiteral:
-            return .float
+            return Builtins.f64
         case .stringLiteral:
-            return .string
+            return Builtins.string
         case .boolLiteral:
-            return .bool
+            return Builtins.bool
         case .unary(_, _, let type),
             .binary(_, _, _, let type),
             .unnamedTuple(_, let type),
@@ -96,7 +49,7 @@ indirect enum TypedExpression {
 
 protocol ExpressionTypeChecker {
     func checkType(
-        with input: TypedExpressionType,
+        with input: TypeIdentifier,
         localScope: LocalScope,
         context: borrowing SemanticContext
     ) throws(ExpressionSemanticError) -> TypedExpression
@@ -105,7 +58,7 @@ protocol ExpressionTypeChecker {
 
 extension Expression: ExpressionTypeChecker {
     func checkType(
-        with input: TypedExpressionType,
+        with input: TypeIdentifier,
         localScope: LocalScope,
         context: borrowing SemanticContext
     ) throws(ExpressionSemanticError) -> TypedExpression {
@@ -123,7 +76,7 @@ extension Expression: ExpressionTypeChecker {
             // NOTE: consider undefined number type (with resetriction),
             // for example 10 can be an I8, I16 .. but also U8 ...
             // however 300 can not be I8, interesting logic
-            return .intLiteral(value: value, constraint: .init(from: value))
+            return .intLiteral(value: value)
         case (.nothing, .floatLiteral(let value)):
             return .floatLiteral(value: value)
         case (.nothing, .stringLiteral(let value)):
@@ -137,7 +90,7 @@ extension Expression: ExpressionTypeChecker {
             (_, .boolLiteral):
             throw .inputMismatch(
                 expression: self,
-                expected: .nothing,
+                expected: .nothing(),
                 received: input)
 
         // Unary
@@ -146,7 +99,7 @@ extension Expression: ExpressionTypeChecker {
         // this is tricky, cause I should make sure that the number can be expressed as type
         case let (input, .unary(op, expression)):
             let right = try expression.checkType(
-                with: .nothing,
+                with: .nothing(),
                 localScope: localScope,
                 context: context)
 
@@ -249,43 +202,32 @@ extension Expression: ExpressionTypeChecker {
         case let (_, .lambda(expression)):
             throw .unsupportedYet("lambda expression")
         case let (_, .call(call)):
-            let typedCall = try call.checkType(with: input, localScope: localScope, context: context)
-            return .init(
-                expressionType: .call(typedCall),
-                location: typedCall.location,
-                typeIdentifier: typedCall.typeIdentifier)
+            return try call.checkType(with: input, localScope: localScope, context: context)
         case (_, .access(_)):
             throw .unsupportedYet("accessed fields")
         case let (.nothing, .field(field)):
             if let fieldType = localScope.fields[field] {
-                return self.with(typeIdentifier: fieldType)
+                return .field(field, type: fieldType)
             } else {
                 throw .fieldNotInScope(expression: self)
             }
         case (_, .field):
             throw .inputMismatch(
                 expression: self,
-                expected: .nothing(),
+                expected: .nothing,
                 received: input)
         case let (_, .branched(branched)):
-            let typedBranched = try branched.checkType(with: input, localScope: localScope, context: context)
-            return .init(
-                expressionType: .branched(typedBranched),
-                location: self.location,
-                typeIdentifier: typedBranched.typeIdentifier)
+            return try branched.checkType(with: input, localScope: localScope, context: context)
         case let (_, .piped(leftExpression, rightExpression)):
             let typedLeftExpression = try leftExpression.checkType(
                 with: input,
                 localScope: localScope,
                 context: context)
             let typedRightExpression = try rightExpression.checkType(
-                with: typedLeftExpression.typeIdentifier,
+                with: typedLeftExpression.type,
                 localScope: localScope,
                 context: context)
-            return .init(
-                expressionType: .piped(left: typedLeftExpression, right: typedRightExpression),
-                location: self.location,
-                typeIdentifier: typedRightExpression.typeIdentifier)
+            return .piped(left: typedLeftExpression, right: typedRightExpression, type: typedRightExpression.type)
         }
     }
 }

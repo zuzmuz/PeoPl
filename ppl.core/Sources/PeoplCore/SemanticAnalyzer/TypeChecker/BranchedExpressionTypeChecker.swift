@@ -1,9 +1,9 @@
 extension Expression.Branched: ExpressionTypeChecker {
     func checkType(
-        with input: TypeIdentifier,
+        with input: TypedExpressionType,
         localScope: LocalScope,
         context: borrowing SemanticContext
-    ) throws(ExpressionSemanticError) -> Expression.Branched {
+    ) throws(ExpressionSemanticError) -> TypedExpression {
 
         let typedBranches: [Expression.Branched.Branch] = try self.branches.map {
             branch throws(ExpressionSemanticError) in
@@ -20,14 +20,14 @@ extension Expression.Branched: ExpressionTypeChecker {
                 )
             // for some reason swift doesn't support having all these expression together, and fallthrough isn't working
             case (.unnamedTuple(let unnamedTuple), let count)
-            where count != unnamedTuple.types.count && count != 1:
+            where count != unnamedTuple.count && count != 1:
                 throw .captureGroupCountMismatch(
                     branch: branch,
                     inputType: input,
                     captureGroupCount: branch.captureGroup.count
                 )
             case (.namedTuple(let namedTuple), let count)
-            where count != namedTuple.types.count && count != 1:
+            where count != namedTuple.count && count != 1:
                 throw .captureGroupCountMismatch(
                     branch: branch,
                     inputType: input,
@@ -105,17 +105,17 @@ extension Expression.Branched: ExpressionTypeChecker {
         }
         // FIX: verify exhaustiveness of branches
         
-        let typedLastBranch: Expression? = if let lastBranch {
+        let typedLastBranch: TypedExpression? = if let lastBranch {
             try lastBranch.checkType(
-                with: .nothing(),
+                with: .nothing,
                 localScope: localScope,
                 context: context)
         } else {
             nil
         }
 
-        var distinctTypes: Set<TypeIdentifier> = Set(typedBranches.compactMap { branch in
-            if branch.typeIdentifier == .never() {
+        var distinctTypes: Set<TypedExpressionType> = Set(typedBranches.compactMap { branch in
+            if branch.type == .never {
                 return nil
             } else {
                 return branch.typeIdentifier
@@ -123,7 +123,7 @@ extension Expression.Branched: ExpressionTypeChecker {
         })
         
         if let typedLastBranch {
-            distinctTypes = distinctTypes.union([typedLastBranch.typeIdentifier])
+            distinctTypes = distinctTypes.union([typedLastBranch.type])
         }
         if distinctTypes.count > 1 {
             return .init(
