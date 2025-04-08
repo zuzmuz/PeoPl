@@ -230,7 +230,7 @@ extension FunctionDefinition {
             guard let typeIdentifier = TypeIdentifier(from: child, in: source) else { return nil }
             self.inputType = typeIdentifier
         } else {
-            self.inputType = TypeIdentifier.nothing(location: location)
+            self.inputType = .nothing
         }
         let scope: NominalType?
         if let child = node.child(byFieldName: CodingKeys.scope) {
@@ -292,7 +292,7 @@ extension OperatorOverloadDefinition {
         {
             self.left = leftParamDefinition.type
         } else {
-            self.left = .nothing(location: location)
+            self.left = .nothing
         }
         
 
@@ -339,21 +339,20 @@ extension TypeIdentifier {
     }
 
     init?(from node: Node, in source: Source) {
-        guard let child = node.child(at: 0),
-            let location = child.getLocation(in: source) else { return nil }
+        guard let child = node.child(at: 0) else { return nil }
 
         switch child.nodeType {
         case CodingKeys.nothing.rawValue:
-            self = .nothing(location: location)
+            self = .nothing
         case CodingKeys.never.rawValue:
-            self = .never(location: location)
+            self = .never
         case CodingKeys.nominal.rawValue:
             guard let nominal = NominalType(from: child, in: source) else { return nil }
             if nominal.chain.count == 1, 
                 let union = nominal.chain.first, 
                 union.typeName == CodingKeys.union.rawValue && union.typeArguments.count > 0
             {
-                self = .union(UnionType(types: union.typeArguments, location: nominal.location))
+                self = .union(UnionType(types: union.typeArguments))
             } else {
                 self = .nominal(nominal)
             }
@@ -374,9 +373,6 @@ extension TypeIdentifier {
 
 extension NominalType {
     init?(from node: Node, in source: Source) {
-        guard let location = node.getLocation(in: source) else { return nil }
-        self.location = location
-
         self.chain = node.compactMapChildren { child in
             if child.nodeType == NominalType.flatNominalType {
                 return FlatNominalType(from: child, in: source)
@@ -389,9 +385,6 @@ extension NominalType {
 
 extension FlatNominalType {
     init?(from node: Node, in source: Source) {
-        guard let location = node.getLocation(in: source) else { return nil }
-        self.location = location
-
         guard let typeNameNode = node.child(byFieldName: FlatNominalType.typeName),
             let typeName = typeNameNode.getString(in: source)
         else { return nil }
@@ -413,9 +406,6 @@ extension FlatNominalType {
 
 extension StructuralType.UnnamedTuple {
     init?(from node: Node, in source: Source) {
-        guard let location = node.getLocation(in: source) else { return nil }
-        self.location = location
-
         self.types = node.compactMapChildren { child in
             if child.nodeType == TypeIdentifier.typeIdentifier {
                 return TypeIdentifier(from: child, in: source)
@@ -427,9 +417,6 @@ extension StructuralType.UnnamedTuple {
 
 extension StructuralType.NamedTuple {
     init?(from node: Node, in source: Source) {
-        guard let location = node.getLocation(in: source) else { return nil }
-        self.location = location
-
         self.types = node.compactMapChildren { child in
             if child.nodeType == ParamDefinition.rawValue {
                 return ParamDefinition(from: child, in: source)
@@ -452,9 +439,6 @@ extension StructuralType.Lambda {
             let output = TypeIdentifier(from: outputNode, in: source)
         else { return nil }
         self.output = [output]
-
-        guard let location = node.getLocation(in: source) else { return nil }
-        self.location = location
     }
 }
 
