@@ -162,9 +162,9 @@ struct FunctionDefinition: Encodable, SyntaxNode {
 }
 
 struct OperatorOverloadDefinition: Encodable, SyntaxNode {
-    let left: ParamDefinition
+    let left: TypeIdentifier
     let op: Operator
-    let right: ParamDefinition
+    let right: TypeIdentifier
     let outputType: TypeIdentifier
     let body: Expression?
     let location: NodeLocation
@@ -173,53 +173,26 @@ struct OperatorOverloadDefinition: Encodable, SyntaxNode {
 // MARK: - types
 // -------------
 
-enum TypeIdentifier: Encodable, SyntaxNode, Sendable {
-    // case undefinedNumber(location: NodeLocation = .nowhere)
-    // case undefinedDecimalNumber(location: NodeLocation = .nowhere)
-    case nothing(location: NodeLocation = .nowhere)
-    case never(location: NodeLocation = .nowhere)
+enum TypeIdentifier: Encodable, Sendable {
+    case nothing
+    case never
     case nominal(NominalType)
     case lambda(StructuralType.Lambda)
     case namedTuple(StructuralType.NamedTuple)
     case unnamedTuple(StructuralType.UnnamedTuple)
     case union(UnionType)
-
-    var location: NodeLocation {
-        return switch self {
-        // case let .undefinedNumber(location):
-        //     location
-        // case let .undefinedDecimalNumber(location):
-        //     location
-        case let .nothing(location):
-            location
-        case let .never(location):
-            location
-        case let .nominal(nominal):
-            nominal.location
-        case let .lambda(lambda):
-            lambda.location
-        case let .namedTuple(namedTuple):
-            namedTuple.location
-        case let .unnamedTuple(unnamedTuple):
-            unnamedTuple.location
-        case let .union(unionType):
-            unionType.location
-        }
-    }
 }
 
-struct FlatNominalType: Encodable, SyntaxNode {
+struct FlatNominalType: Encodable {
     static let typeName = "type_name"
     static let typeArguments = "type_arguments"
     var typeName: String
     var typeArguments: [TypeIdentifier]
-    var location: NodeLocation
 }
 
-struct NominalType: Encodable, SyntaxNode {
+struct NominalType: Encodable {
     static let flatNominalType = "flat_nominal_type"
     var chain: [FlatNominalType]
-    var location: NodeLocation
 
     var typeName: String {
         // WARN: considering no type arguments
@@ -228,27 +201,23 @@ struct NominalType: Encodable, SyntaxNode {
 }
 
 enum StructuralType {
-    struct Lambda: Encodable, SyntaxNode {
+    struct Lambda: Encodable {
         // TODO: input and output should be 1 and multiple inputs should be tupled
         let input: [TypeIdentifier]
         let output: [TypeIdentifier]
-        let location: NodeLocation
     }
 
-    struct UnnamedTuple: Encodable, SyntaxNode {
+    struct UnnamedTuple: Encodable {
         let types: [TypeIdentifier]
-        let location: NodeLocation
     }
 
-    struct NamedTuple: Encodable, SyntaxNode {
+    struct NamedTuple: Encodable {
         let types: [ParamDefinition]
-        let location: NodeLocation
     }
 }
 
-struct UnionType: Encodable, SyntaxNode {
+struct UnionType: Encodable {
     let types: [TypeIdentifier]
-    let location: NodeLocation
 }
 
 // MARK: - Expressions

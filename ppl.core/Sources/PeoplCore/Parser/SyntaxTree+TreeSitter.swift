@@ -290,12 +290,9 @@ extension OperatorOverloadDefinition {
         if let child = node.child(byFieldName: CodingKeys.left.rawValue),
             let leftParamDefinition = ParamDefinition(from: child, in: source)
         {
-            self.left = leftParamDefinition
+            self.left = leftParamDefinition.type
         } else {
-            self.left = ParamDefinition(
-                name: "left",
-                type: .nothing(location: location),
-                location: location)
+            self.left = .nothing(location: location)
         }
         
 
@@ -306,7 +303,7 @@ extension OperatorOverloadDefinition {
 
         guard let child = node.child(byFieldName: CodingKeys.right.rawValue),
             let rightParamDefinition = ParamDefinition(from: child, in: source) else { return nil }
-        self.right = rightParamDefinition
+        self.right = rightParamDefinition.type
         
         guard let child = node.child(byFieldName: CodingKeys.outputType.rawValue),
             let outputType = TypeIdentifier(from: child, in: source)

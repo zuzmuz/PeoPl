@@ -1,5 +1,5 @@
 struct LocalScope {
-    let fields: [String: TypedExpressionType]
+    let fields: [String: TypeIdentifier]
 }
 
 /// Contains the semantic context of a module

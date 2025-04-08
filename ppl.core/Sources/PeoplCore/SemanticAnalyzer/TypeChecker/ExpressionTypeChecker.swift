@@ -8,7 +8,7 @@ indirect enum TypedExpression {
     case unary(Operator, expression: TypedExpression, type: TypeIdentifier)
     case binary(Operator, left: TypedExpression, right: TypedExpression, type: TypeIdentifier)
     case unnamedTuple([TypedExpression], type: TypeIdentifier)
-    case namedTuple([String: TypedExpression], type: TypeIdentifier)
+    case namedTuple([(name: String, value: TypedExpression)], type: TypeIdentifier)
     case lambda(TypedExpression, type: TypeIdentifier)
     case call(Expression.Call, type: TypeIdentifier)
     case access(Expression.Access, type: TypeIdentifier)
@@ -19,9 +19,9 @@ indirect enum TypedExpression {
     var type: TypeIdentifier {
         switch self {
         case .nothing:
-            return .nothing()
+            return .nothing
         case .never:
-            return .never()
+            return .never
         case .intLiteral:
             return Builtins.i64
         case .floatLiteral:
@@ -90,7 +90,7 @@ extension Expression: ExpressionTypeChecker {
             (_, .boolLiteral):
             throw .inputMismatch(
                 expression: self,
-                expected: .nothing(),
+                expected: .nothing,
                 received: input)
 
         // Unary
@@ -99,81 +99,55 @@ extension Expression: ExpressionTypeChecker {
         // this is tricky, cause I should make sure that the number can be expressed as type
         case let (input, .unary(op, expression)):
             let right = try expression.checkType(
-                with: .nothing(),
+                with: .nothing,
                 localScope: localScope,
                 context: context)
 
-            switch (input, op, right.type) {
-            case (.nothing, .plus, .int),
-                // TODO: continuation on the undefined number type, undefined numbers with - prefix will automatically become signed.
-                (.nothing, .minus, .int),
-                (.nothing, .plus, .float),
-                (.nothing, .minus, .float),
-                (.nothing, .not, .bool),
-                (.float, .plus, .float),
-                (.float, .minus, .float),
-                (.bool, .and, .bool),
-                (.bool, .or, .bool):
-                return .unary(op, expression: right, type: right.type)
-            case (.int(let leftConstraint), .plus, .int(let rightConstraint)):
-                return .unary(
-                    op,
-                    expression: right,
-                    type: .int(constraint: max(leftConstraint, rightConstraint)))
-            default:
+            let operationDefinition = OperatorOverloadDefinition(
+                left: input,
+                op: op,
+                right: right.type,
+                outputType: .nothing,
+                body: .empty,
+                location: .nowhere)
+            if let operation = context.operators[operationDefinition] {
+                return .unary(op, expression: right, type: operation.outputType)
+            } else {
                 throw .invalidOperation(
-                    expression: self,
-                    leftType: input,
+                    expression: expression,
+                    leftType: input, 
                     rightType: right.type)
             }
         case let (.nothing, .binary(op, leftExpression, rightExpression)):
             let left = try leftExpression.checkType(
-                with: input,
+                with: .nothing,
                 localScope: localScope,
                 context: context)
             let right = try rightExpression.checkType(
-                with: input,
+                with: .nothing,
                 localScope: localScope,
                 context: context)
-            switch (op, left.type, right.type) {
-            case (.plus, .int(let leftConstraint), .int(let rightConstraint)),
-                (.minus, .int(let leftConstraint), .int(let rightConstraint)),
-                (.times, .int(let leftConstraint), .int(let rightConstraint)),
-                (.by, .int(let leftConstraint), .int(let rightConstraint)),
-                (.modulo, .int(let leftConstraint), .int(let rightConstraint)):
-                return .binary(op, left: left, right: right, type: .int(constraint: max(leftConstraint, rightConstraint)))
-            case (.plus, .float, .float),
-                (.minus, .float, .float),
-                (.times, .float, .float),
-                (.by, .float, .float):
-                return .binary(op, left: left, right: right, type: .float)
-            case (.and, .bool, .bool),
-                (.or, .bool, .bool),
-                (.equal, .int, .int),
-                (.different, .int, .int),
-                (.equal, .float, .float),
-                (.different, .float, .float),
-                (.equal, .string, .string),
-                (.different, .string, .string),
-                (.equal, .bool, .bool),
-                (.different, .bool, .bool),
-                (.lessThan, .int, .int),
-                (.lessThanOrEqual, .int, .int),
-                (.greaterThan, .int, .int),
-                (.greaterThanOrEqual, .int, .int),
-                (.lessThan, .float, .float),
-                (.lessThanOrEqual, .float, .float),
-                (.greaterThan, .float, .float),
-                (.greaterThanOrEqual, .float, .float):
-                return .binary(op, left: left, right: right, type: .bool)
-            default:
+
+            let operationDefinition = OperatorOverloadDefinition(
+                left: left.type,
+                op: op,
+                right: right.type,
+                outputType: .nothing,
+                body: .empty,
+                location: .nowhere)
+            if let operation = context.operators[operationDefinition] {
+                return .binary(op, left: left, right: right, type: operation.outputType)
+            } else {
                 throw .invalidOperation(
                     expression: self,
                     leftType: left.type,
                     rightType: right.type)
             }
         case (_, .binary):
-            throw .inputMismatch(expression: self, expected: .nothing, received: input)
+            throw .inputMismatch(
+                expression: self,
+                expected: .nothing,
+                received: input)
         case let (.nothing, .unnamedTuple(expressions)):
             let typedExpressions = try expressions.map { expression throws(ExpressionSemanticError) in
                 try expression.checkType(
@@ -181,24 +155,28 @@ extension Expression: ExpressionTypeChecker {
                     localScope: localScope,
                     context: context)
             }
-            return .unnamedTuple(typedExpressions, type: .unnamedTuple(typedExpressions.map { $0.type }))
+            return .unnamedTuple(
+                typedExpressions,
+                type: .unnamedTuple(.init(types: typedExpressions.map { $0.type })))
         case let (.nothing, .namedTuple(arguments)):
             let typedArguments = try arguments.map { argument throws(ExpressionSemanticError) in
                 (name: argument.name, value: try argument.value.checkType(
                     with: .nothing,
                     localScope: localScope,
                     context: context))
-            }.reduce(into: [:]) { partialResult, argument in // this was separated because typed Exceptions don't work properly with reduce
-                partialResult[argument.name] = argument.value
             }
-
-            return .namedTuple(typedArguments, type: .namedTuple(typedArguments.mapValues { $0.type }))
+            return .namedTuple(
+                typedArguments,
+                type: .namedTuple(
+                    .init(
+                        types: typedArguments.map { name, value in
+                            ParamDefinition(name: name, type: value.type, location: .nowhere)
+                        })))
         case (_, .namedTuple), (_, .unnamedTuple):
             throw .inputMismatch(
                 expression: self,
                 expected: .nothing,
                 received: input)
-
         case let (_, .lambda(expression)):
             throw .unsupportedYet("lambda expression")
         case let (_, .call(call)):
