@@ -1,3 +1,19 @@
+enum TypedCallable {
+    case function(FunctionDefinition, arguments: [TypedArgument])
+    case typeInitialization(TypeDefinition, arguments: [TypedArgument])
+
+    var arguments: [TypedArgument] {
+        switch self {
+        case let .function(_, arguments):
+            return arguments
+        case let .typeInitialization(_, arguments):
+            return arguments
+        }
+    }
+}
+
+typealias TypedArgument = (name: String, value: TypedExpression)
+
 indirect enum TypedExpression {
     case nothing
     case never
@@ -8,9 +24,9 @@ indirect enum TypedExpression {
     case unary(Operator, expression: TypedExpression, type: TypeIdentifier)
     case binary(Operator, left: TypedExpression, right: TypedExpression, type: TypeIdentifier)
     case unnamedTuple([TypedExpression], type: TypeIdentifier)
-    case namedTuple([(name: String, value: TypedExpression)], type: TypeIdentifier)
+    case namedTuple([TypedArgument], type: TypeIdentifier)
     case lambda(TypedExpression, type: TypeIdentifier)
-    case call(Expression.Call, type: TypeIdentifier)
+    case call(TypedCallable, type: TypeIdentifier)
     case access(Expression.Access, type: TypeIdentifier)
     case field(String, type: TypeIdentifier)
     case branched(Expression.Branched, type: TypeIdentifier)

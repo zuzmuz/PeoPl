@@ -97,36 +97,36 @@ extension FunctionDefinition: LLVM.StatementBuilder {
     func llvmBuildStatement(llvm: inout LLVM.Builder) throws(LLVM.Error) {
         // TODO: well consider scope (maybe generate string from identifier
 
-        let functionName = self.functionIdentifier.fullName
-        var paramTypes: [LLVMTypeRef?] = []
-        if self.inputType != .nothing() {
-            paramTypes.append(try self.inputType.llvmGetType(llvm: &llvm))
-        }
-        for param in self.params {
-            paramTypes.append(try param.type.llvmGetType(llvm: &llvm))
-        }
-        // NOTE: should consider variadics (yeah there's those)
-        let outputType = try self.outputType.llvmGetType(llvm: &llvm)
-        // let functionType = LLVMFunctionType(outputType, &paramTypes, UInt32(paramTypes.count), 0)
-        let functionType = paramTypes.withUnsafeMutableBufferPointer { buffer in
-            return LLVMFunctionType(outputType, buffer.baseAddress, UInt32(buffer.count), 0)
-        }
-
-        let function = LLVMAddFunction(llvm.module, functionName, functionType)
-
-        if let body {
-            let entryBlock = LLVMAppendBasicBlockInContext(llvm.context, function, "entry")
-            LLVMPositionBuilderAtEnd(llvm.builder, entryBlock)
-            var paramValues: [String: LLVMValueRef] = [:]
-            for (index, param) in params.enumerated() {
-                let paramValue = LLVMGetParam(function, UInt32(index))
-                LLVMSetValueName2(paramValue, param.name, param.name.utf8.count)
-                paramValues[param.name] = paramValue
-            }
-            let returnValue = try body.llvmBuildValue(llvm: &llvm, scope: paramValues) //, function: function)
-            
-            LLVMBuildRet(llvm.builder, returnValue)
-        }
+        // let functionName = self.functionIdentifier.fullName
+        // var paramTypes: [LLVMTypeRef?] = []
+        // if self.inputType != .nothing() {
+        //     paramTypes.append(try self.inputType.llvmGetType(llvm: &llvm))
+        // }
+        // for param in self.params {
+        //     paramTypes.append(try param.type.llvmGetType(llvm: &llvm))
+        // }
+        // // NOTE: should consider variadics (yeah there's those)
+        // let outputType = try self.outputType.llvmGetType(llvm: &llvm)
+        // // let functionType = LLVMFunctionType(outputType, &paramTypes, UInt32(paramTypes.count), 0)
+        // let functionType = paramTypes.withUnsafeMutableBufferPointer { buffer in
+        //     return LLVMFunctionType(outputType, buffer.baseAddress, UInt32(buffer.count), 0)
+        // }
+        //
+        // let function = LLVMAddFunction(llvm.module, functionName, functionType)
+        //
+        // if let body {
+        //     let entryBlock = LLVMAppendBasicBlockInContext(llvm.context, function, "entry")
+        //     LLVMPositionBuilderAtEnd(llvm.builder, entryBlock)
+        //     var paramValues: [String: LLVMValueRef] = [:]
+        //     for (index, param) in params.enumerated() {
+        //         let paramValue = LLVMGetParam(function, UInt32(index))
+        //         LLVMSetValueName2(paramValue, param.name, param.name.utf8.count)
+        //         paramValues[param.name] = paramValue
+        //     }
+        //     let returnValue = try body.llvmBuildValue(llvm: &llvm, scope: paramValues) //, function: function)
+        //     
+        //     LLVMBuildRet(llvm.builder, returnValue)
+        // }
     }
 }
 

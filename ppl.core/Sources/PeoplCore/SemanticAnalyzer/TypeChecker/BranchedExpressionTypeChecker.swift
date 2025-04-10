@@ -1,6 +1,6 @@
 extension Expression.Branched: ExpressionTypeChecker {
     func checkType(
-        with input: TypedExpressionType,
+        with input: TypeIdentifier,
         localScope: LocalScope,
         context: borrowing SemanticContext
     ) throws(ExpressionSemanticError) -> TypedExpression {
@@ -20,14 +20,14 @@ extension Expression.Branched: ExpressionTypeChecker {
                 )
             // for some reason swift doesn't support having all these expression together, and fallthrough isn't working
             case (.unnamedTuple(let unnamedTuple), let count)
-            where count != unnamedTuple.count && count != 1:
+            where count != unnamedTuple.types.count && count != 1:
                 throw .captureGroupCountMismatch(
                     branch: branch,
                     inputType: input,
                     captureGroupCount: branch.captureGroup.count
                 )
             case (.namedTuple(let namedTuple), let count)
-            where count != namedTuple.count && count != 1:
+            where count != namedTuple.types.count && count != 1:
                 throw .captureGroupCountMismatch(
                     branch: branch,
                     inputType: input,
@@ -76,7 +76,7 @@ extension Expression.Branched: ExpressionTypeChecker {
             switch branch.body {
             case let .simple(expression):
                 let typedBranchExpression = try expression.checkType(
-                    with: .nothing(),
+                    with: .nothing,
                     localScope: localScope,
                     context: context)
                 return .init(

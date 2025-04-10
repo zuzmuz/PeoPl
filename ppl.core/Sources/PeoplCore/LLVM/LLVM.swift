@@ -71,11 +71,6 @@ extension LLVM {
 extension TypeIdentifier: LLVM.TypeBuilder {
     func llvmGetType(llvm: inout LLVM.Builder) throws(LLVM.Error) -> LLVMTypeRef {
         switch self {
-        case .unkown:
-            // Default to a generic pointer type
-            // FIX: should throw error here (should not get to this point
-            return LLVMPointerType(LLVMInt8TypeInContext(llvm.context), 0)
-            
         case .nothing:
             return LLVMVoidTypeInContext(llvm.context)
         case .never:
