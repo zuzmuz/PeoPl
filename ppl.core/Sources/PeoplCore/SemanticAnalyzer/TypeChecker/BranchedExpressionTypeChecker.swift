@@ -5,12 +5,14 @@ extension Expression.Branched: ExpressionTypeChecker {
         context: borrowing SemanticContext
     ) throws(ExpressionSemanticError) -> TypedExpression {
 
-        let typedBranches: [Expression.Branched.Branch] = try self.branches.map {
+        let typedBranches: [TypedBranch] = try self.branches.map {
             branch throws(ExpressionSemanticError) in
             
             // checking if capture group count matches input
+            // TODO: what about unions
             switch (input, branch.captureGroup.count) {
             case (.nothing, let count) where count > 1,
+                (.union, let count) where count != 1,
                 (.nominal, let count) where count != 1,
                 (.lambda, let count) where count != 1:
                 throw .captureGroupCountMismatch(
@@ -80,27 +82,23 @@ extension Expression.Branched: ExpressionTypeChecker {
                     localScope: localScope,
                     context: context)
                 return .init(
-                    captureGroup: branch.captureGroup,
-                    body: .simple(typedBranchExpression),
-                    location: branch.location,
-                    typeIdentifier: typedBranchExpression.typeIdentifier)
+                    captureGroups: branch.captureGroup,
+                    body: .simple(typedBranchExpression))
             case let .looped(expression):
                 let typedLoopedExpression = try expression.checkType(
-                    with: .nothing(),
+                    with: .nothing,
                     localScope: localScope,
                     context: context)
-                if typedLoopedExpression.typeIdentifier != input {
+                if typedLoopedExpression.type != input {
                     throw .loopedExpressionTypeMismatch(
                         expression: expression,
                         expectedType: input,
-                        receivedType: typedLoopedExpression.typeIdentifier
+                        receivedType: typedLoopedExpression.type
                     )
                 }
                 return .init(
-                    captureGroup: branch.captureGroup,
-                    body: .looped(typedLoopedExpression),
-                    location: branch.location,
-                    typeIdentifier: .never())
+                    captureGroups: branch.captureGroup,
+                    body: .looped(typedLoopedExpression))
             }
         }
         // FIX: verify exhaustiveness of branches
@@ -114,8 +112,8 @@ extension Expression.Branched: ExpressionTypeChecker {
             nil
         }
 
-        var distinctTypes: Set<TypedExpressionType> = Set(typedBranches.compactMap { branch in
-            if branch.type == .never {
+        var distinctTypes: Set<TypeIdentifier> = Set(typedBranches.compactMap { branch in
+            if case .looped = branch.body {
                 return nil
             } else {
                 return branch.typeIdentifier
@@ -126,14 +124,15 @@ extension Expression.Branched: ExpressionTypeChecker {
             distinctTypes = distinctTypes.union([typedLastBranch.type])
         }
         if distinctTypes.count > 1 {
-            return .init(
-                branches: typedBranches,
-                lastBranch: typedLastBranch,
-                location: location,
-                typeIdentifier: .union(
-                    .init(
-                        types: Array(distinctTypes),
-                        location: .nowhere)))
+            return .branched(
+            // .init(
+            //     branches: typedBranches,
+            //     lastBranch: typedLastBranch,
+            //     location: location,
+            //     typeIdentifier: .union(
+            //         .init(
+            //             types: Array(distinctTypes),
+            //             location: .nowhere)))
         } else if let type = distinctTypes.first {
             return .init(
                 branches: typedBranches,

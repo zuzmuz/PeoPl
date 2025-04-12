@@ -1,7 +1,7 @@
 // MARK: - the syntax tree source
 // ------------------------------
 
-struct NodeLocation: Encodable, Equatable, Comparable {
+struct NodeLocation: Equatable, Comparable {
     struct Point: Comparable, Encodable, Equatable {
         let line: Int
         let column: Int
@@ -36,15 +36,15 @@ protocol SyntaxNode {
     var location: NodeLocation { get }
 }
 
-struct Project: Encodable {
+struct Project {
     let modules: [String: Module]
 }
 
-struct Module: Encodable {
+struct Module {
     let statements: [Statement]
 }
 
-enum Statement: Encodable, SyntaxNode {
+enum Statement: SyntaxNode {
     case typeDefinition(TypeDefinition)
     case functionDefinition(FunctionDefinition)
     case operatorOverloadDefinition(OperatorOverloadDefinition)
@@ -66,24 +66,24 @@ enum Statement: Encodable, SyntaxNode {
 // MARK: - type definitions
 // ------------------------
 
-struct ParamDefinition: Encodable, SyntaxNode {
+struct ParamDefinition: SyntaxNode {
     let name: String
     let type: TypeIdentifier
     // let defaultValue: Expression.Simple?
     let location: NodeLocation
 }
 
-enum TypeDefinition: Encodable, SyntaxNode {
+enum TypeDefinition: SyntaxNode {
     case simple(Simple)
     case sum(Sum)
 
-    struct Simple: Encodable, SyntaxNode {
+    struct Simple: SyntaxNode {
         let identifier: NominalType
         let params: [ParamDefinition]
         let location: NodeLocation
     }
 
-    struct Sum: Encodable, SyntaxNode {
+    struct Sum: SyntaxNode {
         let identifier: NominalType
         let cases: [Simple]
         let location: NodeLocation
@@ -122,7 +122,7 @@ enum TypeDefinition: Encodable, SyntaxNode {
 // MARK: - function definitions
 // ----------------------------
 
-enum Operator: String, Encodable {
+enum Operator: String {
     case plus = "+"
     case minus = "-"
     case times = "*"
@@ -139,7 +139,7 @@ enum Operator: String, Encodable {
     case greaterThanOrEqual = ">="
 }
 
-struct FunctionIdentifier: Encodable {
+struct FunctionIdentifier {
     let scope: NominalType?
     let name: String
 
@@ -152,7 +152,7 @@ struct FunctionIdentifier: Encodable {
     }
 }
 
-struct FunctionDefinition: Encodable, SyntaxNode {
+struct FunctionDefinition: SyntaxNode {
     let inputType: TypeIdentifier
     let functionIdentifier: FunctionIdentifier
     let params: [ParamDefinition]
@@ -161,7 +161,7 @@ struct FunctionDefinition: Encodable, SyntaxNode {
     let location: NodeLocation
 }
 
-struct OperatorOverloadDefinition: Encodable, SyntaxNode {
+struct OperatorOverloadDefinition: SyntaxNode {
     let left: TypeIdentifier
     let op: Operator
     let right: TypeIdentifier
@@ -173,7 +173,7 @@ struct OperatorOverloadDefinition: Encodable, SyntaxNode {
 // MARK: - types
 // -------------
 
-enum TypeIdentifier: Encodable, Sendable {
+enum TypeIdentifier: Sendable {
     case nothing
     case never
     case nominal(NominalType)
@@ -183,14 +183,14 @@ enum TypeIdentifier: Encodable, Sendable {
     case union(UnionType)
 }
 
-struct FlatNominalType: Encodable {
+struct FlatNominalType {
     static let typeName = "type_name"
     static let typeArguments = "type_arguments"
     var typeName: String
     var typeArguments: [TypeIdentifier]
 }
 
-struct NominalType: Encodable {
+struct NominalType {
     static let flatNominalType = "flat_nominal_type"
     var chain: [FlatNominalType]
 
@@ -201,29 +201,29 @@ struct NominalType: Encodable {
 }
 
 enum StructuralType {
-    struct Lambda: Encodable {
+    struct Lambda {
         // TODO: input and output should be 1 and multiple inputs should be tupled
         let input: [TypeIdentifier]
         let output: [TypeIdentifier]
     }
 
-    struct UnnamedTuple: Encodable {
+    struct UnnamedTuple {
         let types: [TypeIdentifier]
     }
 
-    struct NamedTuple: Encodable {
+    struct NamedTuple {
         let types: [ParamDefinition]
     }
 }
 
-struct UnionType: Encodable {
+struct UnionType {
     let types: [TypeIdentifier]
 }
 
 // MARK: - Expressions
 // -------------------
 
-struct Expression: Encodable, SyntaxNode {
+struct Expression: SyntaxNode {
     let expressionType: ExpressionType
     let location: NodeLocation
 
@@ -233,7 +233,7 @@ struct Expression: Encodable, SyntaxNode {
     }
 
 
-    indirect enum ExpressionType: Encodable, Sendable {
+    indirect enum ExpressionType: Sendable {
         case nothing
         case never
         // Literals
@@ -260,18 +260,18 @@ struct Expression: Encodable, SyntaxNode {
         case piped(left: Expression, right: Expression)
     }
 
-    enum Prefix: Encodable {
+    enum Prefix {
         case simple(Expression)
         case type(NominalType)
     }
 
-    struct Argument: Encodable, SyntaxNode, Sendable {
+    struct Argument: SyntaxNode, Sendable {
         let name: String
         let value: Expression
         let location: NodeLocation
     }
 
-    struct Call: Encodable, SyntaxNode {
+    struct Call: SyntaxNode {
         let command: Prefix
         let arguments: [Argument]
         let location: NodeLocation
@@ -284,13 +284,13 @@ struct Expression: Encodable, SyntaxNode {
     }
 
 
-    struct Access: Encodable, SyntaxNode {
+    struct Access: SyntaxNode {
         let accessed: Prefix
         let field: String
         let location: NodeLocation
     }
 
-    struct Branched: Encodable, SyntaxNode {
+    struct Branched: SyntaxNode {
         let branches: [Branch]
         let lastBranch: Expression?
         let location: NodeLocation
@@ -301,14 +301,14 @@ struct Expression: Encodable, SyntaxNode {
             self.location = location
         }
 
-        enum CaptureGroup: Encodable {
+        enum CaptureGroup {
             case simple(Expression)
             case type(NominalType)
             case paramDefinition(ParamDefinition)
             case argument(Argument)
         }
 
-        struct Branch: Encodable, SyntaxNode {
+        struct Branch: SyntaxNode {
             let captureGroup: [CaptureGroup]
             let body: Body
             let location: NodeLocation
@@ -319,7 +319,7 @@ struct Expression: Encodable, SyntaxNode {
                 self.location = location
             }
 
-            enum Body: Encodable {
+            enum Body {
                 case simple(Expression)
                 case looped(Expression)
             }

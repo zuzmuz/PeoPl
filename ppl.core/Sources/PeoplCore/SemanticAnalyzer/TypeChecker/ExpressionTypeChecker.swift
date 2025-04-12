@@ -12,6 +12,22 @@ enum TypedCallable {
     }
 }
 
+struct TypedBranch {
+    enum TypedCaptureGroup {
+        case simple(TypedExpression)
+        case type(TypeIdentifier)
+        case paramDefinition(ParamDefinition)
+        case argument(TypedArgument)
+    }
+    enum TypedBranchBody {
+        case simple(TypedExpression)
+        case looped(TypedExpression)
+    }
+
+    let captureGroups: [Expression.Branched.CaptureGroup]
+    let body: TypedBranchBody
+}
+
 typealias TypedArgument = (name: String, value: TypedExpression)
 
 indirect enum TypedExpression {
@@ -29,7 +45,7 @@ indirect enum TypedExpression {
     case call(TypedCallable, type: TypeIdentifier)
     case access(Expression.Access, type: TypeIdentifier)
     case field(String, type: TypeIdentifier)
-    case branched(Expression.Branched, type: TypeIdentifier)
+    case branched([TypedBranch], type: TypeIdentifier)
     case piped(left: TypedExpression, right: TypedExpression, type: TypeIdentifier)
 
     var type: TypeIdentifier {

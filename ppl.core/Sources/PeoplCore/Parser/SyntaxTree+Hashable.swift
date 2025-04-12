@@ -78,23 +78,21 @@ extension FunctionDefinition: Hashable {
 
 extension OperatorOverloadDefinition: Hashable {
     func hash(into hasher: inout Hasher) {
-        hasher.combine(self.left.type)
+        hasher.combine(self.left)
         hasher.combine(self.op)
-        hasher.combine(self.right.type)
+        hasher.combine(self.right)
     }
 
     static func == (lhs: OperatorOverloadDefinition, rhs: OperatorOverloadDefinition) -> Bool {
-        lhs.left.type == rhs.left.type &&
+        lhs.left == rhs.left &&
         lhs.op == rhs.op &&
-        lhs.right.type == rhs.right.type
+        lhs.right == rhs.right
     }
 }
 
 extension TypeIdentifier: Hashable {
     func hash(into hasher: inout Hasher) {
         switch self {
-        case .unkown:
-            hasher.combine("unkown")
         case .nothing:
             hasher.combine("nothing")
         case .never:
@@ -114,8 +112,6 @@ extension TypeIdentifier: Hashable {
 
     static func == (lhs: TypeIdentifier, rhs: TypeIdentifier) -> Bool {
         switch (lhs, rhs) {
-        case (.unkown, .unkown):
-            return true
         case (.nothing, .nothing):
             return true
         case (.never, .never):

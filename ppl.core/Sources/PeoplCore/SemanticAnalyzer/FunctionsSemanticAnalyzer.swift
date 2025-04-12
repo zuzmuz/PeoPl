@@ -88,10 +88,10 @@ extension FunctionDeclarationChecker {
         }
 
         let operatorTypeCheckErrors = operators.flatMap { function, _ in
-            let leftTypeNotInScopeErrors = function.left.type.getNominalTypesFromIdentifier().compactMap { type in
+            let leftTypeNotInScopeErrors = function.left.getNominalTypesFromIdentifier().compactMap { type in
                 if let _ = typesDefinitions[type] ?? builtins.types[type] {
                     return FunctionSemanticError.typeNotInScope(
-                        location: type.location,
+                        location: function.location, // WARN: need to rethink node locations
                         type: type,
                         typesInScope: typesDefinitions.keys)
                 } else {
@@ -99,10 +99,10 @@ extension FunctionDeclarationChecker {
                 }
             }
 
-            let rightTypNotInScopeErrors = function.right.type.getNominalTypesFromIdentifier().compactMap { type in
+            let rightTypNotInScopeErrors = function.right.getNominalTypesFromIdentifier().compactMap { type in
                 if let _ = typesDefinitions[type] ?? builtins.types[type] {
                     return FunctionSemanticError.typeNotInScope(
-                        location: type.location,
+                        location: function.location, // WARN: need to rethink node locations
                         type: type,
                         typesInScope: typesDefinitions.keys)
                 } else {

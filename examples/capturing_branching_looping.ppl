@@ -18,7 +18,7 @@ func (I32) is_pallindrome() => Bool
 
 func (I32) is_even() => String
     |i: i % 2 = 0| "is even",
-    |_| "is odd"..
+    |_| "is odd"
 
 // subbranches are separated by ,
 
