@@ -8,7 +8,7 @@ final class LiteralsExpressionTests: XCTestCase {
             func main() => String
                 "is this" != "different than this"..
         """
-        let module = try Module(source: source, path: "main")
+        let module = try Syntax.Module(source: source, path: "main")
         XCTAssertEqual(module.statements.count, 1)
         let statement = module.statements[0]
         guard case let .functionDefinition(functionDefinition) = statement else {
@@ -34,7 +34,7 @@ final class LiteralsExpressionTests: XCTestCase {
             func main() => String
                 true or false and not false..
         """
-        let module = try Module(source: source, path: "main")
+        let module = try Syntax.Module(source: source, path: "main")
         XCTAssertEqual(module.statements.count, 1)
         let statement = module.statements[0]
         guard case let .functionDefinition(functionDefinition) = statement else {
@@ -67,7 +67,7 @@ final class LiteralsExpressionTests: XCTestCase {
                     b: "this other thing"
                 ]
         """
-        let module = try Module(source: source, path: "main")
+        let module = try Syntax.Module(source: source, path: "main")
         XCTAssertEqual(module.statements.count, 1)
         let statement = module.statements[0]
         guard case let .functionDefinition(functionDefinition) = statement else {

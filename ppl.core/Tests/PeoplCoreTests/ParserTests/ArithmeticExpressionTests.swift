@@ -8,7 +8,7 @@ final class ArithmeticsExpressionTests: XCTestCase {
                 func main() => Nothing
                     Nothing
             """
-        let module = try Module(source: source, path: "main")
+        let module = try Syntax.Module(source: source, path: "main")
 
         XCTAssertEqual(module.statements.count, 1)
         let statement = module.statements[0]
@@ -30,7 +30,7 @@ final class ArithmeticsExpressionTests: XCTestCase {
                 func main() => Never
                     Never
             """
-        let module = try Module(source: source, path: "main")
+        let module = try Syntax.Module(source: source, path: "main")
 
         XCTAssertEqual(module.statements.count, 1)
         let statement = module.statements[0]
@@ -52,7 +52,7 @@ final class ArithmeticsExpressionTests: XCTestCase {
                 func main() => I32
                     5-2+3*4-6*5/2+1+10%3
             """
-        let module = try Module(source: source, path: "main")
+        let module = try Syntax.Module(source: source, path: "main")
 
         XCTAssertEqual(module.statements.count, 1)
         let statement = module.statements[0]
@@ -153,7 +153,7 @@ final class ArithmeticsExpressionTests: XCTestCase {
                 func main() => I32
                     -5+10+3 = 2*3 + 10/2
             """
-        let module = try Module(source: source, path: "main")
+        let module = try Syntax.Module(source: source, path: "main")
 
         XCTAssertEqual(module.statements.count, 1)
         let statement = module.statements[0]
@@ -214,7 +214,7 @@ final class ArithmeticsExpressionTests: XCTestCase {
                 func main() => I32
                     not((+4) * (-5) / (-6) > (-3) % (-2))
             """
-        let module = try Module(source: source, path: "main")
+        let module = try Syntax.Module(source: source, path: "main")
 
         XCTAssertEqual(module.statements.count, 1)
         let statement = module.statements[0]
@@ -269,7 +269,7 @@ final class ArithmeticsExpressionTests: XCTestCase {
                 func main() => I32
                     2 > 0 and 10 < 11 or 5 >= 3 and 6 <= 4 or 1 != 3
             """
-        let module = try Module(source: source, path: "main")
+        let module = try Syntax.Module(source: source, path: "main")
 
         XCTAssertEqual(module.statements.count, 1)
         let statement = module.statements[0]
@@ -347,7 +347,7 @@ final class ArithmeticsExpressionTests: XCTestCase {
                     = -3.2 / 4.2
                     )
             """
-        let module = try Module(source: source, path: "main")
+        let module = try Syntax.Module(source: source, path: "main")
 
         XCTAssertEqual(module.statements.count, 1)
         let statement = module.statements[0]
@@ -399,7 +399,7 @@ final class ArithmeticsExpressionTests: XCTestCase {
                     and
                     (8 or 9)
             """
-        let module = try Module(source: source, path: "main")
+        let module = try Syntax.Module(source: source, path: "main")
 
         XCTAssertEqual(module.statements.count, 1)
         let statement = module.statements[0]

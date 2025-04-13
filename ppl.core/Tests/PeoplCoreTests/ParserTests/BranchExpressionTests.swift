@@ -9,7 +9,7 @@ final class BranchExpressionTests: XCTestCase {
                     |i: i % 2 = 0| "is even",
                     |_| "is odd"
             """
-        let module = try Module(source: source, path: "main")
+        let module = try Syntax.Module(source: source, path: "main")
 
         XCTAssertEqual(module.statements.count, 1)
         let statement = module.statements[0]
@@ -92,7 +92,7 @@ final class BranchExpressionTests: XCTestCase {
                     )^,
                     Nothing
             """
-        let module = try Module(source: source, path: "main")
+        let module = try Syntax.Module(source: source, path: "main")
 
         XCTAssertEqual(module.statements.count, 1)
         let statement = module.statements[0]

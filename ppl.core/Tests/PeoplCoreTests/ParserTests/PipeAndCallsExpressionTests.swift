@@ -8,7 +8,7 @@ final class PipeAndCallsExpressionTests: XCTestCase {
                     "Hello World" |>
                     print()
             """
-        let module = try Module(source: source, path: "main")
+        let module = try Syntax.Module(source: source, path: "main")
 
         XCTAssertEqual(module.statements.count, 1)
         let statement = module.statements[0]
@@ -40,7 +40,7 @@ final class PipeAndCallsExpressionTests: XCTestCase {
                 print(format: "the operations value is {}")
                 
         """
-        let module = try Module(source: source, path: "main")
+        let module = try Syntax.Module(source: source, path: "main")
 
         XCTAssertEqual(module.statements.count, 1)
         let statement = module.statements[0]
@@ -89,7 +89,7 @@ final class PipeAndCallsExpressionTests: XCTestCase {
                 C.another(c: true) |>
                 D::E::F.final(d: "one", e: "two", f: "three")
         """
-        let module = try Module(source: source, path: "main")
+        let module = try Syntax.Module(source: source, path: "main")
 
         XCTAssertEqual(module.statements.count, 1)
         let statement = module.statements[0]

@@ -8,7 +8,7 @@ final class FunctionDefinitionTests: XCTestCase {
             func main() => Nothing
                 Nothing
         """
-        let module = try Module(source: source, path: "main")
+        let module = try Syntax.Module(source: source, path: "main")
         XCTAssertEqual(module.statements.count, 1)
         let statement = module.statements[0]
         guard case let .functionDefinition(functionDefinition) = statement else {
@@ -17,10 +17,10 @@ final class FunctionDefinitionTests: XCTestCase {
         }
 
         XCTAssertEqual(functionDefinition.functionIdentifier.name, "main")
-        XCTAssertEqual(functionDefinition.inputType, TypeIdentifier.nothing())
+        XCTAssertEqual(functionDefinition.inputType, Syntax.TypeIdentifier.nothing(location: .nowhere))
         XCTAssertEqual(functionDefinition.functionIdentifier.scope, nil)
         XCTAssertEqual(functionDefinition.params.count, 0)
-        XCTAssertEqual(functionDefinition.outputType, TypeIdentifier.nothing())
+        XCTAssertEqual(functionDefinition.outputType, Syntax.TypeIdentifier.nothing(location: .nowhere))
     }
 
     func testScoped1() throws {
@@ -28,7 +28,7 @@ final class FunctionDefinitionTests: XCTestCase {
             func Scope.main() => Nothing
                 Nothing
         """
-        let module = try Module(source: source, path: "main")
+        let module = try Syntax.Module(source: source, path: "main")
         XCTAssertEqual(module.statements.count, 1)
         let statement = module.statements[0]
         guard case let .functionDefinition(functionDefinition) = statement else {
@@ -37,13 +37,13 @@ final class FunctionDefinitionTests: XCTestCase {
         }
 
         XCTAssertEqual(functionDefinition.functionIdentifier.name, "main")
-        XCTAssertEqual(functionDefinition.inputType, TypeIdentifier.nothing())
+        XCTAssertEqual(functionDefinition.inputType, Syntax.TypeIdentifier.nothing(location: .nowhere))
         XCTAssertNotEqual(functionDefinition.functionIdentifier.scope, nil)
         XCTAssertEqual(functionDefinition.functionIdentifier.scope!.chain.count, 1)
         XCTAssertEqual(functionDefinition.functionIdentifier.scope!.chain[0].typeName, "Scope")
         XCTAssertEqual(functionDefinition.functionIdentifier.scope!.chain[0].typeArguments.count, 0)
         XCTAssertEqual(functionDefinition.params.count, 0)
-        XCTAssertEqual(functionDefinition.outputType, TypeIdentifier.nothing())
+        XCTAssertEqual(functionDefinition.outputType, Syntax.TypeIdentifier.nothing(location: .nowhere))
     }
 
     func testScoped2() throws {
@@ -51,7 +51,7 @@ final class FunctionDefinitionTests: XCTestCase {
             func Scope1::Scope2.main() => Nothing
                 Nothing
         """
-        let module = try Module(source: source, path: "main")
+        let module = try Syntax.Module(source: source, path: "main")
         XCTAssertEqual(module.statements.count, 1)
         let statement = module.statements[0]
         guard case let .functionDefinition(functionDefinition) = statement else {
@@ -60,7 +60,7 @@ final class FunctionDefinitionTests: XCTestCase {
         }
 
         XCTAssertEqual(functionDefinition.functionIdentifier.name, "main")
-        XCTAssertEqual(functionDefinition.inputType, TypeIdentifier.nothing())
+        XCTAssertEqual(functionDefinition.inputType, Syntax.TypeIdentifier.nothing(location: .nowhere))
         XCTAssertNotEqual(functionDefinition.functionIdentifier.scope, nil)
         XCTAssertEqual(functionDefinition.functionIdentifier.scope!.chain.count, 2)
         XCTAssertEqual(functionDefinition.functionIdentifier.scope!.chain[0].typeName, "Scope1")
@@ -68,7 +68,7 @@ final class FunctionDefinitionTests: XCTestCase {
         XCTAssertEqual(functionDefinition.functionIdentifier.scope!.chain[1].typeName, "Scope2")
         XCTAssertEqual(functionDefinition.functionIdentifier.scope!.chain[1].typeArguments.count, 0)
         XCTAssertEqual(functionDefinition.params.count, 0)
-        XCTAssertEqual(functionDefinition.outputType, TypeIdentifier.nothing())
+        XCTAssertEqual(functionDefinition.outputType, Syntax.TypeIdentifier.nothing(location: .nowhere))
     }
 
     func testScoped10() throws {
@@ -76,7 +76,7 @@ final class FunctionDefinitionTests: XCTestCase {
             func Scope1::Scope2::Scope3::Scope4::Scope5::Scope6::Scope7::Scope8::Scope9::Scope10.main() => Nothing
                 Nothing
         """
-        let module = try Module(source: source, path: "main")
+        let module = try Syntax.Module(source: source, path: "main")
         XCTAssertEqual(module.statements.count, 1)
         let statement = module.statements[0]
         guard case let .functionDefinition(functionDefinition) = statement else {
@@ -85,7 +85,7 @@ final class FunctionDefinitionTests: XCTestCase {
         }
 
         XCTAssertEqual(functionDefinition.functionIdentifier.name, "main")
-        XCTAssertEqual(functionDefinition.inputType, TypeIdentifier.nothing())
+        XCTAssertEqual(functionDefinition.inputType, Syntax.TypeIdentifier.nothing(location: .nowhere))
         XCTAssertNotEqual(functionDefinition.functionIdentifier.scope, nil)
         XCTAssertEqual(functionDefinition.functionIdentifier.scope!.chain.count, 10)
         XCTAssertEqual(functionDefinition.functionIdentifier.scope!.chain[0].typeName, "Scope1")
@@ -109,7 +109,7 @@ final class FunctionDefinitionTests: XCTestCase {
         XCTAssertEqual(functionDefinition.functionIdentifier.scope!.chain[9].typeName, "Scope10")
         XCTAssertEqual(functionDefinition.functionIdentifier.scope!.chain[9].typeArguments.count, 0)
         XCTAssertEqual(functionDefinition.params.count, 0)
-        XCTAssertEqual(functionDefinition.outputType, TypeIdentifier.nothing())
+        XCTAssertEqual(functionDefinition.outputType, Syntax.TypeIdentifier.nothing(location: .nowhere))
     }
 
     func testInput() throws {
@@ -117,7 +117,7 @@ final class FunctionDefinitionTests: XCTestCase {
             func (Input) Scope.main() => Nothing
                 Nothing
         """
-        let module = try Module(source: source, path: "main")
+        let module = try Syntax.Module(source: source, path: "main")
         XCTAssertEqual(module.statements.count, 1)
         let statement = module.statements[0]
         guard case let .functionDefinition(functionDefinition) = statement else {
@@ -138,7 +138,7 @@ final class FunctionDefinitionTests: XCTestCase {
         XCTAssertEqual(functionDefinition.functionIdentifier.scope!.chain[0].typeName, "Scope")
         XCTAssertEqual(functionDefinition.functionIdentifier.scope!.chain[0].typeArguments.count, 0)
         XCTAssertEqual(functionDefinition.params.count, 0)
-        XCTAssertEqual(functionDefinition.outputType, TypeIdentifier.nothing())
+        XCTAssertEqual(functionDefinition.outputType, Syntax.TypeIdentifier.nothing(location: .nowhere))
     }
 
     func testNestedInput() throws {
@@ -146,7 +146,7 @@ final class FunctionDefinitionTests: XCTestCase {
             func (Nested::Input) Scope.main() => Nothing
                 Nothing
         """
-        let module = try Module(source: source, path: "main")
+        let module = try Syntax.Module(source: source, path: "main")
         XCTAssertEqual(module.statements.count, 1)
         let statement = module.statements[0]
         guard case let .functionDefinition(functionDefinition) = statement else {
@@ -169,7 +169,7 @@ final class FunctionDefinitionTests: XCTestCase {
         XCTAssertEqual(functionDefinition.functionIdentifier.scope!.chain[0].typeName, "Scope")
         XCTAssertEqual(functionDefinition.functionIdentifier.scope!.chain[0].typeArguments.count, 0)
         XCTAssertEqual(functionDefinition.params.count, 0)
-        XCTAssertEqual(functionDefinition.outputType, TypeIdentifier.nothing())
+        XCTAssertEqual(functionDefinition.outputType, Syntax.TypeIdentifier.nothing(location: .nowhere))
     }
 
     func testTuplesAsInputAndOutput() throws {
@@ -177,7 +177,7 @@ final class FunctionDefinitionTests: XCTestCase {
             func ([A, B, C, D]) Scope.main() => [E, F]
                 Nothing
         """
-        let module = try Module(source: source, path: "main")
+        let module = try Syntax.Module(source: source, path: "main")
         XCTAssertEqual(module.statements.count, 1)
         let statement = module.statements[0]
         guard case let .functionDefinition(functionDefinition) = statement else {
@@ -223,7 +223,7 @@ final class FunctionDefinitionTests: XCTestCase {
             func ([A::Z, B::Y::X]) Scope.main() => [E::W, F::V::U]
                 Nothing
         """
-        let module = try Module(source: source, path: "main")
+        let module = try Syntax.Module(source: source, path: "main")
         XCTAssertEqual(module.statements.count, 1)
         let statement = module.statements[0]
         guard case let .functionDefinition(functionDefinition) = statement else {
@@ -271,7 +271,7 @@ final class FunctionDefinitionTests: XCTestCase {
             func (A::B<C>) Scope.main() => D<E, F, G>
                 Nothing
         """
-        let module = try Module(source: source, path: "main")
+        let module = try Syntax.Module(source: source, path: "main")
         XCTAssertEqual(module.statements.count, 1)
         let statement = module.statements[0]
         guard case let .functionDefinition(functionDefinition) = statement else {
@@ -320,7 +320,7 @@ final class FunctionDefinitionTests: XCTestCase {
             func (A::B<[C::D<E>, F], G::H<I, [J, K]>>) Scope.main() => [L::M<N, O, [P, Q]>]
                 Nothing
         """
-        let module = try Module(source: source, path: "main")
+        let module = try Syntax.Module(source: source, path: "main")
         let statement = module.statements[0]
         guard case let .functionDefinition(functionDefinition) = statement else {
             XCTAssertTrue(false)
@@ -413,7 +413,7 @@ final class FunctionDefinitionTests: XCTestCase {
                 Nothing
         """
 
-        let module = try Module(source: source, path: "main")
+        let module = try Syntax.Module(source: source, path: "main")
         let statement = module.statements[0]
         guard case let .functionDefinition(functionDefinition) = statement else {
             XCTAssertTrue(false)
@@ -446,7 +446,7 @@ final class FunctionDefinitionTests: XCTestCase {
                 Nothing
         """
 
-        let module = try Module(source: source, path: "main")
+        let module = try Syntax.Module(source: source, path: "main")
         let statement = module.statements[0]
         guard case let .functionDefinition(functionDefinition) = statement else {
             XCTAssertTrue(false)
@@ -506,7 +506,7 @@ final class FunctionDefinitionTests: XCTestCase {
                 Nothing
         """
 
-        let module = try Module(source: source, path: "main")
+        let module = try Syntax.Module(source: source, path: "main")
         let statement = module.statements[0]
         guard case let .functionDefinition(functionDefinition) = statement else {
             XCTAssertTrue(false)
