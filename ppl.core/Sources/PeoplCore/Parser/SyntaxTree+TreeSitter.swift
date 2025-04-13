@@ -294,7 +294,7 @@ extension Syntax.OperatorOverloadDefinition {
 
         guard let child = node.child(byFieldName: CodingKeys.op.rawValue),
             let name = child.getString(in: source),
-            let op = Syntax.Operator(rawValue: name) else { return nil }
+            let op = Operator(rawValue: name) else { return nil }
         self.op = op
 
         guard let child = node.child(byFieldName: CodingKeys.right.rawValue),
@@ -371,6 +371,8 @@ extension Syntax.TypeIdentifier {
 
 extension Syntax.NominalType {
     init?(from node: Node, in source: Syntax.Source) {
+        guard let location = node.getLocation(in: source) else { return nil }
+        self.location = location
         self.chain = node.compactMapChildren { child in
             if child.nodeType == Syntax.NominalType.flatNominalType {
                 return Syntax.FlatNominalType(from: child, in: source)
@@ -384,8 +386,9 @@ extension Syntax.NominalType {
 extension Syntax.FlatNominalType {
     init?(from node: Node, in source: Syntax.Source) {
         guard let typeNameNode = node.child(byFieldName: Syntax.FlatNominalType.typeName),
-            let typeName = typeNameNode.getString(in: source)
-        else { return nil }
+            let typeName = typeNameNode.getString(in: source),
+            let location = node.getLocation(in: source) else { return nil }
+        self.location = location
         self.typeName = typeName
 
         if let typeArgumentsNode = node.child(byFieldName: Syntax.FlatNominalType.typeArguments) {
@@ -404,6 +407,8 @@ extension Syntax.FlatNominalType {
 
 extension Syntax.StructuralType.UnnamedTuple {
     init?(from node: Node, in source: Syntax.Source) {
+        guard let location = node.getLocation(in: source) else { return nil }
+        self.location = location
         self.types = node.compactMapChildren { child in
             if child.nodeType == Syntax.TypeIdentifier.typeIdentifier {
                 return Syntax.TypeIdentifier(from: child, in: source)
@@ -415,6 +420,8 @@ extension Syntax.StructuralType.UnnamedTuple {
 
 extension Syntax.StructuralType.NamedTuple {
     init?(from node: Node, in source: Syntax.Source) {
+        guard let location = node.getLocation(in: source) else { return nil }
+        self.location = location
         self.types = node.compactMapChildren { child in
             if child.nodeType == Syntax.ParamDefinition.rawValue {
                 return Syntax.ParamDefinition(from: child, in: source)
@@ -427,6 +434,8 @@ extension Syntax.StructuralType.NamedTuple {
 extension Syntax.StructuralType.Lambda {
 
     init?(from node: Node, in source: Syntax.Source) {
+        guard let location = node.getLocation(in: source) else { return nil }
+        self.location = location
         self.input = node.compactMapChildrenEnumerated { (index, child) in
             if child.nodeType == Syntax.TypeIdentifier.typeIdentifier && index < node.childCount - 1 {
                 return Syntax.TypeIdentifier(from: child, in: source)

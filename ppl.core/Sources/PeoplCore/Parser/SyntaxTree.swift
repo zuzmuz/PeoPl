@@ -1,6 +1,23 @@
 // MARK: - the syntax tree source
 // ------------------------------
 
+enum Operator: String {
+    case plus = "+"
+    case minus = "-"
+    case times = "*"
+    case by = "/"
+    case modulo = "%"
+    case not = "not"
+    case and = "and"
+    case or = "or"
+    case equal = "="
+    case different = "!="
+    case lessThan = "<"
+    case lessThanOrEqual = "<="
+    case greaterThan = ">"
+    case greaterThanOrEqual = ">="
+}
+
 enum Syntax {
     struct NodeLocation: Equatable, Comparable {
         struct Point: Comparable, Encodable, Equatable {
@@ -122,23 +139,6 @@ enum Syntax {
 
     // MARK: - function definitions
     // ----------------------------
-
-    enum Operator: String {
-        case plus = "+"
-        case minus = "-"
-        case times = "*"
-        case by = "/"
-        case modulo = "%"
-        case not = "not"
-        case and = "and"
-        case or = "or"
-        case equal = "="
-        case different = "!="
-        case lessThan = "<"
-        case lessThanOrEqual = "<="
-        case greaterThan = ">"
-        case greaterThanOrEqual = ">="
-    }
 
     struct FunctionIdentifier {
         let scope: NominalType?
