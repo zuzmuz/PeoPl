@@ -17,8 +17,8 @@ final class FunctionDefinitionTests: XCTestCase {
         }
 
         XCTAssertEqual(functionDefinition.functionIdentifier.name, "main")
-        XCTAssertEqual(functionDefinition.inputType, Syntax.TypeIdentifier.nothing(location: .nowhere))
-        XCTAssertEqual(functionDefinition.functionIdentifier.scope, nil)
+        XCTAssertNil(functionDefinition.inputType)
+        XCTAssertNil(functionDefinition.functionIdentifier.scope)
         XCTAssertEqual(functionDefinition.params.count, 0)
         XCTAssertEqual(functionDefinition.outputType, Syntax.TypeIdentifier.nothing(location: .nowhere))
     }
@@ -37,8 +37,8 @@ final class FunctionDefinitionTests: XCTestCase {
         }
 
         XCTAssertEqual(functionDefinition.functionIdentifier.name, "main")
-        XCTAssertEqual(functionDefinition.inputType, Syntax.TypeIdentifier.nothing(location: .nowhere))
-        XCTAssertNotEqual(functionDefinition.functionIdentifier.scope, nil)
+        XCTAssertNil(functionDefinition.inputType)
+        XCTAssertNotNil(functionDefinition.functionIdentifier.scope)
         XCTAssertEqual(functionDefinition.functionIdentifier.scope!.chain.count, 1)
         XCTAssertEqual(functionDefinition.functionIdentifier.scope!.chain[0].typeName, "Scope")
         XCTAssertEqual(functionDefinition.functionIdentifier.scope!.chain[0].typeArguments.count, 0)
@@ -60,8 +60,8 @@ final class FunctionDefinitionTests: XCTestCase {
         }
 
         XCTAssertEqual(functionDefinition.functionIdentifier.name, "main")
-        XCTAssertEqual(functionDefinition.inputType, Syntax.TypeIdentifier.nothing(location: .nowhere))
-        XCTAssertNotEqual(functionDefinition.functionIdentifier.scope, nil)
+        XCTAssertNil(functionDefinition.inputType)
+        XCTAssertNotNil(functionDefinition.functionIdentifier.scope)
         XCTAssertEqual(functionDefinition.functionIdentifier.scope!.chain.count, 2)
         XCTAssertEqual(functionDefinition.functionIdentifier.scope!.chain[0].typeName, "Scope1")
         XCTAssertEqual(functionDefinition.functionIdentifier.scope!.chain[0].typeArguments.count, 0)
@@ -85,8 +85,8 @@ final class FunctionDefinitionTests: XCTestCase {
         }
 
         XCTAssertEqual(functionDefinition.functionIdentifier.name, "main")
-        XCTAssertEqual(functionDefinition.inputType, Syntax.TypeIdentifier.nothing(location: .nowhere))
-        XCTAssertNotEqual(functionDefinition.functionIdentifier.scope, nil)
+        XCTAssertNil(functionDefinition.inputType)
+        XCTAssertNotNil(functionDefinition.functionIdentifier.scope)
         XCTAssertEqual(functionDefinition.functionIdentifier.scope!.chain.count, 10)
         XCTAssertEqual(functionDefinition.functionIdentifier.scope!.chain[0].typeName, "Scope1")
         XCTAssertEqual(functionDefinition.functionIdentifier.scope!.chain[0].typeArguments.count, 0)

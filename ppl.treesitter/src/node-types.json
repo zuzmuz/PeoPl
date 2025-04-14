@@ -705,106 +705,6 @@
     "fields": {}
   },
   {
-    "type": "constants_statement",
-    "named": true,
-    "fields": {
-      "argument_name": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "argument_name",
-            "named": true
-          }
-        ]
-      },
-      "expression": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "access_expression",
-            "named": true
-          },
-          {
-            "type": "argument_name",
-            "named": true
-          },
-          {
-            "type": "binary_expression",
-            "named": true
-          },
-          {
-            "type": "bool_literal",
-            "named": true
-          },
-          {
-            "type": "branched_expression",
-            "named": true
-          },
-          {
-            "type": "call_expression",
-            "named": true
-          },
-          {
-            "type": "float_literal",
-            "named": true
-          },
-          {
-            "type": "int_literal",
-            "named": true
-          },
-          {
-            "type": "lambda_expression",
-            "named": true
-          },
-          {
-            "type": "named_tuple_literal",
-            "named": true
-          },
-          {
-            "type": "never",
-            "named": true
-          },
-          {
-            "type": "nothing",
-            "named": true
-          },
-          {
-            "type": "parenthisized_expression",
-            "named": true
-          },
-          {
-            "type": "piped_expression",
-            "named": true
-          },
-          {
-            "type": "string_literal",
-            "named": true
-          },
-          {
-            "type": "unary_expression",
-            "named": true
-          },
-          {
-            "type": "unnamed_tuple_literal",
-            "named": true
-          }
-        ]
-      },
-      "scope": {
-        "multiple": false,
-        "required": false,
-        "types": [
-          {
-            "type": "nominal_type",
-            "named": true
-          }
-        ]
-      }
-    }
-  },
-  {
     "type": "enum_type_definition",
     "named": true,
     "fields": {
@@ -870,21 +770,6 @@
         },
         {
           "type": "operator_overload_definition",
-          "named": true
-        }
-      ]
-    }
-  },
-  {
-    "type": "implementation_statement",
-    "named": true,
-    "fields": {},
-    "children": {
-      "multiple": true,
-      "required": true,
-      "types": [
-        {
-          "type": "nominal_type",
           "named": true
         }
       ]
@@ -1044,21 +929,6 @@
       "types": [
         {
           "type": "param_definition",
-          "named": true
-        }
-      ]
-    }
-  },
-  {
-    "type": "namespace_state",
-    "named": true,
-    "fields": {},
-    "children": {
-      "multiple": true,
-      "required": false,
-      "types": [
-        {
-          "type": "nominal_type",
           "named": true
         }
       ]
@@ -1671,19 +1541,7 @@
       "required": false,
       "types": [
         {
-          "type": "constants_statement",
-          "named": true
-        },
-        {
           "type": "function_definition",
-          "named": true
-        },
-        {
-          "type": "implementation_statement",
-          "named": true
-        },
-        {
-          "type": "namespace_state",
           "named": true
         },
         {
@@ -2052,12 +1910,7 @@
   },
   {
     "type": "comment",
-    "named": true,
-    "extra": true
-  },
-  {
-    "type": "const",
-    "named": false
+    "named": true
   },
   {
     "type": "false",
@@ -2072,16 +1925,8 @@
     "named": false
   },
   {
-    "type": "impl",
-    "named": false
-  },
-  {
     "type": "int_literal",
     "named": true
-  },
-  {
-    "type": "namespace",
-    "named": false
   },
   {
     "type": "never",

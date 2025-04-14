@@ -51,9 +51,9 @@ module.exports = grammar({
     ),
 
     _statement: $ => choice(
-      $.namespace_state,
-      $.implementation_statement,
-      $.constants_statement,
+      // $.namespace_state,
+      // $.implementation_statement,
+      // $.constants_statement,
       $._definition,
     ),
 

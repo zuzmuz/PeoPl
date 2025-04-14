@@ -14,7 +14,7 @@ impl X<Z> = X<I32>
 
 const A::C::D.x = 3
 
-fun (TheAmazingStruct<A, C>::B<C>::X<Z>::Case1<T>) A::C.foo(
+func (TheAmazingStruct<A, C>::B<C>::X<Z>::Case1<T>) A::C.foo(
     a: C
     d: D
 ) => Int::B
@@ -24,3 +24,7 @@ fun (TheAmazingStruct<A, C>::B<C>::X<Z>::Case1<T>) A::C.foo(
     Never |>
     true |>
     false
+
+
+func a() => [I32*3]
+    [1, 2, 3]

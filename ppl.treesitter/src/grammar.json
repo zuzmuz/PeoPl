@@ -57,18 +57,6 @@
       "members": [
         {
           "type": "SYMBOL",
-          "name": "namespace_state"
-        },
-        {
-          "type": "SYMBOL",
-          "name": "implementation_statement"
-        },
-        {
-          "type": "SYMBOL",
-          "name": "constants_statement"
-        },
-        {
-          "type": "SYMBOL",
           "name": "_definition"
         }
       ]
@@ -1811,6 +1799,5 @@
   "precedences": [],
   "externals": [],
   "inline": [],
-  "supertypes": [],
-  "reserved": {}
+  "supertypes": []
 }
