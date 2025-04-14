@@ -1,74 +1,74 @@
 
 [
   "type"
-  "const"
+  ; "const"
 ] @keyword.type
 
 [
  "func"
- "impl"
+ ; "impl"
 ] @keyword.function
 
-[
- "namespace"
- ] @include
+; [
+;  "namespace"
+;  ] @include
 
 
-(nominal_type
-  (flat_nominal_type
-    (type_name) @type.definition))
+; (nominal_type
+;     (type_name) @type.definition))
+;
+;
+; (enum_type_definition
+;   (simple_type_definition
+;     (nominal_type
+;         (type_name) @type.definition))))
+;
+; (type_arguments
+;   (type_identifier
+;     (nominal_type
+;       (flat_nominal_type
+;         (type_name) @variable.member))))
 
 
-(enum_type_definition
-  (simple_type_definition
-    (nominal_type
-      (flat_nominal_type
-        (type_name) @type.definition))))
+; (type_arguments
+;   (["<" ">"] @punctuation.bracket))
 
-(type_arguments
-  (type_identifier
-    (nominal_type
-      (flat_nominal_type
-        (type_name) @variable.member))))
+; (function_definition
+;   (normal_function_definition
+;     name: (field_expression
+;             name: (argument_name) @function)))
 
+; (function_definition
+;   (normal_function_definition
+;     input_type: (type_identifier
+;                   (nominal_type
+;                     (flat_nominal_type
+;                       (type_name) @type)))))
+; (function_definition
+;   (normal_function_definition
+;     output_type: (type_identifier
+;                    (nominal_type
+;                      (flat_nominal_type
+;                        (type_name) @type)))))
 
-(type_arguments
-  (["<" ">"] @punctuation.bracket))
+; (function_definition
+;   (normal_function_definition
+;     name: (field_expression
+;             scope: (nominal_type 
+;                      (flat_nominal_type 
+;                        (type_name) @namespace)))))
 
-(function_definition
-  (normal_function_definition
-    name: (argument_name) @function))
-
-(function_definition
-  (normal_function_definition
-    input_type: (type_identifier
-                  (nominal_type
-                    (flat_nominal_type
-                      (type_name) @type)))))
-(function_definition
-  (normal_function_definition
-    output_type: (type_identifier
-                   (nominal_type
-                     (flat_nominal_type
-                       (type_name) @type)))))
-
-(function_definition
-  (normal_function_definition
-    scope: (nominal_type 
-             (flat_nominal_type 
-               (type_name) @namespace))))
-
-(constants_statement
-  (nominal_type
-    (flat_nominal_type
-      (type_name) @type)))
+; (constants_statement
+;   (nominal_type
+;     (flat_nominal_type
+;       (type_name) @type)))
 
 (param_definition
   name: (argument_name) @variable.member)
 
 
-(call_expression
-  command: (argument_name) @function.call)
+; (call_expression
+;   command: (argument_name) @function.call)
 
 (call_param
   name: (argument_name) @variable.member)

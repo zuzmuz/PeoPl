@@ -35,7 +35,6 @@ module.exports = grammar({
     source_file: $ => repeat(
       seq(
         $._statement,
-        // '..'
       )
     ),
 
@@ -51,38 +50,10 @@ module.exports = grammar({
     ),
 
     _statement: $ => choice(
-      // $.namespace_state,
-      // $.implementation_statement,
-      // $.constants_statement,
       $._definition,
     ),
 
-    namespace_state: $ => seq(
-      'namespace',
-      '[',
-      seq(
-        optional($.nominal_type),
-        repeat(seq(',', $.nominal_type))
-      ),
-      ']'
-    ),
-
-    implementation_statement: $ => seq(
-      'impl',
-      $.nominal_type,
-      '=',
-      $.nominal_type,
-    ),
-
-    constants_statement: $ => seq(
-      'const',
-      optional(seq(field('scope', $.nominal_type), '.')),
-      field('argument_name', $.argument_name),
-      '=',
-      field('expression', $._expression), //can be a simple expression
-    ),
-
-    // DEFEINTIONS
+    // DEFINITIONS
     // -----------
     
     argument_name: $ => choice('_', /_*[a-z][a-zA-Z0-9_]*/),
@@ -140,8 +111,7 @@ module.exports = grammar({
 
     normal_function_definition: $ => seq(
       optional(seq('(', field("input_type", $.type_identifier), ')')),
-      field("scope", optional(seq($.nominal_type, '.'))),
-      field("name", $.argument_name),
+      field("name", $.field_expression),
       optional(field("type_arguments", $.type_arguments)),
       seq('(', field("params", optional($.param_list)), ')'),
       '=>',
@@ -176,15 +146,10 @@ module.exports = grammar({
       '>',
     ),
 
-    flat_nominal_type: $ => prec.left(PREC.TYPES,seq(
-      field('type_name', $.type_name),
-      field('type_arguments', optional($.type_arguments)),
-    )),
-
-    nominal_type: $ => prec.left(PREC.TYPES, seq(
-      $.flat_nominal_type,
-      repeat(seq('::', $.flat_nominal_type))
-    )),
+    nominal_type: $ => choice(
+      $.type_name,
+      prec.left(PREC.ACCESS, seq($.nominal_type, '::', $.type_name))
+    ),
 
     named_tuple_structural_type: $ => seq(
       '[',
@@ -308,7 +273,7 @@ module.exports = grammar({
         $._tuple_literal,
         $.parenthisized_expression,
         $.lambda_expression,
-        $.argument_name,
+        $.field_expression,
         $.call_expression,
         $.access_expression,
     ),
@@ -357,6 +322,11 @@ module.exports = grammar({
       '}'
     ),
 
+    field_expression: $ => choice(
+      $.argument_name,
+      prec.left(PREC.ACCESS, seq($.nominal_type, '::', $.argument_name)),
+    ),
+
     // a call expression is not a simple expression and need to be paranthesised to be
     // unambiguousely inserted anywhere, it fits in special places
     // it is constructed by a callee which is the command name
@@ -387,7 +357,7 @@ module.exports = grammar({
     
     // Precedences here are necessary for accessing parenthesized expression
     access_expression: $ => prec.left(PREC.ACCESS, seq(
-      field("accessed", choice($._simple_expression, $.nominal_type)),
+      field("accessed", $._simple_expression),
       '.',
       field("argument_name", $.argument_name),
     )),

@@ -12,10 +12,6 @@
             "named": true
           },
           {
-            "type": "argument_name",
-            "named": true
-          },
-          {
             "type": "binary_expression",
             "named": true
           },
@@ -25,6 +21,10 @@
           },
           {
             "type": "call_expression",
+            "named": true
+          },
+          {
+            "type": "field_expression",
             "named": true
           },
           {
@@ -45,10 +45,6 @@
           },
           {
             "type": "never",
-            "named": true
-          },
-          {
-            "type": "nominal_type",
             "named": true
           },
           {
@@ -108,10 +104,6 @@
             "named": true
           },
           {
-            "type": "argument_name",
-            "named": true
-          },
-          {
             "type": "binary_expression",
             "named": true
           },
@@ -121,6 +113,10 @@
           },
           {
             "type": "call_expression",
+            "named": true
+          },
+          {
+            "type": "field_expression",
             "named": true
           },
           {
@@ -200,10 +196,6 @@
             "named": true
           },
           {
-            "type": "argument_name",
-            "named": true
-          },
-          {
             "type": "binary_expression",
             "named": true
           },
@@ -213,6 +205,10 @@
           },
           {
             "type": "call_expression",
+            "named": true
+          },
+          {
+            "type": "field_expression",
             "named": true
           },
           {
@@ -277,10 +273,6 @@
             "named": true
           },
           {
-            "type": "argument_name",
-            "named": true
-          },
-          {
             "type": "binary_expression",
             "named": true
           },
@@ -290,6 +282,10 @@
           },
           {
             "type": "call_expression",
+            "named": true
+          },
+          {
+            "type": "field_expression",
             "named": true
           },
           {
@@ -363,10 +359,6 @@
           "named": true
         },
         {
-          "type": "argument_name",
-          "named": true
-        },
-        {
           "type": "binary_expression",
           "named": true
         },
@@ -380,6 +372,10 @@
         },
         {
           "type": "call_expression",
+          "named": true
+        },
+        {
+          "type": "field_expression",
           "named": true
         },
         {
@@ -438,10 +434,6 @@
             "named": true
           },
           {
-            "type": "argument_name",
-            "named": true
-          },
-          {
             "type": "binary_expression",
             "named": true
           },
@@ -451,6 +443,10 @@
           },
           {
             "type": "call_expression",
+            "named": true
+          },
+          {
+            "type": "field_expression",
             "named": true
           },
           {
@@ -534,10 +530,6 @@
             "named": true
           },
           {
-            "type": "argument_name",
-            "named": true
-          },
-          {
             "type": "binary_expression",
             "named": true
           },
@@ -551,6 +543,10 @@
           },
           {
             "type": "call_expression",
+            "named": true
+          },
+          {
+            "type": "field_expression",
             "named": true
           },
           {
@@ -629,10 +625,6 @@
           "named": true
         },
         {
-          "type": "argument_name",
-          "named": true
-        },
-        {
           "type": "binary_expression",
           "named": true
         },
@@ -646,6 +638,10 @@
         },
         {
           "type": "call_param",
+          "named": true
+        },
+        {
+          "type": "field_expression",
           "named": true
         },
         {
@@ -731,29 +727,22 @@
     }
   },
   {
-    "type": "flat_nominal_type",
+    "type": "field_expression",
     "named": true,
-    "fields": {
-      "type_arguments": {
-        "multiple": false,
-        "required": false,
-        "types": [
-          {
-            "type": "type_arguments",
-            "named": true
-          }
-        ]
-      },
-      "type_name": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "type_name",
-            "named": true
-          }
-        ]
-      }
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "argument_name",
+          "named": true
+        },
+        {
+          "type": "nominal_type",
+          "named": true
+        }
+      ]
     }
   },
   {
@@ -788,10 +777,6 @@
           "named": true
         },
         {
-          "type": "argument_name",
-          "named": true
-        },
-        {
           "type": "binary_expression",
           "named": true
         },
@@ -805,6 +790,10 @@
         },
         {
           "type": "call_expression",
+          "named": true
+        },
+        {
+          "type": "field_expression",
           "named": true
         },
         {
@@ -943,7 +932,11 @@
       "required": true,
       "types": [
         {
-          "type": "flat_nominal_type",
+          "type": "nominal_type",
+          "named": true
+        },
+        {
+          "type": "type_name",
           "named": true
         }
       ]
@@ -962,10 +955,6 @@
             "named": true
           },
           {
-            "type": "argument_name",
-            "named": true
-          },
-          {
             "type": "binary_expression",
             "named": true
           },
@@ -979,6 +968,10 @@
           },
           {
             "type": "call_expression",
+            "named": true
+          },
+          {
+            "type": "field_expression",
             "named": true
           },
           {
@@ -1042,7 +1035,7 @@
         "required": true,
         "types": [
           {
-            "type": "argument_name",
+            "type": "field_expression",
             "named": true
           }
         ]
@@ -1063,20 +1056,6 @@
         "types": [
           {
             "type": "param_list",
-            "named": true
-          }
-        ]
-      },
-      "scope": {
-        "multiple": true,
-        "required": false,
-        "types": [
-          {
-            "type": ".",
-            "named": false
-          },
-          {
-            "type": "nominal_type",
             "named": true
           }
         ]
@@ -1106,10 +1085,6 @@
             "named": true
           },
           {
-            "type": "argument_name",
-            "named": true
-          },
-          {
             "type": "binary_expression",
             "named": true
           },
@@ -1123,6 +1098,10 @@
           },
           {
             "type": "call_expression",
+            "named": true
+          },
+          {
+            "type": "field_expression",
             "named": true
           },
           {
@@ -1275,10 +1254,6 @@
           "named": true
         },
         {
-          "type": "argument_name",
-          "named": true
-        },
-        {
           "type": "binary_expression",
           "named": true
         },
@@ -1292,6 +1267,10 @@
         },
         {
           "type": "call_expression",
+          "named": true
+        },
+        {
+          "type": "field_expression",
           "named": true
         },
         {
@@ -1354,10 +1333,6 @@
             "named": true
           },
           {
-            "type": "argument_name",
-            "named": true
-          },
-          {
             "type": "binary_expression",
             "named": true
           },
@@ -1371,6 +1346,10 @@
           },
           {
             "type": "call_expression",
+            "named": true
+          },
+          {
+            "type": "field_expression",
             "named": true
           },
           {
@@ -1438,10 +1417,6 @@
             "named": true
           },
           {
-            "type": "argument_name",
-            "named": true
-          },
-          {
             "type": "binary_expression",
             "named": true
           },
@@ -1455,6 +1430,10 @@
           },
           {
             "type": "call_expression",
+            "named": true
+          },
+          {
+            "type": "field_expression",
             "named": true
           },
           {
@@ -1633,10 +1612,6 @@
             "named": true
           },
           {
-            "type": "argument_name",
-            "named": true
-          },
-          {
             "type": "binary_expression",
             "named": true
           },
@@ -1646,6 +1621,10 @@
           },
           {
             "type": "call_expression",
+            "named": true
+          },
+          {
+            "type": "field_expression",
             "named": true
           },
           {
@@ -1731,10 +1710,6 @@
           "named": true
         },
         {
-          "type": "argument_name",
-          "named": true
-        },
-        {
           "type": "binary_expression",
           "named": true
         },
@@ -1748,6 +1723,10 @@
         },
         {
           "type": "call_expression",
+          "named": true
+        },
+        {
+          "type": "field_expression",
           "named": true
         },
         {
