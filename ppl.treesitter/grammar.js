@@ -27,9 +27,6 @@ module.exports = grammar({
   extras: $ => [
     $.comment, /\s|\\\r?\n/,
   ],
-  conflicts: $ => [
-    [$._single_expression, $.type_identifier],
-  ],
 
   rules: {
     source_file: $ => repeat(
@@ -55,31 +52,25 @@ module.exports = grammar({
 
     // DEFINITIONS
     // -----------
-    
-    argument_name: $ => choice('_', /_*[a-z][a-zA-Z0-9_]*/),
-    type_name: $ => /_*[A-Z][a-zA-Z0-9_]*/,
+     
+    small_identifier: $ => choice('_', /_*[a-z][a-zA-Z0-9_]*/),
+    big_identifier: $ => /_*[A-Z][a-zA-Z0-9_]*/,
+    binding_name: $ => token.immediate(seq('$', $.small_identifier)),
 
+    param_definition: $ => seq(
+      field("name", $.small_identifier),
+      ":",
+      field("type", $._type),
+    ),
     param_list: $ => seq(
       repeat1(seq($.param_definition, optional(',')))
     ),
-    param_definition: $ => seq(
-      field("name", $.argument_name),
-      ":",
-      field("type", $.type_identifier),
-      // optional(seq(
-      //   '(',
-      //   field("default_value", $._simple_expression),
-      //   ')',
-      // )),
-    ),
-
 
     _definition: $ => seq(
       choice(
         $.type_definition,
         $.function_definition,
       ),
-      // '..'
     ),
     
     // Type Definitions
@@ -97,7 +88,7 @@ module.exports = grammar({
 
     simple_type_definition: $ => seq(
       field('name', $.nominal_type),
-      field("params", optional($.param_list)),
+      field('params', optional($.param_list)),
     ),
 
 
@@ -110,12 +101,11 @@ module.exports = grammar({
     ),
 
     normal_function_definition: $ => seq(
-      optional(seq('(', field("input_type", $.type_identifier), ')')),
+      optional(seq('(', field("input_type", $._type), ')')),
       field("name", $.field_expression),
-      optional(field("type_arguments", $.type_arguments)),
       seq('(', field("params", optional($.param_list)), ')'),
       '=>',
-      field("output_type", $.type_identifier),
+      field("output_type", $._type),
       optional(field("body", $._expression)),
     ),
 
@@ -124,7 +114,7 @@ module.exports = grammar({
       field("operator", choice($.multiplicative_operator, $.additive_operator, $.comparative_operator)),
       field("right_type", $.param_definition),
       '=>',
-      field("output_type", $.type_identifier),
+      field("output_type", $._type),
       optional(field("body", $._expression)),
     ),
 
@@ -132,23 +122,16 @@ module.exports = grammar({
     // Types
     // -----
 
-    type_identifier: $ => choice(
+    _type: $ => choice(
       $.nothing,
       $.never,
       $.nominal_type,
-      $.lambda_structural_type,
       $._tuple_structural_type,
     ),
 
-    type_arguments: $ => seq(
-      '<',
-      seq($.type_identifier, repeat(seq(',', $.type_identifier))),
-      '>',
-    ),
-
     nominal_type: $ => choice(
-      $.type_name,
-      prec.left(PREC.ACCESS, seq($.nominal_type, '::', $.type_name))
+      $.big_identifier,
+      prec.left(PREC.ACCESS, seq($.nominal_type, '::', $.big_identifier)),
     ),
 
     named_tuple_structural_type: $ => seq(
@@ -160,8 +143,8 @@ module.exports = grammar({
     ),
     unnamed_tuple_structural_type: $ => seq(
       '[',
-        $.type_identifier,
-        repeat(seq(',', $.type_identifier)),
+        $._type,
+        repeat(seq(',', $._type)),
         optional(','),
       ']'
     ),
@@ -169,17 +152,6 @@ module.exports = grammar({
     _tuple_structural_type: $ => choice(
       $.unnamed_tuple_structural_type,
       $.named_tuple_structural_type
-    ),
-
-    lambda_structural_type: $ => seq(
-      '{',
-      field('input_type', optional(seq(
-        $.type_identifier,
-        repeat(seq(',', $.type_identifier))
-      ))),
-      '}',
-      '->',
-      field('return_type', $.type_identifier),
     ),
 
     // -----------
@@ -211,7 +183,7 @@ module.exports = grammar({
         field("operator", choice(
           $.multiplicative_operator,
           $.additive_operator,
-          // $.comparative_operator,
+          $.comparative_operator,
           $.and_operator,
           $.or_operator,
           $.not_operator,
@@ -323,8 +295,8 @@ module.exports = grammar({
     ),
 
     field_expression: $ => choice(
-      $.argument_name,
-      prec.left(PREC.ACCESS, seq($.nominal_type, '::', $.argument_name)),
+      $.small_identifier,
+      seq($.nominal_type, '::', $.small_identifier),
     ),
 
     // a call expression is not a simple expression and need to be paranthesised to be
@@ -350,7 +322,7 @@ module.exports = grammar({
     // non simple expression needs to be parenthised to be unambiguousely
     // inserted as param values
     call_param: $ => seq(
-      field("name", $.argument_name),
+      field("name", $.small_identifier),
       ":",
       field("value", $._expression),
     ),
@@ -359,7 +331,7 @@ module.exports = grammar({
     access_expression: $ => prec.left(PREC.ACCESS, seq(
       field("accessed", $._simple_expression),
       '.',
-      field("argument_name", $.argument_name),
+      field("argument_name", $.small_identifier),
     )),
 
     // a subpipe is one contained expression
@@ -381,18 +353,14 @@ module.exports = grammar({
     // or a looped expression which is just are regular parenthesized expression
     // followed by ^
     branch_expression: $ => seq(
-      '|', field("capture_group", $.capture_group), '|',
+      '|', 
+      field("match_expression", $._simple_expression),
+      optional(seq(':', field("guard_expression", $._simple_expression))),
       field("body", choice(
         $._simple_expression,
         $.looped_expression,
       ))
     ),
-
-    capture_group: $ => seq(
-      choice($._simple_expression, $.nominal_type, $.call_param, $.param_definition),
-      repeat(seq(',', choice($._simple_expression, $.nominal_type, $.call_param, $.param_definition))),
-    ),
-
 
     looped_expression: $ => seq(
       $.parenthisized_expression,
