@@ -15,7 +15,7 @@
 
 
 (nominal_type
-    (type_name) @type.definition)
+    (big_identifier) @type.definition)
 
 ; (type_arguments
 ;   (type_identifier
@@ -29,19 +29,19 @@
 (function_definition
   (normal_function_definition
     (field_expression
-      (argument_name) @function)))
+      (small_identifier) @function)))
 
 
 (param_definition
-  name: (argument_name) @variable.member)
+  name: (small_identifier) @variable.member)
 
 
 (call_expression
   command: (field_expression
-             (argument_name) @function.call))
+             (small_identifier) @function.call))
 
 (call_param
-  name: (argument_name) @variable.member)
+  name: (small_identifier) @variable.member)
 
 (int_literal) @number
 (bool_literal) @boolean
@@ -74,13 +74,12 @@
  "::"
  ":"
  "."
- "->"
  "=>"
 ] @punctuation.delimiter
 
 (nothing) @constant.builtin
 (never) @constant.builtin
 
-"_" @character.special
+; "_" @character.special
 
 (comment) @comment

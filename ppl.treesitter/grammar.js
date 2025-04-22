@@ -53,9 +53,8 @@ module.exports = grammar({
     // DEFINITIONS
     // -----------
      
-    small_identifier: $ => choice('_', /_*[a-z][a-zA-Z0-9_]*/),
+    small_identifier: $ => token(choice('_', /_*[a-z][a-zA-Z0-9_]*/)),
     big_identifier: $ => /_*[A-Z][a-zA-Z0-9_]*/,
-    binding_name: $ => token.immediate(seq('$', $.small_identifier)),
 
     param_definition: $ => seq(
       field("name", $.small_identifier),
@@ -236,6 +235,42 @@ module.exports = grammar({
     not_operator: $ => 'not',
     and_operator: $ => 'and',
     or_operator: $ => 'or',
+    
+    binding_name: $ => seq('$', $.small_identifier),
+
+    _capture_expression: $ => choice(
+      $._single_expression,
+      $.field_expression,
+      $.binding_name,
+      $.tuple_binding_literal,
+      $.call_binding_expression
+    ),
+
+    tuple_binding_literal: $ => seq(
+      '[',
+        $._capture_expression,
+        repeat(seq(',', $._capture_expression)),
+        optional(','),
+      ']'
+    ),
+
+    call_binding_expression: $ => seq(
+      field("command", $.nominal_type),
+      optional(seq(
+      '(',
+        field("params", seq(
+          $.call_param_binding,
+          repeat(seq(',', $.call_param_binding))
+        )),
+      ')',
+      ))
+    ),
+
+    call_param_binding: $ => seq(
+      field("name", $.small_identifier),
+      ":",
+      field("value", $._capture_expression),
+    ),
 
     // simple expressions can be unambiguousely inserted anywhere
     _simple_expression: $ => choice(
@@ -354,8 +389,9 @@ module.exports = grammar({
     // followed by ^
     branch_expression: $ => seq(
       '|', 
-      field("match_expression", $._simple_expression),
+      field("match_expression", $._capture_expression),
       optional(seq(':', field("guard_expression", $._simple_expression))),
+      '|',
       field("body", choice(
         $._simple_expression,
         $.looped_expression,

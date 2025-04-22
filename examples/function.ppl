@@ -1,23 +1,5 @@
-type TheAmazingStruct::X
-    Case2 a: Ex
-    Case3
 
-type X param: Z, sdf: S
+func (InputTypeName) func_name(arg_name: ArgType) => OutputTypeName
+    |[$a, $a, Cap, Ex(a: $a)]: a=1| 2,
+    |b| 3
 
-
-func (TheAmazingStruct::B::C::D) A::C::foo(
-    a: C,
-    d: D
-) => Int::B
-    |_| "sdfsdff",
-    3 + 2 < "s" |>
-    asd(a: s, b: s) |>
-    A::a |>
-    Never |>
-    true |>
-    func |>
-    false
-
-
-func a() => [I32]
-    [1, 2, 3]
