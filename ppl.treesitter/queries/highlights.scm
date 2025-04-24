@@ -36,11 +36,11 @@
   name: (small_identifier) @variable.member)
 
 
-(call_expression
-  command: (scoped_identifier
+(function_call_expression
+  prefix: (scoped_identifier
              (small_identifier) @function.call))
 
-(call_param
+(argument
   name: (small_identifier) @variable.member)
 
 (int_literal) @number

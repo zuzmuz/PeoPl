@@ -264,7 +264,7 @@ module.exports = grammar({
       field("prefix", $.nominal_type),
       optional(seq(
       '(',
-        field("arguments", $.argument_list_binding)
+        field("arguments", $.argument_list_binding),
       ')',
       ))
     ),
