@@ -19,7 +19,7 @@ final class ArithmeticsExpressionTests: XCTestCase {
 
         let body = functionDefinition.body
 
-        guard case .nothing = body?.expressionType else {
+        guard case .literal(.nothing) = body?.expressionType else {
             XCTAssertTrue(false)
             return
         }
@@ -41,7 +41,7 @@ final class ArithmeticsExpressionTests: XCTestCase {
 
         let body = functionDefinition.body
 
-        guard case .never = body?.expressionType else {
+        guard case .literal(.never) = body?.expressionType else {
             XCTAssertTrue(false)
             return
         }
@@ -73,8 +73,8 @@ final class ArithmeticsExpressionTests: XCTestCase {
             return
         }
 
-        if case let .intLiteral(valueRight) = right.expressionType,
-            case let .intLiteral(valueLeft) = left1.expressionType
+        if case let .literal(.intLiteral(valueRight)) = right.expressionType,
+           case let .literal(.intLiteral(valueLeft)) = left1.expressionType
         {
             XCTAssertEqual(valueRight, 3)
             XCTAssertEqual(valueLeft, 10)
@@ -88,7 +88,7 @@ final class ArithmeticsExpressionTests: XCTestCase {
             return
         }
 
-        if case let .intLiteral(value) = right.expressionType,
+        if case let .literal(.intLiteral(value)) = right.expressionType,
             case let .binary(.minus, left, right) = left.expressionType
         {
             XCTAssertEqual(value, 1)
@@ -98,13 +98,13 @@ final class ArithmeticsExpressionTests: XCTestCase {
                 return
             }
 
-            if case let .intLiteral(value) = right.expressionType,
+            if case let .literal(.intLiteral(value)) = right.expressionType,
                 case let .binary(.times, left, right) = left1.expressionType
             {
                 XCTAssertEqual(value, 2)
 
-                if case let .intLiteral(valueLeft) = left.expressionType,
-                    case let .intLiteral(valueRight) = right.expressionType
+                if case let .literal(.intLiteral(valueLeft)) = left.expressionType,
+                   case let .literal(.intLiteral(valueRight)) = right.expressionType
                 {
                     XCTAssertEqual(valueLeft, 6)
                     XCTAssertEqual(valueRight, 5)
@@ -122,8 +122,8 @@ final class ArithmeticsExpressionTests: XCTestCase {
                 return
             }
 
-            if case let .intLiteral(leftValue) = left1.expressionType,
-                case let .intLiteral(rightValue) = right.expressionType
+            if case let .literal(.intLiteral(leftValue)) = left1.expressionType,
+               case let .literal(.intLiteral(rightValue)) = right.expressionType
             {
                 XCTAssertEqual(leftValue, 3)
                 XCTAssertEqual(rightValue, 4)
@@ -135,8 +135,8 @@ final class ArithmeticsExpressionTests: XCTestCase {
                 XCTAssertTrue(false)
                 return
             }
-            if case let .intLiteral(leftValue) = left.expressionType,
-                case let .intLiteral(rightValue) = right.expressionType
+            if case let .literal(.intLiteral(leftValue)) = left.expressionType,
+               case let .literal(.intLiteral(rightValue)) = right.expressionType
             {
                 XCTAssertEqual(leftValue, 5)
                 XCTAssertEqual(rightValue, 2)
@@ -176,10 +176,10 @@ final class ArithmeticsExpressionTests: XCTestCase {
 
         if case let .binary(.times, left1, right1) = left1.expressionType,
             case let .binary(.by, left2, right2) = right.expressionType,
-            case let .intLiteral(left1Value) = left1.expressionType,
-            case let .intLiteral(right1Value) = right1.expressionType,
-            case let .intLiteral(left2Value) = left2.expressionType,
-            case let .intLiteral(right2Value) = right2.expressionType
+            case let .literal(.intLiteral(left1Value)) = left1.expressionType,
+            case let .literal(.intLiteral(right1Value)) = right1.expressionType,
+            case let .literal(.intLiteral(left2Value)) = left2.expressionType,
+            case let .literal(.intLiteral(right2Value)) = right2.expressionType
         {
             XCTAssertEqual(left1Value, 2)
             XCTAssertEqual(right1Value, 3)
@@ -195,11 +195,11 @@ final class ArithmeticsExpressionTests: XCTestCase {
             return
         }
 
-        if case let .intLiteral(rightestValue) = right.expressionType, 
+        if case let .literal(.intLiteral(rightestValue)) = right.expressionType, 
             case let .binary(.plus, left, right) = left.expressionType,
-            case let .intLiteral(rightValue) = right.expressionType,
+            case let .literal(.intLiteral(rightValue)) = right.expressionType,
             case let .unary(.minus, unary) = left.expressionType,
-            case let .intLiteral(leftValue) = unary.expressionType
+            case let .literal(.intLiteral(leftValue)) = unary.expressionType
         {
             XCTAssertEqual(leftValue, 5)
             XCTAssertEqual(rightValue, 10)
@@ -240,9 +240,9 @@ final class ArithmeticsExpressionTests: XCTestCase {
             case let .binary(.times, left, right) = left.expressionType,
             case let .unary(.plus, value1) = left.expressionType,
             case let .unary(.minus, value2) = right.expressionType,
-            case let .intLiteral(value1) = value1.expressionType,
-            case let .intLiteral(value2) = value2.expressionType,
-            case let .intLiteral(value3) = value3.expressionType 
+            case let .literal(.intLiteral(value1)) = value1.expressionType,
+            case let .literal(.intLiteral(value2)) = value2.expressionType,
+            case let .literal(.intLiteral(value3)) = value3.expressionType 
         {
             XCTAssertEqual(value1, 4)
             XCTAssertEqual(value2, 5)
@@ -254,8 +254,8 @@ final class ArithmeticsExpressionTests: XCTestCase {
         if case let .binary(.modulo, left, right) = right.expressionType,
             case let .unary(.minus, value2) = right.expressionType,
             case let .unary(.minus, value1) = left.expressionType,
-            case let .intLiteral(value1) = value1.expressionType,
-            case let .intLiteral(value2) = value2.expressionType
+            case let .literal(.intLiteral(value1)) = value1.expressionType,
+            case let .literal(.intLiteral(value2)) = value2.expressionType
         {
             XCTAssertEqual(value1, 3)
             XCTAssertEqual(value2, 2)
@@ -288,8 +288,8 @@ final class ArithmeticsExpressionTests: XCTestCase {
         if case let .binary(.different, left1, right1) = right.expressionType,
             case let .binary(.or, left, right) = left.expressionType
         {
-            if case let .intLiteral(valueLeft) = left1.expressionType,
-                case let .intLiteral(valueRight) = right1.expressionType
+            if case let .literal(.intLiteral(valueLeft)) = left1.expressionType,
+                case let .literal(.intLiteral(valueRight)) = right1.expressionType
             {
                 XCTAssertEqual(valueLeft, 1)
                 XCTAssertEqual(valueRight, 3)
@@ -303,10 +303,10 @@ final class ArithmeticsExpressionTests: XCTestCase {
             {
                 if case let .binary(.greaterThan, left11, right11) = left1.expressionType,
                     case let .binary(.lessThan, left21, right21) = right1.expressionType,
-                    case let .intLiteral(left11) = left11.expressionType,
-                    case let .intLiteral(right11) = right11.expressionType,
-                    case let .intLiteral(left21) = left21.expressionType,
-                    case let .intLiteral(right21) = right21.expressionType
+                    case let .literal(.intLiteral(left11)) = left11.expressionType,
+                    case let .literal(.intLiteral(right11)) = right11.expressionType,
+                    case let .literal(.intLiteral(left21)) = left21.expressionType,
+                    case let .literal(.intLiteral(right21)) = right21.expressionType
                 {
                     XCTAssertEqual(left11, 2)
                     XCTAssertEqual(right11, 0)
@@ -318,10 +318,10 @@ final class ArithmeticsExpressionTests: XCTestCase {
 
                 if case let .binary(.greaterThanOrEqual, left11, right11) = left2.expressionType,
                     case let .binary(.lessThanOrEqual, left21, right21) = right2.expressionType,
-                    case let .intLiteral(left11) = left11.expressionType,
-                    case let .intLiteral(right11) = right11.expressionType,
-                    case let .intLiteral(left21) = left21.expressionType,
-                    case let .intLiteral(right21) = right21.expressionType
+                    case let .literal(.intLiteral(left11)) = left11.expressionType,
+                    case let .literal(.intLiteral(right11)) = right11.expressionType,
+                    case let .literal(.intLiteral(left21)) = left21.expressionType,
+                    case let .literal(.intLiteral(right21)) = right21.expressionType
                 {
                     XCTAssertEqual(left11, 5)
                     XCTAssertEqual(right11, 3)
@@ -369,8 +369,8 @@ final class ArithmeticsExpressionTests: XCTestCase {
         }
 
         if case let .binary(.times, left, right) = left.expressionType,
-            case let .floatLiteral(left) = left.expressionType,
-            case let .floatLiteral(right) = right.expressionType
+            case let .literal(.floatLiteral(left)) = left.expressionType,
+            case let .literal(.floatLiteral(right)) = right.expressionType
         {
             XCTAssertEqual(left, 1.1)
             XCTAssertEqual(right, 3.1)
@@ -381,8 +381,8 @@ final class ArithmeticsExpressionTests: XCTestCase {
 
         if case let .binary(.by, left, right) = right.expressionType,
             case let .unary(.minus, left) = left.expressionType,
-            case let .floatLiteral(left) = left.expressionType,
-            case let .floatLiteral(right) = right.expressionType
+            case let .literal(.floatLiteral(left)) = left.expressionType,
+            case let .literal(.floatLiteral(right)) = right.expressionType
         {
             XCTAssertEqual(left, 3.2)
             XCTAssertEqual(right, 4.2)
@@ -416,8 +416,8 @@ final class ArithmeticsExpressionTests: XCTestCase {
         }
 
         if case let .binary(.or, left, right) = right.expressionType,
-            case let .intLiteral(left) = left.expressionType,
-            case let .intLiteral(right) = right.expressionType
+            case let .literal(.intLiteral(left)) = left.expressionType,
+            case let .literal(.intLiteral(right)) = right.expressionType
         {
             XCTAssertEqual(left, 8)
             XCTAssertEqual(right, 9)
@@ -427,10 +427,10 @@ final class ArithmeticsExpressionTests: XCTestCase {
 
         if case let .binary(.or, left, right) = left.expressionType {
             if case let .binary(.times, left, right) = left.expressionType,
-                case let .intLiteral(value3) = right.expressionType,
+                case let .literal(.intLiteral(value3)) = right.expressionType,
                 case let .binary(.plus, left, right) = left.expressionType,
-                case let .intLiteral(value1) = left.expressionType,
-                case let .intLiteral(value2) = right.expressionType
+                case let .literal(.intLiteral(value1)) = left.expressionType,
+                case let .literal(.intLiteral(value2)) = right.expressionType
             {
                 XCTAssertEqual(value1, 2)
                 XCTAssertEqual(value2, 3)
@@ -440,10 +440,10 @@ final class ArithmeticsExpressionTests: XCTestCase {
             }
 
             if case let .binary(.by, left, right) = right.expressionType,
-                case let .intLiteral(value1) = left.expressionType,
+                case let .literal(.intLiteral(value1)) = left.expressionType,
                 case let .binary(.minus, left, right) = right.expressionType,
-                case let .intLiteral(value2) = left.expressionType,
-                case let .intLiteral(value3) = right.expressionType
+                case let .literal(.intLiteral(value2)) = left.expressionType,
+                case let .literal(.intLiteral(value3)) = right.expressionType
             {
                 XCTAssertEqual(value1, 5)
                 XCTAssertEqual(value2, 6)

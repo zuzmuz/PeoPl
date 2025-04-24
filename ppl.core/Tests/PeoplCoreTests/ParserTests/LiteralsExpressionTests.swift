@@ -19,8 +19,8 @@ final class LiteralsExpressionTests: XCTestCase {
         let body = functionDefinition.body
 
         if case let .binary(.different, left, right) = body?.expressionType,
-            case let .stringLiteral(left) = left.expressionType,
-            case let .stringLiteral(right) = right.expressionType
+            case let .literal(.stringLiteral(left)) = left.expressionType,
+            case let .literal(.stringLiteral(right)) = right.expressionType
         {
             XCTAssertEqual(left, "is this")
             XCTAssertEqual(right, "different than this")
@@ -45,11 +45,11 @@ final class LiteralsExpressionTests: XCTestCase {
         let body = functionDefinition.body
 
         if case let .binary(.or, left, right) = body?.expressionType,
-            case let .boolLiteral(value1) = left.expressionType,
+            case let .literal(.boolLiteral(value1)) = left.expressionType,
             case let .binary(.and, left, right) = right.expressionType,
-            case let .boolLiteral(value2) = left.expressionType,
+            case let .literal(.boolLiteral(value2)) = left.expressionType,
             case let .unary(.not, unary) = right.expressionType,
-            case let .boolLiteral(value3) = unary.expressionType
+            case let .literal(.boolLiteral(value3)) = unary.expressionType
         {
             XCTAssertEqual(value1, true)
             XCTAssertEqual(value2, false)

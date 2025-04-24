@@ -6,7 +6,7 @@ final class BranchExpressionTests: XCTestCase {
         let source = """
                 func main() => String
                     3 |>
-                    |i: i % 2 = 0| "is even",
+                    |$i: i % 2 = 0| "is even",
                     |_| "is odd"
             """
         let module = try Syntax.Module(source: source, path: "main")
@@ -25,7 +25,7 @@ final class BranchExpressionTests: XCTestCase {
             return
         }
 
-        if case let .intLiteral(value) = left.expressionType {
+        if case let .literal(.intLiteral(value)) = left.expressionType {
             XCTAssertEqual(value, 3)
         } else {
             XCTAssertTrue(false)
@@ -33,19 +33,18 @@ final class BranchExpressionTests: XCTestCase {
 
         if case let .branched(branched) = right.expressionType {
             XCTAssertEqual(branched.branches.count, 2)
-            XCTAssertNil(branched.lastBranch)
             
             let branch1 = branched.branches[0]
-            XCTAssertEqual(branch1.captureGroup.count, 1)
-            if case let .argument(argument) = branch1.captureGroup[0],
-                case let .binary(.equal, left, right) = argument.value.expressionType,
-                case let .intLiteral(value3) = right.expressionType,
+            if case let .binding(binding) = branch1.matchExpression,
+                case let .binary(.equal, left, right) = branch1.guardExpression?.expressionType,
+                case let .literal(.intLiteral(value3)) = right.expressionType,
                 case let .binary(.modulo, left, right) = left.expressionType,
                 case let .field(value1) = left.expressionType,
-                case let .intLiteral(value2) = right.expressionType
+                case let .literal(.intLiteral(value2)) = right.expressionType
             {
-                XCTAssertEqual(argument.name, "i")
-                XCTAssertEqual(value1, "i")
+                XCTAssertEqual(binding, "i")
+                XCTAssertEqual(value1.identifier, "i")
+                XCTAssertNil(value1.scope)
                 XCTAssertEqual(value2, 2)
                 XCTAssertEqual(value3, 0)
             } else {
@@ -53,24 +52,21 @@ final class BranchExpressionTests: XCTestCase {
             }
 
             if case let .simple(expression) = branch1.body,
-                case let .stringLiteral(body) = expression.expressionType { 
+                case let .literal(.stringLiteral(body)) = expression.expressionType { 
                 XCTAssertEqual(body, "is even")                              
             } else {                                                         
                 XCTAssertTrue(false)                                         
             }                                                                
                                                                              
             let branch2 = branched.branches[1]
-            XCTAssertEqual(branch2.captureGroup.count, 1)
-            if case let .simple(expression) = branch2.captureGroup[0],
-                case let .field(value) = expression.expressionType
-            {
-                XCTAssertEqual(value, "_")
+            if case let .field(value) = branch2.matchExpression {
+                XCTAssertEqual(value.identifier, "_")
             } else {
                 XCTAssertTrue(false)
             }
 
             if case let .simple(expression) = branch2.body,
-                case let .stringLiteral(body) = expression.expressionType { 
+                case let .literal(.stringLiteral(body)) = expression.expressionType { 
                 XCTAssertEqual(body, "is odd")                              
             } else {                                                         
                 XCTAssertTrue(false)                                         
@@ -85,12 +81,12 @@ final class BranchExpressionTests: XCTestCase {
         let source = """
                 func print(from: I32, to: I32) => Nothing
                     from |>
-                    |i < to| (
-                        |i % 2 = 0| (i |> print(format: "{} is even")),
-                        |i| (i |> print(format: "{} is odd"))
+                    |$i: i < to| (
+                        |_: i % 2 = 0| (i |> print(format: "{} is even")),
+                        |_| (i |> print(format: "{} is odd"))
                         |> +1
                     )^,
-                    Nothing
+                    |_| Nothing
             """
         let module = try Syntax.Module(source: source, path: "main")
 
@@ -108,7 +104,8 @@ final class BranchExpressionTests: XCTestCase {
             return
         }
 
-        if case .field("from") = left.expressionType {
+        if case let .field(field) = left.expressionType {
+            XCTAssertEqual(field.identifier, "from")
         } else {
             XCTAssertTrue(false)
         }
@@ -120,23 +117,16 @@ final class BranchExpressionTests: XCTestCase {
 
         XCTAssertEqual(branched.branches.count, 1)
 
-        XCTAssertNotNil(branched.lastBranch)
 
-        if case .nothing = branched.lastBranch?.expressionType {
-        } else {
-            XCTAssertTrue(false)
-        }
 
         let branch = branched.branches[0]
-        XCTAssertEqual(branch.captureGroup.count, 1)
 
-        if case let .simple(expression) = branch.captureGroup[0],
-            case let .binary(.lessThan, left, right) = expression.expressionType,
+        if case let .binary(.lessThan, left, right) = branch.guardExpression?.expressionType,
             case let .field(value1) = left.expressionType,
             case let .field(value2) = right.expressionType
         {
-            XCTAssertEqual(value1, "i")
-            XCTAssertEqual(value2, "to")
+            XCTAssertEqual(value1.identifier, "i")
+            XCTAssertEqual(value2.identifier, "to")
         } else {
             XCTAssertTrue(false)
         }
@@ -148,7 +138,7 @@ final class BranchExpressionTests: XCTestCase {
 
         if case let .piped(left, right) = expression.expressionType,
             case let .unary(.plus, unary) = right.expressionType,
-            case let .intLiteral(value) = unary.expressionType,
+            case let .literal(.intLiteral(value)) = unary.expressionType,
             case let .branched(branched) = left.expressionType
         {
             XCTAssertEqual(value, 1)

@@ -221,13 +221,10 @@ extension Syntax.FunctionDefinition {
 
     enum CodingKeys: String, CodingKey {
         case inputType = "input_type"
-        case functionIdentifier = "function_identifier"
+        case name = "name"
         case params
         case outputType = "output_type"
         case body
-
-        static let scope = "scope"
-        static let name = "name"
     }
 
     init?(from node: Node, in source: Syntax.Source) {
@@ -241,7 +238,7 @@ extension Syntax.FunctionDefinition {
             self.inputType = nil
         }
 
-        guard let child = node.child(byFieldName: CodingKeys.name),
+        guard let child = node.child(byFieldName: CodingKeys.name.rawValue),
             let name = Syntax.ScopedIdentifier(from: child, in: source) else { return nil }
 
         self.identifier = name
@@ -335,23 +332,22 @@ extension Syntax.TypeSpecifier {
     }
 
     init?(from node: Node, in source: Syntax.Source) {
-        guard let child = node.child(at: 0),
-            let location = child.getLocation(in: source) else { return nil }
+        guard let location = node.getLocation(in: source) else { return nil }
 
 
-        switch child.nodeType {
-        case CodingKeys.nothing.rawValue:
+        switch CodingKeys(rawValue: node.nodeType ?? "") {
+        case .nothing:
             self = .nothing(location: location)
-        case CodingKeys.never.rawValue:
+        case .never:
             self = .never(location: location)
-        case CodingKeys.nominal.rawValue:
-            guard let nominal = Syntax.NominalType(from: child, in: source) else { return nil }
+        case .nominal:
+            guard let nominal = Syntax.NominalType(from: node, in: source) else { return nil }
             self = .nominal(nominal)
-        case CodingKeys.namedTuple.rawValue:
-            guard let tuple = Syntax.StructuralType.NamedTuple(from: child, in: source) else { return nil }
+        case .namedTuple:
+            guard let tuple = Syntax.StructuralType.NamedTuple(from: node, in: source) else { return nil }
             self = .namedTuple(tuple)
-        case CodingKeys.unnamedTuple.rawValue:
-            guard let tuple = Syntax.StructuralType.UnnamedTuple(from: child, in: source) else { return nil }
+        case .unnamedTuple:
+            guard let tuple = Syntax.StructuralType.UnnamedTuple(from: node, in: source) else { return nil }
             self = .unnamedTuple(tuple)
         default:
             return nil
@@ -440,7 +436,7 @@ extension Syntax.Expression.Literal {
     }
 
     init?(from node: Node, in source: Syntax.Source) {
-        switch CodingKeys(rawValue: node.nodeType ?? "") {
+        switch CodingKeys(rawValue: node.child(at: 0)?.nodeType ?? "") {
         case .nothing:
             self = .nothing
         case .never:
