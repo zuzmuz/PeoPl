@@ -28,7 +28,7 @@
 
 (function_definition
   (normal_function_definition
-    (field_expression
+    (scoped_identifier
       (small_identifier) @function)))
 
 

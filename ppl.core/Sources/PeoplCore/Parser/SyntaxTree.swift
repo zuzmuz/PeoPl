@@ -18,6 +18,7 @@ enum Operator: String {
     case greaterThanOrEqual = ">="
 }
 
+
 enum Syntax {
     struct NodeLocation: Equatable, Comparable {
         struct Point: Comparable, Encodable, Equatable {
@@ -66,8 +67,6 @@ enum Syntax {
         case typeDefinition(TypeDefinition)
         case functionDefinition(FunctionDefinition)
         case operatorOverloadDefinition(OperatorOverloadDefinition)
-        // case implementationStatement(ImplementationStatement)
-        // case constantsStatement(ConstantsStatement)
 
         var location: NodeLocation {
             return switch self {
@@ -86,8 +85,7 @@ enum Syntax {
 
     struct ParamDefinition: SyntaxNode {
         let name: String
-        let type: TypeIdentifier
-        // let defaultValue: Expression.Simple?
+        let type: TypeSpecifier
         let location: NodeLocation
     }
 
@@ -140,33 +138,27 @@ enum Syntax {
     // MARK: - function definitions
     // ----------------------------
 
-    struct FunctionIdentifier {
+    struct ScopedIdentifier: SyntaxNode {
+        let identifier: String
         let scope: NominalType?
-        let name: String
-
-        var fullName: String {
-            if let scope {
-                return "\(scope.chain.map { $0.typeName }.joined(separator: ".")).\(name)"
-            } else {
-                return name
-            }
-        }
+        let location: NodeLocation
     }
 
+
     struct FunctionDefinition: SyntaxNode {
-        let inputType: TypeIdentifier?
-        let functionIdentifier: FunctionIdentifier
+        let inputType: TypeSpecifier?
+        let identifier: ScopedIdentifier
         let params: [ParamDefinition]
-        let outputType: TypeIdentifier
+        let outputType: TypeSpecifier
         let body: Expression?
         let location: NodeLocation
     }
 
     struct OperatorOverloadDefinition: SyntaxNode {
-        let left: TypeIdentifier
+        let left: TypeSpecifier
         let op: Operator
-        let right: TypeIdentifier
-        let outputType: TypeIdentifier
+        let right: TypeSpecifier
+        let outputType: TypeSpecifier
         let body: Expression?
         let location: NodeLocation
     }
@@ -174,14 +166,12 @@ enum Syntax {
     // MARK: - types
     // -------------
 
-    enum TypeIdentifier: SyntaxNode, Sendable {
+    enum TypeSpecifier: SyntaxNode, Sendable {
         case nothing(location: NodeLocation)
         case never(location: NodeLocation)
         case nominal(NominalType)
-        case lambda(StructuralType.Lambda)
         case namedTuple(StructuralType.NamedTuple)
         case unnamedTuple(StructuralType.UnnamedTuple)
-        case union(UnionType)
 
         var location: NodeLocation {
             return switch self {
@@ -191,47 +181,26 @@ enum Syntax {
                 location
             case let .nominal(nominalType):
                 nominalType.location
-            case let .lambda(lambda):
-                lambda.location
             case let .namedTuple(namedTuple):
                 namedTuple.location
             case let .unnamedTuple(unnamedTuple):
                 unnamedTuple.location
-            case let .union(unionType):
-                unionType.location
             }
         }
     }
 
-    struct FlatNominalType: SyntaxNode {
-        static let typeName = "type_name"
-        static let typeArguments = "type_arguments"
-        let typeName: String
-        let typeArguments: [TypeIdentifier]
-        let location: NodeLocation
-    }
-
     struct NominalType: SyntaxNode {
-        static let flatNominalType = "flat_nominal_type"
-        let chain: [FlatNominalType]
+        let chain: [String]
         let location: NodeLocation
 
         var typeName: String {
-            // WARN: considering no type arguments
-            return chain.map { $0.typeName }.joined(separator: ".")
+            return chain.map { $0 }.joined(separator: "::")
         }
     }
 
     enum StructuralType {
-        struct Lambda: SyntaxNode {
-            // TODO: input and output should be 1 and multiple inputs should be tupled
-            let input: [TypeIdentifier]
-            let output: [TypeIdentifier]
-            let location: NodeLocation
-        }
-
         struct UnnamedTuple: SyntaxNode {
-            let types: [TypeIdentifier]
+            let types: [TypeSpecifier]
             let location: NodeLocation
         }
 
@@ -239,11 +208,6 @@ enum Syntax {
             let types: [ParamDefinition]
             let location: NodeLocation
         }
-    }
-
-    struct UnionType {
-        let types: [TypeIdentifier]
-        let location: NodeLocation
     }
 
     // MARK: - Expressions
@@ -258,14 +222,18 @@ enum Syntax {
             self.location = location
         }
 
-        indirect enum ExpressionType: Sendable {
+        enum Literal {
             case nothing
             case never
-            // Literals
             case intLiteral(UInt64)
             case floatLiteral(Double)
             case stringLiteral(String)
             case boolLiteral(Bool)
+        }
+
+        indirect enum ExpressionType: Sendable {
+
+            case literal(Literal)
 
             // Unary
             case unary(Operator, expression: Expression)
@@ -277,17 +245,13 @@ enum Syntax {
             case lambda(Expression)
 
             // Scope
-            case call(Call)
-            case access(Access)
-            case field(String)
+            case functionCall(prefix: Expression, arguments: [Argument])
+            case typeInitializer(prefix: NominalType, arguments: [Argument])
+            case access(prefix: Expression, field: String)
+            case field(ScopedIdentifier)
 
             case branched(Branched)
             case piped(left: Expression, right: Expression)
-        }
-
-        enum Prefix {
-            case simple(Expression)
-            case type(NominalType)
         }
 
         struct Argument: SyntaxNode, Sendable {
@@ -296,54 +260,30 @@ enum Syntax {
             let location: NodeLocation
         }
 
-        struct Call: SyntaxNode {
-            let command: Prefix
-            let arguments: [Argument]
-            let location: NodeLocation
-
-            init(command: Prefix, arguments: [Argument], location: NodeLocation) {
-                self.command = command
-                self.arguments = arguments
-                self.location = location
-            }
-        }
-
-        struct Access: SyntaxNode {
-            let accessed: Prefix
-            let field: String
-            let location: NodeLocation
-        }
-
-        struct Branched: SyntaxNode {
+        struct Branched: SyntaxNode, Sendable {
             let branches: [Branch]
-            let lastBranch: Expression?
             let location: NodeLocation
 
-            init(branches: [Branch], lastBranch: Expression?, location: NodeLocation) {
-                self.branches = branches
-                self.lastBranch = lastBranch
-                self.location = location
-            }
+            struct Branch: SyntaxNode, Sendable {
 
-            struct Branch: SyntaxNode {
-
-                enum CaptureGroup {
-                    case simple(Expression)
-                    case type(NominalType)
-                    case paramDefinition(ParamDefinition)
-                    case argument(Argument)
+                enum MatchExpression: Sendable {
+                    case literal(Expression.Literal)
+                    case field(ScopedIdentifier)
+                    case binding(String)
+                    case tupleBinding([MatchExpression])
+                    case typeBinding(prefix: NominalType, arguments: [BindingArgument])
                 }
 
+                struct BindingArgument: SyntaxNode {
+                    let name: String
+                    let value: MatchExpression
+                    let location: NodeLocation
+                }
 
-                let captureGroup: [CaptureGroup]
+                let matchExpression: MatchExpression
+                let guardExpression: Expression?
                 let body: Body
                 let location: NodeLocation
-
-                init(captureGroup: [CaptureGroup], body: Body, location: NodeLocation) {
-                    self.captureGroup = captureGroup
-                    self.body = body
-                    self.location = location
-                }
 
                 enum Body {
                     case simple(Expression)

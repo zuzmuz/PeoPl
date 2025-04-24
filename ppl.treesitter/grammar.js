@@ -101,7 +101,7 @@ module.exports = grammar({
 
     normal_function_definition: $ => seq(
       optional(seq('(', field("input_type", $._type), ')')),
-      field("name", $.field_expression),
+      field("name", $.scoped_identifier),
       seq('(', field("params", optional($.param_list)), ')'),
       '=>',
       field("output_type", $._type),
@@ -238,55 +238,55 @@ module.exports = grammar({
     
     binding_name: $ => seq('$', $.small_identifier),
 
-    _capture_expression: $ => choice(
-      $._single_expression,
-      $.field_expression,
+    _match_expression: $ => choice(
+      $.literal,
+      $.scoped_identifier,
       $.binding_name,
       $.tuple_binding_literal,
-      $.call_binding_expression
+      $.type_binding
     ),
 
     tuple_binding_literal: $ => seq(
       '[',
-        $._capture_expression,
-        repeat(seq(',', $._capture_expression)),
+        $._match_expression,
+        repeat(seq(',', $._match_expression)),
         optional(','),
       ']'
     ),
 
-    call_binding_expression: $ => seq(
+    type_binding: $ => seq(
       field("command", $.nominal_type),
       optional(seq(
       '(',
         field("params", seq(
-          $.call_param_binding,
-          repeat(seq(',', $.call_param_binding))
+          $.type_param_binding,
+          repeat(seq(',', $.type_param_binding))
         )),
       ')',
       ))
     ),
 
-    call_param_binding: $ => seq(
+    type_param_binding: $ => seq(
       field("name", $.small_identifier),
       ":",
-      field("value", $._capture_expression),
+      field("value", $._match_expression),
     ),
 
     // simple expressions can be unambiguousely inserted anywhere
     _simple_expression: $ => choice(
-        $._single_expression,
+        $.literal,
         $.unary_expression,
         $.binary_expression,
         $._tuple_literal,
         $.parenthisized_expression,
         $.lambda_expression,
-        $.field_expression,
+        $.scoped_identifier,
         $.call_expression,
         $.access_expression,
     ),
     
     // single expressions are usually single tokens
-    _single_expression: $ => choice(
+    literal: $ => choice(
       $.nothing,
       $.never,
       $.int_literal,
@@ -329,7 +329,7 @@ module.exports = grammar({
       '}'
     ),
 
-    field_expression: $ => choice(
+    scoped_identifier: $ => choice(
       $.small_identifier,
       seq($.nominal_type, '::', $.small_identifier),
     ),
@@ -376,8 +376,6 @@ module.exports = grammar({
     branched_expression: $ => prec.left(PREC.SUBPIPE, seq(
       $.branch_expression,
       repeat(seq(',', $.branch_expression)),
-      optional(seq(',', $._simple_expression)),
-      // ';'
     )),
 
     // a subpipe branch is expression with a capture group
@@ -389,7 +387,7 @@ module.exports = grammar({
     // followed by ^
     branch_expression: $ => seq(
       '|', 
-      field("match_expression", $._capture_expression),
+      field("match_expression", $._match_expression),
       optional(seq(':', field("guard_expression", $._simple_expression))),
       '|',
       field("body", choice(
