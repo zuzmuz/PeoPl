@@ -37,7 +37,7 @@
 
 
 (call_expression
-  command: (field_expression
+  command: (scoped_identifier
              (small_identifier) @function.call))
 
 (call_param

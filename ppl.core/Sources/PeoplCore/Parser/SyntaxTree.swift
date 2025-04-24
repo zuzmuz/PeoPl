@@ -217,11 +217,6 @@ enum Syntax {
         let expressionType: ExpressionType
         let location: NodeLocation
 
-        init(expressionType: ExpressionType, location: NodeLocation) {
-            self.expressionType = expressionType
-            self.location = location
-        }
-
         enum Literal {
             case nothing
             case never

@@ -1,42 +1,33 @@
 
-extension Syntax.TypeIdentifier: Sequence {
-    static func simpleNominalType(name: String) -> Syntax.TypeIdentifier {
+extension Syntax.TypeSpecifier: Sequence {
+    static func simpleNominalType(name: String) -> Syntax.TypeSpecifier {
         return .nominal(
-            .init(chain: [.init(typeName: name, typeArguments: [], location: .nowhere)], location: .nowhere)
+            .init(chain: [name], location: .nowhere)
         )
     }
-    static func nestedNominalType(names: [String]) -> Syntax.TypeIdentifier {
+    static func nestedNominalType(names: [String]) -> Syntax.TypeSpecifier {
         return .nominal(
-            .init(chain: names.map { name in
-                Syntax.FlatNominalType(typeName: name, typeArguments: [], location: .nowhere)
-            },
-            location: .nowhere)
+            .init(chain: names, location: .nowhere)
         )
     }
-    static func simpleTuple(names: [String]) -> Syntax.TypeIdentifier {
+    static func simpleTuple(names: [String]) -> Syntax.TypeSpecifier {
         return .unnamedTuple(.init(
             types: names.map { name in
-                Syntax.TypeIdentifier.simpleNominalType(name: name)
+                Syntax.TypeSpecifier.simpleNominalType(name: name)
             },
             location: .nowhere)
         )
     }
-    static func simpleNamedTuple(names: [(String, String)]) -> Syntax.TypeIdentifier {
+    static func simpleNamedTuple(names: [(String, String)]) -> Syntax.TypeSpecifier {
         return .namedTuple(.init(
             types: names.map { argument, name in
                 Syntax.ParamDefinition(
                     name: argument,
-                    type: Syntax.TypeIdentifier.simpleNominalType(name: name),
+                    type: Syntax.TypeSpecifier.simpleNominalType(name: name),
                     location: .nowhere)
             },
             location: .nowhere)
         )
-    }
-    static func simpleLambda(inputs: [String], output: String) -> Syntax.TypeIdentifier {
-        return .lambda( .init(
-            input: inputs.map { Syntax.TypeIdentifier.simpleNominalType(name: $0) },
-            output: [Syntax.TypeIdentifier.simpleNominalType(name: output)],
-            location: .nowhere))
     }
 
     func makeIterator() -> TypeIdentifierIterator {
@@ -52,10 +43,6 @@ extension Syntax.TypeIdentifier: Sequence {
             return tuple.types.flatMap { $0.getNominalTypesFromIdentifier() }
         case let .namedTuple(tuple):
             return tuple.types.flatMap { $0.type.getNominalTypesFromIdentifier() }
-        case let .lambda(lambda):
-            return (lambda.input + lambda.output).flatMap { $0.getNominalTypesFromIdentifier() }
-        case let .union(union):
-            return union.types.flatMap { $0.getNominalTypesFromIdentifier() }
         default:
             return []
         }
@@ -63,12 +50,12 @@ extension Syntax.TypeIdentifier: Sequence {
 }
 
 struct TypeIdentifierIterator: IteratorProtocol {
-    private var content: [Syntax.TypeIdentifier]
+    private var content: [Syntax.TypeSpecifier]
     private var index: Int = 0
 
-    init(_ typeIdentifier: Syntax.TypeIdentifier) {
+    init(_ typeIdentifier: Syntax.TypeSpecifier) {
         switch typeIdentifier {
-        case .nothing, .never, .nominal, .lambda, .union:
+        case .nothing, .never, .nominal:
             content = [typeIdentifier]
         case let .unnamedTuple(tuple):
             content = tuple.types
@@ -77,7 +64,7 @@ struct TypeIdentifierIterator: IteratorProtocol {
         }
     }
 
-    mutating func next() -> Syntax.TypeIdentifier? {
+    mutating func next() -> Syntax.TypeSpecifier? {
         guard index < content.count else { return nil }
         defer { index += 1 }
         return content[index]
@@ -85,6 +72,6 @@ struct TypeIdentifierIterator: IteratorProtocol {
 }
 
 extension Syntax.Expression {
-    static let empty = Syntax.Expression(expressionType: .nothing, location: .nowhere)
-    static let never = Syntax.Expression(expressionType: .never, location: .nowhere)
+    static let empty = Syntax.Expression(expressionType: .literal(.nothing), location: .nowhere)
+    static let never = Syntax.Expression(expressionType: .literal(.never), location: .nowhere)
 }

@@ -129,8 +129,14 @@ module.exports = grammar({
     ),
 
     nominal_type: $ => choice(
-      $.big_identifier,
-      prec.left(PREC.ACCESS, seq($.nominal_type, '::', $.big_identifier)),
+      field("name", $.big_identifier),
+      prec.left(PREC.ACCESS,
+        seq(
+          field("scope", $.nominal_type),
+          '::',
+          field('name', $.big_identifier)
+        )
+      )
     ),
 
     named_tuple_structural_type: $ => seq(
@@ -255,18 +261,20 @@ module.exports = grammar({
     ),
 
     type_binding: $ => seq(
-      field("command", $.nominal_type),
+      field("prefix", $.nominal_type),
       optional(seq(
       '(',
-        field("params", seq(
-          $.type_param_binding,
-          repeat(seq(',', $.type_param_binding))
-        )),
+        field("arguments", $.argument_list_binding)
       ')',
       ))
     ),
 
-    type_param_binding: $ => seq(
+    argument_list_binding: $ => seq(
+      $.argument_binding,
+      repeat(seq(',', $.argument_binding))
+    ),
+
+    argument_binding: $ => seq(
       field("name", $.small_identifier),
       ":",
       field("value", $._match_expression),
@@ -281,7 +289,8 @@ module.exports = grammar({
         $.parenthisized_expression,
         $.lambda_expression,
         $.scoped_identifier,
-        $.call_expression,
+        $.function_call_expression,
+        $.type_initializer_expression,
         $.access_expression,
     ),
     
@@ -312,8 +321,8 @@ module.exports = grammar({
 
     named_tuple_literal: $ => seq(
       '[',
-        $.call_param,
-        repeat(seq(',', $.call_param)),
+        $.argument,
+        repeat(seq(',', $.argument)),
         optional(','),
       ']'
     ),
@@ -330,33 +339,41 @@ module.exports = grammar({
     ),
 
     scoped_identifier: $ => choice(
-      $.small_identifier,
-      seq($.nominal_type, '::', $.small_identifier),
+      field('name', $.small_identifier),
+      seq(
+        field('scope', $.nominal_type),
+        '::',
+        field('name', $.small_identifier),
+      )
     ),
 
-    // a call expression is not a simple expression and need to be paranthesised to be
-    // unambiguousely inserted anywhere, it fits in special places
-    // it is constructed by a callee which is the command name
-    // and a list of param calls
-    call_expression: $ => prec.right(PREC.PARAM, seq(
-      field("command", choice($._simple_expression, $.nominal_type)),
+    type_initializer_expression: $ => prec.right(PREC.PARAM, seq(
+      field("prefix", $.nominal_type),
       '(',
-      field("params", optional($.call_param_list)),
+      field("arguments", optional($.argument_list)),
+      ')',
+    )),
+
+
+    function_call_expression: $ => prec.right(PREC.PARAM, seq(
+      field("prefix", $._simple_expression),
+      '(',
+      field("arguments", optional($.argument_list)),
       ')',
     )),
 
     // a call param list is the list of arguments to pass to a command
     // the only exist in a call expression
     // it is a list of call params
-    call_param_list: $ => seq(
-      $.call_param,
-      repeat(seq(',', $.call_param))
+    argument_list: $ => seq(
+      $.argument,
+      repeat(seq(',', $.argument))
     ),
     
     // a call param is a pair of param name and a simple expression
     // non simple expression needs to be parenthised to be unambiguousely
     // inserted as param values
-    call_param: $ => seq(
+    argument: $ => seq(
       field("name", $.small_identifier),
       ":",
       field("value", $._expression),
@@ -364,9 +381,9 @@ module.exports = grammar({
     
     // Precedences here are necessary for accessing parenthesized expression
     access_expression: $ => prec.left(PREC.ACCESS, seq(
-      field("accessed", $._simple_expression),
+      field("prefix", $._simple_expression),
       '.',
-      field("argument_name", $.small_identifier),
+      field("field", $.small_identifier),
     )),
 
     // a subpipe is one contained expression

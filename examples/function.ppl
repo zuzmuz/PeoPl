@@ -1,5 +1,6 @@
 
 func (InputTypeName) func_name(arg_name: ArgType) => OutputTypeName
+    A::B::C::D::a |>
     |[$a, $a, Cap, Ex(a: $a)]: a=1| 2,
     |b| 3
 

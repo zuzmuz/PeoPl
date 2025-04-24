@@ -1,4 +1,17 @@
 
+extension Syntax.ScopedIdentifier: Hashable {
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(self.identifier)
+        hasher.combine(self.scope)
+    }
+
+    static func == (lhs: Syntax.ScopedIdentifier, rhs: Syntax.ScopedIdentifier) -> Bool {
+        lhs.identifier == rhs.identifier &&
+        lhs.scope == rhs.scope
+    }
+}
+
+
 extension Syntax.ParamDefinition: Hashable {
     func hash(into hasher: inout Hasher) {
         hasher.combine(self.name)
@@ -52,26 +65,16 @@ extension Syntax.TypeDefinition.Sum: Hashable {
     }
 }
 
-extension Syntax.FunctionIdentifier: Hashable {
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(self.name)
-        hasher.combine(self.scope)
-    }
-    static func == (lhs: Syntax.FunctionIdentifier, rhs: Syntax.FunctionIdentifier) -> Bool {
-        lhs.name == rhs.name && lhs.scope == rhs.scope
-    }
-}
-
 extension Syntax.FunctionDefinition: Hashable {
     func hash(into hasher: inout Hasher) {
         hasher.combine(self.inputType)
-        hasher.combine(self.functionIdentifier)
+        hasher.combine(self.identifier)
         hasher.combine(self.params)
     }
 
     static func == (lhs: Syntax.FunctionDefinition, rhs: Syntax.FunctionDefinition) -> Bool {
         lhs.inputType == rhs.inputType &&
-        lhs.functionIdentifier == rhs.functionIdentifier &&
+        lhs.identifier == rhs.identifier &&
         lhs.params == rhs.params
     }
 }
@@ -90,7 +93,7 @@ extension Syntax.OperatorOverloadDefinition: Hashable {
     }
 }
 
-extension Syntax.TypeIdentifier: Hashable {
+extension Syntax.TypeSpecifier: Hashable {
     func hash(into hasher: inout Hasher) {
         switch self {
         case .nothing:
@@ -99,18 +102,14 @@ extension Syntax.TypeIdentifier: Hashable {
             hasher.combine("never")
         case let .nominal(nominal):
             hasher.combine(nominal)
-        case let .lambda(lambda):
-            hasher.combine(lambda)
         case let .unnamedTuple(tuple):
             hasher.combine(tuple)
         case let .namedTuple(tuple):
             hasher.combine(tuple)
-        case let .union(union):
-            hasher.combine(union)
         }
     }
 
-    static func == (lhs: Syntax.TypeIdentifier, rhs: Syntax.TypeIdentifier) -> Bool {
+    static func == (lhs: Syntax.TypeSpecifier, rhs: Syntax.TypeSpecifier) -> Bool {
         switch (lhs, rhs) {
         case (.nothing, .nothing):
             return true
@@ -119,29 +118,13 @@ extension Syntax.TypeIdentifier: Hashable {
         // TODO: it would be interesting if structural types can be equal to structural ones
         case let (.nominal(lhs), .nominal(rhs)):
             return lhs == rhs
-        case let (.lambda(lhs), .lambda(rhs)):
-            return lhs == rhs
         case let (.unnamedTuple(lhs), .unnamedTuple(rhs)):
             return lhs == rhs
         case let (.namedTuple(lhs), .namedTuple(rhs)):
             return lhs == rhs
-        case let (.union(lhs), .union(rhs)):
-            return lhs == rhs
         default:
             return false
         }
-    }
-}
-
-extension Syntax.FlatNominalType: Hashable {
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(self.typeName)
-        // hasher.combine(self.typeArguments)
-        // TODO: should consider how type arguments would work with this
-    }
-
-    static func == (lhs: Syntax.FlatNominalType, rhs: Syntax.FlatNominalType) -> Bool {
-        lhs.typeName == rhs.typeName // && lhs.typeArguments == rhs.typeArguments
     }
 }
 
@@ -153,17 +136,6 @@ extension Syntax.NominalType: Hashable {
         lhs.chain == rhs.chain
     }
 }
-
-extension Syntax.StructuralType.Lambda: Hashable {
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(self.input)
-        hasher.combine(self.output)
-    }
-    static func == (lhs: Syntax.StructuralType.Lambda, rhs: Syntax.StructuralType.Lambda) -> Bool {
-        lhs.input == rhs.input && lhs.output == rhs.output
-    }
-}
-
 
 extension Syntax.StructuralType.UnnamedTuple: Hashable {
     func hash(into hasher: inout Hasher) {
@@ -192,14 +164,3 @@ extension Syntax.StructuralType.NamedTuple: Hashable {
         lhs.types.map { $0.type } == rhs.types
     }
 }
-
-extension Syntax.UnionType: Hashable {
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(self.types)
-    }
-
-    static func == (lhs: Syntax.UnionType, rhs: Syntax.UnionType) -> Bool {
-        lhs.types == rhs.types
-    }
-}
-
