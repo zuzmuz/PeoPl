@@ -78,25 +78,27 @@ extension Syntax.Module {
 extension Syntax.Statement {
     enum CodingKeys: String, CodingKey {
         case typeDefinition = "type_definition"
+        case functionDefinition = "function_definition"
+    }
+    enum FunctionDefinitionKeys: String, CodingKey {
         case normalfunctionDefinition = "normal_function_definition"
         case operatorOverloadDefinition = "operator_overload_definition"
-        static let functionDefinition = "function_definition"
     }
 
     init?(from node: Node, in source: Syntax.Source) {
-        switch node.nodeType {
-        case CodingKeys.typeDefinition.rawValue:
+        switch CodingKeys(rawValue: node.nodeType ?? "") {
+        case .typeDefinition:
             guard let typeDefinition = Syntax.TypeDefinition(from: node, in: source) else { return nil }
             self = .typeDefinition(typeDefinition)
-        case CodingKeys.functionDefinition:
+        case .functionDefinition:
             guard let child = node.child(at: 1) else { return nil }
-            switch child.nodeType {
-            case CodingKeys.normalfunctionDefinition.rawValue:
+            switch FunctionDefinitionKeys(rawValue: child.nodeType ?? "") {
+            case .normalfunctionDefinition:
                 guard let functionDefinition = Syntax.FunctionDefinition(from: child, in: source) else {
                     return nil
                 }
                 self = .functionDefinition(functionDefinition)
-            case CodingKeys.operatorOverloadDefinition.rawValue:
+            case .operatorOverloadDefinition:
                 guard let operatorOverloadDefinition = Syntax.OperatorOverloadDefinition(from: child, in: source) else {
                     return nil
                 }
@@ -318,7 +320,6 @@ extension Syntax.OperatorOverloadDefinition {
 // -------------
 
 extension Syntax.TypeSpecifier {
-    static let typeIdentifier = "type_identifier"
 
     enum CodingKeys: String, CodingKey {
         case unkown = "unkown"
@@ -384,10 +385,7 @@ extension Syntax.StructuralType.UnnamedTuple {
         guard let location = node.getLocation(in: source) else { return nil }
         self.location = location
         self.types = node.compactMapChildren { child in
-            if child.nodeType == Syntax.TypeSpecifier.typeIdentifier {
-                return Syntax.TypeSpecifier(from: child, in: source)
-            }
-            return nil
+            return Syntax.TypeSpecifier(from: child, in: source)
         }
     }
 }
