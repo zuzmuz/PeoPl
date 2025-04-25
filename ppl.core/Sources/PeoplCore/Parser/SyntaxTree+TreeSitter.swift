@@ -470,13 +470,12 @@ extension Syntax.Expression.ExpressionType {
 
         case unnamedTuple = "unnamed_tuple_literal"
         case namedTuple = "named_tuple_literal"
-        case lambda = "lambda_expression"
 
 
         case functionCall = "function_call_expression"
         case typeInitializer = "type_initializer_expression"
         case access = "access_expression"
-        case field = "argument_name"
+        case field = "scoped_identifier"
 
         case branched = "branched_expression"
         case piped = "piped_expression"

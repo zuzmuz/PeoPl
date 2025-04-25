@@ -115,7 +115,7 @@ final class BranchExpressionTests: XCTestCase {
             return
         }
 
-        XCTAssertEqual(branched.branches.count, 1)
+        XCTAssertEqual(branched.branches.count, 2)
 
 
 
