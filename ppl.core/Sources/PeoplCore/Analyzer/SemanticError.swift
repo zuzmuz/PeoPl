@@ -1,10 +1,10 @@
-// import Foundation
+import Foundation
 //
-// enum SemanticError: LocalizedError {
-//     case type(TypeSemanticError)
-//     case function(FunctionSemanticError)
-//     case expression(ExpressionSemanticError)
-// }
+enum SemanticError: LocalizedError {
+    case type(TypeSemanticError)
+    case function(FunctionSemanticError)
+    // case expression(ExpressionSemanticError)
+}
 //
 // extension Array<SemanticError>: Error {
 //     // var localizedDescription: String {
@@ -14,32 +14,25 @@
 //     // }
 // }
 //
-// enum TypeSemanticError: LocalizedError {
-//     case redeclaration(
-//         locations: [NodeLocation])
-//     case shadowing(
-//         location: NodeLocation,
-//         module: String,
-//         typeDefinition: TypeDefinition)
-//     case typeNotInScope(
-//         location: NodeLocation,
-//         type: NominalType,
-//         typesInScope: [NominalType: TypeDefinition].Keys)
-//     case cyclicType(
-//         // type: TypeDefinition, // TODO: should save the cyclic path of types
-//         cyclicType: NominalType
-//     )
-//     case unsupportedYet(String)
-// }
-//
-// enum FunctionSemanticError: LocalizedError {
-//     case redeclaration(
-//         locations: [NodeLocation])
-//     case typeNotInScope(
-//         location: NodeLocation,
-//         type: NominalType,
-//         typesInScope: [NominalType: TypeDefinition].Keys)
-// }
+enum TypeSemanticError: LocalizedError {
+    case redeclaration(locations: [Syntax.TypeDefinition])
+    case shadowing(
+        type: Syntax.TypeDefinition,
+        module: String)
+    case typeNotInScope(
+        type: Syntax.NominalType)
+    case cyclicType(
+        // type: Syntax.TypeDefinition, // TODO: consider detecting cycle
+        cyclicType: Syntax.NominalType)
+    case unsupportedYet(String)
+}
+
+enum FunctionSemanticError: LocalizedError {
+    case redeclaration(locations: [Syntax.FunctionDefinition])
+    case typeNotInScope(
+        type: Syntax.NominalType,
+        typesInScope: [Syntax.NominalType: Syntax.TypeDefinition].Keys)
+}
 //
 // enum ExpressionSemanticError: LocalizedError {
 //     case inputMismatch(
