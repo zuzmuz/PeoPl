@@ -1,4 +1,3 @@
-
 extension Syntax.TypeSpecifier: Sequence {
     static func simpleNominalType(name: String) -> Syntax.TypeSpecifier {
         return .nominal(
@@ -11,22 +10,27 @@ extension Syntax.TypeSpecifier: Sequence {
         )
     }
     static func simpleTuple(names: [String]) -> Syntax.TypeSpecifier {
-        return .unnamedTuple(.init(
-            types: names.map { name in
-                Syntax.TypeSpecifier.simpleNominalType(name: name)
-            },
-            location: .nowhere)
+        return .unnamedTuple(
+            .init(
+                types: names.map { name in
+                    Syntax.TypeSpecifier.simpleNominalType(name: name)
+                },
+                location: .nowhere)
         )
     }
-    static func simpleNamedTuple(names: [(String, String)]) -> Syntax.TypeSpecifier {
-        return .namedTuple(.init(
-            types: names.map { argument, name in
-                Syntax.ParamDefinition(
-                    name: argument,
-                    type: Syntax.TypeSpecifier.simpleNominalType(name: name),
-                    location: .nowhere)
-            },
-            location: .nowhere)
+    static func simpleNamedTuple(
+        names: [(String, String)]
+    ) -> Syntax.TypeSpecifier {
+        return .namedTuple(
+            .init(
+                types: names.map { argument, name in
+                    Syntax.ParamDefinition(
+                        name: argument,
+                        type: Syntax.TypeSpecifier.simpleNominalType(
+                            name: name),
+                        location: .nowhere)
+                },
+                location: .nowhere)
         )
     }
 
@@ -42,7 +46,9 @@ extension Syntax.TypeSpecifier: Sequence {
         case let .unnamedTuple(tuple):
             return tuple.types.flatMap { $0.getNominalTypesFromIdentifier() }
         case let .namedTuple(tuple):
-            return tuple.types.flatMap { $0.type.getNominalTypesFromIdentifier() }
+            return tuple.types.flatMap {
+                $0.type.getNominalTypesFromIdentifier()
+            }
         default:
             return []
         }
@@ -72,6 +78,10 @@ struct TypeIdentifierIterator: IteratorProtocol {
 }
 
 extension Syntax.Expression {
-    static let empty = Syntax.Expression(expressionType: .literal(.nothing), location: .nowhere)
-    static let never = Syntax.Expression(expressionType: .literal(.never), location: .nowhere)
+    static let empty = Syntax.Expression(
+        expressionType: .literal(.nothing),
+        location: .nowhere)
+    static let never = Syntax.Expression(
+        expressionType: .literal(.never),
+        location: .nowhere)
 }

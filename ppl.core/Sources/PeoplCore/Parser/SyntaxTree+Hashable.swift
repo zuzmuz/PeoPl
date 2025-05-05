@@ -1,16 +1,16 @@
-
 extension Syntax.ScopedIdentifier: Hashable {
     func hash(into hasher: inout Hasher) {
         hasher.combine(self.identifier)
         hasher.combine(self.scope)
     }
 
-    static func == (lhs: Syntax.ScopedIdentifier, rhs: Syntax.ScopedIdentifier) -> Bool {
-        lhs.identifier == rhs.identifier &&
-        lhs.scope == rhs.scope
+    static func == (
+        lhs: Syntax.ScopedIdentifier,
+        rhs: Syntax.ScopedIdentifier
+    ) -> Bool {
+        lhs.identifier == rhs.identifier && lhs.scope == rhs.scope
     }
 }
-
 
 extension Syntax.ParamDefinition: Hashable {
     func hash(into hasher: inout Hasher) {
@@ -18,9 +18,11 @@ extension Syntax.ParamDefinition: Hashable {
         hasher.combine(self.type)
     }
 
-    static func == (lhs: Syntax.ParamDefinition, rhs: Syntax.ParamDefinition) -> Bool {
-        lhs.name == rhs.name &&
-        lhs.type == rhs.type
+    static func == (
+        lhs: Syntax.ParamDefinition,
+        rhs: Syntax.ParamDefinition
+    ) -> Bool {
+        lhs.name == rhs.name && lhs.type == rhs.type
     }
 }
 
@@ -33,7 +35,10 @@ extension Syntax.TypeDefinition: Hashable {
             hasher.combine(sum)
         }
     }
-    static func == (lhs: Syntax.TypeDefinition, rhs: Syntax.TypeDefinition) -> Bool {
+    static func == (
+        lhs: Syntax.TypeDefinition,
+        rhs: Syntax.TypeDefinition
+    ) -> Bool {
         switch (lhs, rhs) {
         case let (.simple(lhs), .simple(rhs)):
             return lhs == rhs
@@ -50,7 +55,9 @@ extension Syntax.TypeDefinition.Simple: Hashable {
         hasher.combine(self.identifier)
     }
 
-    static func == (lhs: Syntax.TypeDefinition.Simple, rhs: Syntax.TypeDefinition.Simple) -> Bool {
+    static func == (
+        lhs: Syntax.TypeDefinition.Simple, rhs: Syntax.TypeDefinition.Simple
+    ) -> Bool {
         lhs.identifier == rhs.identifier
     }
 }
@@ -60,7 +67,9 @@ extension Syntax.TypeDefinition.Sum: Hashable {
         hasher.combine(self.identifier)
     }
 
-    static func == (lhs: Syntax.TypeDefinition.Sum, rhs: Syntax.TypeDefinition.Sum) -> Bool {
+    static func == (
+        lhs: Syntax.TypeDefinition.Sum, rhs: Syntax.TypeDefinition.Sum
+    ) -> Bool {
         lhs.identifier == rhs.identifier
     }
 }
@@ -72,10 +81,11 @@ extension Syntax.FunctionDefinition: Hashable {
         hasher.combine(self.params)
     }
 
-    static func == (lhs: Syntax.FunctionDefinition, rhs: Syntax.FunctionDefinition) -> Bool {
-        lhs.inputType == rhs.inputType &&
-        lhs.identifier == rhs.identifier &&
-        lhs.params == rhs.params
+    static func == (
+        lhs: Syntax.FunctionDefinition, rhs: Syntax.FunctionDefinition
+    ) -> Bool {
+        lhs.inputType == rhs.inputType && lhs.identifier == rhs.identifier
+            && lhs.params == rhs.params
     }
 }
 
@@ -86,10 +96,11 @@ extension Syntax.OperatorOverloadDefinition: Hashable {
         hasher.combine(self.right)
     }
 
-    static func == (lhs: Syntax.OperatorOverloadDefinition, rhs: Syntax.OperatorOverloadDefinition) -> Bool {
-        lhs.left == rhs.left &&
-        lhs.op == rhs.op &&
-        lhs.right == rhs.right
+    static func == (
+        lhs: Syntax.OperatorOverloadDefinition,
+        rhs: Syntax.OperatorOverloadDefinition
+    ) -> Bool {
+        lhs.left == rhs.left && lhs.op == rhs.op && lhs.right == rhs.right
     }
 }
 
@@ -109,7 +120,10 @@ extension Syntax.TypeSpecifier: Hashable {
         }
     }
 
-    static func == (lhs: Syntax.TypeSpecifier, rhs: Syntax.TypeSpecifier) -> Bool {
+    static func == (
+        lhs: Syntax.TypeSpecifier,
+        rhs: Syntax.TypeSpecifier
+    ) -> Bool {
         switch (lhs, rhs) {
         case (.nothing, .nothing):
             return true
@@ -142,12 +156,18 @@ extension Syntax.StructuralType.UnnamedTuple: Hashable {
         hasher.combine(self.types)
     }
 
-    static func == (lhs: Syntax.StructuralType.UnnamedTuple, rhs: Syntax.StructuralType.UnnamedTuple) -> Bool {
+    static func == (
+        lhs: Syntax.StructuralType.UnnamedTuple,
+        rhs: Syntax.StructuralType.UnnamedTuple
+    ) -> Bool {
         lhs.types == rhs.types
     }
 
-    static func == (lhs: Syntax.StructuralType.UnnamedTuple, rhs: Syntax.StructuralType.NamedTuple) -> Bool {
-        lhs.types == rhs.types.map { $0.type } 
+    static func == (
+        lhs: Syntax.StructuralType.UnnamedTuple,
+        rhs: Syntax.StructuralType.NamedTuple
+    ) -> Bool {
+        lhs.types == rhs.types.map { $0.type }
     }
 }
 
@@ -156,11 +176,17 @@ extension Syntax.StructuralType.NamedTuple: Hashable {
         hasher.combine(self.types)
     }
 
-    static func == (lhs: Syntax.StructuralType.NamedTuple, rhs: Syntax.StructuralType.NamedTuple) -> Bool {
+    static func == (
+        lhs: Syntax.StructuralType.NamedTuple,
+        rhs: Syntax.StructuralType.NamedTuple
+    ) -> Bool {
         lhs.types.map { $0.type } == rhs.types.map { $0.type }
     }
 
-    static func == (lhs: Syntax.StructuralType.NamedTuple, rhs: Syntax.StructuralType.UnnamedTuple) -> Bool {
+    static func == (
+        lhs: Syntax.StructuralType.NamedTuple,
+        rhs: Syntax.StructuralType.UnnamedTuple
+    ) -> Bool {
         lhs.types.map { $0.type } == rhs.types
     }
 }

@@ -28,7 +28,11 @@ enum Typed {
         case stringLiteral(value: String)
         case boolLiteral(value: Bool)
         case unary(Operator, expression: Expression, type: TypeSpecifier)
-        case binary(Operator, left: Expression, right: Expression, type: TypeSpecifier)
+        case binary(
+            Operator,
+            left: Expression,
+            right: Expression,
+            type: TypeSpecifier)
         case unnamedTuple([Expression], type: TypeSpecifier)
         case namedTuple([Argument], type: TypeSpecifier)
         // case lambda(Expression, type: TypeIdentifier)

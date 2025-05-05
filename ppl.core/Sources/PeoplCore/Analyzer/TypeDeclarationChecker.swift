@@ -26,7 +26,9 @@ private enum NodeState {
 }
 
 extension [String: SemanticContext] {
-    func typeDefinedInContext(typeName: String) -> [String: SemanticContext].Element? {
+    func typeDefinedInContext(
+        typeName: String
+    ) -> [String: SemanticContext].Element? {
         self.first { module, externalTypes in
             externalTypes.types[typeName] != nil
         }
@@ -64,7 +66,9 @@ extension TypeDeclarationChecker {
         // detecting shadowings
         let shadowings = types.compactMap { type, typeDefinition in
 
-            if let shadowedModule = externals.typeDefinedInContext(typeName: type.typeName)?.key {
+            if let shadowedModule = externals.typeDefinedInContext(
+                typeName: type.typeName)?.key
+            {
                 return TypeSemanticError.shadowing(
                     type: typeDefinition,
                     module: shadowedModule)
@@ -76,10 +80,12 @@ extension TypeDeclarationChecker {
         // detecting invalid members types
         let typesNotInScope = types.flatMap { type, definition in
             return definition.allParams.flatMap { param in
-                let errors: [TypeSemanticError] = param.type.getNominalTypesFromIdentifier()
+                let errors: [TypeSemanticError] = param.type
+                    .getNominalTypesFromIdentifier()
                     .compactMap { type in
                         if types[type] != nil
-                            || externals.typeDefinedInContext(typeName: type.typeName) != nil
+                            || externals.typeDefinedInContext(
+                                typeName: type.typeName) != nil
                         {
                             return nil
                         } else {
@@ -90,7 +96,8 @@ extension TypeDeclarationChecker {
             }
         }
 
-        let cyclicalDependencies = checkCyclicalDependencies(types: types, externals: externals)
+        let cyclicalDependencies = checkCyclicalDependencies(
+            types: types, externals: externals)
 
         let typesDefinitions = types.reduce(into: [:]) { acc, type in
             acc[type.key.typeName] = type.value
@@ -98,7 +105,8 @@ extension TypeDeclarationChecker {
 
         return (
             typesDefinitions: typesDefinitions,
-            errors: redeclarations + shadowings + typesNotInScope + cyclicalDependencies
+            errors: redeclarations + shadowings + typesNotInScope
+                + cyclicalDependencies
         )
     }
 
