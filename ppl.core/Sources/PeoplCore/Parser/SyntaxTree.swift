@@ -18,14 +18,14 @@ enum Operator: String {
     case greaterThanOrEqual = ">="
 }
 
-
 enum Syntax {
     struct NodeLocation: Equatable, Comparable {
         struct Point: Comparable, Encodable, Equatable {
             let line: Int
             let column: Int
             static func < (lhs: Point, rhs: Point) -> Bool {
-                lhs.line < rhs.line || lhs.line == rhs.line && lhs.column < rhs.column
+                lhs.line < rhs.line || lhs.line ==
+                rhs.line && lhs.column < rhs.column
             }
         }
         let pointRange: Range<Point>
@@ -143,7 +143,6 @@ enum Syntax {
         let scope: NominalType?
         let location: NodeLocation
     }
-
 
     struct FunctionDefinition: SyntaxNode {
         let inputType: TypeSpecifier?
@@ -266,7 +265,9 @@ enum Syntax {
                     case field(ScopedIdentifier)
                     case binding(String)
                     case tupleBinding([MatchExpression])
-                    case typeBinding(prefix: NominalType, arguments: [BindingArgument])
+                    case typeBinding(
+                        prefix: NominalType,
+                        arguments: [BindingArgument])
                 }
 
                 struct BindingArgument: SyntaxNode {
