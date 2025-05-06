@@ -27,9 +27,9 @@ private enum NodeState {
 
 extension [String: SemanticContext] {
     func typeDefinedInContext(
-        typeName: String
+        typeName: Typed.TypeIdentifier
     ) -> [String: SemanticContext].Element? {
-        self.first { module, externalTypes in
+        self.first { _, externalTypes in
             externalTypes.types[typeName] != nil
         }
     }

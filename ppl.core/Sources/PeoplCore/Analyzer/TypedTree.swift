@@ -13,10 +13,49 @@ enum Typed {
         case nominal(TypeIdentifier)
         case unnamedTuple([TypeSpecifier])
         case namedTuple([ParamDefinition])
+
+        init(from: Syntax.TypeSpecifier) {
+            switch from {
+            case .nothing:
+                self = .nothing
+            case .never:
+                self = .never
+            case let .nominal(nominal):
+                self = .nominal(nominal.typeName)
+            case let .namedTuple(namedTuple):
+                self = .namedTuple(
+                    namedTuple.types.map {
+                        ParamDefinition(
+                            name: $0.name,
+                            type: .init(from: $0.type))
+                    })
+            case let .unnamedTuple(unnamedTuple):
+                self = .unnamedTuple(
+                    unnamedTuple.types.map { TypeSpecifier(from: $0) })
+            }
+        }
     }
 
     struct FunctionDeclaration: Hashable {
-        let name: String
+        let identifier: String
+        let inputType: TypeSpecifier
+        let params: [ParamDefinition]
+        let outputType: TypeSpecifier
+
+        init(from: Syntax.FunctionDefinition) {
+            self.identifier =
+                "\(from.identifier.scope?.typeName ?? "")::\(from.identifier.identifier)"
+            self.inputType =
+                if let inputType = from.inputType {
+                    .init(from: inputType)
+                } else { .nothing }
+            self.params = from.params.map {
+                ParamDefinition(
+                    name: $0.name,
+                    type: .init(from: $0.type))
+            }
+            self.outputType = .init(from: from.outputType)
+        }
     }
 
     enum Builtins {}
@@ -96,5 +135,5 @@ enum Typed {
 
 struct SemanticContext {
     let types: [Typed.TypeIdentifier: Syntax.TypeDefinition]
-    // let functions: [FunctionDefinition: FunctionDefinition]
+    let functions: [Typed.FunctionDeclaration: Syntax.FunctionDefinition]
 }

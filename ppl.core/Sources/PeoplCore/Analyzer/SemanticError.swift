@@ -15,7 +15,7 @@ enum SemanticError: LocalizedError {
 // }
 //
 enum TypeSemanticError: LocalizedError {
-    case redeclaration(locations: [Syntax.TypeDefinition])
+    case redeclaration(types: [Syntax.TypeDefinition])
     case shadowing(
         type: Syntax.TypeDefinition,
         module: String)
@@ -28,7 +28,11 @@ enum TypeSemanticError: LocalizedError {
 }
 
 enum FunctionSemanticError: LocalizedError {
-    case redeclaration(locations: [Syntax.FunctionDefinition])
+    case functionRedeclaration([Syntax.FunctionDefinition])
+    case operatorOverloadRedeclaration([Syntax.OperatorOverloadDefinition])
+    case shadowing(
+        function: Syntax.FunctionDefinition,
+        module: String)
     case typeNotInScope(
         type: Syntax.NominalType,
         typesInScope: [Syntax.NominalType: Syntax.TypeDefinition].Keys)

@@ -10,13 +10,24 @@ protocol FunctionDeclarationChecker {
     ) -> Typed.FunctionDefinitionContext
 }
 
+extension [String: SemanticContext] {
+    func functionDefinedInContext(
+        functionDeclaration: Typed.FunctionDeclaration
+    ) -> [String: SemanticContext].Element? {
+        self.first { _, externalFunctions in
+            externalFunctions.functions[functionDeclaration] != nil
+        }
+    }
+}
+
 extension FunctionDeclarationChecker {
 
     static func getTypeCheckErrors(
-        functions: [Syntax.FunctionDefinition: Syntax.FunctionDefinition],
+        functions: [Typed.FunctionDeclaration: Syntax.FunctionDefinition],
         typesDefinitions: [Typed.TypeIdentifier: Syntax.TypeDefinition],
         externals: borrowing [String: SemanticContext]
     ) -> [FunctionSemanticError] {
+
         functions.flatMap { function, _ in
             let inputTypeNotInScopeErrors: [FunctionSemanticError] =
                 if let input = function.inputType {
@@ -77,14 +88,15 @@ extension FunctionDeclarationChecker {
     ) -> Typed.FunctionDefinitionContext {
 
         let functionDeclarations = self.getFunctionDeclarations()
-        let (functions, functionsRedeclarations) = resolveDefinitions(
-            declarations: functionDeclarations,
-            typesDefinitions: typesDefinitions)
+        let (functions, functionsDeclarationErrors) = resolveDefinitions(
+            functionDeclaration: functionDeclarations,
+            typesDefinitions: typesDefinitions,
+            externals: externals)
 
-        let operatorsDeclarations = self.getOperatorOverloadDeclarations()
-        let (operators, operatorsRedeclarations) = resolveDefinitions(
-            declarations: operatorsDeclarations,
-            typesDefinitions: typesDefinitions)
+        // let operatorsDeclarations = self.getOperatorOverloadDeclarations()
+        // let (operators, operatorsRedeclarations) = resolveDefinitions(
+        //     operatorOverloadDeclarations: operatorsDeclarations,
+        //     typesDefinitions: typesDefinitions)
 
         let functionsIdentifiers = functions.reduce(into: [:]) { acc, element in
             acc[element.key.identifier] =
@@ -137,41 +149,55 @@ extension FunctionDeclarationChecker {
             operators: operators,
             errors:
                 functionsRedeclarations + functionTypeCheckErrors
-                + operatorsRedeclarations + operatorTypeCheckErrors
+                // + operatorsRedeclarations + operatorTypeCheckErrors
         )
     }
 
-    private func resolveDefinitions<Declaration>(
-        declarations: [Declaration],
-        typesDefinitions: borrowing [Typed.TypeIdentifier: Syntax
-            .TypeDefinition]
+    private func resolveDefinitions(
+        functionDeclaration: [Syntax.FunctionDefinition],
+        typesDefinitions:
+            borrowing [Typed.TypeIdentifier: Syntax.TypeDefinition],
+        externals: borrowing [String: SemanticContext]
     ) -> (
-        definitions: [Declaration: Declaration],
+        functions: [Typed.FunctionDeclaration: Syntax.FunctionDefinition],
         errors: [FunctionSemanticError]
-    ) where Declaration: Hashable, Declaration: Syntax.SyntaxNode {
+    ) {
 
-        let locations = declarations.reduce(into: [:]) { acc, declaration in
+        let functionsLocations = functionDeclaration.reduce(
+            into: [:]
+        ) { acc, declaration in
             acc[declaration] = (acc[declaration] ?? []) + [declaration]
         }
 
-        let redeclarations = locations.compactMap { _, locations in
+        let redeclarations = functionsLocations.compactMap { _, locations in
             if locations.count > 1 {
-                return FunctionSemanticError.redeclaration(
-                    locations: locations.map { $0.location })
+                return FunctionSemanticError.functionRedeclaration(locations)
             } else {
                 return nil
             }
         }
 
-        // FIX: should handle builtin function redeclaration
+        let functions = functionsLocations.reduce(into: [:]) { acc, function in
+            acc[Typed.FunctionDeclaration(
+                from: function.key
+            )] = function.value.first
+        }
 
-        let definitions = locations.compactMapValues { definitions in
-            return definitions.first
+        let shadowings = functions.compactMap { function, functionDefinition in
+            if let shadowedModule = externals.functionDefinedInContext(
+                functionDeclaration: function)?.key
+            {
+                return FunctionSemanticError.shadowing(
+                    function: functionDefinition,
+                    module: shadowedModule)
+            } else {
+                return nil
+            }
         }
 
         return (
-            definitions: definitions,
-            errors: redeclarations
+            functions: functions,
+            errors: redeclarations + shadowings
         )
     }
 }
