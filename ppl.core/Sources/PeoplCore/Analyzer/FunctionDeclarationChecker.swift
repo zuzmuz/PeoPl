@@ -28,59 +28,40 @@ extension FunctionDeclarationChecker {
         externals: borrowing [String: SemanticContext]
     ) -> [FunctionSemanticError] {
 
-        functions.flatMap { function, _ in
+        functions.flatMap { _, function in
             let inputTypeNotInScopeErrors: [FunctionSemanticError] =
-                if let input = function.inputType {
-                    input.getNominalTypesFromIdentifier().compactMap { type in
-                        if typesDefinitions[type.typeName] != nil
-                            || externals.typeDefinedInContext(
-                                typeName: type.typeName) != nil
-                        {
-                            return nil
-                        } else {
-                            return FunctionSemanticError.typeNotInScope(
-                                location: type.location,
-                                type: type,
-                                typesInScope: typesDefinitions.keys)
-                        }
+                if let inputType = function.inputType {
+                    inputType.typeDefiniedInContext(
+                        typesDefinitions: typesDefinitions,
+                        externals: externals
+                    ).map { nominalType in
+                        FunctionSemanticError.typeNotInScope(type: nominalType)
                     }
                 } else { [] }
 
             let paramsTypesNotInScopeErrors = function.params.flatMap { param in
-                let errors: [FunctionSemanticError] = param.type
-                    .getNominalTypesFromIdentifier().compactMap { type in
-                        if typesDefinitions[type.typeName] != nil
-                            || externals.typeDefinedInContext(
-                                typeName: type.typeName) != nil
-                        {
-                            return nil
-                        } else {
-                            return FunctionSemanticError.typeNotInScope(
-                                location: type.location,
-                                type: type,
-                                typesInScope: typesDefinitions.keys)
-                        }
-                    }
-                return errors
+                param.type.typeDefiniedInContext(
+                    typesDefinitions: typesDefinitions,
+                    externals: externals
+                ).map { nominalType in
+                    FunctionSemanticError.typeNotInScope(type: nominalType)
+                }
             }
 
-            let outputTypeNotInScopeErrors: [FunctionSemanticError] = function
-                .outputType.getNominalTypesFromIdentifier().compactMap { type in
-                    if (typesDefinitions[type] ?? builtins.types[type]) != nil {
-                        return nil
-                    } else {
-                        return FunctionSemanticError.typeNotInScope(
-                            location: type.location,
-                            type: type,
-                            typesInScope: typesDefinitions.keys)
-                    }
+            let outputTypeNotInScopeErrors = function.outputType
+                .typeDefiniedInContext(
+                    typesDefinitions: typesDefinitions,
+                    externals: externals
+                ).map { nominalType in
+                    FunctionSemanticError.typeNotInScope(type: nominalType)
                 }
 
-            return inputTypeNotInScopeErrors + paramsTypesNotInScopeErrors
+            return inputTypeNotInScopeErrors
+                + paramsTypesNotInScopeErrors
                 + outputTypeNotInScopeErrors
         }
-
     }
+
     func resolveFunctionDefinitions(
         typesDefinitions: borrowing [Typed.TypeIdentifier: Syntax
             .TypeDefinition],
@@ -100,14 +81,14 @@ extension FunctionDeclarationChecker {
 
         let functionsIdentifiers = functions.reduce(into: [:]) { acc, element in
             acc[element.key.identifier] =
-                (acc[element.key.identifier] ?? []) + [element.key]
+                (acc[element.key.identifier] ?? []) + [element.value]
         }
 
         let functionsInputTypeIdentifiers = functions.reduce(
             into: [:]
         ) { acc, element in
             acc[element.key.inputType] =
-                (acc[element.key.inputType] ?? []) + [element.key]
+                (acc[element.key.inputType] ?? []) + [element.value]
         }
 
         let functionTypeCheckErrors = Self.getTypeCheckErrors(
@@ -146,9 +127,9 @@ extension FunctionDeclarationChecker {
             functions: functions,
             functionsIdentifiers: functionsIdentifiers,
             functionsInputTypeIdentifiers: functionsInputTypeIdentifiers,
-            operators: operators,
+            // operators: operators,
             errors:
-                functionsRedeclarations + functionTypeCheckErrors
+                functionsDeclarationErrors + functionTypeCheckErrors
                 // + operatorsRedeclarations + operatorTypeCheckErrors
         )
     }
@@ -178,9 +159,10 @@ extension FunctionDeclarationChecker {
         }
 
         let functions = functionsLocations.reduce(into: [:]) { acc, function in
-            acc[Typed.FunctionDeclaration(
-                from: function.key
-            )] = function.value.first
+            acc[
+                Typed.FunctionDeclaration(
+                    from: function.key
+                )] = function.value.first
         }
 
         let shadowings = functions.compactMap { function, functionDefinition in

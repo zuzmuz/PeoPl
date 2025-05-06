@@ -19,8 +19,7 @@ enum TypeSemanticError: LocalizedError {
     case shadowing(
         type: Syntax.TypeDefinition,
         module: String)
-    case typeNotInScope(
-        type: Syntax.NominalType)
+    case typeNotInScope(type: Syntax.NominalType)
     case cyclicType(
         // type: Syntax.TypeDefinition, // TODO: consider detecting cycle
         cyclicType: Syntax.NominalType)
@@ -33,9 +32,7 @@ enum FunctionSemanticError: LocalizedError {
     case shadowing(
         function: Syntax.FunctionDefinition,
         module: String)
-    case typeNotInScope(
-        type: Syntax.NominalType,
-        typesInScope: [Syntax.NominalType: Syntax.TypeDefinition].Keys)
+    case typeNotInScope(type: Syntax.NominalType)
 }
 //
 // enum ExpressionSemanticError: LocalizedError {

@@ -7,7 +7,7 @@ enum Typed {
         let type: TypeSpecifier
     }
 
-    enum TypeSpecifier: Hashable {
+    enum TypeSpecifier: Hashable, Sendable {
         case nothing
         case never
         case nominal(TypeIdentifier)
@@ -126,9 +126,6 @@ enum Typed {
             [Typed.TypeIdentifier: [Syntax.FunctionDefinition]]
         let functionsInputTypeIdentifiers:
             [Typed.TypeSpecifier: [Syntax.FunctionDefinition]]
-        let operators:
-            [Syntax.OperatorOverloadDefinition: Syntax
-                .OperatorOverloadDefinition]
         let errors: [FunctionSemanticError]
     }
 }

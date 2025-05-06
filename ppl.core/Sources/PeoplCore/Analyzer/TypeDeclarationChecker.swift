@@ -25,6 +25,19 @@ private enum NodeState {
     case visited
 }
 
+extension Syntax.TypeSpecifier {
+    func typeDefiniedInContext(
+        typesDefinitions: [Typed.TypeIdentifier: Syntax.TypeDefinition],
+        externals: borrowing [String: SemanticContext]
+    ) -> [Syntax.NominalType] {
+        self.getNominalTypesFromIdentifier().filter { type in
+            typesDefinitions[type.typeName] == nil
+                && externals.typeDefinedInContext(
+                    typeName: type.typeName) == nil
+        }
+    }
+}
+
 extension [String: SemanticContext] {
     func typeDefinedInContext(
         typeName: Typed.TypeIdentifier
@@ -53,7 +66,7 @@ extension TypeDeclarationChecker {
         // detecting redeclarations
         let redeclarations = typesLocations.compactMap { _, typeLocations in
             if typeLocations.count > 1 {
-                return TypeSemanticError.redeclaration(locations: typeLocations)
+                return TypeSemanticError.redeclaration(types: typeLocations)
             } else {
                 return nil
             }
@@ -77,20 +90,19 @@ extension TypeDeclarationChecker {
             }
         }
 
+        let typesDefinitions = types.reduce(into: [:]) { acc, type in
+            acc[type.key.typeName] = type.value
+        }
+
         // detecting invalid members types
-        let typesNotInScope = types.flatMap { type, definition in
+        let typesNotInScope = types.flatMap { _, definition in
             return definition.allParams.flatMap { param in
-                let errors: [TypeSemanticError] = param.type
-                    .getNominalTypesFromIdentifier()
-                    .compactMap { type in
-                        if types[type] != nil
-                            || externals.typeDefinedInContext(
-                                typeName: type.typeName) != nil
-                        {
-                            return nil
-                        } else {
-                            return .typeNotInScope(type: type)
-                        }
+                let errors: [TypeSemanticError] =
+                    param.type.typeDefiniedInContext(
+                        typesDefinitions: typesDefinitions,
+                        externals: externals
+                    ).map { nominalType in
+                        TypeSemanticError.typeNotInScope(type: nominalType)
                     }
                 return errors
             }
@@ -98,10 +110,6 @@ extension TypeDeclarationChecker {
 
         let cyclicalDependencies = checkCyclicalDependencies(
             types: types, externals: externals)
-
-        let typesDefinitions = types.reduce(into: [:]) { acc, type in
-            acc[type.key.typeName] = type.value
-        }
 
         return (
             typesDefinitions: typesDefinitions,
@@ -166,7 +174,7 @@ extension TypeDeclarationChecker {
             nodeStates[typeName] = .visited
         }
 
-        types.forEach { nominal, typeDefinition in
+        types.forEach { nominal, _ in
             checkCyclicalDependency(nominal: nominal)
         }
 
