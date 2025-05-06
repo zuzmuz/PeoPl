@@ -33,48 +33,32 @@ extension Typed.Builtins {
         func left: I8 - right: I8 => I8
         func left: I8 / right: I8 => I8
         func left: I8 % right: I8 => I8
-        func left: I8 < right: I8 => Bool
         func left: I8 > right: I8 => Bool
-        func left: I8 <= right: I8 => Bool
-        func left: I8 >= right: I8 => Bool
         func left: I8 = right: I8 => Bool
-        func left: I8 != right: I8 => Bool
 
         func left: I16 + right: I16 => I16
         func left: I16 * right: I16 => I16
         func left: I16 - right: I16 => I16
         func left: I16 / right: I16 => I16
         func left: I16 % right: I16 => I16
-        func left: I16 < right: I16 => Bool
         func left: I16 > right: I16 => Bool
-        func left: I16 <= right: I16 => Bool
-        func left: I16 >= right: I16 => Bool
         func left: I16 = right: I16 => Bool
-        func left: I16 != right: I16 => Bool
 
         func left: I32 + right: I32 => I32
         func left: I32 * right: I32 => I32
         func left: I32 - right: I32 => I32
         func left: I32 / right: I32 => I32
         func left: I32 % right: I32 => I32
-        func left: I32 < right: I32 => Bool
         func left: I32 > right: I32 => Bool
-        func left: I32 <= right: I32 => Bool
-        func left: I32 >= right: I32 => Bool
         func left: I32 = right: I32 => Bool
-        func left: I32 != right: I32 => Bool
 
         func left: I64 + right: I64 => I64
         func left: I64 * right: I64 => I64
         func left: I64 - right: I64 => I64
         func left: I64 / right: I64 => I64
         func left: I64 % right: I64 => I64
-        func left: I64 < right: I64 => Bool
         func left: I64 > right: I64 => Bool
-        func left: I64 <= right: I64 => Bool
-        func left: I64 >= right: I64 => Bool
         func left: I64 = right: I64 => Bool
-        func left: I64 != right: I64 => Bool
 
 
         func left: U8 + right: U8 => I8
@@ -82,81 +66,53 @@ extension Typed.Builtins {
         func left: U8 - right: U8 => I8
         func left: U8 / right: U8 => I8
         func left: U8 % right: U8 => I8
-        func left: U8 < right: U8 => Bool
         func left: U8 > right: U8 => Bool
-        func left: U8 <= right: U8 => Bool
-        func left: U8 >= right: U8 => Bool
         func left: U8 = right: U8 => Bool
-        func left: U8 != right: U8 => Bool
 
         func left: U16 + right: U16 => I16
         func left: U16 * right: U16 => I16
         func left: U16 - right: U16 => I16
         func left: U16 / right: U16 => I16
         func left: U16 % right: U16 => I16
-        func left: U16 < right: U16 => Bool
         func left: U16 > right: U16 => Bool
-        func left: U16 <= right: U16 => Bool
-        func left: U16 >= right: U16 => Bool
         func left: U16 = right: U16 => Bool
-        func left: U16 != right: U16 => Bool
 
         func left: U32 + right: U32 => I32
         func left: U32 * right: U32 => I32
         func left: U32 - right: U32 => I32
         func left: U32 / right: U32 => I32
         func left: U32 % right: U32 => I32
-        func left: U32 < right: U32 => Bool
         func left: U32 > right: U32 => Bool
-        func left: U32 <= right: U32 => Bool
-        func left: U32 >= right: U32 => Bool
         func left: U32 = right: U32 => Bool
-        func left: U32 != right: U32 => Bool
 
         func left: U64 + right: U64 => I64
         func left: U64 * right: U64 => I64
         func left: U64 - right: U64 => I64
         func left: U64 / right: U64 => I64
         func left: U64 % right: U64 => I64
-        func left: U64 < right: U64 => Bool
         func left: U64 > right: U64 => Bool
-        func left: U64 <= right: U64 => Bool
-        func left: U64 >= right: U64 => Bool
         func left: U64 = right: U64 => Bool
-        func left: U64 != right: U64 => Bool
 
         func left: F16 + right: F16 => F16
         func left: F16 * right: F16 => F16
         func left: F16 - right: F16 => F16
         func left: F16 / right: F16 => F16
-        func left: F16 < right: F16 => Bool
         func left: F16 > right: F16 => Bool
-        func left: F16 <= right: F16 => Bool
-        func left: F16 >= right: F16 => Bool
         func left: F16 = right: F16 => Bool
-        func left: F16 != right: F16 => Bool
 
         func left: F32 + right: F32 => F32
         func left: F32 * right: F32 => F32
         func left: F32 - right: F32 => F32
         func left: F32 / right: F32 => F32
-        func left: F32 < right: F32 => Bool
         func left: F32 > right: F32 => Bool
-        func left: F32 <= right: F32 => Bool
-        func left: F32 >= right: F32 => Bool
         func left: F32 = right: F32 => Bool
-        func left: F32 != right: F32 => Bool
 
         func left: F64 + right: F64 => F64
         func left: F64 * right: F64 => F64
         func left: F64 - right: F64 => F64
         func left: F64 / right: F64 => F64
-        func left: F64 < right: F64 => Bool
         func left: F64 > right: F64 => Bool
-        func left: F64 <= right: F64 => Bool
-        func left: F64 >= right: F64 => Bool
         func left: F64 = right: F64 => Bool
-        func left: F64 != right: F64 => Bool
 
         func (I8) to_i16() => I16
         func (I8) to_i32() => I32
