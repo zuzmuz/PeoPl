@@ -31,6 +31,6 @@ file_length:
   ignore_comment_only_lines: true
 
 large_tuple:
-  warning: 4,
+  warning: 4
   error: 5
   

@@ -2,14 +2,21 @@ enum Typed {
 
     typealias Identifier = String
     typealias TypeIdentifier = String
-    typealias ParamDefinition = (name: String, type: TypeSpecifier)
+    struct ParamDefinition: Hashable {
+        let name: String
+        let type: TypeSpecifier
+    }
 
-    enum TypeSpecifier {
+    enum TypeSpecifier: Hashable {
         case nothing
         case never
         case nominal(TypeIdentifier)
         case unnamedTuple([TypeSpecifier])
         case namedTuple([ParamDefinition])
+    }
+
+    struct FunctionDeclaration: Hashable {
+        let name: String
     }
 
     enum Builtins {}
@@ -72,6 +79,18 @@ enum Typed {
 
     struct LocalScope {
         let fields: [Identifier: TypeSpecifier]
+    }
+
+    struct FunctionDefinitionContext {
+        let functions: [Typed.FunctionDeclaration: Syntax.FunctionDefinition]
+        let functionsIdentifiers:
+            [Typed.TypeIdentifier: [Syntax.FunctionDefinition]]
+        let functionsInputTypeIdentifiers:
+            [Typed.TypeSpecifier: [Syntax.FunctionDefinition]]
+        let operators:
+            [Syntax.OperatorOverloadDefinition: Syntax
+                .OperatorOverloadDefinition]
+        let errors: [FunctionSemanticError]
     }
 }
 
