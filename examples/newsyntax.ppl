@@ -1,9 +1,5 @@
-Object: 'record [
-   a: I32,
-   c: String,
+Object: record [
+   A,
+   C,
 ]
 
-
-example: 'func (Object) [a: In] -> Output {
-    'hi'
-}

@@ -1,6 +1,6 @@
 [
   {
-    "type": "constrained_type",
+    "type": "choice_definition",
     "named": true,
     "fields": {
       "name": {
@@ -13,12 +13,12 @@
           }
         ]
       },
-      "set": {
+      "variants": {
         "multiple": false,
         "required": true,
         "types": [
           {
-            "type": "identifier",
+            "type": "field_list",
             "named": true
           }
         ]
@@ -26,160 +26,7 @@
     }
   },
   {
-    "type": "existential_type",
-    "named": true,
-    "fields": {},
-    "children": {
-      "multiple": false,
-      "required": true,
-      "types": [
-        {
-          "type": "nominal_type",
-          "named": true
-        }
-      ]
-    }
-  },
-  {
-    "type": "function_body",
-    "named": true,
-    "fields": {}
-  },
-  {
-    "type": "function_definition",
-    "named": true,
-    "fields": {
-      "body": {
-        "multiple": false,
-        "required": false,
-        "types": [
-          {
-            "type": "function_body",
-            "named": true
-          }
-        ]
-      },
-      "signature": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "function_signature",
-            "named": true
-          }
-        ]
-      }
-    }
-  },
-  {
-    "type": "function_signature",
-    "named": true,
-    "fields": {
-      "arguments": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "labeled_types",
-            "named": true
-          }
-        ]
-      },
-      "input_type": {
-        "multiple": false,
-        "required": false,
-        "types": [
-          {
-            "type": "existential_type",
-            "named": true
-          },
-          {
-            "type": "function_signature",
-            "named": true
-          },
-          {
-            "type": "never",
-            "named": true
-          },
-          {
-            "type": "nominal_type",
-            "named": true
-          },
-          {
-            "type": "nothing",
-            "named": true
-          },
-          {
-            "type": "opaque_type",
-            "named": true
-          },
-          {
-            "type": "product_definition",
-            "named": true
-          },
-          {
-            "type": "sum_definition",
-            "named": true
-          }
-        ]
-      },
-      "output_type": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "existential_type",
-            "named": true
-          },
-          {
-            "type": "function_signature",
-            "named": true
-          },
-          {
-            "type": "never",
-            "named": true
-          },
-          {
-            "type": "nominal_type",
-            "named": true
-          },
-          {
-            "type": "nothing",
-            "named": true
-          },
-          {
-            "type": "opaque_type",
-            "named": true
-          },
-          {
-            "type": "product_definition",
-            "named": true
-          },
-          {
-            "type": "sum_definition",
-            "named": true
-          }
-        ]
-      }
-    }
-  },
-  {
-    "type": "implementation_definition",
-    "named": true,
-    "fields": {},
-    "children": {
-      "multiple": false,
-      "required": true,
-      "types": [
-        {
-          "type": "identifier",
-          "named": true
-        }
-      ]
-    }
-  },
-  {
-    "type": "labeled_type",
+    "type": "field",
     "named": true,
     "fields": {
       "name": {
@@ -194,14 +41,10 @@
       },
       "type": {
         "multiple": false,
-        "required": true,
+        "required": false,
         "types": [
           {
-            "type": "existential_type",
-            "named": true
-          },
-          {
-            "type": "function_signature",
+            "type": "identifier",
             "named": true
           },
           {
@@ -209,23 +52,7 @@
             "named": true
           },
           {
-            "type": "nominal_type",
-            "named": true
-          },
-          {
             "type": "nothing",
-            "named": true
-          },
-          {
-            "type": "opaque_type",
-            "named": true
-          },
-          {
-            "type": "product_definition",
-            "named": true
-          },
-          {
-            "type": "sum_definition",
             "named": true
           }
         ]
@@ -233,65 +60,52 @@
     }
   },
   {
-    "type": "labeled_types",
+    "type": "field_list",
     "named": true,
     "fields": {},
     "children": {
       "multiple": true,
-      "required": true,
+      "required": false,
       "types": [
         {
-          "type": "labeled_type",
+          "type": "field",
+          "named": true
+        },
+        {
+          "type": "identifier",
+          "named": true
+        },
+        {
+          "type": "never",
+          "named": true
+        },
+        {
+          "type": "nothing",
           "named": true
         }
       ]
     }
   },
   {
-    "type": "nominal_type",
+    "type": "record_definition",
     "named": true,
     "fields": {
-      "identifier": {
+      "fields": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "field_list",
+            "named": true
+          }
+        ]
+      },
+      "name": {
         "multiple": false,
         "required": true,
         "types": [
           {
             "type": "identifier",
-            "named": true
-          }
-        ]
-      }
-    }
-  },
-  {
-    "type": "opaque_type",
-    "named": true,
-    "fields": {},
-    "children": {
-      "multiple": false,
-      "required": true,
-      "types": [
-        {
-          "type": "nominal_type",
-          "named": true
-        }
-      ]
-    }
-  },
-  {
-    "type": "product_definition",
-    "named": true,
-    "fields": {
-      "params": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "labeled_types",
-            "named": true
-          },
-          {
-            "type": "unlabeled_types",
             "named": true
           }
         ]
@@ -302,191 +116,28 @@
     "type": "source_file",
     "named": true,
     "root": true,
-    "fields": {
-      "definition": {
-        "multiple": true,
-        "required": false,
-        "types": [
-          {
-            "type": "function_definition",
-            "named": true
-          },
-          {
-            "type": "implementation_definition",
-            "named": true
-          },
-          {
-            "type": "product_definition",
-            "named": true
-          },
-          {
-            "type": "set_definition",
-            "named": true
-          },
-          {
-            "type": "sum_definition",
-            "named": true
-          }
-        ]
-      },
-      "identifier": {
-        "multiple": true,
-        "required": false,
-        "types": [
-          {
-            "type": "identifier",
-            "named": true
-          }
-        ]
-      },
-      "type_arguments": {
-        "multiple": true,
-        "required": false,
-        "types": [
-          {
-            "type": "type_arguments",
-            "named": true
-          }
-        ]
-      }
-    }
-  },
-  {
-    "type": "sum_definition",
-    "named": true,
-    "fields": {
-      "params": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "labeled_types",
-            "named": true
-          },
-          {
-            "type": "unlabeled_types",
-            "named": true
-          }
-        ]
-      }
-    }
-  },
-  {
-    "type": "type_arguments",
-    "named": true,
     "fields": {},
     "children": {
       "multiple": true,
-      "required": true,
+      "required": false,
       "types": [
         {
-          "type": "constrained_type",
+          "type": "choice_definition",
           "named": true
         },
         {
-          "type": "identifier",
-          "named": true
-        },
-        {
-          "type": "labeled_type",
+          "type": "record_definition",
           "named": true
         }
       ]
     }
-  },
-  {
-    "type": "unlabeled_types",
-    "named": true,
-    "fields": {},
-    "children": {
-      "multiple": true,
-      "required": true,
-      "types": [
-        {
-          "type": "existential_type",
-          "named": true
-        },
-        {
-          "type": "function_signature",
-          "named": true
-        },
-        {
-          "type": "never",
-          "named": true
-        },
-        {
-          "type": "nominal_type",
-          "named": true
-        },
-        {
-          "type": "nothing",
-          "named": true
-        },
-        {
-          "type": "opaque_type",
-          "named": true
-        },
-        {
-          "type": "product_definition",
-          "named": true
-        },
-        {
-          "type": "sum_definition",
-          "named": true
-        }
-      ]
-    }
-  },
-  {
-    "type": "'any",
-    "named": false
-  },
-  {
-    "type": "'choice",
-    "named": false
-  },
-  {
-    "type": "'func",
-    "named": false
-  },
-  {
-    "type": "'in",
-    "named": false
-  },
-  {
-    "type": "'record",
-    "named": false
-  },
-  {
-    "type": "'some",
-    "named": false
-  },
-  {
-    "type": "(",
-    "named": false
-  },
-  {
-    "type": ")",
-    "named": false
   },
   {
     "type": ",",
     "named": false
   },
   {
-    "type": "->",
-    "named": false
-  },
-  {
     "type": ":",
-    "named": false
-  },
-  {
-    "type": "<",
-    "named": false
-  },
-  {
-    "type": ">",
     "named": false
   },
   {
@@ -498,12 +149,12 @@
     "named": false
   },
   {
-    "type": "comment",
-    "named": true
+    "type": "choice",
+    "named": false
   },
   {
-    "type": "hi",
-    "named": false
+    "type": "comment",
+    "named": true
   },
   {
     "type": "identifier",
@@ -518,15 +169,7 @@
     "named": true
   },
   {
-    "type": "set_definition",
-    "named": true
-  },
-  {
-    "type": "{",
-    "named": false
-  },
-  {
-    "type": "}",
+    "type": "record",
     "named": false
   }
 ]

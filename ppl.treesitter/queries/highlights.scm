@@ -1,23 +1,23 @@
 
 [
-  "'record"
-  "'choice"
-  "'in"
-  "'some"
-  "'any"
+  "record"
+  "choice"
+  ; "'in"
+  ; "'some"
+  ; "'any"
 ] @keyword.type
 
-[
- "'func"
-] @keyword.function
+; [
+;  "'func"
+; ] @keyword.function
 
 ; [
 ;  "namespace"
 ;  ] @include
 
 
-(nominal_type
-    (identifier) @type.definition)
+; (nominal_type
+;     (identifier) @type.definition)
 
 ; (type_arguments
 ;   (type_identifier

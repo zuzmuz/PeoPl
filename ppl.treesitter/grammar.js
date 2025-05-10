@@ -59,61 +59,61 @@ module.exports = grammar({
       "'some"
     ),
 
-    labeled_type: $ => seq(
+    field: $ => seq(
       field("name", $.identifier),
       ":",
-      field("type", $._type),
+      field("type", optional($._type)),
     ),
 
-    labeled_types: $ => seq(
+    field_list: $ => seq(
       '[',
-        $.labeled_type,
-        repeat(seq(',', $.labeled_type)),
-        optional(','),
+      optional(seq(
+        choice(
+          $.field,
+          $._type
+        ),
+        repeat(seq(
+          ',',
+          choice(
+            $.field,
+            $._type
+          )
+        )),
+        optional(',')
+      )),
       ']'
     ),
 
-    unlabeled_types: $ => seq(
-      '[',
-        $._type,
-        repeat(seq(',', $._type)),
-        optional(','),
-      '['
-    ),
-
-    constrained_type: $ => seq(
-      field("name", $.identifier),
-      ':',
-      "'in",
-      field("set", $.identifier)
-    ),
-
-    _type_argument: $ => choice(
-      $.identifier,
-      $.labeled_type,
-      $.constrained_type
-    ),
-
-    type_arguments: $ => seq(
-      '<',
-        repeat(seq($._type_argument, ',')),
-        $._type_argument,
-      '>'
-    ),
+    // constrained_type: $ => seq(
+    //   field("name", $.identifier),
+    //   ':',
+    //   "'in",
+    //   field("set", $.identifier)
+    // ),
+    //
+    // _type_argument: $ => choice(
+    //   $.identifier,
+    //   $.labeled_type,
+    //   $.constrained_type
+    // ),
+    //
+    // type_arguments: $ => seq(
+    //   '<',
+    //     repeat(seq($._type_argument, ',')),
+    //     $._type_argument,
+    //   '>'
+    // ),
 
     _definition: $ => choice(
-        $.product_definition,
-        $.sum_definition,
-        $.function_definition,
-        $.set_definition,
-        $.implementation_definition
+        $.record_definition,
+        $.choice_definition,
+        // $.function_definition,
+        // $.set_definition,
+        // $.implementation_definition
     ),
 
     _statement: $ => seq(
-      field("identifier", $.identifier),
-      ':',
-      field("type_arguments", optional($.type_arguments)),
-      field("definition", $._definition)
+      $._definition,
     ),
     
     // Type Definitions
@@ -123,93 +123,84 @@ module.exports = grammar({
       field('name', $.identifier),
       ':',
       'record',
-      field('fields', choice(
-        $.field_list,
-        $.type_list
-      ))
+      field('fields', $.field_list)
     ),
 
     choice_definition: $ => seq(
       field('name', $.identifier),
       ':',
       'choice',
-      field('variants', choice(
-        $.field_list,
-        $.type_list
-      ))
+      field('variants', $.field_list)
     ),
 
     // Function Definitions
     // --------------------
     
-    function_definition: $ => seq(
-      field("signature", $.function_signature),
-      field("body", optional($.function_body)),
-    ),
-
-    function_signature: $ => seq(
-      "'func",
-      optional(seq('(', field("input_type", $._type), ')')),
-      field('arguments', $.labeled_types),
-      '->',
-      field("output_type", $._type),
-    ),
-
-    function_body: $ => seq(
-      '{',
-        $._expression,
-      '}'
-    ),
+    // function_definition: $ => seq(
+    //   field("signature", $.function_signature),
+    //   field("body", optional($.function_body)),
+    // ),
+    //
+    // function_signature: $ => seq(
+    //   "'func",
+    //   optional(seq('(', field("input_type", $._type), ')')),
+    //   field('arguments', $.labeled_types),
+    //   '->',
+    //   field("output_type", $._type),
+    // ),
+    //
+    // function_body: $ => seq(
+    //   '{',
+    //     $._expression,
+    //   '}'
+    // ),
 
     // Set Definitions
     // ---------------
     
-    set_definition: _ => "'set",
+    // set_definition: _ => "'set",
 
     // Implementation Definitions
     // --------------------------
     
-    implementation_definition: $ => seq(
-      "'in",
-      $.identifier
-    ),
-
+    // implementation_definition: $ => seq(
+    //   "'in",
+    //   $.identifier
+    // ),
+    //
     // Types
     // -----
     //
 
-    existential_type: $ => seq(
-      "'any",
-      $.nominal_type
-    ),
-
-    opaque_type: $ => seq(
-      "'some",
-      $.nominal_type
-    ),
-
+    // existential_type: $ => seq(
+    //   "'any",
+    //   $.nominal_type
+    // ),
+    //
+    // opaque_type: $ => seq(
+    //   "'some",
+    //   $.nominal_type
+    // ),
+    //
     _type: $ => choice(
       $.nothing,
       $.never,
-      $.nominal_type,
-      $.product_definition,
-      $.sum_definition,
-      $.function_signature,
-      $.existential_type,
-      $.opaque_type
+      $.identifier,
+      // $.record_definition,
+      // $.choice_definition,
     ),
-
-    nominal_type: $ => choice(
-      field('identifier', $.identifier),
-    ),
-
+    //
+    // nominal_type: $ => choice(
+    //   field('identifier', $.identifier),
+    // ),
+    //
     nothing: _ => 'nothing',
     never: _ => 'never',
-
-    // -----------
-    // EXPRESSIONS
-    // -----------
-
-    _expression: $ => "hi"
+    //
+    // // -----------
+    // // EXPRESSIONS
+    // // -----------
+    //
+    // _expression: $ => "hi"
   }
 });
