@@ -1,0 +1,9 @@
+Object: 'record [
+   a: I32,
+   c: String,
+]
+
+
+example: 'func (Object) [a: In] -> Output {
+    'hi'
+}

@@ -2,9 +2,11 @@
 
 func add(a: I32, b: I32) => I32
     a + b
-
+add: func [a:
 
 func main() => I32
     add(a: 100_000, b: 2)
 
-
+main: func [] -> I32 {
+    add[a: 100_100, b: 2]
+}

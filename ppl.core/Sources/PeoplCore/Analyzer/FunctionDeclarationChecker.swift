@@ -74,10 +74,10 @@ extension FunctionDeclarationChecker {
             typesDefinitions: typesDefinitions,
             externals: externals)
 
-        // let operatorsDeclarations = self.getOperatorOverloadDeclarations()
-        // let (operators, operatorsRedeclarations) = resolveDefinitions(
-        //     operatorOverloadDeclarations: operatorsDeclarations,
-        //     typesDefinitions: typesDefinitions)
+        let operatorsDeclarations = self.getOperatorOverloadDeclarations()
+        let (operators, operatorsRedeclarations) = resolveDefinitions(
+            operatorOverloadDeclarations: operatorsDeclarations,
+            typesDefinitions: typesDefinitions)
 
         let functionsIdentifiers = functions.reduce(into: [:]) { acc, element in
             acc[element.key.identifier] =

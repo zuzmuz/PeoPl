@@ -1,7 +1,6 @@
 
-func (InputTypeName) func_name(arg_name: ArgType) => OutputTypeName
-    A::B::C::D::a.c.f |>
-    |[$a, $a, Cap, Ex(a: $a)]: a=1| 2,
-    |b| 3 |>
-    C::a(a: 3, c: A::a)
+    func main() => String
+                    3 |>
+                    |$i: i % 2 = 0| "is even",
+                    |_| "is odd"
 

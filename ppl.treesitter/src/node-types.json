@@ -1,77 +1,6 @@
 [
   {
-    "type": "access_expression",
-    "named": true,
-    "fields": {
-      "field": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "small_identifier",
-            "named": true
-          }
-        ]
-      },
-      "prefix": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "access_expression",
-            "named": true
-          },
-          {
-            "type": "binary_expression",
-            "named": true
-          },
-          {
-            "type": "function_call_expression",
-            "named": true
-          },
-          {
-            "type": "lambda_expression",
-            "named": true
-          },
-          {
-            "type": "literal",
-            "named": true
-          },
-          {
-            "type": "named_tuple_literal",
-            "named": true
-          },
-          {
-            "type": "parenthisized_expression",
-            "named": true
-          },
-          {
-            "type": "scoped_identifier",
-            "named": true
-          },
-          {
-            "type": "type_initializer_expression",
-            "named": true
-          },
-          {
-            "type": "unary_expression",
-            "named": true
-          },
-          {
-            "type": "unnamed_tuple_literal",
-            "named": true
-          }
-        ]
-      }
-    }
-  },
-  {
-    "type": "additive_operator",
-    "named": true,
-    "fields": {}
-  },
-  {
-    "type": "argument",
+    "type": "constrained_type",
     "named": true,
     "fields": {
       "name": {
@@ -79,65 +8,17 @@
         "required": true,
         "types": [
           {
-            "type": "small_identifier",
+            "type": "identifier",
             "named": true
           }
         ]
       },
-      "value": {
+      "set": {
         "multiple": false,
         "required": true,
         "types": [
           {
-            "type": "access_expression",
-            "named": true
-          },
-          {
-            "type": "binary_expression",
-            "named": true
-          },
-          {
-            "type": "branched_expression",
-            "named": true
-          },
-          {
-            "type": "function_call_expression",
-            "named": true
-          },
-          {
-            "type": "lambda_expression",
-            "named": true
-          },
-          {
-            "type": "literal",
-            "named": true
-          },
-          {
-            "type": "named_tuple_literal",
-            "named": true
-          },
-          {
-            "type": "parenthisized_expression",
-            "named": true
-          },
-          {
-            "type": "piped_expression",
-            "named": true
-          },
-          {
-            "type": "scoped_identifier",
-            "named": true
-          },
-          {
-            "type": "type_initializer_expression",
-            "named": true
-          },
-          {
-            "type": "unary_expression",
-            "named": true
-          },
-          {
-            "type": "unnamed_tuple_literal",
+            "type": "identifier",
             "named": true
           }
         ]
@@ -145,211 +26,7 @@
     }
   },
   {
-    "type": "argument_binding",
-    "named": true,
-    "fields": {
-      "name": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "small_identifier",
-            "named": true
-          }
-        ]
-      },
-      "value": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "binding_name",
-            "named": true
-          },
-          {
-            "type": "literal",
-            "named": true
-          },
-          {
-            "type": "scoped_identifier",
-            "named": true
-          },
-          {
-            "type": "tuple_binding_literal",
-            "named": true
-          },
-          {
-            "type": "type_binding",
-            "named": true
-          }
-        ]
-      }
-    }
-  },
-  {
-    "type": "argument_list",
-    "named": true,
-    "fields": {},
-    "children": {
-      "multiple": true,
-      "required": true,
-      "types": [
-        {
-          "type": "argument",
-          "named": true
-        }
-      ]
-    }
-  },
-  {
-    "type": "argument_list_binding",
-    "named": true,
-    "fields": {},
-    "children": {
-      "multiple": true,
-      "required": true,
-      "types": [
-        {
-          "type": "argument_binding",
-          "named": true
-        }
-      ]
-    }
-  },
-  {
-    "type": "binary_expression",
-    "named": true,
-    "fields": {
-      "left": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "access_expression",
-            "named": true
-          },
-          {
-            "type": "binary_expression",
-            "named": true
-          },
-          {
-            "type": "function_call_expression",
-            "named": true
-          },
-          {
-            "type": "lambda_expression",
-            "named": true
-          },
-          {
-            "type": "literal",
-            "named": true
-          },
-          {
-            "type": "named_tuple_literal",
-            "named": true
-          },
-          {
-            "type": "parenthisized_expression",
-            "named": true
-          },
-          {
-            "type": "scoped_identifier",
-            "named": true
-          },
-          {
-            "type": "type_initializer_expression",
-            "named": true
-          },
-          {
-            "type": "unary_expression",
-            "named": true
-          },
-          {
-            "type": "unnamed_tuple_literal",
-            "named": true
-          }
-        ]
-      },
-      "operator": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "additive_operator",
-            "named": true
-          },
-          {
-            "type": "and_operator",
-            "named": true
-          },
-          {
-            "type": "comparative_operator",
-            "named": true
-          },
-          {
-            "type": "multiplicative_operator",
-            "named": true
-          },
-          {
-            "type": "or_operator",
-            "named": true
-          }
-        ]
-      },
-      "right": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "access_expression",
-            "named": true
-          },
-          {
-            "type": "binary_expression",
-            "named": true
-          },
-          {
-            "type": "function_call_expression",
-            "named": true
-          },
-          {
-            "type": "lambda_expression",
-            "named": true
-          },
-          {
-            "type": "literal",
-            "named": true
-          },
-          {
-            "type": "named_tuple_literal",
-            "named": true
-          },
-          {
-            "type": "parenthisized_expression",
-            "named": true
-          },
-          {
-            "type": "scoped_identifier",
-            "named": true
-          },
-          {
-            "type": "type_initializer_expression",
-            "named": true
-          },
-          {
-            "type": "unary_expression",
-            "named": true
-          },
-          {
-            "type": "unnamed_tuple_literal",
-            "named": true
-          }
-        ]
-      }
-    }
-  },
-  {
-    "type": "binding_name",
+    "type": "existential_type",
     "named": true,
     "fields": {},
     "children": {
@@ -357,452 +34,37 @@
       "required": true,
       "types": [
         {
-          "type": "small_identifier",
+          "type": "nominal_type",
           "named": true
         }
       ]
     }
   },
   {
-    "type": "bool_literal",
+    "type": "function_body",
     "named": true,
     "fields": {}
-  },
-  {
-    "type": "branch_expression",
-    "named": true,
-    "fields": {
-      "body": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "access_expression",
-            "named": true
-          },
-          {
-            "type": "binary_expression",
-            "named": true
-          },
-          {
-            "type": "function_call_expression",
-            "named": true
-          },
-          {
-            "type": "lambda_expression",
-            "named": true
-          },
-          {
-            "type": "literal",
-            "named": true
-          },
-          {
-            "type": "looped_expression",
-            "named": true
-          },
-          {
-            "type": "named_tuple_literal",
-            "named": true
-          },
-          {
-            "type": "parenthisized_expression",
-            "named": true
-          },
-          {
-            "type": "scoped_identifier",
-            "named": true
-          },
-          {
-            "type": "type_initializer_expression",
-            "named": true
-          },
-          {
-            "type": "unary_expression",
-            "named": true
-          },
-          {
-            "type": "unnamed_tuple_literal",
-            "named": true
-          }
-        ]
-      },
-      "guard_expression": {
-        "multiple": false,
-        "required": false,
-        "types": [
-          {
-            "type": "access_expression",
-            "named": true
-          },
-          {
-            "type": "binary_expression",
-            "named": true
-          },
-          {
-            "type": "function_call_expression",
-            "named": true
-          },
-          {
-            "type": "lambda_expression",
-            "named": true
-          },
-          {
-            "type": "literal",
-            "named": true
-          },
-          {
-            "type": "named_tuple_literal",
-            "named": true
-          },
-          {
-            "type": "parenthisized_expression",
-            "named": true
-          },
-          {
-            "type": "scoped_identifier",
-            "named": true
-          },
-          {
-            "type": "type_initializer_expression",
-            "named": true
-          },
-          {
-            "type": "unary_expression",
-            "named": true
-          },
-          {
-            "type": "unnamed_tuple_literal",
-            "named": true
-          }
-        ]
-      },
-      "match_expression": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "binding_name",
-            "named": true
-          },
-          {
-            "type": "literal",
-            "named": true
-          },
-          {
-            "type": "scoped_identifier",
-            "named": true
-          },
-          {
-            "type": "tuple_binding_literal",
-            "named": true
-          },
-          {
-            "type": "type_binding",
-            "named": true
-          }
-        ]
-      }
-    }
-  },
-  {
-    "type": "branched_expression",
-    "named": true,
-    "fields": {},
-    "children": {
-      "multiple": true,
-      "required": true,
-      "types": [
-        {
-          "type": "branch_expression",
-          "named": true
-        }
-      ]
-    }
-  },
-  {
-    "type": "comparative_operator",
-    "named": true,
-    "fields": {}
-  },
-  {
-    "type": "enum_type_definition",
-    "named": true,
-    "fields": {
-      "case_type": {
-        "multiple": true,
-        "required": true,
-        "types": [
-          {
-            "type": "simple_type_definition",
-            "named": true
-          }
-        ]
-      },
-      "meta_type": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "nominal_type",
-            "named": true
-          }
-        ]
-      }
-    }
-  },
-  {
-    "type": "function_call_expression",
-    "named": true,
-    "fields": {
-      "arguments": {
-        "multiple": false,
-        "required": false,
-        "types": [
-          {
-            "type": "argument_list",
-            "named": true
-          }
-        ]
-      },
-      "prefix": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "access_expression",
-            "named": true
-          },
-          {
-            "type": "binary_expression",
-            "named": true
-          },
-          {
-            "type": "function_call_expression",
-            "named": true
-          },
-          {
-            "type": "lambda_expression",
-            "named": true
-          },
-          {
-            "type": "literal",
-            "named": true
-          },
-          {
-            "type": "named_tuple_literal",
-            "named": true
-          },
-          {
-            "type": "parenthisized_expression",
-            "named": true
-          },
-          {
-            "type": "scoped_identifier",
-            "named": true
-          },
-          {
-            "type": "type_initializer_expression",
-            "named": true
-          },
-          {
-            "type": "unary_expression",
-            "named": true
-          },
-          {
-            "type": "unnamed_tuple_literal",
-            "named": true
-          }
-        ]
-      }
-    }
   },
   {
     "type": "function_definition",
     "named": true,
-    "fields": {},
-    "children": {
-      "multiple": false,
-      "required": true,
-      "types": [
-        {
-          "type": "normal_function_definition",
-          "named": true
-        },
-        {
-          "type": "operator_overload_definition",
-          "named": true
-        }
-      ]
-    }
-  },
-  {
-    "type": "lambda_expression",
-    "named": true,
-    "fields": {},
-    "children": {
-      "multiple": false,
-      "required": true,
-      "types": [
-        {
-          "type": "access_expression",
-          "named": true
-        },
-        {
-          "type": "binary_expression",
-          "named": true
-        },
-        {
-          "type": "branched_expression",
-          "named": true
-        },
-        {
-          "type": "function_call_expression",
-          "named": true
-        },
-        {
-          "type": "lambda_expression",
-          "named": true
-        },
-        {
-          "type": "literal",
-          "named": true
-        },
-        {
-          "type": "named_tuple_literal",
-          "named": true
-        },
-        {
-          "type": "parenthisized_expression",
-          "named": true
-        },
-        {
-          "type": "piped_expression",
-          "named": true
-        },
-        {
-          "type": "scoped_identifier",
-          "named": true
-        },
-        {
-          "type": "type_initializer_expression",
-          "named": true
-        },
-        {
-          "type": "unary_expression",
-          "named": true
-        },
-        {
-          "type": "unnamed_tuple_literal",
-          "named": true
-        }
-      ]
-    }
-  },
-  {
-    "type": "literal",
-    "named": true,
-    "fields": {},
-    "children": {
-      "multiple": false,
-      "required": true,
-      "types": [
-        {
-          "type": "bool_literal",
-          "named": true
-        },
-        {
-          "type": "float_literal",
-          "named": true
-        },
-        {
-          "type": "int_literal",
-          "named": true
-        },
-        {
-          "type": "never",
-          "named": true
-        },
-        {
-          "type": "nothing",
-          "named": true
-        },
-        {
-          "type": "string_literal",
-          "named": true
-        }
-      ]
-    }
-  },
-  {
-    "type": "looped_expression",
-    "named": true,
-    "fields": {},
-    "children": {
-      "multiple": false,
-      "required": true,
-      "types": [
-        {
-          "type": "parenthisized_expression",
-          "named": true
-        }
-      ]
-    }
-  },
-  {
-    "type": "multiplicative_operator",
-    "named": true,
-    "fields": {}
-  },
-  {
-    "type": "named_tuple_literal",
-    "named": true,
-    "fields": {},
-    "children": {
-      "multiple": true,
-      "required": true,
-      "types": [
-        {
-          "type": "argument",
-          "named": true
-        }
-      ]
-    }
-  },
-  {
-    "type": "named_tuple_structural_type",
-    "named": true,
-    "fields": {},
-    "children": {
-      "multiple": true,
-      "required": true,
-      "types": [
-        {
-          "type": "param_definition",
-          "named": true
-        }
-      ]
-    }
-  },
-  {
-    "type": "nominal_type",
-    "named": true,
     "fields": {
-      "name": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "big_identifier",
-            "named": true
-          }
-        ]
-      },
-      "scope": {
+      "body": {
         "multiple": false,
         "required": false,
         "types": [
           {
-            "type": "nominal_type",
+            "type": "function_body",
+            "named": true
+          }
+        ]
+      },
+      "signature": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "function_signature",
             "named": true
           }
         ]
@@ -810,63 +72,15 @@
     }
   },
   {
-    "type": "normal_function_definition",
+    "type": "function_signature",
     "named": true,
     "fields": {
-      "body": {
+      "arguments": {
         "multiple": false,
-        "required": false,
+        "required": true,
         "types": [
           {
-            "type": "access_expression",
-            "named": true
-          },
-          {
-            "type": "binary_expression",
-            "named": true
-          },
-          {
-            "type": "branched_expression",
-            "named": true
-          },
-          {
-            "type": "function_call_expression",
-            "named": true
-          },
-          {
-            "type": "lambda_expression",
-            "named": true
-          },
-          {
-            "type": "literal",
-            "named": true
-          },
-          {
-            "type": "named_tuple_literal",
-            "named": true
-          },
-          {
-            "type": "parenthisized_expression",
-            "named": true
-          },
-          {
-            "type": "piped_expression",
-            "named": true
-          },
-          {
-            "type": "scoped_identifier",
-            "named": true
-          },
-          {
-            "type": "type_initializer_expression",
-            "named": true
-          },
-          {
-            "type": "unary_expression",
-            "named": true
-          },
-          {
-            "type": "unnamed_tuple_literal",
+            "type": "labeled_types",
             "named": true
           }
         ]
@@ -876,7 +90,11 @@
         "required": false,
         "types": [
           {
-            "type": "named_tuple_structural_type",
+            "type": "existential_type",
+            "named": true
+          },
+          {
+            "type": "function_signature",
             "named": true
           },
           {
@@ -892,17 +110,15 @@
             "named": true
           },
           {
-            "type": "unnamed_tuple_structural_type",
+            "type": "opaque_type",
             "named": true
-          }
-        ]
-      },
-      "name": {
-        "multiple": false,
-        "required": true,
-        "types": [
+          },
           {
-            "type": "scoped_identifier",
+            "type": "product_definition",
+            "named": true
+          },
+          {
+            "type": "sum_definition",
             "named": true
           }
         ]
@@ -912,7 +128,11 @@
         "required": true,
         "types": [
           {
-            "type": "named_tuple_structural_type",
+            "type": "existential_type",
+            "named": true
+          },
+          {
+            "type": "function_signature",
             "named": true
           },
           {
@@ -928,17 +148,15 @@
             "named": true
           },
           {
-            "type": "unnamed_tuple_structural_type",
+            "type": "opaque_type",
             "named": true
-          }
-        ]
-      },
-      "params": {
-        "multiple": false,
-        "required": false,
-        "types": [
+          },
           {
-            "type": "param_list",
+            "type": "product_definition",
+            "named": true
+          },
+          {
+            "type": "sum_definition",
             "named": true
           }
         ]
@@ -946,135 +164,22 @@
     }
   },
   {
-    "type": "operator_overload_definition",
+    "type": "implementation_definition",
     "named": true,
-    "fields": {
-      "body": {
-        "multiple": false,
-        "required": false,
-        "types": [
-          {
-            "type": "access_expression",
-            "named": true
-          },
-          {
-            "type": "binary_expression",
-            "named": true
-          },
-          {
-            "type": "branched_expression",
-            "named": true
-          },
-          {
-            "type": "function_call_expression",
-            "named": true
-          },
-          {
-            "type": "lambda_expression",
-            "named": true
-          },
-          {
-            "type": "literal",
-            "named": true
-          },
-          {
-            "type": "named_tuple_literal",
-            "named": true
-          },
-          {
-            "type": "parenthisized_expression",
-            "named": true
-          },
-          {
-            "type": "piped_expression",
-            "named": true
-          },
-          {
-            "type": "scoped_identifier",
-            "named": true
-          },
-          {
-            "type": "type_initializer_expression",
-            "named": true
-          },
-          {
-            "type": "unary_expression",
-            "named": true
-          },
-          {
-            "type": "unnamed_tuple_literal",
-            "named": true
-          }
-        ]
-      },
-      "left_type": {
-        "multiple": false,
-        "required": false,
-        "types": [
-          {
-            "type": "param_definition",
-            "named": true
-          }
-        ]
-      },
-      "operator": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "additive_operator",
-            "named": true
-          },
-          {
-            "type": "comparative_operator",
-            "named": true
-          },
-          {
-            "type": "multiplicative_operator",
-            "named": true
-          }
-        ]
-      },
-      "output_type": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "named_tuple_structural_type",
-            "named": true
-          },
-          {
-            "type": "never",
-            "named": true
-          },
-          {
-            "type": "nominal_type",
-            "named": true
-          },
-          {
-            "type": "nothing",
-            "named": true
-          },
-          {
-            "type": "unnamed_tuple_structural_type",
-            "named": true
-          }
-        ]
-      },
-      "right_type": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "param_definition",
-            "named": true
-          }
-        ]
-      }
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "identifier",
+          "named": true
+        }
+      ]
     }
   },
   {
-    "type": "param_definition",
+    "type": "labeled_type",
     "named": true,
     "fields": {
       "name": {
@@ -1082,7 +187,7 @@
         "required": true,
         "types": [
           {
-            "type": "small_identifier",
+            "type": "identifier",
             "named": true
           }
         ]
@@ -1092,7 +197,11 @@
         "required": true,
         "types": [
           {
-            "type": "named_tuple_structural_type",
+            "type": "existential_type",
+            "named": true
+          },
+          {
+            "type": "function_signature",
             "named": true
           },
           {
@@ -1108,7 +217,15 @@
             "named": true
           },
           {
-            "type": "unnamed_tuple_structural_type",
+            "type": "opaque_type",
+            "named": true
+          },
+          {
+            "type": "product_definition",
+            "named": true
+          },
+          {
+            "type": "sum_definition",
             "named": true
           }
         ]
@@ -1116,7 +233,7 @@
     }
   },
   {
-    "type": "param_list",
+    "type": "labeled_types",
     "named": true,
     "fields": {},
     "children": {
@@ -1124,14 +241,30 @@
       "required": true,
       "types": [
         {
-          "type": "param_definition",
+          "type": "labeled_type",
           "named": true
         }
       ]
     }
   },
   {
-    "type": "parenthisized_expression",
+    "type": "nominal_type",
+    "named": true,
+    "fields": {
+      "identifier": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "opaque_type",
     "named": true,
     "fields": {},
     "children": {
@@ -1139,238 +272,26 @@
       "required": true,
       "types": [
         {
-          "type": "access_expression",
-          "named": true
-        },
-        {
-          "type": "binary_expression",
-          "named": true
-        },
-        {
-          "type": "branched_expression",
-          "named": true
-        },
-        {
-          "type": "function_call_expression",
-          "named": true
-        },
-        {
-          "type": "lambda_expression",
-          "named": true
-        },
-        {
-          "type": "literal",
-          "named": true
-        },
-        {
-          "type": "named_tuple_literal",
-          "named": true
-        },
-        {
-          "type": "parenthisized_expression",
-          "named": true
-        },
-        {
-          "type": "piped_expression",
-          "named": true
-        },
-        {
-          "type": "scoped_identifier",
-          "named": true
-        },
-        {
-          "type": "type_initializer_expression",
-          "named": true
-        },
-        {
-          "type": "unary_expression",
-          "named": true
-        },
-        {
-          "type": "unnamed_tuple_literal",
+          "type": "nominal_type",
           "named": true
         }
       ]
     }
   },
   {
-    "type": "piped_expression",
+    "type": "product_definition",
     "named": true,
     "fields": {
-      "left": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "access_expression",
-            "named": true
-          },
-          {
-            "type": "binary_expression",
-            "named": true
-          },
-          {
-            "type": "branched_expression",
-            "named": true
-          },
-          {
-            "type": "function_call_expression",
-            "named": true
-          },
-          {
-            "type": "lambda_expression",
-            "named": true
-          },
-          {
-            "type": "literal",
-            "named": true
-          },
-          {
-            "type": "named_tuple_literal",
-            "named": true
-          },
-          {
-            "type": "parenthisized_expression",
-            "named": true
-          },
-          {
-            "type": "piped_expression",
-            "named": true
-          },
-          {
-            "type": "scoped_identifier",
-            "named": true
-          },
-          {
-            "type": "type_initializer_expression",
-            "named": true
-          },
-          {
-            "type": "unary_expression",
-            "named": true
-          },
-          {
-            "type": "unnamed_tuple_literal",
-            "named": true
-          }
-        ]
-      },
-      "operator": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "pipe_operator",
-            "named": true
-          }
-        ]
-      },
-      "right": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "access_expression",
-            "named": true
-          },
-          {
-            "type": "binary_expression",
-            "named": true
-          },
-          {
-            "type": "branched_expression",
-            "named": true
-          },
-          {
-            "type": "function_call_expression",
-            "named": true
-          },
-          {
-            "type": "lambda_expression",
-            "named": true
-          },
-          {
-            "type": "literal",
-            "named": true
-          },
-          {
-            "type": "named_tuple_literal",
-            "named": true
-          },
-          {
-            "type": "parenthisized_expression",
-            "named": true
-          },
-          {
-            "type": "piped_expression",
-            "named": true
-          },
-          {
-            "type": "scoped_identifier",
-            "named": true
-          },
-          {
-            "type": "type_initializer_expression",
-            "named": true
-          },
-          {
-            "type": "unary_expression",
-            "named": true
-          },
-          {
-            "type": "unnamed_tuple_literal",
-            "named": true
-          }
-        ]
-      }
-    }
-  },
-  {
-    "type": "scoped_identifier",
-    "named": true,
-    "fields": {
-      "name": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "small_identifier",
-            "named": true
-          }
-        ]
-      },
-      "scope": {
-        "multiple": false,
-        "required": false,
-        "types": [
-          {
-            "type": "nominal_type",
-            "named": true
-          }
-        ]
-      }
-    }
-  },
-  {
-    "type": "simple_type_definition",
-    "named": true,
-    "fields": {
-      "name": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "nominal_type",
-            "named": true
-          }
-        ]
-      },
       "params": {
         "multiple": false,
-        "required": false,
+        "required": true,
         "types": [
           {
-            "type": "param_list",
+            "type": "labeled_types",
+            "named": true
+          },
+          {
+            "type": "unlabeled_types",
             "named": true
           }
         ]
@@ -1381,118 +302,49 @@
     "type": "source_file",
     "named": true,
     "root": true,
-    "fields": {},
-    "children": {
-      "multiple": true,
-      "required": false,
-      "types": [
-        {
-          "type": "function_definition",
-          "named": true
-        },
-        {
-          "type": "type_definition",
-          "named": true
-        }
-      ]
-    }
-  },
-  {
-    "type": "tuple_binding_literal",
-    "named": true,
-    "fields": {},
-    "children": {
-      "multiple": true,
-      "required": true,
-      "types": [
-        {
-          "type": "binding_name",
-          "named": true
-        },
-        {
-          "type": "literal",
-          "named": true
-        },
-        {
-          "type": "scoped_identifier",
-          "named": true
-        },
-        {
-          "type": "tuple_binding_literal",
-          "named": true
-        },
-        {
-          "type": "type_binding",
-          "named": true
-        }
-      ]
-    }
-  },
-  {
-    "type": "type_binding",
-    "named": true,
     "fields": {
-      "arguments": {
-        "multiple": false,
+      "definition": {
+        "multiple": true,
         "required": false,
         "types": [
           {
-            "type": "argument_list_binding",
+            "type": "function_definition",
+            "named": true
+          },
+          {
+            "type": "implementation_definition",
+            "named": true
+          },
+          {
+            "type": "product_definition",
+            "named": true
+          },
+          {
+            "type": "set_definition",
+            "named": true
+          },
+          {
+            "type": "sum_definition",
             "named": true
           }
         ]
       },
-      "prefix": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "nominal_type",
-            "named": true
-          }
-        ]
-      }
-    }
-  },
-  {
-    "type": "type_definition",
-    "named": true,
-    "fields": {},
-    "children": {
-      "multiple": false,
-      "required": true,
-      "types": [
-        {
-          "type": "enum_type_definition",
-          "named": true
-        },
-        {
-          "type": "simple_type_definition",
-          "named": true
-        }
-      ]
-    }
-  },
-  {
-    "type": "type_initializer_expression",
-    "named": true,
-    "fields": {
-      "arguments": {
-        "multiple": false,
+      "identifier": {
+        "multiple": true,
         "required": false,
         "types": [
           {
-            "type": "argument_list",
+            "type": "identifier",
             "named": true
           }
         ]
       },
-      "prefix": {
-        "multiple": false,
-        "required": true,
+      "type_arguments": {
+        "multiple": true,
+        "required": false,
         "types": [
           {
-            "type": "nominal_type",
+            "type": "type_arguments",
             "named": true
           }
         ]
@@ -1500,85 +352,19 @@
     }
   },
   {
-    "type": "unary_expression",
+    "type": "sum_definition",
     "named": true,
     "fields": {
-      "operand": {
+      "params": {
         "multiple": false,
         "required": true,
         "types": [
           {
-            "type": "access_expression",
+            "type": "labeled_types",
             "named": true
           },
           {
-            "type": "binary_expression",
-            "named": true
-          },
-          {
-            "type": "function_call_expression",
-            "named": true
-          },
-          {
-            "type": "lambda_expression",
-            "named": true
-          },
-          {
-            "type": "literal",
-            "named": true
-          },
-          {
-            "type": "named_tuple_literal",
-            "named": true
-          },
-          {
-            "type": "parenthisized_expression",
-            "named": true
-          },
-          {
-            "type": "scoped_identifier",
-            "named": true
-          },
-          {
-            "type": "type_initializer_expression",
-            "named": true
-          },
-          {
-            "type": "unary_expression",
-            "named": true
-          },
-          {
-            "type": "unnamed_tuple_literal",
-            "named": true
-          }
-        ]
-      },
-      "operator": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "additive_operator",
-            "named": true
-          },
-          {
-            "type": "and_operator",
-            "named": true
-          },
-          {
-            "type": "comparative_operator",
-            "named": true
-          },
-          {
-            "type": "multiplicative_operator",
-            "named": true
-          },
-          {
-            "type": "not_operator",
-            "named": true
-          },
-          {
-            "type": "or_operator",
+            "type": "unlabeled_types",
             "named": true
           }
         ]
@@ -1586,7 +372,7 @@
     }
   },
   {
-    "type": "unnamed_tuple_literal",
+    "type": "type_arguments",
     "named": true,
     "fields": {},
     "children": {
@@ -1594,62 +380,22 @@
       "required": true,
       "types": [
         {
-          "type": "access_expression",
+          "type": "constrained_type",
           "named": true
         },
         {
-          "type": "binary_expression",
+          "type": "identifier",
           "named": true
         },
         {
-          "type": "branched_expression",
-          "named": true
-        },
-        {
-          "type": "function_call_expression",
-          "named": true
-        },
-        {
-          "type": "lambda_expression",
-          "named": true
-        },
-        {
-          "type": "literal",
-          "named": true
-        },
-        {
-          "type": "named_tuple_literal",
-          "named": true
-        },
-        {
-          "type": "parenthisized_expression",
-          "named": true
-        },
-        {
-          "type": "piped_expression",
-          "named": true
-        },
-        {
-          "type": "scoped_identifier",
-          "named": true
-        },
-        {
-          "type": "type_initializer_expression",
-          "named": true
-        },
-        {
-          "type": "unary_expression",
-          "named": true
-        },
-        {
-          "type": "unnamed_tuple_literal",
+          "type": "labeled_type",
           "named": true
         }
       ]
     }
   },
   {
-    "type": "unnamed_tuple_structural_type",
+    "type": "unlabeled_types",
     "named": true,
     "fields": {},
     "children": {
@@ -1657,7 +403,11 @@
       "required": true,
       "types": [
         {
-          "type": "named_tuple_structural_type",
+          "type": "existential_type",
+          "named": true
+        },
+        {
+          "type": "function_signature",
           "named": true
         },
         {
@@ -1673,22 +423,42 @@
           "named": true
         },
         {
-          "type": "unnamed_tuple_structural_type",
+          "type": "opaque_type",
+          "named": true
+        },
+        {
+          "type": "product_definition",
+          "named": true
+        },
+        {
+          "type": "sum_definition",
           "named": true
         }
       ]
     }
   },
   {
-    "type": "!=",
+    "type": "'any",
     "named": false
   },
   {
-    "type": "$",
+    "type": "'choice",
     "named": false
   },
   {
-    "type": "%",
+    "type": "'func",
+    "named": false
+  },
+  {
+    "type": "'in",
+    "named": false
+  },
+  {
+    "type": "'record",
+    "named": false
+  },
+  {
+    "type": "'some",
     "named": false
   },
   {
@@ -1700,27 +470,11 @@
     "named": false
   },
   {
-    "type": "*",
-    "named": false
-  },
-  {
-    "type": "+",
-    "named": false
-  },
-  {
     "type": ",",
     "named": false
   },
   {
-    "type": "-",
-    "named": false
-  },
-  {
-    "type": ".",
-    "named": false
-  },
-  {
-    "type": "/",
+    "type": "->",
     "named": false
   },
   {
@@ -1728,31 +482,11 @@
     "named": false
   },
   {
-    "type": "::",
-    "named": false
-  },
-  {
     "type": "<",
     "named": false
   },
   {
-    "type": "<=",
-    "named": false
-  },
-  {
-    "type": "=",
-    "named": false
-  },
-  {
-    "type": "=>",
-    "named": false
-  },
-  {
     "type": ">",
-    "named": false
-  },
-  {
-    "type": ">=",
     "named": false
   },
   {
@@ -1764,35 +498,15 @@
     "named": false
   },
   {
-    "type": "^",
-    "named": false
-  },
-  {
-    "type": "and_operator",
-    "named": true
-  },
-  {
-    "type": "big_identifier",
-    "named": true
-  },
-  {
     "type": "comment",
     "named": true
   },
   {
-    "type": "false",
+    "type": "hi",
     "named": false
   },
   {
-    "type": "float_literal",
-    "named": true
-  },
-  {
-    "type": "func",
-    "named": false
-  },
-  {
-    "type": "int_literal",
+    "type": "identifier",
     "named": true
   },
   {
@@ -1800,43 +514,15 @@
     "named": true
   },
   {
-    "type": "not_operator",
-    "named": true
-  },
-  {
     "type": "nothing",
     "named": true
   },
   {
-    "type": "or_operator",
+    "type": "set_definition",
     "named": true
-  },
-  {
-    "type": "pipe_operator",
-    "named": true
-  },
-  {
-    "type": "small_identifier",
-    "named": true
-  },
-  {
-    "type": "string_literal",
-    "named": true
-  },
-  {
-    "type": "true",
-    "named": false
-  },
-  {
-    "type": "type",
-    "named": false
   },
   {
     "type": "{",
-    "named": false
-  },
-  {
-    "type": "|",
     "named": false
   },
   {
