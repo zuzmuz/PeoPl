@@ -1,5 +1,26 @@
-Object: record [
-   A,
-   C,
+
+Person: record [
+    age: Int,
+    name: String
 ]
 
+Person: record [
+    age: Int,
+    name: String
+]
+
+
+main: func -> func (I)[] -> T {
+    hi |> 2 + 3 -1 |>
+    print ["hi"] |>
+    |0|
+        "test",
+    |$binding|
+        a.b.x,
+    |Int[$x]|
+        fmt.print["this is an int"],
+    |circle[a: $x, c: $a]: x < a|
+        nothing,
+    |_: a > 1|
+        (a |> illegalPiping)
+}
