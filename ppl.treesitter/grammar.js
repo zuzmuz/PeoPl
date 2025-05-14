@@ -28,6 +28,10 @@ module.exports = grammar({
     $.comment, /\s|\\\r?\n/,
   ],
 
+  // conflicts: $ => [
+  //   [$.angle_field_list, $.comparative_operator],
+  // ],
+
   rules: {
     source_file: $ => repeat(
       seq(
@@ -57,7 +61,7 @@ module.exports = grammar({
       field("definition", $.expression),
     ),
 
-    field_list: $ => seq(
+    field_list: $ => prec.left(seq(
       seq(
         choice(
           $.field,
@@ -72,12 +76,18 @@ module.exports = grammar({
         )),
         optional(',')
       ),
-    ),
+    )),
 
     squared_field_list: $ => seq(
-      '[',
+      '(',
         optional($.field_list),
-      ']',
+      ')',
+    ),
+
+    angle_field_list: $ => seq(
+      '[',
+       optional($.field_list),
+      ']'
     ),
 
     // Expression
@@ -92,6 +102,7 @@ module.exports = grammar({
 
     call_expression: $ => seq(
       field("prefix", $._simple_expression),
+      optional(field("meta_arguments", $.angle_field_list)),
       field("arguments", $.squared_field_list),
     ),
 
@@ -255,10 +266,12 @@ module.exports = grammar({
       field("match_expression", $._simple_expression),
       optional(seq(':', field("guard_expression", $._simple_expression))),
       '|',
-      field("body", choice(
-        $._simple_expression,
-        $.looped_expression,
-      ))
+      field("body",
+        choice(
+          $._simple_expression,
+          $.looped_expression,
+        )
+      )
     ),
 
     looped_expression: $ => seq(

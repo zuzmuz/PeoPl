@@ -71,6 +71,21 @@
     "fields": {}
   },
   {
+    "type": "angle_field_list",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": false,
+      "types": [
+        {
+          "type": "field_list",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "binary_expression",
     "named": true,
     "fields": {
@@ -407,6 +422,16 @@
         "types": [
           {
             "type": "squared_field_list",
+            "named": true
+          }
+        ]
+      },
+      "meta_arguments": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "angle_field_list",
             "named": true
           }
         ]

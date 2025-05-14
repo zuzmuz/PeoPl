@@ -1,16 +1,19 @@
 
-Person: record [
+Person: record (
+    age: Int,
+)
+
+Person: record (
     age: Int,
     name: String
-]
+)
 
-Person: record [
-    age: Int,
-    name: String
-]
+Result: choice[S: Type, E: Type](
+    success: S,
+    error: E
+)
 
-
-main: func -> func (I)[] -> T {
+main: func -> func (I)() -> T {
     hi |> 2 + 3 -1 |>
     print ["hi"] |>
     |0|
