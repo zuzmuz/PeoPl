@@ -16,7 +16,9 @@
 ; ;   (type_identifier
 ; ;     (nominal_type
 ; ;       (type_name) @variable.member)))
-(call_expression
+(round_call_expression
+  prefix: (identifier) @function.call)
+(square_call_expression
   prefix: (identifier) @function.call)
 (access_expression
   field: (identifier) @variable.member)

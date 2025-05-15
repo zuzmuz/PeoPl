@@ -30,10 +30,6 @@
             "named": true
           },
           {
-            "type": "call_expression",
-            "named": true
-          },
-          {
             "type": "function_body",
             "named": true
           },
@@ -50,7 +46,15 @@
             "named": true
           },
           {
+            "type": "round_call_expression",
+            "named": true
+          },
+          {
             "type": "special",
+            "named": true
+          },
+          {
+            "type": "square_call_expression",
             "named": true
           },
           {
@@ -106,10 +110,6 @@
             "named": true
           },
           {
-            "type": "call_expression",
-            "named": true
-          },
-          {
             "type": "function_body",
             "named": true
           },
@@ -126,7 +126,15 @@
             "named": true
           },
           {
+            "type": "round_call_expression",
+            "named": true
+          },
+          {
             "type": "special",
+            "named": true
+          },
+          {
+            "type": "square_call_expression",
             "named": true
           },
           {
@@ -182,10 +190,6 @@
             "named": true
           },
           {
-            "type": "call_expression",
-            "named": true
-          },
-          {
             "type": "function_body",
             "named": true
           },
@@ -202,7 +206,15 @@
             "named": true
           },
           {
+            "type": "round_call_expression",
+            "named": true
+          },
+          {
             "type": "special",
+            "named": true
+          },
+          {
+            "type": "square_call_expression",
             "named": true
           },
           {
@@ -258,10 +270,6 @@
             "named": true
           },
           {
-            "type": "call_expression",
-            "named": true
-          },
-          {
             "type": "function_body",
             "named": true
           },
@@ -282,7 +290,15 @@
             "named": true
           },
           {
+            "type": "round_call_expression",
+            "named": true
+          },
+          {
             "type": "special",
+            "named": true
+          },
+          {
+            "type": "square_call_expression",
             "named": true
           },
           {
@@ -312,10 +328,6 @@
             "named": true
           },
           {
-            "type": "call_expression",
-            "named": true
-          },
-          {
             "type": "function_body",
             "named": true
           },
@@ -332,7 +344,15 @@
             "named": true
           },
           {
+            "type": "round_call_expression",
+            "named": true
+          },
+          {
             "type": "special",
+            "named": true
+          },
+          {
+            "type": "square_call_expression",
             "named": true
           },
           {
@@ -362,10 +382,6 @@
             "named": true
           },
           {
-            "type": "call_expression",
-            "named": true
-          },
-          {
             "type": "function_body",
             "named": true
           },
@@ -382,7 +398,15 @@
             "named": true
           },
           {
+            "type": "round_call_expression",
+            "named": true
+          },
+          {
             "type": "special",
+            "named": true
+          },
+          {
+            "type": "square_call_expression",
             "named": true
           },
           {
@@ -410,82 +434,6 @@
           "named": true
         }
       ]
-    }
-  },
-  {
-    "type": "call_expression",
-    "named": true,
-    "fields": {
-      "arguments": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "squared_field_list",
-            "named": true
-          }
-        ]
-      },
-      "meta_arguments": {
-        "multiple": false,
-        "required": false,
-        "types": [
-          {
-            "type": "angle_field_list",
-            "named": true
-          }
-        ]
-      },
-      "prefix": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "access_expression",
-            "named": true
-          },
-          {
-            "type": "binary_expression",
-            "named": true
-          },
-          {
-            "type": "binding",
-            "named": true
-          },
-          {
-            "type": "call_expression",
-            "named": true
-          },
-          {
-            "type": "function_body",
-            "named": true
-          },
-          {
-            "type": "identifier",
-            "named": true
-          },
-          {
-            "type": "literal",
-            "named": true
-          },
-          {
-            "type": "parenthisized_expression",
-            "named": true
-          },
-          {
-            "type": "special",
-            "named": true
-          },
-          {
-            "type": "squared_field_list",
-            "named": true
-          },
-          {
-            "type": "unary_expression",
-            "named": true
-          }
-        ]
-      }
     }
   },
   {
@@ -518,10 +466,6 @@
           "named": true
         },
         {
-          "type": "call_expression",
-          "named": true
-        },
-        {
           "type": "function_body",
           "named": true
         },
@@ -546,7 +490,15 @@
           "named": true
         },
         {
+          "type": "round_call_expression",
+          "named": true
+        },
+        {
           "type": "special",
+          "named": true
+        },
+        {
+          "type": "square_call_expression",
           "named": true
         },
         {
@@ -665,7 +617,51 @@
         "required": false,
         "types": [
           {
-            "type": "expression",
+            "type": "access_expression",
+            "named": true
+          },
+          {
+            "type": "binary_expression",
+            "named": true
+          },
+          {
+            "type": "binding",
+            "named": true
+          },
+          {
+            "type": "function_body",
+            "named": true
+          },
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "literal",
+            "named": true
+          },
+          {
+            "type": "parenthisized_expression",
+            "named": true
+          },
+          {
+            "type": "round_call_expression",
+            "named": true
+          },
+          {
+            "type": "special",
+            "named": true
+          },
+          {
+            "type": "square_call_expression",
+            "named": true
+          },
+          {
+            "type": "squared_field_list",
+            "named": true
+          },
+          {
+            "type": "unary_expression",
             "named": true
           }
         ]
@@ -675,7 +671,51 @@
         "required": false,
         "types": [
           {
-            "type": "expression",
+            "type": "access_expression",
+            "named": true
+          },
+          {
+            "type": "binary_expression",
+            "named": true
+          },
+          {
+            "type": "binding",
+            "named": true
+          },
+          {
+            "type": "function_body",
+            "named": true
+          },
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "literal",
+            "named": true
+          },
+          {
+            "type": "parenthisized_expression",
+            "named": true
+          },
+          {
+            "type": "round_call_expression",
+            "named": true
+          },
+          {
+            "type": "special",
+            "named": true
+          },
+          {
+            "type": "square_call_expression",
+            "named": true
+          },
+          {
+            "type": "squared_field_list",
+            "named": true
+          },
+          {
+            "type": "unary_expression",
             "named": true
           }
         ]
@@ -791,6 +831,76 @@
     }
   },
   {
+    "type": "round_call_expression",
+    "named": true,
+    "fields": {
+      "arguments": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "squared_field_list",
+            "named": true
+          }
+        ]
+      },
+      "prefix": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "access_expression",
+            "named": true
+          },
+          {
+            "type": "binary_expression",
+            "named": true
+          },
+          {
+            "type": "binding",
+            "named": true
+          },
+          {
+            "type": "function_body",
+            "named": true
+          },
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "literal",
+            "named": true
+          },
+          {
+            "type": "parenthisized_expression",
+            "named": true
+          },
+          {
+            "type": "round_call_expression",
+            "named": true
+          },
+          {
+            "type": "special",
+            "named": true
+          },
+          {
+            "type": "square_call_expression",
+            "named": true
+          },
+          {
+            "type": "squared_field_list",
+            "named": true
+          },
+          {
+            "type": "unary_expression",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
     "type": "source_file",
     "named": true,
     "root": true,
@@ -842,6 +952,76 @@
     }
   },
   {
+    "type": "square_call_expression",
+    "named": true,
+    "fields": {
+      "meta_arguments": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "angle_field_list",
+            "named": true
+          }
+        ]
+      },
+      "prefix": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "access_expression",
+            "named": true
+          },
+          {
+            "type": "binary_expression",
+            "named": true
+          },
+          {
+            "type": "binding",
+            "named": true
+          },
+          {
+            "type": "function_body",
+            "named": true
+          },
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "literal",
+            "named": true
+          },
+          {
+            "type": "parenthisized_expression",
+            "named": true
+          },
+          {
+            "type": "round_call_expression",
+            "named": true
+          },
+          {
+            "type": "special",
+            "named": true
+          },
+          {
+            "type": "square_call_expression",
+            "named": true
+          },
+          {
+            "type": "squared_field_list",
+            "named": true
+          },
+          {
+            "type": "unary_expression",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
     "type": "squared_field_list",
     "named": true,
     "fields": {},
@@ -877,10 +1057,6 @@
             "named": true
           },
           {
-            "type": "call_expression",
-            "named": true
-          },
-          {
             "type": "function_body",
             "named": true
           },
@@ -897,7 +1073,15 @@
             "named": true
           },
           {
+            "type": "round_call_expression",
+            "named": true
+          },
+          {
             "type": "special",
+            "named": true
+          },
+          {
+            "type": "square_call_expression",
             "named": true
           },
           {

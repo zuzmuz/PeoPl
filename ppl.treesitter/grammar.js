@@ -8,9 +8,7 @@
 // @ts-check
 //
 const PREC = {
-  ACCESS: 30,
-  PARAM: 20,
-  TYPES: 15,
+  FUNC: 20,
   UNARY: 10,
   MULT: 8,
   ADD: 6,
@@ -100,26 +98,30 @@ module.exports = grammar({
       $.piped_expression
     ),
 
-    call_expression: $ => seq(
+    round_call_expression: $ => seq(
       field("prefix", $._simple_expression),
-      optional(field("meta_arguments", $.angle_field_list)),
       field("arguments", $.squared_field_list),
+    ),
+
+    square_call_expression: $ => seq(
+      field("prefix", $._simple_expression),
+      field("meta_arguments", $.angle_field_list),
     ),
 
     // Function Definitions
     // --------------------
     
-    function_definition: $ => prec.left(seq(
+    function_definition: $ => seq(
       field("signature", $.function_signature),
       field("body", optional($.function_body)),
-    )),
-
-    function_signature: $ => seq(
-      $.func,
-      optional(seq('(', field("input_type", $.expression), ')')),
-      optional(field('arguments', $.squared_field_list)),
-      optional(seq('->', field("output_type", $.expression))),
     ),
+
+    function_signature: $ => prec.left(PREC.FUNC, seq(
+      $.func,
+      optional(field("input_type", $._simple_expression)),
+      optional(field('arguments', $.squared_field_list)),
+      optional(seq('->', field("output_type", $._simple_expression))),
+    )),
 
     function_body: $ => seq(
       '{',
@@ -160,7 +162,8 @@ module.exports = grammar({
       $.identifier,
       $.parenthisized_expression,
       $.function_body,
-      $.call_expression,
+      $.round_call_expression,
+      $.square_call_expression,
       $.access_expression,
       $.binding
     ),
@@ -256,7 +259,7 @@ module.exports = grammar({
     and_operator: $ => 'and',
     or_operator: $ => 'or',
 
-    branched_expression: $ => prec.left(PREC.SUBPIPE, seq(
+    branched_expression: $ => prec.left(seq(
       $.branch,
       repeat(seq(',', $.branch)),
     )),

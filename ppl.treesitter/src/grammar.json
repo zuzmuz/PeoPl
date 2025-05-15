@@ -216,7 +216,7 @@
         }
       ]
     },
-    "call_expression": {
+    "round_call_expression": {
       "type": "SEQ",
       "members": [
         {
@@ -228,22 +228,6 @@
           }
         },
         {
-          "type": "CHOICE",
-          "members": [
-            {
-              "type": "FIELD",
-              "name": "meta_arguments",
-              "content": {
-                "type": "SYMBOL",
-                "name": "angle_field_list"
-              }
-            },
-            {
-              "type": "BLANK"
-            }
-          ]
-        },
-        {
           "type": "FIELD",
           "name": "arguments",
           "content": {
@@ -253,117 +237,125 @@
         }
       ]
     },
+    "square_call_expression": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "FIELD",
+          "name": "prefix",
+          "content": {
+            "type": "SYMBOL",
+            "name": "_simple_expression"
+          }
+        },
+        {
+          "type": "FIELD",
+          "name": "meta_arguments",
+          "content": {
+            "type": "SYMBOL",
+            "name": "angle_field_list"
+          }
+        }
+      ]
+    },
     "function_definition": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "FIELD",
+          "name": "signature",
+          "content": {
+            "type": "SYMBOL",
+            "name": "function_signature"
+          }
+        },
+        {
+          "type": "FIELD",
+          "name": "body",
+          "content": {
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "SYMBOL",
+                "name": "function_body"
+              },
+              {
+                "type": "BLANK"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "function_signature": {
       "type": "PREC_LEFT",
-      "value": 0,
+      "value": 20,
       "content": {
         "type": "SEQ",
         "members": [
           {
-            "type": "FIELD",
-            "name": "signature",
-            "content": {
-              "type": "SYMBOL",
-              "name": "function_signature"
-            }
+            "type": "SYMBOL",
+            "name": "func"
           },
           {
-            "type": "FIELD",
-            "name": "body",
-            "content": {
-              "type": "CHOICE",
-              "members": [
-                {
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "FIELD",
+                "name": "input_type",
+                "content": {
                   "type": "SYMBOL",
-                  "name": "function_body"
-                },
-                {
-                  "type": "BLANK"
+                  "name": "_simple_expression"
                 }
-              ]
-            }
+              },
+              {
+                "type": "BLANK"
+              }
+            ]
+          },
+          {
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "FIELD",
+                "name": "arguments",
+                "content": {
+                  "type": "SYMBOL",
+                  "name": "squared_field_list"
+                }
+              },
+              {
+                "type": "BLANK"
+              }
+            ]
+          },
+          {
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "SEQ",
+                "members": [
+                  {
+                    "type": "STRING",
+                    "value": "->"
+                  },
+                  {
+                    "type": "FIELD",
+                    "name": "output_type",
+                    "content": {
+                      "type": "SYMBOL",
+                      "name": "_simple_expression"
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "BLANK"
+              }
+            ]
           }
         ]
       }
-    },
-    "function_signature": {
-      "type": "SEQ",
-      "members": [
-        {
-          "type": "SYMBOL",
-          "name": "func"
-        },
-        {
-          "type": "CHOICE",
-          "members": [
-            {
-              "type": "SEQ",
-              "members": [
-                {
-                  "type": "STRING",
-                  "value": "("
-                },
-                {
-                  "type": "FIELD",
-                  "name": "input_type",
-                  "content": {
-                    "type": "SYMBOL",
-                    "name": "expression"
-                  }
-                },
-                {
-                  "type": "STRING",
-                  "value": ")"
-                }
-              ]
-            },
-            {
-              "type": "BLANK"
-            }
-          ]
-        },
-        {
-          "type": "CHOICE",
-          "members": [
-            {
-              "type": "FIELD",
-              "name": "arguments",
-              "content": {
-                "type": "SYMBOL",
-                "name": "squared_field_list"
-              }
-            },
-            {
-              "type": "BLANK"
-            }
-          ]
-        },
-        {
-          "type": "CHOICE",
-          "members": [
-            {
-              "type": "SEQ",
-              "members": [
-                {
-                  "type": "STRING",
-                  "value": "->"
-                },
-                {
-                  "type": "FIELD",
-                  "name": "output_type",
-                  "content": {
-                    "type": "SYMBOL",
-                    "name": "expression"
-                  }
-                }
-              ]
-            },
-            {
-              "type": "BLANK"
-            }
-          ]
-        }
-      ]
     },
     "function_body": {
       "type": "SEQ",
@@ -497,7 +489,11 @@
         },
         {
           "type": "SYMBOL",
-          "name": "call_expression"
+          "name": "round_call_expression"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "square_call_expression"
         },
         {
           "type": "SYMBOL",
@@ -902,7 +898,7 @@
     },
     "branched_expression": {
       "type": "PREC_LEFT",
-      "value": 1,
+      "value": 0,
       "content": {
         "type": "SEQ",
         "members": [

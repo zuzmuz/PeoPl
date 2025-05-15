@@ -1,29 +1,31 @@
 
-Person: record (
-    age: Int,
-)
 
-Person: record (
-    age: Int,
-    name: String
-)
+Person: record(age: Int, name: String)
 
 Result: choice[S: Type, E: Type](
-    success: S,
-    error: E
+    success: S, error: E
 )
 
-main: func -> func (I)() -> T {
+array: func [size: Int, T: Type] () -> (T ** size) {
+    d
+}
+
+main: func (in (a) -> a { a }) {
+    array[size: 3](of: 2) |>
+    range[from: 0, to: 100]
+    
+}
+/*{
     hi |> 2 + 3 -1 |>
-    print ["hi"] |>
+    print("hi") |>
     |0|
         "test",
     |$binding|
-        a.b.x,
-    |Int[$x]|
-        fmt.print["this is an int"],
-    |circle[a: $x, c: $a]: x < a|
+        (a.b.x, 2, "sdfsd"),
+    |Int($x)|
+        fmt.print("this is an int"),
+    |circle(a: $x, c: $a): x < a|
         nothing,
     |_: a > 1|
         (a |> illegalPiping)
-}
+}*/
