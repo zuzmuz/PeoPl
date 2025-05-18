@@ -33,7 +33,7 @@ module.exports = grammar({
   rules: {
     source_file: $ => repeat(
       seq(
-        $.field,
+        $.definition,
       )
     ),
 
@@ -51,77 +51,132 @@ module.exports = grammar({
     // DEFINITIONS
     // -----------
      
-    identifier: $ => /[A-Za-z_][A-Za-z-0-9_]*/,
+    small_identifier: $ => token(choice('_', /_*[a-z][a-zA-Z0-9_]*/)),
+    big_identifier: $ => /_*[A-Z][a-zA-Z0-9_]*/,
 
-    field: $ => seq(
-      field("name", $.identifier),
-      ":",
-      field("definition", $.expression),
+    definition: $ => choice(
+      $.type_definition,
+      $.value_field,
     ),
 
-    field_list: $ => prec.left(seq(
-      seq(
-        choice(
-          $.field,
-          $.expression
-        ),
-        repeat(seq(
-          ',',
-          choice(
-            $.field,
-            $.expression
-          )
-        )),
-        optional(',')
-      ),
+    type_definition: $ => seq(
+      field('identifier', $.big_identifier),
+      ':',
+      field('definition', $.type_specifier)
+    ),
+
+    type_specifier: $ => choice(
+      $.product,
+      $.sum,
+      $.subset,
+      $.some,
+      $.any,
+      $.nominal,
+      $.function,
+    ),
+
+    product: $ => $.type_field_list,
+    sum: $ => seq(
+      'choice',
+      $.type_field_list
+    ),
+
+    subset: $ => seq(
+      'subset',
+      optional(field('protocol', $.type_field_list))
+    ),
+
+    some: $ => prec.left(seq(
+      'some',
+      field('subset', $.big_identifier),
+      optional(field('alias', $.big_identifier))
     )),
 
-    squared_field_list: $ => seq(
-      '(',
-        optional($.field_list),
-      ')',
+    any: $ => seq(
+      'any',
+      field('subset', $.big_identifier)
     ),
 
-    angle_field_list: $ => seq(
+    nominal: $ => seq(
+      field('identifier', $.big_identifier),
+      optional(field('type_arguments', $.type_field_list)),
+    ),
+
+    function: $ => seq(
+      choice(
+        seq('(', optional(field('input_type', $.type_specifier)), ')'),
+        field('arguments', $.type_field_list),
+        seq(
+          '(', field('input_type', $.type_specifier), ')',
+          field('arguments', $.type_field_list),
+        ),
+      ),
+      '->',
+      field('output_type', $.type_specifier)
+    ),
+
+    type_field: $ => seq(
+      field("identifier", $.small_identifier),
+      ":",
+      field("type", $.type_specifier),
+    ),
+
+
+    type_field_list: $ => seq(
       '[',
-       optional($.field_list),
+        optional(
+          seq(
+           choice($.type_field, $.type_specifier),
+           repeat(
+             seq(',', choice( $.type_field, $.type_specifier))
+           ),
+           optional(','),
+          ),
+        ),
       ']'
     ),
 
     // Expression
     // ----------
 
+    value_field: $ => seq(
+      field("identifier", $.small_identifier),
+      ":",
+      field("expression", $.expression),
+    ),
+
+    value_field_list: $ => seq(
+      '(',
+        optional(
+          seq(
+           choice($.value_field, $.expression),
+           repeat(
+             seq(',', choice( $.value_field, $.expression))
+           ),
+           optional(','),
+          ),
+        ),
+      ')'
+    ),
+
     expression: $ => choice(
       $._simple_expression,
-      $.function_definition,
       $.branched_expression,
       $.piped_expression
     ),
 
-    round_call_expression: $ => seq(
+    call_expression: $ => seq(
       field("prefix", $._simple_expression),
-      field("arguments", $.squared_field_list),
-    ),
-
-    square_call_expression: $ => seq(
-      field("prefix", $._simple_expression),
-      field("meta_arguments", $.angle_field_list),
+      field("arguments", $.value_field_list),
     ),
 
     // Function Definitions
     // --------------------
     
     function_definition: $ => seq(
-      field("signature", $.function_signature),
-      field("body", optional($.function_body)),
+      optional(field("signature", $.function)),
+      field("body", $.function_body),
     ),
-
-    function_signature: $ => prec.left(PREC.FUNC, seq(
-      $.func,
-      optional(field("input_type", $._simple_expression)),
-      optional(field('arguments', $.squared_field_list)),
-      optional(seq('->', field("output_type", $._simple_expression))),
-    )),
 
     function_body: $ => seq(
       '{',
@@ -131,39 +186,15 @@ module.exports = grammar({
 
     nothing: _ => 'nothing',
     never: _ => 'never',
-    tuple: _ => 'tuple',
-    record: _ => 'record',
-    union: _ => 'union',
-    choice: _ => 'choice',
-    func: _ => 'func',
-
-    special: $ => choice(
-      $.nothing,
-      $.never,
-      $.tuple,
-      $.record,
-      $.union,
-      $.choice,
-    ),
-
-    literal: $ => choice(
-      $.int_literal,
-      $.float_literal,
-      $.string_literal,
-      $.bool_literal,
-    ),
 
     _simple_expression: $ => choice(
-      $.special,
       $.literal,
       $.unary_expression,
       $.binary_expression,
-      $.squared_field_list,
-      $.identifier,
+      $.small_identifier,
       $.parenthisized_expression,
-      $.function_body,
-      $.round_call_expression,
-      $.square_call_expression,
+      $.function_definition,
+      $.call_expression,
       $.access_expression,
       $.binding
     ),
@@ -177,14 +208,23 @@ module.exports = grammar({
     access_expression: $ => seq(
       field("prefix", $._simple_expression),
       '.',
-      field("field", $.identifier),
+      field("field", $.small_identifier),
     ),
 
-    binding: $ => seq('$', $.identifier),
+    binding: $ => seq('$', $.small_identifier),
 
     // Literals
     // --------
-    
+
+    literal: $ => choice(
+      $.nothing,
+      $.never,
+      $.int_literal,
+      $.float_literal,
+      $.string_literal,
+      $.bool_literal,
+    ),
+
     int_literal: $ => token(choice(
         /[0-9][0-9_]*/,
         /0x[0-9a-fA-F_]+/,

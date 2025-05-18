@@ -1,31 +1,29 @@
 
 
-Person: record(age: Int, name: String)
+Person: [
+    age: Int,
+    name: String
+]
 
-Result: choice[S: Type, E: Type](
-    success: S, error: E
-)
+Point: [Float, Float]
 
-array: func [size: Int, T: Type] () -> (T ** size) {
-    d
+Result: choice [
+    success: some Type,
+    error: some Error
+]
+
+MyEnum: choice [
+    case1: ,
+    case2: 
+]
+
+Optional: choice [some Type, Nothing]
+
+
+Error: subset [
+    localized: (any Error) -> String
+]
+
+ee: [a: some Error T] -> T {
+    nothing
 }
-
-main: func (in (a) -> a { a }) {
-    array[size: 3](of: 2) |>
-    range[from: 0, to: 100]
-    
-}
-/*{
-    hi |> 2 + 3 -1 |>
-    print("hi") |>
-    |0|
-        "test",
-    |$binding|
-        (a.b.x, 2, "sdfsd"),
-    |Int($x)|
-        fmt.print("this is an int"),
-    |circle(a: $x, c: $a): x < a|
-        nothing,
-    |_: a > 1|
-        (a |> illegalPiping)
-}*/

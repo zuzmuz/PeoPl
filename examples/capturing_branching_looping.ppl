@@ -6,8 +6,10 @@
 //
 // a function to know if number is pallindrome
 func (I32) is_pallindrome() => Bool
-    to_string |>
-    |$original| original = original.reverse // saving the original string before the reverse
+isPallindrome: (I32) -> Bool {
+    to_string() |>
+    |$original| original = original.reverse()
+}// saving the original string before the reverse
 
 
 // a capture group can be an expression
@@ -50,12 +52,11 @@ func print(from: I32, to: I32) => Nothing
 // capturing is used for pattern mathing
 
 
-func gcd(a: I32, b: I32) => I32
+gcd: [a: I32, b: I32] -> I32 {
     |_: a = b| a,
     |_: a < b| gcd(a: a, b: b - a),
     |_: a > b| gcd(a: a - b, b: b)
-
-
+}
 
 
 

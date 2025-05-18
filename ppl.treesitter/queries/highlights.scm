@@ -1,12 +1,11 @@
 
 [
- (tuple)
- (record)
- (union)
- (choice)
+ "choice"
+ "subset"
+ "some"
+ "any"
 ] @keyword.type
 
-(func) @keyword.function
 ;
 ;
 ; (nominal_type
@@ -16,12 +15,12 @@
 ; ;   (type_identifier
 ; ;     (nominal_type
 ; ;       (type_name) @variable.member)))
-(round_call_expression
-  prefix: (identifier) @function.call)
-(square_call_expression
-  prefix: (identifier) @function.call)
-(access_expression
-  field: (identifier) @variable.member)
+(call_expression
+  prefix: (small_identifier) @function.call)
+; (square_call_expression
+;   prefix: (identifier) @function.call)
+; (access_expression
+;   field: (identifier) @variable.member)
 
 ;
 ;
@@ -29,8 +28,7 @@
 ; ;   (["<" ">"] @punctuation.bracket))
 ;
 ;
-(field
-  name: (identifier) @type.definition)
+(big_identifier) @type.definition
 ;
 ; (choice_definition
 ;   name: (identifier) @type.definition)
@@ -38,16 +36,16 @@
 ; (set_definition
 ;   name: (identifier) @type.definition)
 ;
-; (function_definition
-;   name: (identifier) @function)
+(definition
+  (value_field
+    identifier: (small_identifier) @function.call))
 
+(value_field_list
+  (value_field
+    identifier: (small_identifier) @variable.member))
 
-
-
-(field_list
-  (field
-    name: (identifier) @variable.member))
-
+(type_field
+  identifier: (small_identifier) @variable.member)
 
 (int_literal) @number
 (bool_literal) @boolean
@@ -85,7 +83,7 @@
 
 (nothing) @constant.builtin
 (never) @constant.builtin
-;
+
 "$" @character.special
 
 (comment) @comment
