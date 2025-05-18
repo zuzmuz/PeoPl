@@ -38,6 +38,10 @@
             "named": true
           },
           {
+            "type": "initializer_expression",
+            "named": true
+          },
+          {
             "type": "literal",
             "named": true
           },
@@ -104,6 +108,10 @@
           },
           {
             "type": "function_definition",
+            "named": true
+          },
+          {
+            "type": "initializer_expression",
             "named": true
           },
           {
@@ -175,6 +183,10 @@
             "named": true
           },
           {
+            "type": "initializer_expression",
+            "named": true
+          },
+          {
             "type": "literal",
             "named": true
           },
@@ -243,6 +255,10 @@
             "named": true
           },
           {
+            "type": "initializer_expression",
+            "named": true
+          },
+          {
             "type": "literal",
             "named": true
           },
@@ -289,6 +305,10 @@
             "named": true
           },
           {
+            "type": "initializer_expression",
+            "named": true
+          },
+          {
             "type": "literal",
             "named": true
           },
@@ -328,6 +348,10 @@
           },
           {
             "type": "function_definition",
+            "named": true
+          },
+          {
+            "type": "initializer_expression",
             "named": true
           },
           {
@@ -401,6 +425,10 @@
           },
           {
             "type": "function_definition",
+            "named": true
+          },
+          {
+            "type": "initializer_expression",
             "named": true
           },
           {
@@ -480,6 +508,10 @@
           "named": true
         },
         {
+          "type": "initializer_expression",
+          "named": true
+        },
+        {
           "type": "literal",
           "named": true
         },
@@ -497,6 +529,10 @@
         },
         {
           "type": "unary_expression",
+          "named": true
+        },
+        {
+          "type": "value_field",
           "named": true
         }
       ]
@@ -573,6 +609,32 @@
         "types": [
           {
             "type": "function",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "initializer_expression",
+    "named": true,
+    "fields": {
+      "arguments": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "value_field_list",
+            "named": true
+          }
+        ]
+      },
+      "prefix": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "nominal",
             "named": true
           }
         ]
@@ -935,6 +997,10 @@
           },
           {
             "type": "function_definition",
+            "named": true
+          },
+          {
+            "type": "initializer_expression",
             "named": true
           },
           {

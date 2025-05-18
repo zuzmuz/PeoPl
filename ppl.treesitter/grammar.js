@@ -26,9 +26,10 @@ module.exports = grammar({
     $.comment, /\s|\\\r?\n/,
   ],
 
-  // conflicts: $ => [
-  //   [$.angle_field_list, $.comparative_operator],
-  // ],
+  conflicts: $ => [
+    [$.value_field_list, $.expression],
+    [$.value_field_list, $.parenthisized_expression]
+  ],
 
   rules: {
     source_file: $ => repeat(
@@ -161,12 +162,18 @@ module.exports = grammar({
 
     expression: $ => choice(
       $._simple_expression,
+      $.value_field,
       $.branched_expression,
       $.piped_expression
     ),
 
     call_expression: $ => seq(
       field("prefix", $._simple_expression),
+      field("arguments", $.value_field_list),
+    ),
+
+    initializer_expression: $ => seq(
+      field("prefix", optional($.nominal)),
       field("arguments", $.value_field_list),
     ),
 
@@ -195,6 +202,7 @@ module.exports = grammar({
       $.parenthisized_expression,
       $.function_definition,
       $.call_expression,
+      $.initializer_expression,
       $.access_expression,
       $.binding
     ),

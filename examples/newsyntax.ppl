@@ -13,8 +13,8 @@ Result: choice [
 ]
 
 MyEnum: choice [
-    case1: ,
-    case2: 
+    case1: Nothing,
+    case2: Nothing
 ]
 
 Optional: choice [some Type, Nothing]
@@ -24,6 +24,6 @@ Error: subset [
     localized: (any Error) -> String
 ]
 
-ee: [a: some Error T] -> T {
-    nothing
+ee: [a: some Error T] -> [Int, Int] {
+    (12, 2)
 }
