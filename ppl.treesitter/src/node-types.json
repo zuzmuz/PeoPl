@@ -662,11 +662,11 @@
           "named": true
         },
         {
-          "type": "never",
+          "type": "never_value",
           "named": true
         },
         {
-          "type": "nothing",
+          "type": "nothing_value",
           "named": true
         },
         {
@@ -721,6 +721,16 @@
         ]
       }
     }
+  },
+  {
+    "type": "nothing_type",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "nothing_value",
+    "named": true,
+    "fields": {}
   },
   {
     "type": "parenthisized_expression",
@@ -949,7 +959,15 @@
           "named": true
         },
         {
+          "type": "never_type",
+          "named": true
+        },
+        {
           "type": "nominal",
+          "named": true
+        },
+        {
+          "type": "nothing_type",
           "named": true
         },
         {
@@ -1171,6 +1189,10 @@
     "named": false
   },
   {
+    "type": "Nothing",
+    "named": false
+  },
+  {
     "type": "[",
     "named": false
   },
@@ -1180,6 +1202,10 @@
   },
   {
     "type": "^",
+    "named": false
+  },
+  {
+    "type": "_",
     "named": false
   },
   {
@@ -1215,7 +1241,11 @@
     "named": true
   },
   {
-    "type": "never",
+    "type": "never_type",
+    "named": true
+  },
+  {
+    "type": "never_value",
     "named": true
   },
   {
@@ -1224,7 +1254,7 @@
   },
   {
     "type": "nothing",
-    "named": true
+    "named": false
   },
   {
     "type": "or_operator",

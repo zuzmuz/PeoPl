@@ -1,5 +1,4 @@
 
-
 Person: [
     age: Int,
     name: String
@@ -13,8 +12,8 @@ Result: choice [
 ]
 
 MyEnum: choice [
-    case1: Nothing,
-    case2: Nothing
+    case1: _,
+    case2: _
 ]
 
 Optional: choice [some Type, Nothing]
@@ -24,6 +23,6 @@ Error: subset [
     localized: (any Error) -> String
 ]
 
-ee: [a: some Error T] -> [Int, Int] {
-    (12, 2)
+ee: [a: [some Type, some Type]] -> [Int, Int] {
+    case: _
 }

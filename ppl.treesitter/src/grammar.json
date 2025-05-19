@@ -115,6 +115,14 @@
       "members": [
         {
           "type": "SYMBOL",
+          "name": "nothing_type"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "never_type"
+        },
+        {
+          "type": "SYMBOL",
           "name": "product"
         },
         {
@@ -675,11 +683,37 @@
         }
       ]
     },
-    "nothing": {
-      "type": "STRING",
-      "value": "nothing"
+    "nothing_type": {
+      "type": "CHOICE",
+      "members": [
+        {
+          "type": "STRING",
+          "value": "Nothing"
+        },
+        {
+          "type": "STRING",
+          "value": "_"
+        }
+      ]
     },
-    "never": {
+    "nothing_value": {
+      "type": "CHOICE",
+      "members": [
+        {
+          "type": "STRING",
+          "value": "nothing"
+        },
+        {
+          "type": "STRING",
+          "value": "_"
+        }
+      ]
+    },
+    "never_type": {
+      "type": "STRING",
+      "value": "Never"
+    },
+    "never_value": {
       "type": "STRING",
       "value": "never"
     },
@@ -788,11 +822,11 @@
       "members": [
         {
           "type": "SYMBOL",
-          "name": "nothing"
+          "name": "nothing_value"
         },
         {
           "type": "SYMBOL",
-          "name": "never"
+          "name": "never_value"
         },
         {
           "type": "SYMBOL",
@@ -1309,6 +1343,10 @@
     [
       "value_field_list",
       "parenthisized_expression"
+    ],
+    [
+      "nothing_value",
+      "nothing_type"
     ]
   ],
   "precedences": [],

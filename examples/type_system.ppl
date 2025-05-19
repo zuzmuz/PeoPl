@@ -1,49 +1,43 @@
 
 // basic struct
 
-type Basic
-    param1: I32
-    param2: F64
-    param3: String
+Basic: [
+    param1: I32,
+    param2: F64,
+    param3: String,
+]
 
-type Shape
-    Square side: F64
-    Rectangle width: F64, height: F64
-    Circle radius: F64
+Shape: choice [
+    square: [side: F64],
+    rectangle: [width: F64, height: F64],
+    circle: [radius: F64]
+]
+
 // 
 // function types
-type Functions
-    callable: {InputType1, InputType2} -> OutputType
-// 
-// Tuple typles (product types)
-type Container
-    tuple: [Type1, Type2, Type3]
+Functions: [
+    callable: (InputType1, InputType2) -> OutputType,
+    withParams: [a: Arg2, b: Arg2] -> OutputType
+]
+
 // 
 // generic types
-type Generic<T>
-    param: T
+Generic: [
+    param: some Type
+]
 
-type MultiGeneric<T, U, V>
-    param1: T
-    param2: U
-    param3: V
-    ..
+MultiGeneric: [
+    param1: some Type T,
+    param2: some Type U,
+    param3: some Type V,
+]
+
 // 
 // ** generic enum types
 // 
-type Optional<T>
-    Value _: T
-    Nothing
+Optional: choice [some Type, Nothing]
 
-type Result<T, E>
-    Success _: T
-    Error _: E
-
-// _ is a valid field identifier it is usually used as a short insignificant name
-
-type Weird
-    mess: { T, [A, B, {C, D} -> {E, F} -> G, [H, I]], G } -> [A, {B, C} -> D]
-
-
-
-
+Result: [
+    success: some Type,
+    error: some Error
+]

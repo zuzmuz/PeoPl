@@ -81,8 +81,10 @@
  "->"
 ] @punctuation.delimiter
 
-(nothing) @constant.builtin
-(never) @constant.builtin
+(nothing_type) @constant.builtin
+(never_type) @constant.builtin
+(nothing_value) @constant.builtin
+(never_value) @constant.builtin
 
 "$" @character.special
 

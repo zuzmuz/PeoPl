@@ -28,7 +28,8 @@ module.exports = grammar({
 
   conflicts: $ => [
     [$.value_field_list, $.expression],
-    [$.value_field_list, $.parenthisized_expression]
+    [$.value_field_list, $.parenthisized_expression],
+    [$.nothing_value, $.nothing_type],
   ],
 
   rules: {
@@ -67,6 +68,8 @@ module.exports = grammar({
     ),
 
     type_specifier: $ => choice(
+      $.nothing_type,
+      $.never_type,
       $.product,
       $.sum,
       $.subset,
@@ -191,8 +194,10 @@ module.exports = grammar({
       '}'
     ),
 
-    nothing: _ => 'nothing',
-    never: _ => 'never',
+    nothing_type: _ => choice('Nothing', '_'),
+    nothing_value: _ => choice('nothing', '_'),
+    never_type: _ => 'Never',
+    never_value: _ => 'never',
 
     _simple_expression: $ => choice(
       $.literal,
@@ -225,8 +230,8 @@ module.exports = grammar({
     // --------
 
     literal: $ => choice(
-      $.nothing,
-      $.never,
+      $.nothing_value,
+      $.never_value,
       $.int_literal,
       $.float_literal,
       $.string_literal,
