@@ -65,152 +65,121 @@ enum Syntax {
 
     enum Statement: SyntaxNode {
         case typeDefinition(TypeDefinition)
-        case functionDefinition(FunctionDefinition)
-        case operatorOverloadDefinition(OperatorOverloadDefinition)
+        case expression(ValueField)
 
         var location: NodeLocation {
             return switch self {
             case let .typeDefinition(typeDefinition):
                 typeDefinition.location
-            case let .functionDefinition(functionDefinition):
-                functionDefinition.location
-            case let .operatorOverloadDefinition(operatorOverloadDefinition):
-                operatorOverloadDefinition.location
-            }
+            case let .expression(valueField):
+                valueField.location
         }
+    }
+
+    struct TypeDefinition: SyntaxNode {
+        let identifer: String
+        let definition: TypeSpecifier
+        let location: NodeLocation
     }
 
     // MARK: - type definitions
     // ------------------------
 
-    struct ParamDefinition: SyntaxNode {
-        let name: String
+    struct TypeField: SyntaxNode {
+        let identifier: String
         let type: TypeSpecifier
         let location: NodeLocation
     }
-
-    enum TypeDefinition: SyntaxNode {
-        case simple(Simple)
-        case sum(Sum)
-
-        struct Simple: SyntaxNode {
-            let identifier: NominalType
-            let params: [ParamDefinition]
-            let location: NodeLocation
-        }
-
-        struct Sum: SyntaxNode {
-            let identifier: NominalType
-            let cases: [Simple]
-            let location: NodeLocation
-        }
-
-        var location: NodeLocation {
-            return switch self {
-            case let .simple(simple):
-                simple.location
-            case let .sum(sum):
-                sum.location
-            }
-        }
-
-        var identifier: NominalType {
-            return switch self {
-            case let .simple(simple):
-                simple.identifier
-            case let .sum(sum):
-                sum.identifier
-            }
-        }
-
-        var allParams: [ParamDefinition] {
-            return switch self {
-            case let .simple(simple):
-                simple.params
-            case let .sum(sum):
-                sum.cases.flatMap { simple in
-                    simple.params
-                }
-            }
-        }
-    }
-
-    // MARK: - function definitions
-    // ----------------------------
-
-    struct ScopedIdentifier: SyntaxNode {
-        let identifier: String
-        let scope: NominalType?
-        let location: NodeLocation
-    }
-
-    struct FunctionDefinition: SyntaxNode {
-        let inputType: TypeSpecifier?
-        let identifier: ScopedIdentifier
-        let params: [ParamDefinition]
-        let outputType: TypeSpecifier
-        let body: Expression?
-        let location: NodeLocation
-    }
-
-    struct OperatorOverloadDefinition: SyntaxNode {
-        let left: TypeSpecifier
-        let op: Operator
-        let right: TypeSpecifier
-        let outputType: TypeSpecifier
-        let body: Expression?
-        let location: NodeLocation
-    }
-
-    // MARK: - types
-    // -------------
-
-    enum TypeSpecifier: SyntaxNode, Sendable {
+    
+    enum TypeSpecifier: SyntaxNode {
         case nothing(location: NodeLocation)
         case never(location: NodeLocation)
-        case nominal(NominalType)
-        case namedTuple(StructuralType.NamedTuple)
-        case unnamedTuple(StructuralType.UnnamedTuple)
+        case tuple(Tuple)
+        case record(Record)
+        case union(Union)
+        case choice(Choice)
+        case subset(Subset)
+        case some(ExistentialType)
+        case any(DynamicType)
+        case nominal(Nominal)
+        indirect case function(Function)
 
         var location: NodeLocation {
             return switch self {
-            case let .nothing(location):
-                location
-            case let .never(location):
-                location
-            case let .nominal(nominalType):
-                nominalType.location
-            case let .namedTuple(namedTuple):
-                namedTuple.location
-            case let .unnamedTuple(unnamedTuple):
-                unnamedTuple.location
+                case let .nothing(location): location
+                case let .never(location): location
+                case let .tuple(tuple): tuple.location
+                case let .record(record): record.location
+                case let .union(union): union.location
+                case let .choice(choice): choice.location
+                case let .subset(subset): subset.location
+                case let .some(some): some.location
+                case let .any(any): any.location
+                case let .nominal(nominal): nominal.location
+                case let .function(function): function.location
             }
         }
     }
 
-    struct NominalType: SyntaxNode {
-        let chain: [String]
+    struct Tuple: SyntaxNode {
+        let types: [TypeSpecifier]
         let location: NodeLocation
-
-        var typeName: String {
-            return chain.map { $0 }.joined(separator: "::")
-        }
     }
 
-    enum StructuralType {
-        struct UnnamedTuple: SyntaxNode {
-            let types: [TypeSpecifier]
-            let location: NodeLocation
-        }
+    struct Record: SyntaxNode {
+        let typeFields: [TypeField]
+        let location: NodeLocation
+    }
 
-        struct NamedTuple {
-            let types: [ParamDefinition]
-            let location: NodeLocation
-        }
+    struct Union: SyntaxNode {
+        let types: [TypeSpecifier]
+        let location: NodeLocation
+    }
+
+    struct Choice: SyntaxNode {
+        let typeFields: [TypeField]
+        let location: NodeLocation
+    }
+
+    struct Subset: SyntaxNode {
+        let typeFields: [TypeField]
+        let location: NodeLocation
+    }
+
+    struct ExistentialType: SyntaxNode {
+        let type: String
+        let alias: String?
+        let location: NodeLocation
+    }
+
+    struct DynamicType: SyntaxNode {
+        let type: String
+        let alias: String?
+        let location: NodeLocation
+    }
+
+    struct Nominal: SyntaxNode {
+        let identifier: String
+        let typeArguments: [TypeSpecifier]
+        let location: NodeLocation
+    }
+
+    struct Function: SyntaxNode {
+        let inputType: TypeSpecifier?
+        let arguments: [TypeField]
+        let outputType: TypeSpecifier
+        let location: NodeLocation
     }
 
     // MARK: - Expressions
     // -------------------
+    
+    
+    struct ValueField: SyntaxNode {
+        let identifier: String
+        let expression: Expression
+        let location: NodeLocation
+    }
 
     struct Expression: SyntaxNode {
         let expressionType: ExpressionType
