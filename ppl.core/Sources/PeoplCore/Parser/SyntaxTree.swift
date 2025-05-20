@@ -24,8 +24,8 @@ enum Syntax {
             let line: Int
             let column: Int
             static func < (lhs: Point, rhs: Point) -> Bool {
-                lhs.line < rhs.line || lhs.line ==
-                rhs.line && lhs.column < rhs.column
+                lhs.line < rhs.line
+                    || lhs.line == rhs.line && lhs.column < rhs.column
             }
         }
         let pointRange: Range<Point>
@@ -73,11 +73,12 @@ enum Syntax {
                 typeDefinition.location
             case let .expression(valueField):
                 valueField.location
+            }
         }
     }
 
     struct TypeDefinition: SyntaxNode {
-        let identifer: String
+        let identifier: String
         let definition: TypeSpecifier
         let location: NodeLocation
     }
@@ -90,7 +91,7 @@ enum Syntax {
         let type: TypeSpecifier
         let location: NodeLocation
     }
-    
+
     enum TypeSpecifier: SyntaxNode {
         case nothing(location: NodeLocation)
         case never(location: NodeLocation)
@@ -99,24 +100,24 @@ enum Syntax {
         case union(Union)
         case choice(Choice)
         case subset(Subset)
-        case some(ExistentialType)
-        case any(DynamicType)
+        case existential(Existential)
+        case universal(Universal)
         case nominal(Nominal)
         indirect case function(Function)
 
         var location: NodeLocation {
             return switch self {
-                case let .nothing(location): location
-                case let .never(location): location
-                case let .tuple(tuple): tuple.location
-                case let .record(record): record.location
-                case let .union(union): union.location
-                case let .choice(choice): choice.location
-                case let .subset(subset): subset.location
-                case let .some(some): some.location
-                case let .any(any): any.location
-                case let .nominal(nominal): nominal.location
-                case let .function(function): function.location
+            case let .nothing(location): location
+            case let .never(location): location
+            case let .tuple(tuple): tuple.location
+            case let .record(record): record.location
+            case let .union(union): union.location
+            case let .choice(choice): choice.location
+            case let .subset(subset): subset.location
+            case let .existential(existential): existential.location
+            case let .universal(universal): universal.location
+            case let .nominal(nominal): nominal.location
+            case let .function(function): function.location
             }
         }
     }
@@ -146,15 +147,14 @@ enum Syntax {
         let location: NodeLocation
     }
 
-    struct ExistentialType: SyntaxNode {
+    struct Existential: SyntaxNode {
         let type: String
         let alias: String?
         let location: NodeLocation
     }
 
-    struct DynamicType: SyntaxNode {
+    struct Universal: SyntaxNode {
         let type: String
-        let alias: String?
         let location: NodeLocation
     }
 
@@ -173,8 +173,7 @@ enum Syntax {
 
     // MARK: - Expressions
     // -------------------
-    
-    
+
     struct ValueField: SyntaxNode {
         let identifier: String
         let expression: Expression
@@ -194,7 +193,7 @@ enum Syntax {
             case boolLiteral(Bool)
         }
 
-        indirect enum ExpressionType: Sendable {
+        indirect enum ExpressionType {
 
             case literal(Literal)
 
@@ -203,49 +202,24 @@ enum Syntax {
             case binary(Operator, left: Expression, right: Expression)
 
             // Compounds
-            case unnamedTuple([Expression])
-            case namedTuple([Argument])
-            case lambda(Expression)
+            case lambda(signature: Function, expression: Expression)
 
             // Scope
-            case functionCall(prefix: Expression, arguments: [Argument])
-            case typeInitializer(prefix: NominalType, arguments: [Argument])
+            case call(prefix: Expression, arguments: [ValueField])
+            case initializer(prefix: Nominal?, arguments: [ValueField])
             case access(prefix: Expression, field: String)
-            case field(ScopedIdentifier)
+            case field(String)
+            case binding(String)
 
             case branched(Branched)
             case piped(left: Expression, right: Expression)
         }
-
-        struct Argument: SyntaxNode, Sendable {
-            let name: String
-            let value: Expression
-            let location: NodeLocation
-        }
-
-        struct Branched: SyntaxNode, Sendable {
+        struct Branched: SyntaxNode {
             let branches: [Branch]
             let location: NodeLocation
 
-            struct Branch: SyntaxNode, Sendable {
-
-                enum MatchExpression: Sendable {
-                    case literal(Expression.Literal)
-                    case field(ScopedIdentifier)
-                    case binding(String)
-                    case tupleBinding([MatchExpression])
-                    case typeBinding(
-                        prefix: NominalType,
-                        arguments: [BindingArgument])
-                }
-
-                struct BindingArgument: SyntaxNode {
-                    let name: String
-                    let value: MatchExpression
-                    let location: NodeLocation
-                }
-
-                let matchExpression: MatchExpression
+            struct Branch: SyntaxNode {
+                let matchExpression: Expression
                 let guardExpression: Expression?
                 let body: Body
                 let location: NodeLocation

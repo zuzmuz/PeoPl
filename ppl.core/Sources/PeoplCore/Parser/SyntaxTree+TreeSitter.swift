@@ -83,11 +83,7 @@ extension Syntax.Module {
 extension Syntax.Statement {
     enum CodingKeys: String, CodingKey {
         case typeDefinition = "type_definition"
-        case functionDefinition = "function_definition"
-    }
-    enum FunctionDefinitionKeys: String, CodingKey {
-        case normalfunctionDefinition = "normal_function_definition"
-        case operatorOverloadDefinition = "operator_overload_definition"
+        case valueField = "value_field"
     }
 
     init?(from node: Node, in source: Syntax.Source) {
@@ -99,30 +95,8 @@ extension Syntax.Statement {
                     in: source)
             else { return nil }
             self = .typeDefinition(typeDefinition)
-        case .functionDefinition:
-            guard let child = node.child(at: 1) else { return nil }
-            switch FunctionDefinitionKeys(rawValue: child.nodeType ?? "") {
-            case .normalfunctionDefinition:
-                guard
-                    let functionDefinition =
-                        Syntax.FunctionDefinition(
-                            from: child,
-                            in: source)
-                else { return nil }
-                self = .functionDefinition(functionDefinition)
-            case .operatorOverloadDefinition:
-                guard
-                    let operatorOverloadDefinition =
-                        Syntax
-                        .OperatorOverloadDefinition(
-                            from: child,
-                            in: source)
-                else { return nil }
-                self = .operatorOverloadDefinition(
-                    operatorOverloadDefinition)
-            default:
-                return nil
-            }
+        case .valueField:
+            return nil
         default:
             return nil
         }
@@ -132,21 +106,21 @@ extension Syntax.Statement {
 // MARK: - type definitions
 // ------------------------
 
-extension Syntax.ParamDefinition {
+extension Syntax.TypeField {
     static let rawValue = "param_definition"
 
     init?(from node: Node, in source: Syntax.Source) {
-        guard let paramNameNode = node.child(byFieldName: "name"),
-            let paramName = paramNameNode.getString(in: source),
-            let paramTypeNode = node.child(byFieldName: "type"),
-            let paramType = Syntax.TypeSpecifier(
-                from: paramTypeNode,
+        guard let identifierNode = node.child(byFieldName: "identifier"),
+            let identifier = identifierNode.getString(in: source),
+            let definitionNode = node.child(byFieldName: "definition"),
+            let definition = Syntax.TypeSpecifier(
+                from: definitionNode,
                 in: source),
             let location = node.getLocation(in: source)
         else { return nil }
 
-        self.type = paramType
-        self.name = paramName
+        self.type = definition
+        self.identifier = identifier
 
         self.location = location
     }
@@ -154,81 +128,17 @@ extension Syntax.ParamDefinition {
 
 extension Syntax.TypeDefinition {
     init?(from node: Node, in source: Syntax.Source) {
-        guard let child = node.child(at: 1) else { return nil }
-        switch child.nodeType {
-        case CodingKeys.sum.rawValue:
-            guard let sum = Sum(from: child, in: source) else {
-                return nil
-            }
-            self = .sum(sum)
-        case CodingKeys.simple.rawValue:
-            guard
-                let simple = Simple(
-                    from: child,
-                    in: source)
-            else { return nil }
-            self = .simple(simple)
-        default:
-            return nil
-        }
-    }
-
-    enum CodingKeys: String, CodingKey {
-        case simple = "simple_type_definition"
-        case sum = "meta_type_definition"
-    }
-}
-
-extension Syntax.TypeDefinition.Simple {
-
-    init?(from node: Node, in source: Syntax.Source) {
-        guard let identifierNode = node.child(at: 0),
-            let identifier = Syntax.NominalType(
-                from: identifierNode,
+        guard let identifierNode = node.child(byFieldName: "identifier"),
+            let identifier = identifierNode.getString(in: source),
+            let definitionNode = node.child(byFieldName: "definition"),
+            let definition = Syntax.TypeSpecifier(
+                from: definitionNode,
                 in: source),
             let location = node.getLocation(in: source)
         else { return nil }
+
+        self.definition = definition
         self.identifier = identifier
-
-        if let paramListNode = node.child(at: 1) {
-            self.params = paramListNode.compactMapChildren { paramNode in
-                if paramNode.nodeType
-                    == Syntax.ParamDefinition.rawValue
-                {
-                    return Syntax.ParamDefinition(
-                        from: paramNode, in: source)
-                } else {
-                    return nil
-                }
-            }
-        } else {
-            self.params = []
-        }
-
-        self.location = location
-    }
-}
-
-extension Syntax.TypeDefinition.Sum {
-
-    init?(from node: Node, in source: Syntax.Source) {
-        guard let identifierNode = node.child(at: 0),
-            let identifier = Syntax.NominalType(
-                from: identifierNode,
-                in: source),
-            let location = node.getLocation(in: source)
-        else { return nil }
-        self.identifier = identifier
-        self.cases = node.compactMapChildren { childNode in
-            if childNode.nodeType
-                == Syntax.TypeDefinition.CodingKeys.simple
-                .rawValue
-            {
-                return Syntax.TypeDefinition.Simple(
-                    from: childNode, in: source)
-            }
-            return nil
-        }
         self.location = location
     }
 }
@@ -402,14 +312,15 @@ extension Syntax.OperatorOverloadDefinition {
 extension Syntax.TypeSpecifier {
 
     enum CodingKeys: String, CodingKey {
-        case unkown = "unkown"
-        case nothing = "nothing"
-        case never = "never"
-        case nominal = "nominal_type"
-        case lambda = "lambda_structural_type"
-        case namedTuple = "named_tuple_structural_type"
-        case unnamedTuple = "unnamed_tuple_structural_type"
-        case union = "Union"
+        case nothing = "nothing_type"
+        case never = "never_type"
+        case product = "product"
+        case sum = "sum"
+        case subset = "subset"
+        case existential = "some"
+        case universal = "any"
+        case nominal = "nominal"
+        case function = "function"
     }
 
     init?(from node: Node, in source: Syntax.Source) {
@@ -422,27 +333,10 @@ extension Syntax.TypeSpecifier {
             self = .nothing(location: location)
         case .never:
             self = .never(location: location)
-        case .nominal:
-            guard
-                let nominal = Syntax.NominalType(
-                    from: node,
-                    in: source)
-            else { return nil }
-            self = .nominal(nominal)
-        case .namedTuple:
-            guard
-                let tuple = Syntax.StructuralType.NamedTuple(
-                    from: node,
-                    in: source)
-            else { return nil }
-            self = .namedTuple(tuple)
-        case .unnamedTuple:
-            guard
-                let tuple = Syntax.StructuralType.UnnamedTuple(
-                    from: node,
-                    in: source)
-            else { return nil }
-            self = .unnamedTuple(tuple)
+        case .product:
+            guard let typeFieldList = node.child(at: 0),
+                
+            
         default:
             return nil
         }
