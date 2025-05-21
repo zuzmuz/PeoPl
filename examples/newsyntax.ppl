@@ -1,7 +1,25 @@
+Hi: namespace
 
 Person: [
     age: Int,
     name: String
+]
+
+Person::A::init: [json: JSON] -> Person {
+    //parse the json
+    (age: 3, name: july)
+}
+
+A::Sd::dddd: (Person) -> Float {
+    A::d
+}
+
+aaaa: [person: Person] -> _ {
+    _ or a
+}
+
+Person::Role: [
+    a: X
 ]
 
 Point: [Float, Float]
@@ -16,7 +34,7 @@ MyEnum: choice [
     case2: _
 ]
 
-Optional: choice [some Type, Nothing]
+Optional: choice [some Type, _]
 
 
 Error: subset [

@@ -56,18 +56,45 @@ module.exports = grammar({
     small_identifier: $ => token(choice('_', /_*[a-z][a-zA-Z0-9_]*/)),
     big_identifier: $ => /_*[A-Z][a-zA-Z0-9_]*/,
 
+    scoped_big_identifier: $ => choice(
+      field("identifier", $.big_identifier),
+      prec.left(
+        seq(
+          field("scope", $.scoped_big_identifier),
+          '::',
+          field("name", $.big_identifier),
+        )
+      )
+    ),
+
+    scoped_identifier: $ => choice(
+      field('name', $.small_identifier),
+      seq(
+        field('scope', $.scoped_big_identifier),
+        '::',
+        field('name', $.small_identifier),
+      )
+    ),
+
     definition: $ => choice(
       $.type_definition,
-      $.value_field,
+      $.value_definition,
     ),
 
     type_definition: $ => seq(
-      field('identifier', $.big_identifier),
+      field('identifier', $.scoped_big_identifier),
       ':',
       field('definition', $.type_specifier)
     ),
 
+    value_definition: $ => seq(
+      field("identifier", $.scoped_identifier),
+      ":",
+      field("expression", $.expression),
+    ),
+
     type_specifier: $ => choice(
+      $.namespace,
       $.nothing_type,
       $.never_type,
       $.product,
@@ -78,6 +105,8 @@ module.exports = grammar({
       $.nominal,
       $.function,
     ),
+
+    namespace: _ => 'namespace',
 
     product: $ => $.type_field_list,
     sum: $ => seq(
@@ -92,17 +121,17 @@ module.exports = grammar({
 
     some: $ => prec.left(seq(
       'some',
-      field('subset', $.big_identifier),
+      field('subset', $.scoped_big_identifier),
       optional(field('alias', $.big_identifier))
     )),
 
     any: $ => seq(
       'any',
-      field('subset', $.big_identifier)
+      field('subset', $.scoped_big_identifier),
     ),
 
     nominal: $ => seq(
-      field('identifier', $.big_identifier),
+      field('identifier', $.scoped_big_identifier),
       optional(field('type_arguments', $.type_field_list)),
     ),
 
@@ -203,7 +232,7 @@ module.exports = grammar({
       $.literal,
       $.unary_expression,
       $.binary_expression,
-      $.small_identifier,
+      $.scoped_identifier,
       $.parenthisized_expression,
       $.function_definition,
       $.call_expression,

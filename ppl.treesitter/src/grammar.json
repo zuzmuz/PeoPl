@@ -72,6 +72,86 @@
       "type": "PATTERN",
       "value": "_*[A-Z][a-zA-Z0-9_]*"
     },
+    "scoped_big_identifier": {
+      "type": "CHOICE",
+      "members": [
+        {
+          "type": "FIELD",
+          "name": "identifier",
+          "content": {
+            "type": "SYMBOL",
+            "name": "big_identifier"
+          }
+        },
+        {
+          "type": "PREC_LEFT",
+          "value": 0,
+          "content": {
+            "type": "SEQ",
+            "members": [
+              {
+                "type": "FIELD",
+                "name": "scope",
+                "content": {
+                  "type": "SYMBOL",
+                  "name": "scoped_big_identifier"
+                }
+              },
+              {
+                "type": "STRING",
+                "value": "::"
+              },
+              {
+                "type": "FIELD",
+                "name": "name",
+                "content": {
+                  "type": "SYMBOL",
+                  "name": "big_identifier"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "scoped_identifier": {
+      "type": "CHOICE",
+      "members": [
+        {
+          "type": "FIELD",
+          "name": "name",
+          "content": {
+            "type": "SYMBOL",
+            "name": "small_identifier"
+          }
+        },
+        {
+          "type": "SEQ",
+          "members": [
+            {
+              "type": "FIELD",
+              "name": "scope",
+              "content": {
+                "type": "SYMBOL",
+                "name": "scoped_big_identifier"
+              }
+            },
+            {
+              "type": "STRING",
+              "value": "::"
+            },
+            {
+              "type": "FIELD",
+              "name": "name",
+              "content": {
+                "type": "SYMBOL",
+                "name": "small_identifier"
+              }
+            }
+          ]
+        }
+      ]
+    },
     "definition": {
       "type": "CHOICE",
       "members": [
@@ -81,7 +161,7 @@
         },
         {
           "type": "SYMBOL",
-          "name": "value_field"
+          "name": "value_definition"
         }
       ]
     },
@@ -93,7 +173,7 @@
           "name": "identifier",
           "content": {
             "type": "SYMBOL",
-            "name": "big_identifier"
+            "name": "scoped_big_identifier"
           }
         },
         {
@@ -110,9 +190,38 @@
         }
       ]
     },
+    "value_definition": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "FIELD",
+          "name": "identifier",
+          "content": {
+            "type": "SYMBOL",
+            "name": "scoped_identifier"
+          }
+        },
+        {
+          "type": "STRING",
+          "value": ":"
+        },
+        {
+          "type": "FIELD",
+          "name": "expression",
+          "content": {
+            "type": "SYMBOL",
+            "name": "expression"
+          }
+        }
+      ]
+    },
     "type_specifier": {
       "type": "CHOICE",
       "members": [
+        {
+          "type": "SYMBOL",
+          "name": "namespace"
+        },
         {
           "type": "SYMBOL",
           "name": "nothing_type"
@@ -150,6 +259,10 @@
           "name": "function"
         }
       ]
+    },
+    "namespace": {
+      "type": "STRING",
+      "value": "namespace"
     },
     "product": {
       "type": "SYMBOL",
@@ -208,7 +321,7 @@
             "name": "subset",
             "content": {
               "type": "SYMBOL",
-              "name": "big_identifier"
+              "name": "scoped_big_identifier"
             }
           },
           {
@@ -242,7 +355,7 @@
           "name": "subset",
           "content": {
             "type": "SYMBOL",
-            "name": "big_identifier"
+            "name": "scoped_big_identifier"
           }
         }
       ]
@@ -255,7 +368,7 @@
           "name": "identifier",
           "content": {
             "type": "SYMBOL",
-            "name": "big_identifier"
+            "name": "scoped_big_identifier"
           }
         },
         {
@@ -734,7 +847,7 @@
         },
         {
           "type": "SYMBOL",
-          "name": "small_identifier"
+          "name": "scoped_identifier"
         },
         {
           "type": "SYMBOL",

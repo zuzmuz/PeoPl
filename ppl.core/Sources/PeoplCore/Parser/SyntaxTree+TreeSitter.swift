@@ -335,7 +335,6 @@ extension Syntax.TypeSpecifier {
             self = .never(location: location)
         case .product:
             guard let typeFieldList = node.child(at: 0),
-                
             
         default:
             return nil

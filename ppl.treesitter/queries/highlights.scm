@@ -6,6 +6,7 @@
  "any"
 ] @keyword.type
 
+(namespace) @keyword.import
 ;
 ;
 ; (nominal_type
@@ -16,7 +17,8 @@
 ; ;     (nominal_type
 ; ;       (type_name) @variable.member)))
 (call_expression
-  prefix: (small_identifier) @function.call)
+  prefix: (scoped_identifier
+    (small_identifier) @function.call))
 ; (square_call_expression
 ;   prefix: (identifier) @function.call)
 ; (access_expression
@@ -37,8 +39,9 @@
 ;   name: (identifier) @type.definition)
 ;
 (definition
-  (value_field
-    identifier: (small_identifier) @function.call))
+  (value_definition
+    identifier: (scoped_identifier
+                  (small_identifier) @function.call)))
 
 (value_field_list
   (value_field
