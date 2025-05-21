@@ -1,9 +1,9 @@
 
 [
- "'choice"
- "'subset"
- "'some"
- "'any"
+ "choice"
+ "subset"
+ "some"
+ "any"
 ] @keyword.type
 
 (namespace) @keyword.import

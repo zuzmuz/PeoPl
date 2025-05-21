@@ -1,4 +1,4 @@
-Hi: 'namespace
+Hi: namespace
 
 _Person: [
     _age: Int,
@@ -27,24 +27,24 @@ Person::Role: [
 
 Point: [Float, Float]
 
-Result: 'choice [
-    success: 'some Type,
-    error: 'some Error
+Result: choice [
+    success: some Type,
+    error: some Error
 ]
 
-MyEnum: 'choice [
+MyEnum: choice [
     case1: _,
     case2: _
 ]
 
-Optional: 'choice ['some Type, _]
+Optional: choice [some Type, _]
 
 
-Error: 'subset [
-    localized: ('any Error) -> String
+Error: subset [
+    localized: (any Error) -> String
 ]
 
-ee: [a: ['some Type, 'some Type]] -> [Int, Int] {
+ee: [a: [some Type, some Type]] -> [Int, Int] {
     case: _ |>
     |if as| a or b or c and d + true
 }

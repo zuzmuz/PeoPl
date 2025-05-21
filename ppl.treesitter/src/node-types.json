@@ -1202,22 +1202,6 @@
     "named": false
   },
   {
-    "type": "'any",
-    "named": false
-  },
-  {
-    "type": "'choice",
-    "named": false
-  },
-  {
-    "type": "'some",
-    "named": false
-  },
-  {
-    "type": "'subset",
-    "named": false
-  },
-  {
     "type": "(",
     "named": false
   },
@@ -1306,12 +1290,20 @@
     "named": true
   },
   {
+    "type": "any",
+    "named": false
+  },
+  {
     "type": "big_identifier",
     "named": true
   },
   {
     "type": "binding",
     "named": true
+  },
+  {
+    "type": "choice",
+    "named": false
   },
   {
     "type": "comment",
@@ -1366,8 +1358,16 @@
     "named": true
   },
   {
+    "type": "some",
+    "named": false
+  },
+  {
     "type": "string_literal",
     "named": true
+  },
+  {
+    "type": "subset",
+    "named": false
   },
   {
     "type": "true",

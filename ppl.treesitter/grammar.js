@@ -106,27 +106,27 @@ module.exports = grammar({
       $.function,
     ),
 
-    namespace: _ => "'namespace",
+    namespace: _ => "namespace",
 
     product: $ => $.type_field_list,
     sum: $ => seq(
-      "'choice",
+      "choice",
       $.type_field_list
     ),
 
     subset: $ => seq(
-      "'subset",
+      "subset",
       optional(field('protocol', $.type_field_list))
     ),
 
     some: $ => prec.left(seq(
-      "'some",
+      "some",
       field('subset', $.scoped_big_identifier),
       optional(field('alias', $.big_identifier))
     )),
 
     any: $ => seq(
-      "'any",
+      "any",
       field('subset', $.scoped_big_identifier),
     ),
 
@@ -226,7 +226,7 @@ module.exports = grammar({
     nothing_type: _ => choice('Nothing', '_'),
     nothing_value: _ => choice("nothing", '_'),
     never_type: _ => 'Never',
-    never_value: _ => "'never",
+    never_value: _ => "never",
 
     _simple_expression: $ => choice(
       $.literal,

@@ -1,6 +1,6 @@
-# The Peopl Manifesto
+* The Peopl Manifesto
 
-## Preface
+** Preface
 
 In his Discourse on the Method, French philosopher Rene Descartes
 attempts to arrive to a set of principles that one can know as true without any doubt.
@@ -25,8 +25,8 @@ Programming languages, their design and their usages, is a subset of that subset
 Being a young field, we still haven't figured it out yet. We still debate over the best web framework,
 we still go to war over formatting rules, tabs vs spaces, curly braces vs significant whitespace,
 object oriented programming vs functional, imperative vs declarative, statically typed vs dynamically typed,
-SQL vs noSQL, memory safety vs performance. We still have vague metrics like readability, maintainability,
-safe, robust. Programming is considered a science yet we still argue over subjective matters.
+SQL vs noSQL, memory safety vs performance. We still have vague unquantifiable metrics like readability, maintainability,
+and safe, robust. Programming is considered a science yet we still argue over subjective matters.
 New tools pops every couple of years, new concepts become obsolete every release cycle.
 We have a proliferation of tools that all do basically the same thing.
 
