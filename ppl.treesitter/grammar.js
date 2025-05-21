@@ -53,7 +53,7 @@ module.exports = grammar({
     // DEFINITIONS
     // -----------
      
-    small_identifier: $ => token(choice('_', /_*[a-z][a-zA-Z0-9_]*/)),
+    small_identifier: $ => /_*[a-z][a-zA-Z0-9_]*/,
     big_identifier: $ => /_*[A-Z][a-zA-Z0-9_]*/,
 
     scoped_big_identifier: $ => choice(
@@ -106,27 +106,27 @@ module.exports = grammar({
       $.function,
     ),
 
-    namespace: _ => 'namespace',
+    namespace: _ => "'namespace",
 
     product: $ => $.type_field_list,
     sum: $ => seq(
-      'choice',
+      "'choice",
       $.type_field_list
     ),
 
     subset: $ => seq(
-      'subset',
+      "'subset",
       optional(field('protocol', $.type_field_list))
     ),
 
     some: $ => prec.left(seq(
-      'some',
+      "'some",
       field('subset', $.scoped_big_identifier),
       optional(field('alias', $.big_identifier))
     )),
 
     any: $ => seq(
-      'any',
+      "'any",
       field('subset', $.scoped_big_identifier),
     ),
 
@@ -224,9 +224,9 @@ module.exports = grammar({
     ),
 
     nothing_type: _ => choice('Nothing', '_'),
-    nothing_value: _ => choice('nothing', '_'),
+    nothing_value: _ => choice("nothing", '_'),
     never_type: _ => 'Never',
-    never_value: _ => 'never',
+    never_value: _ => "'never",
 
     _simple_expression: $ => choice(
       $.literal,
@@ -253,7 +253,7 @@ module.exports = grammar({
       field("field", $.small_identifier),
     ),
 
-    binding: $ => seq('$', $.small_identifier),
+    binding: $ => /\$_*[a-z][a-zA-Z0-9_]*/,
 
     // Literals
     // --------
@@ -276,7 +276,7 @@ module.exports = grammar({
 
     float_literal: $ => /\d+\.\d+/,
     string_literal: $ => /"[^"]*"/,
-    bool_literal: $ => choice('true', 'false'),
+    bool_literal: $ => choice("true", "false"),
 
     // Operators
     // ---------
@@ -348,8 +348,14 @@ module.exports = grammar({
 
     branch: $ => seq(
       '|', 
-      field("match_expression", $._simple_expression),
-      optional(seq(':', field("guard_expression", $._simple_expression))),
+      choice(
+        field("match_expression", $._simple_expression),
+        seq('if', field("guard_expression", $._simple_expression)),
+        seq(
+          field("match_expression", $._simple_expression),
+          'if', field("guard_expression", $._simple_expression)
+        ),
+      ),
       '|',
       field("body",
         choice(

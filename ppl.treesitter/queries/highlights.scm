@@ -1,9 +1,9 @@
 
 [
- "choice"
- "subset"
- "some"
- "any"
+ "'choice"
+ "'subset"
+ "'some"
+ "'any"
 ] @keyword.type
 
 (namespace) @keyword.import
@@ -80,6 +80,7 @@
 [
  ":"
  "."
+ "::"
  ","
  "->"
 ] @punctuation.delimiter
@@ -89,6 +90,7 @@
 (nothing_value) @constant.builtin
 (never_value) @constant.builtin
 
-"$" @character.special
+(binding) @keyword.operator
+"if" @keyword.control
 
 (comment) @comment

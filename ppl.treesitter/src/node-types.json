@@ -207,21 +207,6 @@
     }
   },
   {
-    "type": "binding",
-    "named": true,
-    "fields": {},
-    "children": {
-      "multiple": false,
-      "required": true,
-      "types": [
-        {
-          "type": "small_identifier",
-          "named": true
-        }
-      ]
-    }
-  },
-  {
     "type": "bool_literal",
     "named": true,
     "fields": {}
@@ -328,7 +313,7 @@
       },
       "match_expression": {
         "multiple": false,
-        "required": true,
+        "required": false,
         "types": [
           {
             "type": "access_expression",
@@ -1213,11 +1198,23 @@
     "named": false
   },
   {
-    "type": "$",
+    "type": "%",
     "named": false
   },
   {
-    "type": "%",
+    "type": "'any",
+    "named": false
+  },
+  {
+    "type": "'choice",
+    "named": false
+  },
+  {
+    "type": "'some",
+    "named": false
+  },
+  {
+    "type": "'subset",
     "named": false
   },
   {
@@ -1309,16 +1306,12 @@
     "named": true
   },
   {
-    "type": "any",
-    "named": false
-  },
-  {
     "type": "big_identifier",
     "named": true
   },
   {
-    "type": "choice",
-    "named": false
+    "type": "binding",
+    "named": true
   },
   {
     "type": "comment",
@@ -1331,6 +1324,10 @@
   {
     "type": "float_literal",
     "named": true
+  },
+  {
+    "type": "if",
+    "named": false
   },
   {
     "type": "int_literal",
@@ -1369,16 +1366,8 @@
     "named": true
   },
   {
-    "type": "some",
-    "named": false
-  },
-  {
     "type": "string_literal",
     "named": true
-  },
-  {
-    "type": "subset",
-    "named": false
   },
   {
     "type": "true",

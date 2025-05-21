@@ -53,20 +53,8 @@
       }
     },
     "small_identifier": {
-      "type": "TOKEN",
-      "content": {
-        "type": "CHOICE",
-        "members": [
-          {
-            "type": "STRING",
-            "value": "_"
-          },
-          {
-            "type": "PATTERN",
-            "value": "_*[a-z][a-zA-Z0-9_]*"
-          }
-        ]
-      }
+      "type": "PATTERN",
+      "value": "_*[a-z][a-zA-Z0-9_]*"
     },
     "big_identifier": {
       "type": "PATTERN",
@@ -262,7 +250,7 @@
     },
     "namespace": {
       "type": "STRING",
-      "value": "namespace"
+      "value": "'namespace"
     },
     "product": {
       "type": "SYMBOL",
@@ -273,7 +261,7 @@
       "members": [
         {
           "type": "STRING",
-          "value": "choice"
+          "value": "'choice"
         },
         {
           "type": "SYMBOL",
@@ -286,7 +274,7 @@
       "members": [
         {
           "type": "STRING",
-          "value": "subset"
+          "value": "'subset"
         },
         {
           "type": "CHOICE",
@@ -314,7 +302,7 @@
         "members": [
           {
             "type": "STRING",
-            "value": "some"
+            "value": "'some"
           },
           {
             "type": "FIELD",
@@ -348,7 +336,7 @@
       "members": [
         {
           "type": "STRING",
-          "value": "any"
+          "value": "'any"
         },
         {
           "type": "FIELD",
@@ -828,7 +816,7 @@
     },
     "never_value": {
       "type": "STRING",
-      "value": "never"
+      "value": "'never"
     },
     "_simple_expression": {
       "type": "CHOICE",
@@ -918,17 +906,8 @@
       ]
     },
     "binding": {
-      "type": "SEQ",
-      "members": [
-        {
-          "type": "STRING",
-          "value": "$"
-        },
-        {
-          "type": "SYMBOL",
-          "name": "small_identifier"
-        }
-      ]
+      "type": "PATTERN",
+      "value": "\\$_*[a-z][a-zA-Z0-9_]*"
     },
     "literal": {
       "type": "CHOICE",
@@ -1332,22 +1311,22 @@
           "value": "|"
         },
         {
-          "type": "FIELD",
-          "name": "match_expression",
-          "content": {
-            "type": "SYMBOL",
-            "name": "_simple_expression"
-          }
-        },
-        {
           "type": "CHOICE",
           "members": [
+            {
+              "type": "FIELD",
+              "name": "match_expression",
+              "content": {
+                "type": "SYMBOL",
+                "name": "_simple_expression"
+              }
+            },
             {
               "type": "SEQ",
               "members": [
                 {
                   "type": "STRING",
-                  "value": ":"
+                  "value": "if"
                 },
                 {
                   "type": "FIELD",
@@ -1360,7 +1339,29 @@
               ]
             },
             {
-              "type": "BLANK"
+              "type": "SEQ",
+              "members": [
+                {
+                  "type": "FIELD",
+                  "name": "match_expression",
+                  "content": {
+                    "type": "SYMBOL",
+                    "name": "_simple_expression"
+                  }
+                },
+                {
+                  "type": "STRING",
+                  "value": "if"
+                },
+                {
+                  "type": "FIELD",
+                  "name": "guard_expression",
+                  "content": {
+                    "type": "SYMBOL",
+                    "name": "_simple_expression"
+                  }
+                }
+              ]
             }
           ]
         },
