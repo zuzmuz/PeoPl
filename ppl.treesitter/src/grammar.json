@@ -165,6 +165,22 @@
           }
         },
         {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "FIELD",
+              "name": "type_arguments",
+              "content": {
+                "type": "SYMBOL",
+                "name": "type_field_list"
+              }
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
+        },
+        {
           "type": "STRING",
           "value": ":"
         },
@@ -188,6 +204,22 @@
             "type": "SYMBOL",
             "name": "scoped_identifier"
           }
+        },
+        {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "FIELD",
+              "name": "type_arguments",
+              "content": {
+                "type": "SYMBOL",
+                "name": "type_field_list"
+              }
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
         },
         {
           "type": "STRING",
@@ -251,6 +283,32 @@
     "namespace": {
       "type": "STRING",
       "value": "namespace"
+    },
+    "homogeneous_product": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "SYMBOL",
+          "name": "type_specifier"
+        },
+        {
+          "type": "STRING",
+          "value": "**"
+        },
+        {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "SYMBOL",
+              "name": "int_literal"
+            },
+            {
+              "type": "SYMBOL",
+              "name": "small_identifier"
+            }
+          ]
+        }
+      ]
     },
     "product": {
       "type": "SYMBOL",
@@ -513,6 +571,10 @@
                     {
                       "type": "SYMBOL",
                       "name": "type_specifier"
+                    },
+                    {
+                      "type": "SYMBOL",
+                      "name": "homogeneous_product"
                     }
                   ]
                 },
@@ -535,6 +597,10 @@
                           {
                             "type": "SYMBOL",
                             "name": "type_specifier"
+                          },
+                          {
+                            "type": "SYMBOL",
+                            "name": "homogeneous_product"
                           }
                         ]
                       }

@@ -83,12 +83,14 @@ module.exports = grammar({
 
     type_definition: $ => seq(
       field('identifier', $.scoped_big_identifier),
+      optional(field('type_arguments', $.type_field_list)),
       ':',
       field('definition', $.type_specifier)
     ),
 
     value_definition: $ => seq(
       field("identifier", $.scoped_identifier),
+      optional(field('type_arguments', $.type_field_list)),
       ":",
       field("expression", $.expression),
     ),
@@ -107,6 +109,15 @@ module.exports = grammar({
     ),
 
     namespace: _ => "namespace",
+
+    homogeneous_product: $ => seq(
+      $.type_specifier,
+      '**',
+      choice(
+        $.int_literal,
+        $.small_identifier,
+      )
+    ),
 
     product: $ => $.type_field_list,
     sum: $ => seq(
@@ -159,9 +170,9 @@ module.exports = grammar({
       '[',
         optional(
           seq(
-           choice($.type_field, $.type_specifier),
+           choice($.type_field, $.type_specifier, $.homogeneous_product),
            repeat(
-             seq(',', choice( $.type_field, $.type_specifier))
+             seq(',', choice( $.type_field, $.type_specifier, $.homogeneous_product))
            ),
            optional(','),
           ),

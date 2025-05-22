@@ -11,7 +11,7 @@ Programs are constructed as pipelines of operations,
 where each operation receives data, transforms it, and passes it forward.
 
 ** Design Principles
-**** Expression Oriented
+*** Expression Oriented
 Everything in PeoPl is an expression that produces a value.
 #+BEGIN_SRC peopl
 "hello"                    // A string literal expression returning "hello"
@@ -19,7 +19,7 @@ Everything in PeoPl is an expression that produces a value.
 2 + 3                      // A binary operation expression returning 5
 #+END_SRC
 
-**** Pipeline Centric
+*** Pipeline Centric
 PeoPl models computation as data flowing through transformation nodes,
 similar to Unix pipes but with structured data.
 #+BEGIN_SRC peopl

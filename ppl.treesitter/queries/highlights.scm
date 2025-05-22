@@ -65,6 +65,7 @@
 
 [
   "^"
+  "**"
 ] @keyword.operator
 
 [

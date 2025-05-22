@@ -601,6 +601,29 @@
     }
   },
   {
+    "type": "homogeneous_product",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "int_literal",
+          "named": true
+        },
+        {
+          "type": "small_identifier",
+          "named": true
+        },
+        {
+          "type": "type_specifier",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "initializer_expression",
     "named": true,
     "fields": {
@@ -941,6 +964,16 @@
             "named": true
           }
         ]
+      },
+      "type_arguments": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "type_field_list",
+            "named": true
+          }
+        ]
       }
     }
   },
@@ -978,6 +1011,10 @@
       "multiple": true,
       "required": false,
       "types": [
+        {
+          "type": "homogeneous_product",
+          "named": true
+        },
         {
           "type": "type_field",
           "named": true
@@ -1145,6 +1182,16 @@
             "named": true
           }
         ]
+      },
+      "type_arguments": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "type_field_list",
+            "named": true
+          }
+        ]
       }
     }
   },
@@ -1211,6 +1258,10 @@
   },
   {
     "type": "*",
+    "named": false
+  },
+  {
+    "type": "**",
     "named": false
   },
   {
