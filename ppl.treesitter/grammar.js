@@ -103,6 +103,7 @@ module.exports = grammar({
       $.sum,
       $.subset,
       $.some,
+      $.in,
       $.any,
       $.nominal,
       $.function,
@@ -128,6 +129,21 @@ module.exports = grammar({
     subset: $ => seq(
       "subset",
       optional(field('protocol', $.type_field_list))
+    ),
+
+    in: $ => seq(
+      field("identifier", $.big_identifier),
+      "in",
+      field("subset", $.subset_intersection),
+    ),
+
+    subset_intersection: $ => choice(
+      field('name', $.scoped_big_identifier),
+      seq(
+        field('scope', $.subset_intersection),
+        '&',
+        field('name', $.scoped_big_identifier),
+      )
     ),
 
     some: $ => prec.left(seq(
@@ -358,6 +374,16 @@ module.exports = grammar({
     )),
 
     branch: $ => seq(
+      field("capture_group", $.branch_capture_group),
+      field("body",
+        choice(
+          $._simple_expression,
+          $.looped_expression,
+        )
+      )
+    ),
+
+    branch_capture_group: $ => seq(
       '|', 
       choice(
         field("match_expression", $._simple_expression),
@@ -368,12 +394,6 @@ module.exports = grammar({
         ),
       ),
       '|',
-      field("body",
-        choice(
-          $._simple_expression,
-          $.looped_expression,
-        )
-      )
     ),
 
     looped_expression: $ => seq(

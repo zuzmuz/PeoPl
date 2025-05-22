@@ -265,6 +265,22 @@
           }
         ]
       },
+      "capture_group": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "branch_capture_group",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "branch_capture_group",
+    "named": true,
+    "fields": {
       "guard_expression": {
         "multiple": false,
         "required": false,
@@ -624,6 +640,32 @@
     }
   },
   {
+    "type": "in",
+    "named": true,
+    "fields": {
+      "identifier": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "big_identifier",
+            "named": true
+          }
+        ]
+      },
+      "subset": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "subset_intersection",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
     "type": "initializer_expression",
     "named": true,
     "fields": {
@@ -927,6 +969,32 @@
     }
   },
   {
+    "type": "subset_intersection",
+    "named": true,
+    "fields": {
+      "name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "scoped_big_identifier",
+            "named": true
+          }
+        ]
+      },
+      "scope": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "subset_intersection",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
     "type": "sum",
     "named": true,
     "fields": {},
@@ -1040,6 +1108,10 @@
         },
         {
           "type": "function",
+          "named": true
+        },
+        {
+          "type": "in",
           "named": true
         },
         {
@@ -1249,6 +1321,10 @@
     "named": false
   },
   {
+    "type": "&",
+    "named": false
+  },
+  {
     "type": "(",
     "named": false
   },
@@ -1370,6 +1446,10 @@
   },
   {
     "type": "if",
+    "named": false
+  },
+  {
+    "type": "in",
     "named": false
   },
   {

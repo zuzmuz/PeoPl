@@ -4,6 +4,7 @@
  "subset"
  "some"
  "any"
+ "in"
 ] @keyword.type
 
 (namespace) @keyword.import
@@ -66,6 +67,7 @@
 [
   "^"
   "**"
+  "&"
 ] @keyword.operator
 
 [

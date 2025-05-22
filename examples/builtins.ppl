@@ -1,4 +1,4 @@
-withUnsafeRef[T, S, some Error E]: (T) [
+withUnsafeRef[T, S, E in Error]: (T) [
     body: (T) -> Result[S, E]
 ] -> Result[S, E] {
     _
@@ -9,3 +9,19 @@ Slice::from[T, n: Int]: [
 ] -> Slice[T] {
     _
 }
+
+Drawable: subset [
+    fff: (Self) -> _,
+    eqq: [s: Self, x: Self] -> Self
+]
+
+unsafeRef[T]: (T) -> UnsafeRef[T] {
+    never
+}
+
+unsafeDeref[T]: (UnsafeRef[T]) -> T {
+}
+
+Type: [
+    sfsd: A
+]

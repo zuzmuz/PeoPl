@@ -268,6 +268,10 @@
         },
         {
           "type": "SYMBOL",
+          "name": "in"
+        },
+        {
+          "type": "SYMBOL",
           "name": "any"
         },
         {
@@ -347,6 +351,69 @@
             },
             {
               "type": "BLANK"
+            }
+          ]
+        }
+      ]
+    },
+    "in": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "FIELD",
+          "name": "identifier",
+          "content": {
+            "type": "SYMBOL",
+            "name": "big_identifier"
+          }
+        },
+        {
+          "type": "STRING",
+          "value": "in"
+        },
+        {
+          "type": "FIELD",
+          "name": "subset",
+          "content": {
+            "type": "SYMBOL",
+            "name": "subset_intersection"
+          }
+        }
+      ]
+    },
+    "subset_intersection": {
+      "type": "CHOICE",
+      "members": [
+        {
+          "type": "FIELD",
+          "name": "name",
+          "content": {
+            "type": "SYMBOL",
+            "name": "scoped_big_identifier"
+          }
+        },
+        {
+          "type": "SEQ",
+          "members": [
+            {
+              "type": "FIELD",
+              "name": "scope",
+              "content": {
+                "type": "SYMBOL",
+                "name": "subset_intersection"
+              }
+            },
+            {
+              "type": "STRING",
+              "value": "&"
+            },
+            {
+              "type": "FIELD",
+              "name": "name",
+              "content": {
+                "type": "SYMBOL",
+                "name": "scoped_big_identifier"
+              }
             }
           ]
         }
@@ -1373,6 +1440,36 @@
       "type": "SEQ",
       "members": [
         {
+          "type": "FIELD",
+          "name": "capture_group",
+          "content": {
+            "type": "SYMBOL",
+            "name": "branch_capture_group"
+          }
+        },
+        {
+          "type": "FIELD",
+          "name": "body",
+          "content": {
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "SYMBOL",
+                "name": "_simple_expression"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "looped_expression"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "branch_capture_group": {
+      "type": "SEQ",
+      "members": [
+        {
           "type": "STRING",
           "value": "|"
         },
@@ -1434,23 +1531,6 @@
         {
           "type": "STRING",
           "value": "|"
-        },
-        {
-          "type": "FIELD",
-          "name": "body",
-          "content": {
-            "type": "CHOICE",
-            "members": [
-              {
-                "type": "SYMBOL",
-                "name": "_simple_expression"
-              },
-              {
-                "type": "SYMBOL",
-                "name": "looped_expression"
-              }
-            ]
-          }
         }
       ]
     },
