@@ -2,7 +2,7 @@ import Foundation
 
 do {
     let module = try Syntax.Module(
-        path: "/Users/zuz/Desktop/Muz/coding/peopl/examples/main.ppl")
+      path: "/Users/zuz/Desktop/Muz/coding/peopl/examples/main.ppl")
     // var llvm = LLVM.Builder(name: "main")
     //
     // let semanticContext = try module.semanticCheck().get()

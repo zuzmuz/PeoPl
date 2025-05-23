@@ -4,41 +4,43 @@
 
 * What is PeoPl
 
-PeoPl is expression-oriented programming language built around the concept of data pipelines.
-Inspired by functional programming paradigms and Unix shell philosophy,
+PeoPl is *Pipeline Expression Oriented Programming Language*.
 
 Programs are constructed as pipelines of operations,
 where each operation receives data, transforms it, and passes it forward.
 
-** Design Principles
-*** Expression Oriented
-Everything in PeoPl is an expression that produces a value.
+* Expression Oriented
+
+Everything is an expression that produces a value.
+
 #+BEGIN_SRC peopl
 "hello"                    // A string literal expression returning "hello"
 42                         // An integer literal expression returning 42
 2 + 3                      // A binary operation expression returning 5
 #+END_SRC
 
-*** Pipeline Centric
-PeoPl models computation as data flowing through transformation nodes,
-similar to Unix pipes but with structured data.
+** Pipeline Centric
+
+Data flows through transformation nodes,
+similar to Unix pipes but with structured data, and strong types.
+
 #+BEGIN_SRC peopl
 // Piping a string through functions
-"hello world" |> reverse()                // Returns "dlrow olleh"
+"hello world" |> reverse                // Returns "dlrow olleh"
 
 // Method-like syntax is also supported
-"hello world".reverse()                   // Returns "dlrow olleh"
+"hello world".reverse                   // Returns "dlrow olleh"
 
 // Multi-step pipelines are natural
-42 |> toString() |> reverse()             // Returns "24"
-42.toString().reverse()                   // Equivalent method syntax
+42 |> toString |> reverse             // Returns "24"
+42.toString.reverse                   // Equivalent method syntax
 
 // Complex transformations become readable pipelines
 "1,2,3,4,5"
 |> split(separator: ",")
 |> map(transform: parseInt)
 |> filter {|$x| x > 2}
-|> sum()                                // Returns 12
+|> sum                                // Returns 12
 #+END_SRC
 
 Drawing inspiration from Unix pipes, functional programming's composition operators, and object methods,
@@ -50,20 +52,26 @@ PeoPl's expression-only design eliminates the statement/expression dichotomy fou
 
 ** Input Capturing in Pipelines
 
-A distinctive feature of PeoPl is its ability to explicitly name and manipulate the pipeline input within transformation nodes. This is done using the input capture syntax with the vertical bar notation `|$name|`.
+Explicitly name and manipulate the pipeline input within transformation nodes.
+This is done using the input capture syntax with the vertical bar notation `|$name|`.
 
 #+BEGIN_SRC peopl
 // Input capturing using |$name| syntax
 12321
-|> toString()
-|> |$value| value = value.reverse() // Returns true (palindrome check)
+|> toString
+|> |$value| value = value.reverse // Returns true (palindrome check)
 #+END_SRC
 
-Input capturing provides explicit naming for pipeline data.
+** Pattern Matching
+Input capturing is pattern matchin.
+In the previous example, the output of `toString()` is matched with the label value.
+The `$` sign is used to bind inputs to labels. Think of it like assignment, but backwards.
 
-** Pattern Matching for Branching
+*** Branching
 
-PeoPl uses pattern matching as its primary branching mechanism. Pattern matching allows code to examine data structure and shape, decompose it, and execute different logic based on the patterns that match.
+Pattern matching is not only for binding values.
+It also allows for branching.
+Input can be matched to exact values, or binded to labels but with guard expressions.
 
 #+BEGIN_SRC peopl
 // Basic pattern matching on values
@@ -76,11 +84,30 @@ value
     |_| "Other"
 #+END_SRC
 
+*** Destructuring
+
+Pattern matching can be complex, it also can be performed on [[*Tuples][tuples]] and [[*Tagged unions][tagged unions]],
+which will be covered later.
+
 ** Piping Complex Data Structures
 
 PeoPl uses product types (tuples, records) to pass complex data structure
 
-Records (objects with named fields) can be passed through pipelines and accessed directly within transformation nodes:
+Records (objects with named fields) can be passed through pipelines and accessed directly within transformation nodes
+
+*** Tuples
+
+Tuples (ordered collections of values) can be processed efficiently:
+
+#+BEGIN_SRC peopl
+// Piping a tuple through a transformation
+(10, 5)
+|> |$dimensions| dimensions.0 * dimensions.1  // Returns 50
+#+END_SRC
+
+*** Records
+
+Records are named tuples
 
 #+BEGIN_SRC peopl
 // Piping a record
@@ -93,19 +120,9 @@ Records (objects with named fields) can be passed through pipelines and accessed
 |> |$| width * height  // Returns 50
 #+END_SRC
 
-** Tuples and Positional Data
+*** Nested Structures
 
-Tuples (ordered collections of values) can be processed efficiently:
-
-#+BEGIN_SRC peopl
-// Piping a tuple through a transformation
-(10, 5)
-|> |$dimensions| dimensions.0 * dimensions.1  // Returns 50
-#+END_SRC
-
-** Nested Structures
-
-PeoPl handles deeply nested data structures elegantly:
+Pattern matching and bindings can be performed on nested structures, used for destructuring.
 
 #+BEGIN_SRC peopl
 // Processing nested data
@@ -126,3 +143,86 @@ PeoPl handles deeply nested data structures elegantly:
 )
 |> |(user: (name: "Hanine", birthyear: $year, role: $role)| "Hanin is born in $birthyear"
 #+END_SRC
+
+* Functions
+
+Functions are also expressions
+#+BEGIN_SRC peopl
+thisReturns42: () -> Int {
+  42
+}
+#+END_SRC
+
+This syntax creates a function that takes nothing as input and returns 42.
+Return statements do not exist because the are not necessary.
+
+** Functions with inputs
+Function inputs are different from regular function arguments.
+Similar to how shell commands take their input from stdin.
+They're analoguous to self or this in languages with object methods.
+Inputs are anonymous, which means they can be pipelined directly into other functions.
+However, if needed they can also be captured.
+
+#+BEGIN_SRC peopl
+square: (Int) -> Int {
+  |$in| in*in
+}
+#+END_SRC
+
+** Function arguments
+In addition to function input, functions also take extra arguments.
+Extra arguments are always named.
+
+
+#+BEGIN_SRC peopl
+add: [a: Int, b: Int] -> Int {
+  a + b
+}
+#+END_SRC
+
+if `()` are ommited, it means the functions takes nothing as input.
+By nothing, I mean the type nothing, analoguous to null or None.
+
+** Calling functions
+Functions with inputs need to be called on an object
+
+#+BEGIN_SRC peopl
+5.square // returns 25
+// or
+5 |> square
+#+END_SRC
+
+If a function does not define extra arguments with `[]` the function can be called without `()`
+
+#+BEGIN_SRC peopl
+squareP: (Int)[] -> Int { // defined with empty `[]`
+  |$in| in*in
+}
+
+5.square() // () are needed here
+#+END_SRC
+
+Functions with nothing as input can't receive a value as input
+
+#+BEGIN_SRC peopl
+5 |>
+add(a: 1, b: 2) // Error: add expects nothing as input
+#+END_SRC
+
+Function with nothing as input can be considered as static functions.
+
+* Program structure
+
+Expressions are not allowed at a file top level.
+The need to be binded to a label.
+
+#+BEGIN_SRC peopl
+a: 3 // creating the constant a with the value 3
+
+main: () -> Nothing { // main function
+  _
+}
+#+END_SRC
+
+The main function is the entry point of the program.
+
