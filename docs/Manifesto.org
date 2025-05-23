@@ -1,4 +1,4 @@
-# Cartesianism
+* Cartesianism
 
 In his Discourse on the Method, French philosopher Rene Descartes
 attempts to arrive to a set of principles that one can know as true without any doubt.
@@ -11,16 +11,9 @@ You then examine all apples, one by one, and only put back the ones that are goo
 In the same way, I tried to reevaluate every programming concept, syntax and idioms.
 Only keeping the ones I personally deem most useful, removing everything else.
 
-## No keywords
+** The Bad and the Ugly
 
-Keywords are an easy way out for a language. They are needed in some cases,
-but their problem is that whenever a new keyword is added, a new special syntax is needed.
-This is more work on the language parser, more things for it to verify, 
-the semantics of the code might change. It's also more things to learn as a programmer.
-
-## The Bad and the Ugly
-
-There's also some concepts that I consider either bad, or useless.
+There's also some concepts that I consider either bad or useless.
 I can go into more details about this later, but here is a list of examples.
 
 1. inheritance:
@@ -826,7 +819,7 @@ and call it a function.
 It would look something like that
 
 
-```
+#+BEGIN_SRC
        ╭────────────────────────────────────────────────────────────────────────────────────────╮      
        │                    ╭────────────────────────────────────────╮                          │  
        │                    │                      extra arguments   │                          │
@@ -839,7 +832,8 @@ input ─┼─┤block 1├─ output ─┴┤                     extra argum
        │                      ╰───────────────────╯╰─────────╯                                  │ 
        ╰────────────────────────────────────────────────────────────────────────────────────────╯       
                                               MY FUNCTION
-```
+					      
+#+END_SRC					      
 
 Like a block, a function takes an input, optional extra arguments, and produces an output.
 

@@ -1,0 +1,16 @@
+* List of goals
+** Syntax
+
+*** finalize draft of initial specs
+
+- [ ] type definitions
+  - tuples
+  - choices
+  - function signatures
+- [ ] expressions
+  - literal
+  - unary
+  - binary
+  - 
+  
+
