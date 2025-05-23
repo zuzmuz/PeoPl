@@ -2,6 +2,19 @@
 #+AUTHOR: Zaher Hamadeh
 #+DATE: May 21, 2025
 
+* Table of content :toc:
+- [[#what-is-peopl][What is PeoPl]]
+- [[#expression-oriented][Expression Oriented]]
+  - [[#pipeline-centric][Pipeline Centric]]
+  - [[#input-capturing-in-pipelines][Input Capturing in Pipelines]]
+  - [[#pattern-matching][Pattern Matching]]
+  - [[#piping-complex-data-structures][Piping Complex Data Structures]]
+- [[#functions][Functions]]
+  - [[#functions-with-inputs][Functions with inputs]]
+  - [[#function-arguments][Function arguments]]
+  - [[#calling-functions][Calling functions]]
+- [[#program-structure][Program structure]]
+
 * What is PeoPl
 
 PeoPl is *Pipeline Expression Oriented Programming Language*.
