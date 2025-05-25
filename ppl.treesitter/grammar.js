@@ -27,8 +27,6 @@ module.exports = grammar({
   ],
 
   conflicts: $ => [
-    [$.value_field_list, $.expression],
-    [$.value_field_list, $.parenthisized_expression],
     [$.nothing_value, $.nothing_type],
   ],
 
@@ -219,19 +217,15 @@ module.exports = grammar({
       field("expression", $.expression),
     ),
 
-    value_field: $ => choice(
-      $.expression, $.tagged_expression
-    ),
-
-    value_field_list: $ => seq(
+    expression_list: $ => seq(
       '(',
         optional(
           seq(
-            $.value_field,
-           repeat(
-             seq(',', $.value_field)
-           ),
-           optional(','),
+            $.expression,
+            repeat(
+              seq(',', $.expression)
+            ),
+            optional(','),
           ),
         ),
       ')'
@@ -239,19 +233,19 @@ module.exports = grammar({
 
     expression: $ => choice(
       $._simple_expression,
-      $.value_field,
+      $.tagged_expression,
       $.branched_expression,
       $.piped_expression
     ),
 
     call_expression: $ => seq(
       field("prefix", $._simple_expression),
-      field("arguments", $.value_field_list),
+      field("arguments", $.expression_list),
     ),
 
     initializer_expression: $ => seq(
       field("prefix", optional($.nominal)),
-      field("arguments", $.value_field_list),
+      field("arguments", $.expression_list),
     ),
 
     // Function Definitions
@@ -284,11 +278,11 @@ module.exports = grammar({
       $.binding
     ),
 
-    parenthisized_expression: $ => seq(
+    parenthisized_expression: $ => prec.left(PREC.FUNC, seq(
       '(',
       $.expression,
       ')',
-    ),
+    )),
 
     access_expression: $ => seq(
       field("prefix", $._simple_expression),

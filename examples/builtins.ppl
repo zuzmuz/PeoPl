@@ -1,3 +1,4 @@
+
 withUnsafeRef[T, S, E in Error]: (T) [
     body: (T) -> Result[S, E]
 ] -> Result[S, E] {
@@ -20,6 +21,8 @@ unsafeRef[T]: (T) -> UnsafeRef[T] {
 }
 
 unsafeDeref[T]: (UnsafeRef[T]) -> T {
+    g(a: b, c: d) |>
+    |a| (1+2*(c-2)).x(x: a |> x, d: nothing)
 }
 
 Type: [

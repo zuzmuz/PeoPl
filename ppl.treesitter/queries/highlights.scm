@@ -44,11 +44,10 @@
     identifier: (scoped_identifier
                   (small_identifier) @function.call)))
 
-(value_field_list
-  (value_field
-    identifier: (small_identifier) @variable.member))
+(tagged_expression
+  identifier: (small_identifier) @variable.member)
 
-(type_field
+(tagged_type_specifier
   identifier: (small_identifier) @variable.member)
 
 (int_literal) @number

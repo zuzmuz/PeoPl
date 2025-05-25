@@ -732,20 +732,7 @@
         }
       ]
     },
-    "value_field": {
-      "type": "CHOICE",
-      "members": [
-        {
-          "type": "SYMBOL",
-          "name": "expression"
-        },
-        {
-          "type": "SYMBOL",
-          "name": "tagged_expression"
-        }
-      ]
-    },
-    "value_field_list": {
+    "expression_list": {
       "type": "SEQ",
       "members": [
         {
@@ -760,7 +747,7 @@
               "members": [
                 {
                   "type": "SYMBOL",
-                  "name": "value_field"
+                  "name": "expression"
                 },
                 {
                   "type": "REPEAT",
@@ -773,7 +760,7 @@
                       },
                       {
                         "type": "SYMBOL",
-                        "name": "value_field"
+                        "name": "expression"
                       }
                     ]
                   }
@@ -812,7 +799,7 @@
         },
         {
           "type": "SYMBOL",
-          "name": "value_field"
+          "name": "tagged_expression"
         },
         {
           "type": "SYMBOL",
@@ -840,7 +827,7 @@
           "name": "arguments",
           "content": {
             "type": "SYMBOL",
-            "name": "value_field_list"
+            "name": "expression_list"
           }
         }
       ]
@@ -869,7 +856,7 @@
           "name": "arguments",
           "content": {
             "type": "SYMBOL",
-            "name": "value_field_list"
+            "name": "expression_list"
           }
         }
       ]
@@ -983,21 +970,25 @@
       ]
     },
     "parenthisized_expression": {
-      "type": "SEQ",
-      "members": [
-        {
-          "type": "STRING",
-          "value": "("
-        },
-        {
-          "type": "SYMBOL",
-          "name": "expression"
-        },
-        {
-          "type": "STRING",
-          "value": ")"
-        }
-      ]
+      "type": "PREC_LEFT",
+      "value": 20,
+      "content": {
+        "type": "SEQ",
+        "members": [
+          {
+            "type": "STRING",
+            "value": "("
+          },
+          {
+            "type": "SYMBOL",
+            "name": "expression"
+          },
+          {
+            "type": "STRING",
+            "value": ")"
+          }
+        ]
+      }
     },
     "access_expression": {
       "type": "SEQ",
@@ -1582,14 +1573,6 @@
     }
   ],
   "conflicts": [
-    [
-      "value_field_list",
-      "expression"
-    ],
-    [
-      "value_field_list",
-      "parenthisized_expression"
-    ],
     [
       "nothing_value",
       "nothing_type"
