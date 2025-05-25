@@ -110,6 +110,7 @@ enum Syntax {
         case subset(Subset)
         case existential(Existential)
         case universal(Universal)
+        case belonging(Belonging)
         case nominal(Nominal)
         indirect case function(Function)
 
@@ -122,6 +123,7 @@ enum Syntax {
             case let .subset(subset): subset.location
             case let .existential(existential): existential.location
             case let .universal(universal): universal.location
+            case let .belonging(belonging): belonging.location
             case let .nominal(nominal): nominal.location
             case let .function(function): function.location
             }
@@ -134,14 +136,29 @@ enum Syntax {
         let location: NodeLocation
     }
 
+    struct HomogeneousTypeProduct: SyntaxNode {
+
+        enum Exponent {
+            case literal(Int64)
+            case identifier(ScopedIdentifier)
+        }
+
+        let typeSpecifier: TypeSpecifier
+        let count: Exponent
+        let location: NodeLocation
+    }
+
     enum TypeField: SyntaxNode {
         case typeSpecifier(TypeSpecifier)
         case taggedTypeSpecifier(TaggedTypeSpecifier)
+        case homogeneousTypeProduct(HomogeneousTypeProduct)
 
         var location: NodeLocation {
             return switch self {
             case let .typeSpecifier(typeSpecifier):
                 typeSpecifier.location
+            case let .homogeneousTypeProduct(homogeneousTypeProduct):
+                homogeneousTypeProduct.location
             case let .taggedTypeSpecifier(taggedTypeSpecifier):
                 taggedTypeSpecifier.location
             }
@@ -174,6 +191,10 @@ enum Syntax {
         let location: NodeLocation
     }
 
+    struct Belonging: SyntaxNode {
+        let location: NodeLocation
+    }
+
     struct Nominal: SyntaxNode {
         let identifier: String
         let typeArguments: [TypeSpecifier]
@@ -190,7 +211,7 @@ enum Syntax {
     // MARK: - Expressions
     // -------------------
 
-    struct ValueField: SyntaxNode {
+    struct TaggedExpression: SyntaxNode {
         let identifier: String
         let expression: Expression
         let location: NodeLocation
@@ -221,8 +242,8 @@ enum Syntax {
             case lambda(signature: Function, expression: Expression)
 
             // Scope
-            case call(prefix: Expression, arguments: [ValueField])
-            case initializer(prefix: Nominal?, arguments: [ValueField])
+            case call(prefix: Expression, arguments: [TaggedExpression])
+            case initializer(prefix: Nominal?, arguments: [TaggedExpression])
             case access(prefix: Expression, field: String)
             case field(String)
             case binding(String)

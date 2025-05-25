@@ -8,7 +8,7 @@
 // @ts-check
 //
 const PREC = {
-  FUNC: 20,
+  PARENTHESIS: 20,
   UNARY: 10,
   MULT: 8,
   ADD: 6,
@@ -114,13 +114,14 @@ module.exports = grammar({
       $.function,
     ),
 
+    // homogeneous_product can only be part of a product
     homogeneous_product: $ => seq(
-      $._type_specifier,
+      field('type_specifier', $._type_specifier),
       '**',
-      choice(
+      field('exponent', choice(
         $.int_literal,
         $.scoped_identifier
-      )
+      ))
     ),
 
     tagged_type_specifier: $ => seq(
@@ -278,7 +279,7 @@ module.exports = grammar({
       $.binding
     ),
 
-    parenthisized_expression: $ => prec.left(PREC.FUNC, seq(
+    parenthisized_expression: $ => prec.left(PREC.PARENTHESIS, seq(
       '(',
       $.expression,
       ')',
@@ -385,12 +386,7 @@ module.exports = grammar({
 
     branch: $ => seq(
       field("capture_group", $.branch_capture_group),
-      field("body",
-        choice(
-          $._simple_expression,
-          $.looped_expression,
-        )
-      )
+      field("body", $._simple_expression)
     ),
 
     branch_capture_group: $ => seq(
@@ -404,11 +400,6 @@ module.exports = grammar({
         ),
       ),
       '|',
-    ),
-
-    looped_expression: $ => seq(
-      $.parenthisized_expression,
-      '^'
     ),
 
     piped_expression: $ => prec.left(PREC.PIPE, seq(

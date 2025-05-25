@@ -13,20 +13,25 @@ protocol TreeSitterNode {
 }
 
 extension Node {
-    func compactMapChildren<T>(block: (Node) throws -> T?) rethrows -> [T] {
-        try (0..<childCount).compactMap { i in
+    func compactMapChildren<T, E>(
+        block: (Node) throws(E) -> T?
+    ) throws(E) -> [T] where E: Error {
+        let optionalMap: [T?] = try (0..<childCount).map { i throws(E) in
             guard let child = child(at: i) else { return nil }
             return try block(child)
         }
+        // For some reason compact map doesn't rethrow typed throws
+        return optionalMap.compactMap { $0 }
     }
 
-    func compactMapChildrenEnumerated<T>(
-        block: (Int, Node) throws -> T?
-    ) rethrows -> [T] {
-        try (0..<childCount).compactMap { i in
+    func compactMapChildrenEnumerated<T, E>(
+        block: (Int, Node) throws(E) -> T?
+    ) throws(E) -> [T] where E: Error {
+        let optionalMap: [T?] = try (0..<childCount).map { i throws(E) in
             guard let child = child(at: i) else { return nil }
             return try block(i, child)
         }
+        return optionalMap.compactMap { $0 }
     }
 
     func getString(in source: Syntax.Source) throws(SyntaxError) -> String {
@@ -91,17 +96,12 @@ extension Syntax.Module {
 }
 
 extension Syntax.Definition: TreeSitterNode {
-    enum CodingKeys: String, CodingKey {
-        case typeDefinition = "type_definition"
-        case valueDefinition = "value_definition"
-    }
-
     static func from(
         node: Node,
         in source: Syntax.Source
     ) throws(SyntaxError) -> Self {
-        switch CodingKeys(rawValue: node.nodeType ?? "") {
-        case .typeDefinition:
+        switch node.nodeType {
+        case "type_definition":
             return .typeDefinition(try .from(
                 node: node,
                 in: source))
@@ -173,37 +173,29 @@ extension Syntax.TypeDefinition: TreeSitterNode {
 }
 
 extension Syntax.TypeSpecifier {
-    enum CodingKeys: String, CodingKey {
-        // TODO: namespace
-        case nothing = "nothing_type"
-        case never = "never_type"
-        case product = "product"
-        case sum = "sum"
-        case subset = "subset"
-        case existential = "some"
-        case universal = "any"
-        case belonging = "in"
-        case nominal = "nominal"
-        case function = "function"
-    }
+
+    // TODO: some types are not supported yet
 
     static func from(
         node: Node,
         in source: Syntax.Source
     ) throws(SyntaxError) -> Self {
         let location = node.getLocation(in: source)
-        switch CodingKeys(rawValue: node.nodeType ?? "") {
-        case .nothing:
+        switch node.nodeType {
+        case "nothing_type":
             return .nothing(location: location)
-        case .never:
+        case "never_type":
             return .never(location: location)
-        case .product:
+        case "product":
             return .product(try .from(node: node, in: source))
+        case "sum":
+            return .sum(try .from(node: node, in: source))
         default:
             throw .errorParsing(element: "TypeSpecifier", location: location)
         }
     }
 }
+
 extension Syntax.TaggedTypeSpecifier: TreeSitterNode {
     static func from(
         node: Node,
@@ -221,17 +213,56 @@ extension Syntax.TaggedTypeSpecifier: TreeSitterNode {
     }
 }
 
+extension Syntax.HomogeneousTypeProduct: TreeSitterNode {
+    static func from(
+        node: Node,
+        in source: Syntax.Source
+    ) throws(SyntaxError) -> Self {
+        guard let typeSpecifierNode = node.child(byFieldName: "type_specifier"),
+            let exponentNode = node.child(byFieldName: "exponent")
+        else {
+            throw .errorParsing(
+                element: "HomogeneousTypeProduct",
+                location: node.getLocation(in: source))
+        }
+
+        let count: Exponent
+        switch exponentNode.nodeType {
+        case "int_literal":
+            guard let intValue = Int64(try node.getString(in: source)) else {
+                throw .errorParsing(
+                    element: "int_literal",
+                    location: node.getLocation(in: source))
+            }
+            count = .literal(intValue)
+        case "scoped_identifier":
+            count = .identifier(try .from(node: exponentNode, in: source))
+        default:
+            throw .errorParsing(
+                element: "count",
+                location: node.getLocation(in: source))
+        }
+
+        return .init(
+            typeSpecifier: try .from(node: typeSpecifierNode, in: source),
+            count: count,
+            location: node.getLocation(in: source)
+        )
+    }
+}
+
 extension Syntax.TypeField: TreeSitterNode {
     static func from(
         node: Node,
         in source: Syntax.Source
     ) throws(SyntaxError) -> Self {
-        if node.nodeType == "tagged_type_specifier" {
+        switch node.nodeType {
+        case "tagged_type_specifier":
             return .taggedTypeSpecifier(try .from(node: node, in: source))
-        } else if node.nodeType == "type_specifier" {
+        case "homogeneous_product":
+            return .homogeneousTypeProduct(try .from(node: node, in: source))
+        default:
             return .typeSpecifier(try .from(node: node, in: source))
-        } else {
-            throw .errorParsing(element: "TypeField", location: .nowhere)
         }
     }
 }
@@ -247,11 +278,28 @@ extension Syntax.Product: TreeSitterNode {
 
         let typeFields: [Syntax.TypeField] =
             try typeFieldList.compactMapChildren { child throws(SyntaxError) in
-            if child.nodeType == "type_field" {
-                return try .from(node: child, in: source)
-            } else {
-                return nil
-            }
+            try .from(node: child, in: source)
+        }
+        return .init(
+            typeFields: typeFields,
+            location: node.getLocation(in: source)
+        )
+    }
+}
+
+extension Syntax.Sum: TreeSitterNode {
+    static func from(
+        node: Node,
+        in source: Syntax.Source
+    ) throws(SyntaxError) -> Self {
+        // first child is the 'choice' keyword
+        guard let typeFieldList = node.child(at: 1) else {
+            throw .errorParsing(element: "Sum", location: .nowhere)
+        }
+
+        let typeFields: [Syntax.TypeField] =
+            try typeFieldList.compactMapChildren { child throws(SyntaxError) in
+            try .from(node: child, in: source)
         }
         return .init(
             typeFields: typeFields,
