@@ -77,8 +77,8 @@ extension Syntax.Module {
 
         self.definitions =
             try rootNode.compactMapChildren { node throws(SyntaxError) in
-            try .from(node: node, in: source)
-        }
+                try .from(node: node, in: source)
+            }
     }
 
     init(path: String) throws {
@@ -102,9 +102,10 @@ extension Syntax.Definition: TreeSitterNode {
     ) throws(SyntaxError) -> Self {
         switch node.nodeType {
         case "type_definition":
-            return .typeDefinition(try .from(
-                node: node,
-                in: source))
+            return .typeDefinition(
+                try .from(
+                    node: node,
+                    in: source))
         default:
             throw .sourceUnreadable
         }
@@ -278,8 +279,8 @@ extension Syntax.Product: TreeSitterNode {
 
         let typeFields: [Syntax.TypeField] =
             try typeFieldList.compactMapChildren { child throws(SyntaxError) in
-            try .from(node: child, in: source)
-        }
+                try .from(node: child, in: source)
+            }
         return .init(
             typeFields: typeFields,
             location: node.getLocation(in: source)
@@ -299,8 +300,8 @@ extension Syntax.Sum: TreeSitterNode {
 
         let typeFields: [Syntax.TypeField] =
             try typeFieldList.compactMapChildren { child throws(SyntaxError) in
-            try .from(node: child, in: source)
-        }
+                try .from(node: child, in: source)
+            }
         return .init(
             typeFields: typeFields,
             location: node.getLocation(in: source)
@@ -310,302 +311,253 @@ extension Syntax.Sum: TreeSitterNode {
 
 // MARK: - Expressions
 // -------------------
-// extension Syntax.Expression {
-//     static let parenthesized = "parenthisized_expression"
+
+extension Syntax.Expression: TreeSitterNode {
+    static func from(
+        node: Node,
+        in source: Syntax.Source
+    ) throws(SyntaxError) -> Self {
+        if node.nodeType == "parenthisized_expression" {
+            guard let child = node.child(at: 1) else {
+                throw .errorParsing(
+                    element: "parenthisized_expression",
+                    location: node.getLocation(in: source))
+            }
+            return try .init(
+                expressionType: .from(node: child, in: source),
+                location: node.getLocation(in: source))
+        } else {
+            return try .init(
+                expressionType: .from(node: node, in: source),
+                location: node.getLocation(in: source))
+        }
+    }
+}
+
+extension Syntax.Expression.Literal {
+    static func from(
+        node: Node,
+        in source: Syntax.Source
+    ) throws(SyntaxError) -> Self {
+        guard let child = node.child(at: 0) else {
+            throw .errorParsing(
+                element: "Literal",
+                location: node.getLocation(in: source))
+        }
+        switch child.nodeType {
+        case "nothing_value":
+            return .nothing
+        case "never_value":
+            return .never
+        case "int_literal":
+            guard let intValue = UInt64(try node.getString(in: source))
+            else {
+                throw .errorParsing(
+                    element: "Int_literal",
+                    location: node.getLocation(in: source))
+            }
+            return .intLiteral(intValue)
+        case "float_literal":
+            guard let floatValue = Double(try node.getString(in: source))
+            else {
+                throw .errorParsing(
+                    element: "Float_literal",
+                    location: node.getLocation(in: source))
+            }
+            return .floatLiteral(floatValue)
+        case "string_literal":
+            let stringValue = try node.getString(in: source)
+            return .stringLiteral(String(stringValue.dropFirst().dropLast()))
+        case "bool_literal":
+            guard let boolValue = Bool(try node.getString(in: source))
+            else {
+                throw .errorParsing(
+                    element: "Bool_literal",
+                    location: node.getLocation(in: source))
+            }
+            return .boolLiteral(boolValue)
+        default:
+            throw .sourceUnreadable
+        }
+    }
+}
 //
-//     init?(from node: Node, in source: Syntax.Source) {
-//         guard let location = node.getLocation(in: source) else {
-//             return nil
-//         }
-//         self.location = location
-//         if node.nodeType == Syntax.Expression.parenthesized {
-//             guard let child = node.child(at: 1),
-//                 let expressionType = Syntax.Expression
-//                     .ExpressionType(
-//                         from: child,
-//                         in: source)
-//             else { return nil }
-//             self.expressionType = expressionType
-//         } else {
-//             guard
-//                 let expressionType = Syntax.Expression
-//                     .ExpressionType(
-//                         from: node,
-//                         in: source)
-//             else { return nil }
-//             self.expressionType = expressionType
-//         }
-//     }
-// }
-//
-// extension Syntax.Expression.Literal {
-//     enum CodingKeys: String, CodingKey {
-//         case nothing
-//         case never
-//
-//         case intLiteral = "int_literal"
-//         case floatLiteral = "float_literal"
-//         case stringLiteral = "string_literal"
-//         case boolLiteral = "bool_literal"
-//     }
-//
-//     init?(from node: Node, in source: Syntax.Source) {
-//         switch CodingKeys(rawValue: node.child(at: 0)?.nodeType ?? "") {
-//         case .nothing:
-//             self = .nothing
-//         case .never:
-//             self = .never
-//         case .intLiteral:
-//             guard let intText = node.getString(in: source),
-//                 let intValue = UInt64(intText)
-//             else { return nil }
-//             self = .intLiteral(intValue)
-//         case .floatLiteral:
-//             guard let floatText = node.getString(in: source),
-//                 let floatValue = Double(floatText)
-//             else { return nil }
-//             self = .floatLiteral(floatValue)
-//         case .stringLiteral:
-//             guard
-//                 let stringValue = node.getString(
-//                     in: source)
-//             else { return nil }
-//             self = .stringLiteral(
-//                 String(stringValue.dropFirst().dropLast()))
-//         case .boolLiteral:
-//             guard let boolText = node.getString(in: source),
-//                 let boolValue = Bool(boolText)
-//             else { return nil }
-//             self = .boolLiteral(boolValue)
-//         case .none:
-//             return nil
-//         }
-//     }
-// }
-//
-// extension Syntax.Expression.ExpressionType {
-//
-//     enum CodingKeys: String, CodingKey {
-//         case literal
-//
-//         case unary = "unary_expression"
-//         case binary = "binary_expression"
-//
-//         case unnamedTuple = "unnamed_tuple_literal"
-//         case namedTuple = "named_tuple_literal"
-//
-//         case functionCall = "function_call_expression"
-//         case typeInitializer = "type_initializer_expression"
-//         case access = "access_expression"
-//         case field = "scoped_identifier"
-//
-//         case branched = "branched_expression"
-//         case piped = "piped_expression"
-//
-//     }
-//
-//     static func parseLiteral(
-//         from node: Node,
-//         in source: Syntax.Source
-//     ) -> Self? {
-//         guard
-//             let literal = Syntax.Expression.Literal(
-//                 from: node,
-//                 in: source)
-//         else { return nil }
-//         return .literal(literal)
-//     }
-//
-//     static func parseUnary(
-//         from node: Node,
-//         in source: Syntax.Source
-//     ) -> Self? {
-//         guard let operatorNode = node.child(byFieldName: "operator"),
-//             let operatorText = operatorNode.getString(in: source),
-//             let operandNode = node.child(byFieldName: "operand"),
-//             let operandExpression = Syntax.Expression(
-//                 from: operandNode,
-//                 in: source),
-//             let operatorValue = Operator(rawValue: operatorText)
-//         else {
-//             return nil
-//         }
-//         return .unary(operatorValue, expression: operandExpression)
-//     }
-//
-//     static func parseBinary(
-//         from node: Node,
-//         in source: Syntax.Source
-//     ) -> Self? {
-//         guard let leftNode = node.child(byFieldName: "left"),
-//             let leftExpression = Syntax.Expression(
-//                 from: leftNode,
-//                 in: source),
-//             let operatorNode = node.child(byFieldName: "operator"),
-//             let operatorText = operatorNode.getString(in: source),
-//             let rightNode = node.child(byFieldName: "right"),
-//             let rightExpression = Syntax.Expression(
-//                 from: rightNode,
-//                 in: source),
-//             let operatorValue = Operator(rawValue: operatorText)
-//         else {
-//             return nil
-//         }
-//         return .binary(
-//             operatorValue,
-//             left: leftExpression,
-//             right: rightExpression)
-//     }
-//
-//     static func parseUnnamedTuple(
-//         from node: Node,
-//         in source: Syntax.Source
-//     ) -> Self? {
-//         let expressions = node.compactMapChildren { node in
-//             Syntax.Expression(from: node, in: source)
-//         }
-//         return .unnamedTuple(expressions)
-//     }
-//
-//     static func parseNamedTuple(
-//         from node: Node,
-//         in source: Syntax.Source
-//     ) -> Self? {
-//         let arguments = node.compactMapChildren { node in
-//             Syntax.Expression.Argument(from: node, in: source)
-//         }
-//         return .namedTuple(arguments)
-//     }
-//
-//     static func parseFunctionCall(
-//         from node: Node,
-//         in source: Syntax.Source
-//     ) -> Self? {
-//         guard let prefixNode = node.child(byFieldName: "prefix"),
-//             let prefix = Syntax.Expression(
-//                 from: prefixNode, in: source)
-//         else { return nil }
-//
-//         let arguments: [Syntax.Expression.Argument] =
-//             if let argumentList = node.child(
-//                 byFieldName: "arguments")
-//             {
-//                 argumentList.compactMapChildren { child in
-//                     Syntax.Expression.Argument(
-//                         from: child, in: source)
-//                 }
-//             } else {
-//                 []
-//             }
-//         return .functionCall(prefix: prefix, arguments: arguments)
-//     }
-//
-//     static func parseTypeInitializer(
-//         from node: Node,
-//         in source: Syntax.Source
-//     ) -> Self? {
-//         guard let prefixNode = node.child(byFieldName: "prefix"),
-//             let prefix = Syntax.NominalType(
-//                 from: prefixNode, in: source)
-//         else { return nil }
-//
-//         let arguments: [Syntax.Expression.Argument] =
-//             if let argumentList = node.child(
-//                 byFieldName: "arguments")
-//             {
-//                 argumentList.compactMapChildren { child in
-//                     Syntax.Expression.Argument(
-//                         from: child, in: source)
-//                 }
-//             } else {
-//                 []
-//             }
-//         return .typeInitializer(prefix: prefix, arguments: arguments)
-//     }
-//
-//     static func parseAccess(
-//         from node: Node,
-//         in source: Syntax.Source
-//     ) -> Self? {
-//         guard let prefixNode = node.child(byFieldName: "prefix"),
-//             let prefix = Syntax.Expression(
-//                 from: prefixNode, in: source),
-//             let fieldNode = node.child(byFieldName: "field"),
-//             let field = fieldNode.getString(in: source)
-//         else { return nil }
-//         return .access(prefix: prefix, field: field)
-//     }
-//
-//     static func parseField(
-//         from node: Node,
-//         in source: Syntax.Source
-//     ) -> Self? {
-//         guard
-//             let scopedIdenfier = Syntax.ScopedIdentifier(
-//                 from: node,
-//                 in: source)
-//         else { return nil }
-//         return .field(scopedIdenfier)
-//     }
-//
-//     static func parseBranched(
-//         from node: Node,
-//         in source: Syntax.Source
-//     ) -> Self? {
-//         guard
-//             let branched = Syntax.Expression.Branched(
-//                 from: node,
-//                 in: source)
-//         else { return nil }
-//         return .branched(branched)
-//     }
-//
-//     static func parsePiped(
-//         from node: Node,
-//         in source: Syntax.Source
-//     ) -> Self? {
-//         guard let leftNode = node.child(byFieldName: "left"),
-//             let left = Syntax.Expression(from: leftNode, in: source)
-//         else { return nil }
-//         guard let rightNode = node.child(byFieldName: "right"),
-//             let right = Syntax.Expression(
-//                 from: rightNode, in: source)
-//         else { return nil }
-//         return .piped(left: left, right: right)
-//     }
-//
-//     init?(from node: Node, in source: Syntax.Source) {
-//         guard
-//             let expressionType =
-//                 switch CodingKeys(rawValue: node.nodeType ?? "") {
-//                 case .literal:
-//                     Self.parseLiteral(from: node, in: source)
-//                 case .unary:
-//                     Self.parseUnary(from: node, in: source)
-//                 case .binary:
-//                     Self.parseBinary(from: node, in: source)
-//                 case .unnamedTuple:
-//                     Self.parseUnnamedTuple(from: node, in: source)
-//                 case .namedTuple:
-//                     Self.parseNamedTuple(from: node, in: source)
-//                 case .functionCall:
-//                     Self.parseFunctionCall(from: node, in: source)
-//                 case .typeInitializer:
-//                     Self.parseTypeInitializer(from: node, in: source)
-//                 case .access:
-//                     Self.parseAccess(from: node, in: source)
-//                 case .field:
-//                     Self.parseField(from: node, in: source)
-//                 case .branched:
-//                     Self.parseBranched(from: node, in: source)
-//                 case .piped:
-//                     Self.parsePiped(from: node, in: source)
-//                 default:
-//                     nil
-//                 } else { return nil }
-//         self = expressionType
-//     }
-// }
+extension Syntax.Expression.ExpressionType: TreeSitterNode {
+
+    //     static func parseUnary(
+    //         from node: Node,
+    //         in source: Syntax.Source
+    //     ) -> Self? {
+    //         guard let operatorNode = node.child(byFieldName: "operator"),
+    //             let operatorText = operatorNode.getString(in: source),
+    //             let operandNode = node.child(byFieldName: "operand"),
+    //             let operandExpression = Syntax.Expression(
+    //                 from: operandNode,
+    //                 in: source),
+    //             let operatorValue = Operator(rawValue: operatorText)
+    //         else {
+    //             return nil
+    //         }
+    //         return .unary(operatorValue, expression: operandExpression)
+    //     }
+    //
+    //     static func parseBinary(
+    //         from node: Node,
+    //         in source: Syntax.Source
+    //     ) -> Self? {
+    //         guard let leftNode = node.child(byFieldName: "left"),
+    //             let leftExpression = Syntax.Expression(
+    //                 from: leftNode,
+    //                 in: source),
+    //             let operatorNode = node.child(byFieldName: "operator"),
+    //             let operatorText = operatorNode.getString(in: source),
+    //             let rightNode = node.child(byFieldName: "right"),
+    //             let rightExpression = Syntax.Expression(
+    //                 from: rightNode,
+    //                 in: source),
+    //             let operatorValue = Operator(rawValue: operatorText)
+    //         else {
+    //             return nil
+    //         }
+    //         return .binary(
+    //             operatorValue,
+    //             left: leftExpression,
+    //             right: rightExpression)
+    //     }
+    //
+    //     static func parseUnnamedTuple(
+    //         from node: Node,
+    //         in source: Syntax.Source
+    //     ) -> Self? {
+    //         let expressions = node.compactMapChildren { node in
+    //             Syntax.Expression(from: node, in: source)
+    //         }
+    //         return .unnamedTuple(expressions)
+    //     }
+    //
+    //     static func parseNamedTuple(
+    //         from node: Node,
+    //         in source: Syntax.Source
+    //     ) -> Self? {
+    //         let arguments = node.compactMapChildren { node in
+    //             Syntax.Expression.Argument(from: node, in: source)
+    //         }
+    //         return .namedTuple(arguments)
+    //     }
+    //
+    //     static func parseFunctionCall(
+    //         from node: Node,
+    //         in source: Syntax.Source
+    //     ) -> Self? {
+    //         guard let prefixNode = node.child(byFieldName: "prefix"),
+    //             let prefix = Syntax.Expression(
+    //                 from: prefixNode, in: source)
+    //         else { return nil }
+    //
+    //         let arguments: [Syntax.Expression.Argument] =
+    //             if let argumentList = node.child(
+    //                 byFieldName: "arguments")
+    //             {
+    //                 argumentList.compactMapChildren { child in
+    //                     Syntax.Expression.Argument(
+    //                         from: child, in: source)
+    //                 }
+    //             } else {
+    //                 []
+    //             }
+    //         return .functionCall(prefix: prefix, arguments: arguments)
+    //     }
+    //
+    //     static func parseTypeInitializer(
+    //         from node: Node,
+    //         in source: Syntax.Source
+    //     ) -> Self? {
+    //         guard let prefixNode = node.child(byFieldName: "prefix"),
+    //             let prefix = Syntax.NominalType(
+    //                 from: prefixNode, in: source)
+    //         else { return nil }
+    //
+    //         let arguments: [Syntax.Expression.Argument] =
+    //             if let argumentList = node.child(
+    //                 byFieldName: "arguments")
+    //             {
+    //                 argumentList.compactMapChildren { child in
+    //                     Syntax.Expression.Argument(
+    //                         from: child, in: source)
+    //                 }
+    //             } else {
+    //                 []
+    //             }
+    //         return .typeInitializer(prefix: prefix, arguments: arguments)
+    //     }
+    //
+    //     static func parseAccess(
+    //         from node: Node,
+    //         in source: Syntax.Source
+    //     ) -> Self? {
+    //         guard let prefixNode = node.child(byFieldName: "prefix"),
+    //             let prefix = Syntax.Expression(
+    //                 from: prefixNode, in: source),
+    //             let fieldNode = node.child(byFieldName: "field"),
+    //             let field = fieldNode.getString(in: source)
+    //         else { return nil }
+    //         return .access(prefix: prefix, field: field)
+    //     }
+    //
+    //     static func parseField(
+    //         from node: Node,
+    //         in source: Syntax.Source
+    //     ) -> Self? {
+    //         guard
+    //             let scopedIdenfier = Syntax.ScopedIdentifier(
+    //                 from: node,
+    //                 in: source)
+    //         else { return nil }
+    //         return .field(scopedIdenfier)
+    //     }
+    //
+    //     static func parseBranched(
+    //         from node: Node,
+    //         in source: Syntax.Source
+    //     ) -> Self? {
+    //         guard
+    //             let branched = Syntax.Expression.Branched(
+    //                 from: node,
+    //                 in: source)
+    //         else { return nil }
+    //         return .branched(branched)
+    //     }
+    //
+    //     static func parsePiped(
+    //         from node: Node,
+    //         in source: Syntax.Source
+    //     ) -> Self? {
+    //         guard let leftNode = node.child(byFieldName: "left"),
+    //             let left = Syntax.Expression(from: leftNode, in: source)
+    //         else { return nil }
+    //         guard let rightNode = node.child(byFieldName: "right"),
+    //             let right = Syntax.Expression(
+    //                 from: rightNode, in: source)
+    //         else { return nil }
+    //         return .piped(left: left, right: right)
+    //     }
+    //
+    static func from(
+        node: Node,
+        in source: Syntax.Source
+    ) throws(SyntaxError) -> Self {
+        switch node.nodeType {
+        case "literal":
+            return .literal(try .from(node: node, in: source))
+        // case "unary_expression":
+        //     return parseUnary(from: node, in: source)
+        // case "binary_expression":
+        //     return parseBinary(from: node, in: source)
+        default:
+            throw .sourceUnreadable
+        }
+    }
+}
 //
 // extension Syntax.Expression.Argument {
 //     init?(from node: Node, in source: Syntax.Source) {

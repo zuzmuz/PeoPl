@@ -247,6 +247,7 @@ enum Syntax {
             case access(prefix: Expression, field: String)
             case field(String)
             case binding(String)
+            case taggedBinding(TaggedExpression)
 
             case branched(Branched)
             case piped(left: Expression, right: Expression)
@@ -258,13 +259,8 @@ enum Syntax {
             struct Branch: SyntaxNode {
                 let matchExpression: Expression
                 let guardExpression: Expression?
-                let body: Body
+                let body: Expression
                 let location: NodeLocation
-
-                enum Body {
-                    case simple(Expression)
-                    case looped(Expression)
-                }
             }
         }
     }
