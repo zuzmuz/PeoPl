@@ -33,7 +33,7 @@ module.exports = grammar({
   rules: {
     source_file: $ => repeat(
       seq(
-        $.definition,
+        $._definition,
       )
     ),
 
@@ -78,7 +78,7 @@ module.exports = grammar({
     // Definitions
     // -----------
 
-    definition: $ => choice(
+    _definition: $ => choice(
       $.type_definition,
       $.value_definition,
     ),
@@ -87,7 +87,7 @@ module.exports = grammar({
       field('identifier', $.scoped_big_identifier),
       optional(field('arguments', $.type_field_list)),
       ':',
-      field('definition', $.type_specifier)
+      field('definition', $._type_specifier)
     ),
 
     value_definition: $ => seq(
@@ -100,7 +100,7 @@ module.exports = grammar({
     // Types
     // -----
 
-    type_specifier: $ => choice(
+    _type_specifier: $ => choice(
       $.namespace,
       $.nothing_type,
       $.never_type,
@@ -115,7 +115,7 @@ module.exports = grammar({
     ),
 
     homogeneous_product: $ => seq(
-      $.type_specifier,
+      $._type_specifier,
       '**',
       choice(
         $.int_literal,
@@ -126,11 +126,11 @@ module.exports = grammar({
     tagged_type_specifier: $ => seq(
       field("identifier", $.small_identifier),
       ":",
-      field("type", $.type_specifier),
+      field("type", $._type_specifier),
     ),
 
     type_field: $ => choice(
-      $.tagged_type_specifier, $.type_specifier, $.homogeneous_product
+      $.tagged_type_specifier, $._type_specifier, $.homogeneous_product
     ),
 
     type_field_list: $ => seq(
@@ -197,15 +197,15 @@ module.exports = grammar({
 
     function: $ => seq(
       choice(
-        seq('(', optional(field('input_type', $.type_specifier)), ')'),
+        seq('(', optional(field('input_type', $._type_specifier)), ')'),
         field('arguments', $.type_field_list),
         seq(
-          '(', field('input_type', $.type_specifier), ')',
+          '(', field('input_type', $._type_specifier), ')',
           field('arguments', $.type_field_list),
         ),
       ),
       '->',
-      field('output_type', $.type_specifier)
+      field('output_type', $._type_specifier)
     ),
 
     // Expression

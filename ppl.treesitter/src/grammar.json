@@ -9,7 +9,7 @@
         "members": [
           {
             "type": "SYMBOL",
-            "name": "definition"
+            "name": "_definition"
           }
         ]
       }
@@ -140,7 +140,7 @@
         }
       ]
     },
-    "definition": {
+    "_definition": {
       "type": "CHOICE",
       "members": [
         {
@@ -189,7 +189,7 @@
           "name": "definition",
           "content": {
             "type": "SYMBOL",
-            "name": "type_specifier"
+            "name": "_type_specifier"
           }
         }
       ]
@@ -235,7 +235,7 @@
         }
       ]
     },
-    "type_specifier": {
+    "_type_specifier": {
       "type": "CHOICE",
       "members": [
         {
@@ -289,7 +289,7 @@
       "members": [
         {
           "type": "SYMBOL",
-          "name": "type_specifier"
+          "name": "_type_specifier"
         },
         {
           "type": "STRING",
@@ -330,7 +330,7 @@
           "name": "type",
           "content": {
             "type": "SYMBOL",
-            "name": "type_specifier"
+            "name": "_type_specifier"
           }
         }
       ]
@@ -344,7 +344,7 @@
         },
         {
           "type": "SYMBOL",
-          "name": "type_specifier"
+          "name": "_type_specifier"
         },
         {
           "type": "SYMBOL",
@@ -640,7 +640,7 @@
                       "name": "input_type",
                       "content": {
                         "type": "SYMBOL",
-                        "name": "type_specifier"
+                        "name": "_type_specifier"
                       }
                     },
                     {
@@ -674,7 +674,7 @@
                   "name": "input_type",
                   "content": {
                     "type": "SYMBOL",
-                    "name": "type_specifier"
+                    "name": "_type_specifier"
                   }
                 },
                 {
@@ -702,7 +702,7 @@
           "name": "output_type",
           "content": {
             "type": "SYMBOL",
-            "name": "type_specifier"
+            "name": "_type_specifier"
           }
         }
       ]

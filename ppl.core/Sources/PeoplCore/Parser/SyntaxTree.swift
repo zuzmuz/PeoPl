@@ -102,22 +102,11 @@ enum Syntax {
     // MARK: - type definitions
     // ------------------------
 
-    struct TypeField: SyntaxNode {
-        let identifier: ScopedIdentifier
-        let type: TypeSpecifier
-        let location: NodeLocation
-    }
-
-    // struct TypeFieldList: SyntaxNode {
-    // }
-
     enum TypeSpecifier: SyntaxNode {
         case nothing(location: NodeLocation)
         case never(location: NodeLocation)
-        case tuple(Tuple)
-        case record(Record)
-        case union(Union)
-        case choice(Choice)
+        case product(Product)
+        case sum(Sum)
         case subset(Subset)
         case existential(Existential)
         case universal(Universal)
@@ -128,10 +117,8 @@ enum Syntax {
             return switch self {
             case let .nothing(location): location
             case let .never(location): location
-            case let .tuple(tuple): tuple.location
-            case let .record(record): record.location
-            case let .union(union): union.location
-            case let .choice(choice): choice.location
+            case let .product(product): product.location
+            case let .sum(sum): sum.location
             case let .subset(subset): subset.location
             case let .existential(existential): existential.location
             case let .universal(universal): universal.location
@@ -141,22 +128,32 @@ enum Syntax {
         }
     }
 
-    struct Tuple: SyntaxNode {
-        let types: [TypeSpecifier]
+    struct TaggedTypeSpecifier: SyntaxNode {
+        let identifier: ScopedIdentifier
+        let type: TypeSpecifier
         let location: NodeLocation
     }
 
-    struct Record: SyntaxNode {
+    enum TypeField: SyntaxNode {
+        case typeSpecifier(TypeSpecifier)
+        case taggedTypeSpecifier(TaggedTypeSpecifier)
+
+        var location: NodeLocation {
+            return switch self {
+            case let .typeSpecifier(typeSpecifier):
+                typeSpecifier.location
+            case let .taggedTypeSpecifier(taggedTypeSpecifier):
+                taggedTypeSpecifier.location
+            }
+        }
+    }
+
+    struct Product: SyntaxNode {
         let typeFields: [TypeField]
         let location: NodeLocation
     }
 
-    struct Union: SyntaxNode {
-        let types: [TypeSpecifier]
-        let location: NodeLocation
-    }
-
-    struct Choice: SyntaxNode {
+    struct Sum: SyntaxNode {
         let typeFields: [TypeField]
         let location: NodeLocation
     }
