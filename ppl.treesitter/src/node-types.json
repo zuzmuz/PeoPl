@@ -854,17 +854,7 @@
     "fields": {
       "identifier": {
         "multiple": false,
-        "required": false,
-        "types": [
-          {
-            "type": "big_identifier",
-            "named": true
-          }
-        ]
-      },
-      "name": {
-        "multiple": false,
-        "required": false,
+        "required": true,
         "types": [
           {
             "type": "big_identifier",
@@ -888,7 +878,7 @@
     "type": "scoped_identifier",
     "named": true,
     "fields": {
-      "name": {
+      "identifier": {
         "multiple": false,
         "required": true,
         "types": [

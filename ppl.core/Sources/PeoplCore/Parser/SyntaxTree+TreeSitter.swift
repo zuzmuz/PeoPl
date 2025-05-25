@@ -5,31 +5,40 @@ import TreeSitterPeoPl
 // MARK: TreeSitter node extension functions
 // -----------------------------------------
 
+protocol TreeSitterNode {
+    static func from(
+        node: Node,
+        in source: Syntax.Source
+    ) throws(SyntaxError) -> Self
+}
+
 extension Node {
-    func compactMapChildren<T>(block: (Node) -> T?) -> [T] {
-        (0..<childCount).compactMap { i in
+    func compactMapChildren<T>(block: (Node) throws -> T?) rethrows -> [T] {
+        try (0..<childCount).compactMap { i in
             guard let child = child(at: i) else { return nil }
-            return block(child)
+            return try block(child)
         }
     }
 
-    func compactMapChildrenEnumerated<T>(block: (Int, Node) -> T?) -> [T] {
-        (0..<childCount).compactMap { i in
+    func compactMapChildrenEnumerated<T>(
+        block: (Int, Node) throws -> T?
+    ) rethrows -> [T] {
+        try (0..<childCount).compactMap { i in
             guard let child = child(at: i) else { return nil }
-            return block(i, child)
+            return try block(i, child)
         }
     }
 
-    func getString(in source: Syntax.Source) -> String? {
+    func getString(in source: Syntax.Source) throws(SyntaxError) -> String {
         guard
-            let range = Swift.Range(
+            let range = Swift.Range.init(
                 self.range,
                 in: source.content)
-        else { return nil }
+        else { throw .rangeNotInContent }
         return String(source.content[range])
     }
 
-    func getLocation(in source: Syntax.Source) -> Syntax.NodeLocation? {
+    func getLocation(in source: Syntax.Source) -> Syntax.NodeLocation {
         let range = self.range.lowerBound..<self.range.upperBound
         let pointRange =
             Syntax.NodeLocation.Point(
@@ -61,8 +70,9 @@ extension Syntax.Module {
 
         let source = Syntax.Source(content: source, name: path)
 
-        self.statements = rootNode.compactMapChildren { node in
-            Syntax.Statement(from: node, in: source)
+        self.definitions =
+            try rootNode.compactMapChildren { node throws(SyntaxError) in
+            try .from(node: node, in: source)
         }
     }
 
@@ -80,238 +90,107 @@ extension Syntax.Module {
     }
 }
 
-extension Syntax.Statement {
+extension Syntax.Definition: TreeSitterNode {
     enum CodingKeys: String, CodingKey {
         case typeDefinition = "type_definition"
-        case valueField = "value_field"
+        case valueDefinition = "value_definition"
     }
 
-    init?(from node: Node, in source: Syntax.Source) {
+    static func from(node: Node, in source: Syntax.Source) throws(SyntaxError) -> Self {
         switch CodingKeys(rawValue: node.nodeType ?? "") {
         case .typeDefinition:
-            guard
-                let typeDefinition = Syntax.TypeDefinition(
-                    from: node,
-                    in: source)
-            else { return nil }
-            self = .typeDefinition(typeDefinition)
-        case .valueField:
-            return nil
+            let typeDefinition = try .from(
+                from: node,
+                in: source)
+            return .typeDefinition(typeDefinition)
         default:
-            return nil
+            throw .sourceUnreadable
         }
+    }
+}
+
+extension Syntax.ScopedIdentifier: TreeSitterNode {
+    static func getScopedIdentifier(
+        node: Node,
+        in source: Syntax.Source
+    ) throws(SyntaxError) -> [String] {
+        guard let identifier = node.child(byFieldName: "identifier") else {
+            throw .errorParsing(
+                element: "ScopedIdentifier",
+                location: .nowhere)
+        }
+
+        let nameValue = try identifier.getString(in: source)
+
+        if let scope = node.child(byFieldName: "scope") {
+            let scopeValue = try getScopedIdentifier(
+                node: scope, in: source)
+            return scopeValue + [nameValue]
+        }
+
+        return [nameValue]
+    }
+
+    static func from(
+        node: Node,
+        in source: Syntax.Source
+    ) throws(SyntaxError) -> Self {
+        .init(
+            chain: try Self.getScopedIdentifier(node: node, in: source),
+            location: node.getLocation(in: source)
+        )
     }
 }
 
 // MARK: - type definitions
 // ------------------------
 
-extension Syntax.TypeField {
-    static let rawValue = "param_definition"
-
-    init?(from node: Node, in source: Syntax.Source) {
+extension Syntax.TypeDefinition: TreeSitterNode {
+    static func from(
+        node: Node,
+        in source: Syntax.Source
+    ) throws(SyntaxError) -> Self {
         guard let identifierNode = node.child(byFieldName: "identifier"),
-            let identifier = identifierNode.getString(in: source),
-            let definitionNode = node.child(byFieldName: "definition"),
-            let definition = Syntax.TypeSpecifier(
-                from: definitionNode,
-                in: source),
-            let location = node.getLocation(in: source)
-        else { return nil }
-
-        self.type = definition
-        self.identifier = identifier
-
-        self.location = location
-    }
-}
-
-extension Syntax.TypeDefinition {
-    init?(from node: Node, in source: Syntax.Source) {
-        guard let identifierNode = node.child(byFieldName: "identifier"),
-            let identifier = identifierNode.getString(in: source),
-            let definitionNode = node.child(byFieldName: "definition"),
-            let definition = Syntax.TypeSpecifier(
-                from: definitionNode,
-                in: source),
-            let location = node.getLocation(in: source)
-        else { return nil }
-
-        self.definition = definition
-        self.identifier = identifier
-        self.location = location
-    }
-}
-
-// MARK: - function definitions
-// ----------------------------
-
-extension Syntax.ScopedIdentifier {
-    static let scope = "scope"
-    static let name = "name"
-
-    init?(from node: Node, in source: Syntax.Source) {
-        guard let location = node.getLocation(in: source) else {
-            return nil
-        }
-        self.location = location
-
-        if let scope = node.child(byFieldName: Self.scope) {
-            self.scope = Syntax.NominalType(from: scope, in: source)
-        } else {
-            self.scope = nil
-        }
-        guard let identifier = node.child(byFieldName: Self.name),
-            let identifierValue = identifier.getString(in: source)
-        else { return nil }
-        self.identifier = identifierValue
-    }
-}
-
-extension Syntax.FunctionDefinition {
-
-    enum CodingKeys: String, CodingKey {
-        case inputType = "input_type"
-        case name = "name"
-        case params
-        case outputType = "output_type"
-        case body
-    }
-
-    init?(from node: Node, in source: Syntax.Source) {
-        guard let location = node.getLocation(in: source) else {
-            return nil
-        }
-        self.location = location
-
-        if let child = node.child(
-            byFieldName: CodingKeys.inputType.rawValue)
-        {
-            guard
-                let typeIdentifier = Syntax.TypeSpecifier(
-                    from: child,
-                    in: source)
-            else { return nil }
-            self.inputType = typeIdentifier
-        } else {
-            self.inputType = nil
-        }
-
-        guard
-            let child = node.child(
-                byFieldName: CodingKeys.name.rawValue),
-            let name = Syntax.ScopedIdentifier(
-                from: child, in: source)
-        else { return nil }
-
-        self.identifier = name
-
-        self.params =
-            if let child = node.child(
-                byFieldName: CodingKeys.params.rawValue)
-            {
-                child.compactMapChildren { paramNode in
-                    if paramNode.nodeType
-                        == Syntax.ParamDefinition
-                        .rawValue
-                    {
-                        return Syntax.ParamDefinition(
-                            from: paramNode,
-                            in: source)
-                    } else {
-                        return nil
-                    }
-                }
-            } else {
-                []
-            }
-        guard
-            let child = node.child(
-                byFieldName: CodingKeys.outputType.rawValue),
-            let outputType = Syntax.TypeSpecifier(
-                from: child, in: source)
+            let definitionNode = node.child(byFieldName: "definition")
         else {
-            return nil
+            throw .errorParsing(element: "TypeDefinition", location: .nowhere)
         }
-        self.outputType = outputType
-        if let child = node.child(
-            byFieldName: CodingKeys.body.rawValue),
-            let body = Syntax.Expression(from: child, in: source)
-        {
-            self.body = body
-        } else {
-            self.body = nil
-        }
+        // TODO: parse type list
+        // if let argumentsNode = node.child(byFieldName: "type_arguments") {
+        //     argumentsNode.compactMapChildren { node in
+        //     }
+        // }
+
+        return .init(
+            identifier: try .from(node: identifierNode, in: source),
+            arguments: [],
+            definition: try .from(node: definitionNode, in: source),
+            location: node.getLocation(in: source)
+        )
     }
 }
 
-extension Syntax.OperatorOverloadDefinition {
-    enum CodingKeys: String, CodingKey {
-        case left = "left_type"
-        case right = "right_type"
-        case op = "operator"
-        case outputType = "output_type"
-        case body
-    }
+extension Syntax.TypeField: TreeSitterNode {
+    static func from(
+        node: Node,
+        in source: Syntax.Source
+    ) throws(SyntaxError) -> Self {
+        guard let identifierNode = node.child(byFieldName: "identifier"),
+            let definitionNode = node.child(byFieldName: "type")
+        else { throw .errorParsing(element: "TypeField", location: .nowhere) }
 
-    init?(from node: Node, in source: Syntax.Source) {
-        guard let location = node.getLocation(in: source) else {
-            return nil
-        }
-        self.location = location
-
-        guard
-            let child = node.child(
-                byFieldName: CodingKeys.left.rawValue),
-            let leftParamDefinition = Syntax.ParamDefinition(
-                from: child,
-                in: source)
-        else { return nil }
-        self.left = leftParamDefinition.type
-
-        guard
-            let child = node.child(
-                byFieldName: CodingKeys.op.rawValue),
-            let name = child.getString(in: source),
-            let op = Operator(rawValue: name)
-        else { return nil }
-        self.op = op
-
-        guard
-            let child = node.child(
-                byFieldName: CodingKeys.right.rawValue),
-            let rightParamDefinition = Syntax.ParamDefinition(
-                from: child,
-                in: source)
-        else { return nil }
-        self.right = rightParamDefinition.type
-
-        guard
-            let child = node.child(
-                byFieldName: CodingKeys.outputType.rawValue),
-            let outputType = Syntax.TypeSpecifier(
-                from: child,
-                in: source)
-        else { return nil }
-        self.outputType = outputType
-
-        if let child = node.child(
-            byFieldName: CodingKeys.body.rawValue),
-            let body = Syntax.Expression(from: child, in: source)
-        {
-            self.body = body
-        } else {
-            self.body = nil
-        }
+        return .init(
+            identifier: try .from(node: identifierNode, in: source),
+            type: try .from(node: definitionNode, in: source),
+            location: node.getLocation(in: source)
+        )
     }
 }
-
-// MARK: - types
-// -------------
 
 extension Syntax.TypeSpecifier {
 
     enum CodingKeys: String, CodingKey {
+        // TODO: namespace
         case nothing = "nothing_type"
         case never = "never_type"
         case product = "product"
@@ -319,26 +198,33 @@ extension Syntax.TypeSpecifier {
         case subset = "subset"
         case existential = "some"
         case universal = "any"
+        case belonging = "in"
         case nominal = "nominal"
         case function = "function"
     }
 
-    init?(from node: Node, in source: Syntax.Source) {
-        guard let location = node.getLocation(in: source) else {
-            return nil
-        }
-
+    static func from(
+        node: Node,
+        in source: Syntax.Source
+    ) throws(SyntaxError) -> Self {
+        let location = node.getLocation(in: source)
         switch CodingKeys(rawValue: node.nodeType ?? "") {
         case .nothing:
-            self = .nothing(location: location)
+            return .nothing(location: location)
         case .never:
-            self = .never(location: location)
-        case .product:
-            guard let typeFieldList = node.child(at: 0),
-            
+            return .never(location: location)
         default:
-            return nil
+            throw .errorParsing(element: "TypeSpecifier", location: location)
         }
+    }
+}
+
+extension Syntax.Tuple: TreeSitterNode {
+    static func from(
+        node: Node,
+        in source: Syntax.Source
+    ) throws(SyntaxError) -> Syntax.Tuple {
+        
     }
 }
 

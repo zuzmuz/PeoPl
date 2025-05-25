@@ -46,6 +46,9 @@ enum Syntax {
             sourceName: "")
     }
 
+    // MARK: - source
+    // --------------
+
     struct Source {
         let content: String
         let name: String
@@ -60,26 +63,39 @@ enum Syntax {
     }
 
     struct Module {
-        let statements: [Statement]
+        let definitions: [Definition]
     }
 
-    enum Statement: SyntaxNode {
+    enum Definition: SyntaxNode {
         case typeDefinition(TypeDefinition)
-        case expression(ValueField)
+        case valueDefinition(ValueDefinition)
 
         var location: NodeLocation {
             return switch self {
             case let .typeDefinition(typeDefinition):
                 typeDefinition.location
-            case let .expression(valueField):
-                valueField.location
+            case let .valueDefinition(valueDefinition):
+                valueDefinition.location
             }
         }
     }
 
+    struct ScopedIdentifier: SyntaxNode {
+        let chain: [String]
+        let location: NodeLocation
+    }
+
     struct TypeDefinition: SyntaxNode {
-        let identifier: String
+        let identifier: ScopedIdentifier
+        let arguments: [TypeField] // FIX: union of typefield and type specifier
         let definition: TypeSpecifier
+        let location: NodeLocation
+    }
+
+    struct ValueDefinition: SyntaxNode {
+        let identifier: ScopedIdentifier
+        let arguments: [TypeField] // FIX: union of typefield and type specifier
+        let definition: Expression
         let location: NodeLocation
     }
 
@@ -87,10 +103,13 @@ enum Syntax {
     // ------------------------
 
     struct TypeField: SyntaxNode {
-        let identifier: String
+        let identifier: ScopedIdentifier
         let type: TypeSpecifier
         let location: NodeLocation
     }
+
+    // struct TypeFieldList: SyntaxNode {
+    // }
 
     enum TypeSpecifier: SyntaxNode {
         case nothing(location: NodeLocation)

@@ -1,5 +1,11 @@
 import Foundation
 
-enum SyntaxError: LocalizedError, Encodable, Equatable {
+enum SyntaxError: LocalizedError, Equatable {
     case sourceUnreadable
+    case rangeNotInContent
+    case errorParsing(
+        element: String,
+        location: Syntax.NodeLocation
+    )
+    case mixingNamedAndUnnamed(location: Syntax.NodeLocation)
 }

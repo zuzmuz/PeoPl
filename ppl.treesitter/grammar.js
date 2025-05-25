@@ -50,7 +50,7 @@ module.exports = grammar({
       ),
     ),
 
-    // DEFINITIONS
+    // Identifiers
     // -----------
      
     small_identifier: $ => /_*[a-z][a-zA-Z0-9_]*/,
@@ -62,19 +62,23 @@ module.exports = grammar({
         seq(
           field("scope", $.scoped_big_identifier),
           '::',
-          field("name", $.big_identifier),
+          field("identifier", $.big_identifier),
         )
       )
     ),
 
     scoped_identifier: $ => choice(
-      field('name', $.small_identifier),
+      field('identifier', $.small_identifier),
       seq(
         field('scope', $.scoped_big_identifier),
         '::',
-        field('name', $.small_identifier),
+        field('identifier', $.small_identifier),
       )
     ),
+
+
+    // Definitions
+    // -----------
 
     definition: $ => choice(
       $.type_definition,
@@ -83,17 +87,20 @@ module.exports = grammar({
 
     type_definition: $ => seq(
       field('identifier', $.scoped_big_identifier),
-      optional(field('type_arguments', $.type_field_list)),
+      optional(field('arguments', $.type_field_list)),
       ':',
       field('definition', $.type_specifier)
     ),
 
     value_definition: $ => seq(
       field("identifier", $.scoped_identifier),
-      optional(field('type_arguments', $.type_field_list)),
+      optional(field('arguments', $.type_field_list)),
       ":",
       field("expression", $.expression),
     ),
+
+    // Types
+    // -----
 
     type_specifier: $ => choice(
       $.namespace,
@@ -109,32 +116,54 @@ module.exports = grammar({
       $.function,
     ),
 
-    namespace: _ => "namespace",
-
     homogeneous_product: $ => seq(
       $.type_specifier,
       '**',
       choice(
         $.int_literal,
-        $.small_identifier,
+        $.scoped_identifier
       )
     ),
 
+    tagged_type_specifier: $ => seq(
+      field("identifier", $.small_identifier),
+      ":",
+      field("type", $.type_specifier),
+    ),
+
+    type_field: $ => choice(
+      $.tagged_type_specifier, $.type_specifier, $.homogeneous_product
+    ),
+
+    type_field_list: $ => seq(
+      '[',
+        optional(
+          seq(
+            $.type_field,
+            repeat(
+              seq(',', $.type_field)
+            ),
+            optional(','),
+          ),
+        ),
+      ']'
+    ),
+
+    namespace: _ => "namespace",
+
+    nothing_type: _ => choice('Nothing', '_'),
+    never_type: _ => 'Never',
+
     product: $ => $.type_field_list,
+
     sum: $ => seq(
       "choice",
       $.type_field_list
-    ),
-
+    )
+    ,
     subset: $ => seq(
       "subset",
       optional(field('protocol', $.type_field_list))
-    ),
-
-    in: $ => seq(
-      field("identifier", $.big_identifier),
-      "in",
-      field("subset", $.subset_intersection),
     ),
 
     subset_intersection: $ => choice(
@@ -144,6 +173,12 @@ module.exports = grammar({
         '&',
         field('name', $.scoped_big_identifier),
       )
+    ),
+
+    in: $ => seq(
+      field("identifier", $.big_identifier),
+      "in",
+      field("subset", $.subset_intersection),
     ),
 
     some: $ => prec.left(seq(
@@ -175,43 +210,26 @@ module.exports = grammar({
       field('output_type', $.type_specifier)
     ),
 
-    type_field: $ => seq(
-      field("identifier", $.small_identifier),
-      ":",
-      field("type", $.type_specifier),
-    ),
-
-
-    type_field_list: $ => seq(
-      '[',
-        optional(
-          seq(
-           choice($.type_field, $.type_specifier, $.homogeneous_product),
-           repeat(
-             seq(',', choice( $.type_field, $.type_specifier, $.homogeneous_product))
-           ),
-           optional(','),
-          ),
-        ),
-      ']'
-    ),
-
     // Expression
     // ----------
-
-    value_field: $ => seq(
+    
+    tagged_expression: $ => seq(
       field("identifier", $.small_identifier),
       ":",
       field("expression", $.expression),
+    ),
+
+    value_field: $ => choice(
+      $.expression, $.tagged_expression
     ),
 
     value_field_list: $ => seq(
       '(',
         optional(
           seq(
-           choice($.value_field, $.expression),
+            $.value_field,
            repeat(
-             seq(',', choice( $.value_field, $.expression))
+             seq(',', $.value_field)
            ),
            optional(','),
           ),
@@ -250,9 +268,7 @@ module.exports = grammar({
       '}'
     ),
 
-    nothing_type: _ => choice('Nothing', '_'),
     nothing_value: _ => choice("nothing", '_'),
-    never_type: _ => 'Never',
     never_value: _ => "never",
 
     _simple_expression: $ => choice(
