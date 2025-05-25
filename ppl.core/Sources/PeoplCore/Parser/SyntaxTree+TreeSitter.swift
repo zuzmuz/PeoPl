@@ -334,6 +334,26 @@ extension Syntax.Expression: TreeSitterNode {
     }
 }
 
+extension Syntax.TaggedExpression: TreeSitterNode {
+    static func from(
+        node: Node,
+        in source: Syntax.Source
+    ) throws(SyntaxError) -> Self {
+        guard let identifierNode = node.child(byFieldName: "identifier"),
+            let expressionNode = node.child(byFieldName: "expression")
+        else {
+            throw .errorParsing(
+                element: "TaggedExpression",
+                location: node.getLocation(in: source))
+        }
+        return .init(
+            identifier: try identifierNode.getString(in: source),
+            expression: try .from(node: expressionNode, in: source),
+            location: node.getLocation(in: source)
+        )
+    }
+}
+
 extension Syntax.Expression.Literal {
     static func from(
         node: Node,
@@ -381,50 +401,90 @@ extension Syntax.Expression.Literal {
         }
     }
 }
-//
+
 extension Syntax.Expression.ExpressionType: TreeSitterNode {
 
-    //     static func parseUnary(
-    //         from node: Node,
-    //         in source: Syntax.Source
-    //     ) -> Self? {
-    //         guard let operatorNode = node.child(byFieldName: "operator"),
-    //             let operatorText = operatorNode.getString(in: source),
-    //             let operandNode = node.child(byFieldName: "operand"),
-    //             let operandExpression = Syntax.Expression(
-    //                 from: operandNode,
-    //                 in: source),
-    //             let operatorValue = Operator(rawValue: operatorText)
-    //         else {
-    //             return nil
-    //         }
-    //         return .unary(operatorValue, expression: operandExpression)
-    //     }
-    //
-    //     static func parseBinary(
-    //         from node: Node,
-    //         in source: Syntax.Source
-    //     ) -> Self? {
-    //         guard let leftNode = node.child(byFieldName: "left"),
-    //             let leftExpression = Syntax.Expression(
-    //                 from: leftNode,
-    //                 in: source),
-    //             let operatorNode = node.child(byFieldName: "operator"),
-    //             let operatorText = operatorNode.getString(in: source),
-    //             let rightNode = node.child(byFieldName: "right"),
-    //             let rightExpression = Syntax.Expression(
-    //                 from: rightNode,
-    //                 in: source),
-    //             let operatorValue = Operator(rawValue: operatorText)
-    //         else {
-    //             return nil
-    //         }
-    //         return .binary(
-    //             operatorValue,
-    //             left: leftExpression,
-    //             right: rightExpression)
-    //     }
-    //
+    static func parseUnary(
+        from node: Node,
+        in source: Syntax.Source
+    ) throws(SyntaxError) -> Self {
+        guard let operatorNode = node.child(byFieldName: "operator"),
+            let operandNode = node.child(byFieldName: "operand")
+        else {
+            throw .errorParsing(
+                element: "UnaryExpression",
+                location: node.getLocation(in: source))
+        }
+        let operatorText = try operatorNode.getString(in: source)
+        guard let operatorValue = Operator(rawValue: operatorText) else {
+            throw .errorParsing(
+                element: "UnaryOperator",
+                location: operatorNode.getLocation(in: source))
+        }
+        return .unary(
+            operatorValue,
+            expression: try .from(node: operandNode, in: source)
+        )
+    }
+    static func parseBinary(
+        from node: Node,
+        in source: Syntax.Source
+    ) throws(SyntaxError) -> Self {
+        guard let leftNode = node.child(byFieldName: "left"),
+            let operatorNode = node.child(byFieldName: "operator"),
+            let rightNode = node.child(byFieldName: "right")
+        else {
+            throw .errorParsing(
+                element: "BinaryExpression",
+                location: node.getLocation(in: source))
+        }
+        // let leftExpression = Syntax.Expression(
+        //     from: leftNode,
+        //     in: source),
+        let operatorText = try operatorNode.getString(in: source)
+        guard let operatorValue = Operator(rawValue: operatorText) else {
+            throw .errorParsing(
+                element: "BinaryOperator",
+                location: operatorNode.getLocation(in: source))
+        }
+
+        return .binary(
+            operatorValue,
+            left: try .from(node: leftNode, in: source),
+            right: try .from(node: rightNode, in: source)
+        )
+    }
+
+    static func parseCallExpression(
+        from node: Node,
+        in source: Syntax.Source
+    ) throws(SyntaxError) -> Self {
+        guard let prefixNode = node.child(byFieldName: "prefix")
+        else {
+            throw .errorParsing(
+                element: "CallExpression",
+                location: node.getLocation(in: source))
+        }
+
+        guard let argumentListNode = node.child(byFieldName: "arguments") else {
+            throw .errorParsing(
+                element: "CallExpression",
+                location: node.getLocation(in: source))
+        }
+
+        let arguments =
+            try argumentListNode
+            .compactMapChildren { child throws(SyntaxError) in
+                try Syntax.TaggedExpression.from(node: child, in: source)
+            }
+
+        return .call(
+            prefix: try .from(node: prefixNode, in: source),
+            arguments: arguments
+        )
+    }
+
+
     //     static func parseUnnamedTuple(
     //         from node: Node,
     //         in source: Syntax.Source
