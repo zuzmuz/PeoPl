@@ -131,7 +131,7 @@ enum Syntax {
     }
 
     struct TaggedTypeSpecifier: SyntaxNode {
-        let identifier: ScopedIdentifier
+        let identifier: String
         let type: TypeSpecifier
         let location: NodeLocation
     }
@@ -242,12 +242,12 @@ enum Syntax {
             case lambda(signature: Function, expression: Expression)
 
             // Scope
-            case call(prefix: Expression, arguments: [TaggedExpression])
-            case initializer(prefix: Nominal?, arguments: [TaggedExpression])
+            case call(prefix: Expression, arguments: [Expression])
+            case initializer(prefix: Nominal?, arguments: [Expression])
             case access(prefix: Expression, field: String)
-            case field(String)
+            case field(ScopedIdentifier)
             case binding(String)
-            case taggedBinding(TaggedExpression)
+            case taggedExpression(TaggedExpression)
 
             case branched(Branched)
             case piped(left: Expression, right: Expression)

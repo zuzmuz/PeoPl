@@ -3,6 +3,7 @@ line_length:
     error: 100
     ignores_comments: true
     ignores_urls: true
+    ignores_interpolated_strings: true
 
 identifier_name:
   min_length: 2
