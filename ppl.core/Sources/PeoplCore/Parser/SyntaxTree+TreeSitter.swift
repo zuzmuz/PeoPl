@@ -106,6 +106,11 @@ extension Syntax.Definition: TreeSitterNode {
                 try .from(
                     node: node,
                     in: source))
+        case "value_definition":
+            return .valueDefinition(
+                try .from(
+                    node: node,
+                    in: source))
         default:
             throw .sourceUnreadable
         }
@@ -156,28 +161,76 @@ extension Syntax.TypeDefinition: TreeSitterNode {
         guard let identifierNode = node.child(byFieldName: "identifier"),
             let definitionNode = node.child(byFieldName: "definition")
         else {
-            throw .errorParsing(element: "TypeDefinition", location: .nowhere)
+            throw .errorParsing(
+                element: "TypeDefinition",
+                location: node.getLocation(in: source))
         }
 
-        // TODO: parse type list
-        // if let argumentsNode = node.child(byFieldName: "type_arguments") {
-        //     argumentsNode.compactMapChildren { node in
-        //     }
-        // }
+        let arguments: [Syntax.TypeField]
+        if let argumentsNode = node.child(byFieldName: "type_arguments") {
+            arguments =
+                try argumentsNode
+                .compactMapChildren { child throws(SyntaxError) in
+                    if child.nodeType == "type_field" {
+                        return try Syntax.TypeField.from(
+                            node: child, in: source)
+                    } else {
+                        return nil
+                    }
+                }
+        } else {
+            arguments = []
+        }
 
         return .init(
             identifier: try .from(node: identifierNode, in: source),
-            arguments: [],
+            arguments: arguments,
             definition: try .from(node: definitionNode, in: source),
             location: node.getLocation(in: source)
         )
     }
 }
 
+extension Syntax.ValueDefinition: TreeSitterNode {
+    static func from(
+        node: Node,
+        in source: Syntax.Source
+    ) throws(SyntaxError) -> Self {
+        guard let identifierNode = node.child(byFieldName: "identifier"),
+            let expressionNode = node.child(byFieldName: "expression")
+        else {
+            throw .errorParsing(
+                element: "TypeDefinition",
+                location: node.getLocation(in: source))
+        }
+
+        let arguments: [Syntax.TypeField]
+        if let argumentsNode = node.child(byFieldName: "type_arguments") {
+            arguments =
+                try argumentsNode
+                .compactMapChildren { child throws(SyntaxError) in
+                    if child.nodeType == "type_field" {
+                        return try Syntax.TypeField.from(
+                            node: child, in: source)
+                    } else {
+                        return nil
+                    }
+                }
+        } else {
+            arguments = []
+        }
+
+        return .init(
+            identifier: try .from(node: identifierNode, in: source),
+            arguments: arguments,
+            definition: try .from(node: expressionNode, in: source),
+            location: node.getLocation(in: source)
+        )
+    }
+}
+
 extension Syntax.TypeSpecifier {
-
     // TODO: some types are not supported yet
-
     static func from(
         node: Node,
         in source: Syntax.Source
@@ -207,9 +260,10 @@ extension Syntax.TaggedTypeSpecifier: TreeSitterNode {
     ) throws(SyntaxError) -> Self {
         guard let identifierNode = node.child(byFieldName: "identifier"),
             let definitionNode = node.child(byFieldName: "type")
-        else { throw .errorParsing(
-            element: "TypeField",
-            location: node.getLocation(in: source))
+        else {
+            throw .errorParsing(
+                element: "TypeField",
+                location: node.getLocation(in: source))
         }
 
         return .init(
@@ -352,6 +406,49 @@ extension Syntax.Nominal: TreeSitterNode {
     }
 }
 
+extension Syntax.Function: TreeSitterNode {
+    static func from(
+        node: Node,
+        in source: Syntax.Source
+    ) throws(SyntaxError) -> Self {
+        let inputType: Syntax.TypeSpecifier?
+        if let inputTypeNode = node.child(byFieldName: "input_type") {
+            inputType = try .from(node: inputTypeNode, in: source)
+        } else {
+            inputType = nil
+        }
+
+        let arguments: [Syntax.TypeField]
+        if let argumentsNode = node.child(byFieldName: "arguments") {
+            arguments =
+                try argumentsNode
+                .compactMapChildren { child throws(SyntaxError) in
+                    if child.nodeType == "type_field" {
+                        return try Syntax.TypeField.from(
+                            node: child, in: source)
+                    } else {
+                        return nil
+                    }
+                }
+        } else {
+            arguments = []
+        }
+
+        guard let outputTypeNode = node.child(byFieldName: "output_type")
+        else {
+            throw .errorParsing(
+                element: "FunctionDefinition",
+                location: node.getLocation(in: source))
+        }
+
+        return .init(
+            inputType: inputType,
+            arguments: arguments,
+            outputType: try .from(node: outputTypeNode, in: source),
+            location: node.getLocation(in: source)
+        )
+    }
+}
 // MARK: - Expressions
 // -------------------
 
@@ -360,18 +457,25 @@ extension Syntax.Expression: TreeSitterNode {
         node: Node,
         in source: Syntax.Source
     ) throws(SyntaxError) -> Self {
-        if node.nodeType == "parenthisized_expression" {
-            guard let child = node.child(at: 1) else {
+        guard let child = node.child(at: 0) else {
+            throw .errorParsing(
+                element: "Expression",
+                location: node.getLocation(in: source))
+        }
+        if child.nodeType == "parenthisized_expression" {
+            guard let parenthesizedExpressionNode = node.child(at: 1) else {
                 throw .errorParsing(
                     element: "parenthisized_expression",
                     location: node.getLocation(in: source))
             }
             return try .init(
-                expressionType: .from(node: child, in: source),
+                expressionType: .from(
+                    node: parenthesizedExpressionNode,
+                    in: source),
                 location: node.getLocation(in: source))
         } else {
             return try .init(
-                expressionType: .from(node: node, in: source),
+                expressionType: .from(node: child, in: source),
                 location: node.getLocation(in: source))
         }
     }
@@ -496,16 +600,29 @@ extension Syntax.Expression.ExpressionType: TreeSitterNode {
         )
     }
 
-    static func parseParenthesized(
+    static func parseFunction(
         from node: Node,
         in source: Syntax.Source
     ) throws(SyntaxError) -> Self {
-        guard let child = node.child(at: 1) else {
+
+        guard let bodyNode = node.child(byFieldName: "body"),
+            let bodyExpressionNode = bodyNode.child(at: 1) else {
             throw .errorParsing(
-                element: "ParenthesizedExpression",
+                element: "FunctionDefinition",
                 location: node.getLocation(in: source))
         }
-        return try .from(node: child, in: source)
+
+        let signature: Syntax.Function?
+        if let signatureNode = node.child(byFieldName: "signature") {
+            signature = try .from(node: signatureNode, in: source)
+        } else {
+            signature = nil
+        }
+
+        return .function(
+            signature: signature,
+            expression: try .from(node: bodyExpressionNode, in: source)
+        )
     }
 
     static func parseCallExpression(
@@ -613,10 +730,8 @@ extension Syntax.Expression.ExpressionType: TreeSitterNode {
             return try parseBinary(from: node, in: source)
         case "scoped_identifier":
             return try .from(node: node, in: source)
-        case "parenthisized_expression":
-            return try parseParenthesized(from: node, in: source)
         case "function_definition":
-            throw .sourceUnreadable
+            return try parseFunction(from: node, in: source)
         case "call_expression":
             return try parseCallExpression(from: node, in: source)
         case "initializer_expression":
@@ -632,7 +747,9 @@ extension Syntax.Expression.ExpressionType: TreeSitterNode {
         case "piped_expression":
             return try parsePiped(from: node, in: source)
         default:
-            throw .sourceUnreadable
+            throw .notImplemented(
+                element: node.nodeType ?? "nil",
+                location: node.getLocation(in: source))
         }
     }
 }
@@ -689,6 +806,7 @@ extension Syntax.Expression.Branched.Branch {
             matchExpression: try .from(node: matchExpressionNode, in: source),
             guardExpression: guardExpression,
             body: try .from(node: bodyNode, in: source),
-            location: node.getLocation(in: source))
+            location: node.getLocation(in: source)
+        )
     }
 }

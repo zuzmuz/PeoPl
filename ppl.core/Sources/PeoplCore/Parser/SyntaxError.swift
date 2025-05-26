@@ -2,6 +2,10 @@ import Foundation
 
 enum SyntaxError: LocalizedError {
     case sourceUnreadable
+    case notImplemented(
+        element: String,
+        location: Syntax.NodeLocation
+    )
     case rangeNotInContent
     case errorParsing(
         element: String,
@@ -12,6 +16,8 @@ enum SyntaxError: LocalizedError {
         switch self {
         case .sourceUnreadable:
             return "Source is unreadable"
+        case let .notImplemented(element, location):
+            return "Feature not implemented for \(element) at \(location)"
         case .rangeNotInContent:
             return "Range is not in content"
         case let .errorParsing(element, location):

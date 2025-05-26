@@ -4,5 +4,5 @@ Product: [
 ]
 
 main: func [] -> I32 {
-    add[a: 100_100, b: 2]
+    add(a: 100_100, b: 2)
 }

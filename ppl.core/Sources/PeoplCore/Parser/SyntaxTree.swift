@@ -87,14 +87,14 @@ enum Syntax {
 
     struct TypeDefinition: SyntaxNode {
         let identifier: ScopedIdentifier
-        let arguments: [TypeField] // FIX: union of typefield and type specifier
+        let arguments: [TypeField]
         let definition: TypeSpecifier
         let location: NodeLocation
     }
 
     struct ValueDefinition: SyntaxNode {
         let identifier: ScopedIdentifier
-        let arguments: [TypeField] // FIX: union of typefield and type specifier
+        let arguments: [TypeField]
         let definition: Expression
         let location: NodeLocation
     }
@@ -239,7 +239,7 @@ enum Syntax {
             case binary(Operator, left: Expression, right: Expression)
 
             // Compounds
-            case lambda(signature: Function, expression: Expression)
+            case function(signature: Function?, expression: Expression)
 
             // Scope
             case call(prefix: Expression, arguments: [Expression])
