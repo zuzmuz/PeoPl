@@ -5,6 +5,15 @@ Product: [
 
 x: (2,)
 
+
+map[T, U]: (List[T]) [transform: (T) -> U] -> List[U] {
+    _
+}
+
+filter[T]: (List[T]) [predicate: (T) -> Bool] -> List[T] {
+    _
+}
+
 main: {
     add(a: 100_100, b: 2)
 }

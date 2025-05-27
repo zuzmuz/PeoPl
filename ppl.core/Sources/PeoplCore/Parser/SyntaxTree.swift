@@ -1,9 +1,6 @@
 // MARK: - Language Syntax Tree
 // ============================
-
-// This file defines the complete Abstract Syntax Tree (AST) for a functional programming language
-// with advanced type system features including sum types, product types, existential and universal
-// quantification, and pattern matching with guards.
+// This file defines the complete Abstract Syntax Tree (AST) for PeoPl
 
 // MARK: - Core Operators
 // ----------------------
@@ -142,7 +139,7 @@ enum Syntax {
     }
 
     // MARK: - Type System
-    // ------------------------
+    // -------------------
 
     /// The core type specification language
     /// This represents the full spectrum of types available in the language
@@ -277,7 +274,7 @@ enum Syntax {
     /// Nominal type: a named type with optional type arguments
     /// References user-defined types, built-in types, or generic instantiations
     struct Nominal: SyntaxNode {
-        let identifier: String
+        let identifier: ScopedIdentifier
         let typeArguments: [TypeSpecifier]
         let location: NodeLocation
     }

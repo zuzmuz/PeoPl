@@ -5,28 +5,31 @@ import TreeSitterPeoPl
 // MARK: TreeSitter node extension functions
 // -----------------------------------------
 
+/// Protocol for types that can be created from a TreeSitter node.
 protocol TreeSitterNode {
     static func from(
         node: Node,
         in source: Syntax.Source
     ) throws(SyntaxError) -> Self
 }
-private func parseInteger(from string: String) -> UInt64? {
-        let cleanString = string.replacingOccurrences(of: "_", with: "")
 
-        if cleanString.hasPrefix("0x") || cleanString.hasPrefix("0X") {
-            let hexString = String(cleanString.dropFirst(2))
-            return UInt64(hexString, radix: 16)
-        } else if cleanString.hasPrefix("0o") || cleanString.hasPrefix("0O") {
-            let octalString = String(cleanString.dropFirst(2))
-            return UInt64(octalString, radix: 8)
-        } else if cleanString.hasPrefix("0b") || cleanString.hasPrefix("0B") {
-            let binaryString = String(cleanString.dropFirst(2))
-            return UInt64(binaryString, radix: 2)
-        } else {
-            return UInt64(cleanString)
-        }
+/// Parses an integer from a string, supporting hex, octal, and binary formats.
+private func parseInteger(from string: String) -> UInt64? {
+    let cleanString = string.replacingOccurrences(of: "_", with: "")
+
+    if cleanString.hasPrefix("0x") {
+        let hexString = String(cleanString.dropFirst(2))
+        return UInt64(hexString, radix: 16)
+    } else if cleanString.hasPrefix("0o") {
+        let octalString = String(cleanString.dropFirst(2))
+        return UInt64(octalString, radix: 8)
+    } else if cleanString.hasPrefix("0b") {
+        let binaryString = String(cleanString.dropFirst(2))
+        return UInt64(binaryString, radix: 2)
+    } else {
+        return UInt64(cleanString)
     }
+}
 
 extension Node {
     func compactMapChildren<T, E>(
@@ -75,8 +78,8 @@ extension Node {
     }
 }
 
-// MARK: - the syntax tree source
-// ------------------------------
+// MARK: - Project Structure
+// -------------------------
 
 extension Syntax.Module {
     init(source: String, path: String) throws {
@@ -166,9 +169,6 @@ extension Syntax.ScopedIdentifier: TreeSitterNode {
     }
 }
 
-// MARK: - type definitions
-// ------------------------
-
 extension Syntax.TypeDefinition: TreeSitterNode {
     static func from(
         node: Node,
@@ -245,6 +245,9 @@ extension Syntax.ValueDefinition: TreeSitterNode {
     }
 }
 
+// MARK: - Type System
+// -------------------
+
 extension Syntax.TypeSpecifier {
     // TODO: some types are not supported yet
     static func from(
@@ -263,8 +266,12 @@ extension Syntax.TypeSpecifier {
             return .sum(try .from(node: node, in: source))
         case "nominal":
             return .nominal(try .from(node: node, in: source))
+        case "function":
+            return .function(try .from(node: node, in: source))
         default:
-            throw .errorParsing(element: "TypeSpecifier", location: location)
+            throw .errorParsing(
+                element: "TypeSpecifier \(node.nodeType ?? "")",
+                location: location)
         }
     }
 }
@@ -278,7 +285,7 @@ extension Syntax.TaggedTypeSpecifier: TreeSitterNode {
             let definitionNode = node.child(byFieldName: "type")
         else {
             throw .errorParsing(
-                element: "TypeField",
+                element: "TaggedTypeSpecifier",
                 location: node.getLocation(in: source))
         }
 
@@ -306,8 +313,9 @@ extension Syntax.HomogeneousTypeProduct: TreeSitterNode {
         let count: Exponent
         switch exponentNode.nodeType {
         case "int_literal":
-            guard let intValue = parseInteger(
-                from: try node.getString(in: source))
+            guard
+                let intValue = parseInteger(
+                    from: try node.getString(in: source))
             else {
                 throw .errorParsing(
                     element: "int_literal",
@@ -350,6 +358,9 @@ extension Syntax.TypeField: TreeSitterNode {
         }
     }
 }
+
+// MARK: - Algebraic Data Types
+// ----------------------------
 
 extension Syntax.Product: TreeSitterNode {
     static func from(
@@ -410,14 +421,18 @@ extension Syntax.Nominal: TreeSitterNode {
             typeArguments =
                 try typeArgumentsNode
                 .compactMapChildren { child throws(SyntaxError) in
-                    try Syntax.TypeSpecifier.from(node: child, in: source)
+                    if child.nodeType == "type_specifier" {
+                        try Syntax.TypeSpecifier.from(node: child, in: source)
+                    } else {
+                        nil
+                    }
                 }
         } else {
             typeArguments = []
         }
 
         return .init(
-            identifier: try identifierNode.getString(in: source),
+            identifier: try .from(node: identifierNode, in: source),
             typeArguments: typeArguments,
             location: node.getLocation(in: source)
         )
@@ -467,8 +482,29 @@ extension Syntax.Function: TreeSitterNode {
         )
     }
 }
+
 // MARK: - Expressions
 // -------------------
+
+extension Syntax.TaggedExpression: TreeSitterNode {
+    static func from(
+        node: Node,
+        in source: Syntax.Source
+    ) throws(SyntaxError) -> Self {
+        guard let identifierNode = node.child(byFieldName: "identifier"),
+            let expressionNode = node.child(byFieldName: "expression")
+        else {
+            throw .errorParsing(
+                element: "TaggedExpression",
+                location: node.getLocation(in: source))
+        }
+        return .init(
+            identifier: try identifierNode.getString(in: source),
+            expression: try .from(node: expressionNode, in: source),
+            location: node.getLocation(in: source)
+        )
+    }
+}
 
 extension Syntax.Expression: TreeSitterNode {
     static func from(
@@ -493,27 +529,6 @@ extension Syntax.Expression: TreeSitterNode {
         }
     }
 }
-
-extension Syntax.TaggedExpression: TreeSitterNode {
-    static func from(
-        node: Node,
-        in source: Syntax.Source
-    ) throws(SyntaxError) -> Self {
-        guard let identifierNode = node.child(byFieldName: "identifier"),
-            let expressionNode = node.child(byFieldName: "expression")
-        else {
-            throw .errorParsing(
-                element: "TaggedExpression",
-                location: node.getLocation(in: source))
-        }
-        return .init(
-            identifier: try identifierNode.getString(in: source),
-            expression: try .from(node: expressionNode, in: source),
-            location: node.getLocation(in: source)
-        )
-    }
-}
-
 extension Syntax.Expression.Literal {
     static func from(
         node: Node,
@@ -530,8 +545,9 @@ extension Syntax.Expression.Literal {
         case "never_value":
             return .never
         case "int_literal":
-            guard let intValue = parseInteger(
-                from: try node.getString(in: source))
+            guard
+                let intValue = parseInteger(
+                    from: try node.getString(in: source))
             else {
                 throw .errorParsing(
                     element: "Int_literal",
