@@ -11,6 +11,22 @@ protocol TreeSitterNode {
         in source: Syntax.Source
     ) throws(SyntaxError) -> Self
 }
+private func parseInteger(from string: String) -> UInt64? {
+        let cleanString = string.replacingOccurrences(of: "_", with: "")
+
+        if cleanString.hasPrefix("0x") || cleanString.hasPrefix("0X") {
+            let hexString = String(cleanString.dropFirst(2))
+            return UInt64(hexString, radix: 16)
+        } else if cleanString.hasPrefix("0o") || cleanString.hasPrefix("0O") {
+            let octalString = String(cleanString.dropFirst(2))
+            return UInt64(octalString, radix: 8)
+        } else if cleanString.hasPrefix("0b") || cleanString.hasPrefix("0B") {
+            let binaryString = String(cleanString.dropFirst(2))
+            return UInt64(binaryString, radix: 2)
+        } else {
+            return UInt64(cleanString)
+        }
+    }
 
 extension Node {
     func compactMapChildren<T, E>(
@@ -290,7 +306,9 @@ extension Syntax.HomogeneousTypeProduct: TreeSitterNode {
         let count: Exponent
         switch exponentNode.nodeType {
         case "int_literal":
-            guard let intValue = Int64(try node.getString(in: source)) else {
+            guard let intValue = parseInteger(
+                from: try node.getString(in: source))
+            else {
                 throw .errorParsing(
                     element: "int_literal",
                     location: node.getLocation(in: source))
@@ -457,12 +475,7 @@ extension Syntax.Expression: TreeSitterNode {
         node: Node,
         in source: Syntax.Source
     ) throws(SyntaxError) -> Self {
-        guard let child = node.child(at: 0) else {
-            throw .errorParsing(
-                element: "Expression",
-                location: node.getLocation(in: source))
-        }
-        if child.nodeType == "parenthisized_expression" {
+        if node.nodeType == "parenthisized_expression" {
             guard let parenthesizedExpressionNode = node.child(at: 1) else {
                 throw .errorParsing(
                     element: "parenthisized_expression",
@@ -475,7 +488,7 @@ extension Syntax.Expression: TreeSitterNode {
                 location: node.getLocation(in: source))
         } else {
             return try .init(
-                expressionType: .from(node: child, in: source),
+                expressionType: .from(node: node, in: source),
                 location: node.getLocation(in: source))
         }
     }
@@ -517,7 +530,8 @@ extension Syntax.Expression.Literal {
         case "never_value":
             return .never
         case "int_literal":
-            guard let intValue = UInt64(try node.getString(in: source))
+            guard let intValue = parseInteger(
+                from: try node.getString(in: source))
             else {
                 throw .errorParsing(
                     element: "Int_literal",
@@ -606,7 +620,8 @@ extension Syntax.Expression.ExpressionType: TreeSitterNode {
     ) throws(SyntaxError) -> Self {
 
         guard let bodyNode = node.child(byFieldName: "body"),
-            let bodyExpressionNode = bodyNode.child(at: 1) else {
+            let bodyExpressionNode = bodyNode.child(at: 1)
+        else {
             throw .errorParsing(
                 element: "FunctionDefinition",
                 location: node.getLocation(in: source))
@@ -645,7 +660,11 @@ extension Syntax.Expression.ExpressionType: TreeSitterNode {
         let arguments =
             try argumentListNode
             .compactMapChildren { child throws(SyntaxError) in
-                try Syntax.Expression.from(node: child, in: source)
+                if child.nodeType == "expression" {
+                    try Syntax.Expression.from(node: child, in: source)
+                } else {
+                    nil
+                }
             }
 
         return .call(
@@ -658,11 +677,12 @@ extension Syntax.Expression.ExpressionType: TreeSitterNode {
         from node: Node,
         in source: Syntax.Source
     ) throws(SyntaxError) -> Self {
-        guard let prefixNode = node.child(byFieldName: "prefix")
-        else {
-            throw .errorParsing(
-                element: "InitializerExpression",
-                location: node.getLocation(in: source))
+
+        let prefix: Syntax.Nominal?
+        if let prefixNode = node.child(byFieldName: "prefix") {
+            prefix = try .from(node: prefixNode, in: source)
+        } else {
+            prefix = nil
         }
 
         guard let argumentListNode = node.child(byFieldName: "arguments") else {
@@ -674,11 +694,15 @@ extension Syntax.Expression.ExpressionType: TreeSitterNode {
         let arguments =
             try argumentListNode
             .compactMapChildren { child throws(SyntaxError) in
-                try Syntax.Expression.from(node: child, in: source)
+                if child.nodeType == "expression" {
+                    try Syntax.Expression.from(node: child, in: source)
+                } else {
+                    nil
+                }
             }
 
         return .initializer(
-            prefix: try .from(node: prefixNode, in: source),
+            prefix: prefix,
             arguments: arguments
         )
     }
@@ -729,7 +753,7 @@ extension Syntax.Expression.ExpressionType: TreeSitterNode {
         case "binary_expression":
             return try parseBinary(from: node, in: source)
         case "scoped_identifier":
-            return try .from(node: node, in: source)
+            return .field(try .from(node: node, in: source))
         case "function_definition":
             return try parseFunction(from: node, in: source)
         case "call_expression":

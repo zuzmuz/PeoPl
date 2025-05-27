@@ -94,7 +94,7 @@ module.exports = grammar({
       field("identifier", $.scoped_identifier),
       optional(field('arguments', $.type_field_list)),
       ":",
-      field("expression", $.expression),
+      field("expression", $._expression),
     ),
 
     // Types
@@ -215,16 +215,16 @@ module.exports = grammar({
     tagged_expression: $ => seq(
       field("identifier", $.small_identifier),
       ":",
-      field("expression", $.expression),
+      field("expression", $._expression),
     ),
 
     expression_list: $ => seq(
       '(',
         optional(
           seq(
-            $.expression,
+            $._expression,
             repeat(
-              seq(',', $.expression)
+              seq(',', $._expression)
             ),
             optional(','),
           ),
@@ -232,7 +232,7 @@ module.exports = grammar({
       ')'
     ),
 
-    expression: $ => choice(
+    _expression: $ => choice(
       $._simple_expression,
       $.tagged_expression,
       $.branched_expression,
@@ -259,7 +259,7 @@ module.exports = grammar({
 
     function_body: $ => seq(
       '{',
-        $.expression,
+        $._expression,
       '}'
     ),
 
@@ -281,7 +281,7 @@ module.exports = grammar({
 
     parenthisized_expression: $ => prec.left(PREC.PARENTHESIS, seq(
       '(',
-      $.expression,
+      $._expression,
       ')',
     )),
 
@@ -403,9 +403,9 @@ module.exports = grammar({
     ),
 
     piped_expression: $ => prec.left(PREC.PIPE, seq(
-        field("left", $.expression),
+        field("left", $._expression),
         field("operator", $.pipe_operator),
-        field("right", $.expression),
+        field("right", $._expression),
     )),
 
     pipe_operator: $ => '|>',

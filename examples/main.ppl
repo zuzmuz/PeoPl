@@ -3,6 +3,8 @@ Product: [
     c: Float
 ]
 
-main: func [] -> I32 {
+x: (2,)
+
+main: {
     add(a: 100_100, b: 2)
 }

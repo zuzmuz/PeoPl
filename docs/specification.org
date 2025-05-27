@@ -14,6 +14,7 @@
   - [[#function-arguments][Function arguments]]
   - [[#calling-functions][Calling functions]]
 - [[#program-structure][Program structure]]
+  - [[#file-structure][File structure]]
 
 * What is PeoPl
 
@@ -238,4 +239,20 @@ main: () -> Nothing { // main function
 #+END_SRC
 
 The main function is the entry point of the program.
+
+** File structure
+*** Definitions
+A file is a list of definitions, definitions are like expressions known at compile time.
+There are currently 2 supported definions
+- [[#Type Definitions][Type Definitions]]
+- [[#Value Definitions][Value Definitions]]
+
+*** Value Definitions
+Value definitions defines compile time expressions. These are usually constants,
+and function definitions.
+
+Functions are values. Values have [[#Types][types]].
+
+
+
 

@@ -139,7 +139,7 @@ enum Syntax {
     struct HomogeneousTypeProduct: SyntaxNode {
 
         enum Exponent {
-            case literal(Int64)
+            case literal(UInt64)
             case identifier(ScopedIdentifier)
         }
 
