@@ -1,25 +1,41 @@
 import XCTest
 @testable import PeoplCore
 
-final class ArithmeticsExpressionTests: XCTestCase {
 
+
+final class SimpleExpressionTests: XCTestCase {
     func testNothing() throws {
         let source = """
-                func main() => Nothing
-                    Nothing
+                main: [] -> Nothing {
+                    _
+                }
             """
         let module = try Syntax.Module(source: source, path: "main")
 
-        XCTAssertEqual(module.statements.count, 1)
-        let statement = module.statements[0]
-        guard case let .functionDefinition(functionDefinition) = statement else {
+        XCTAssertEqual(module.definitions.count, 1)
+        let definition = module.definitions[0]
+        guard case let .valueDefinition(valueDefinition) = definition else {
             XCTAssertTrue(false)
             return
         }
 
-        let body = functionDefinition.body
+        let functionIdentifier = valueDefinition.identifier
+        XCTAssertEqual(functionIdentifier.chain.count, 1)
+        let functionName = functionIdentifier.chain[0]
+        XCTAssertEqual(functionName, "main")
+        guard case let .function(signature, body) =
+            valueDefinition.definition.expressionType
+        else {
+            XCTAssertTrue(false)
+            return
+        }
 
-        guard case .literal(.nothing) = body?.expressionType else {
+        guard case .nothing = signature?.outputType else {
+            XCTAssertTrue(false)
+            return
+        }
+
+        guard case .literal(.nothing) = body.expressionType else {
             XCTAssertTrue(false)
             return
         }
@@ -27,30 +43,48 @@ final class ArithmeticsExpressionTests: XCTestCase {
 
     func testNever() throws {
         let source = """
-                func main() => Never
-                    Never
+                main: [] -> Never {
+                    never
             """
         let module = try Syntax.Module(source: source, path: "main")
 
-        XCTAssertEqual(module.statements.count, 1)
-        let statement = module.statements[0]
-        guard case let .functionDefinition(functionDefinition) = statement else {
+        XCTAssertEqual(module.definitions.count, 1)
+        let definition = module.definitions[0]
+        guard case let .valueDefinition(valueDefinition) = definition else {
             XCTAssertTrue(false)
             return
         }
 
-        let body = functionDefinition.body
+        let functionIdentifier = valueDefinition.identifier
+        XCTAssertEqual(functionIdentifier.chain.count, 1)
+        let functionName = functionIdentifier.chain[0]
+        XCTAssertEqual(functionName, "main")
 
-        guard case .literal(.never) = body?.expressionType else {
+        guard case let .function(signature, body) =
+            valueDefinition.definition.expressionType
+        else {
+            XCTAssertTrue(false)
+            return
+        }
+
+        guard case .never = signature?.outputType else {
+            XCTAssertTrue(false)
+            return
+        }
+
+        guard case .literal(.never) = body.expressionType else {
             XCTAssertTrue(false)
             return
         }
     }
+}
 
+final class ArithmeticsExpressionTests: XCTestCase {
     func testArithmetics() throws {
         let source = """
-                func main() => I32
+                main: () -> I32 {
                     5-2+3*4-6*5/2+1+10%3
+                }
             """
         let module = try Syntax.Module(source: source, path: "main")
 
