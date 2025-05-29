@@ -452,7 +452,83 @@
         },
         {
           "type": "SYMBOL",
-          "name": "type_field_list"
+          "name": "choice_type_field_list"
+        }
+      ]
+    },
+    "choice_type_field_list": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "STRING",
+          "value": "["
+        },
+        {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "SEQ",
+              "members": [
+                {
+                  "type": "CHOICE",
+                  "members": [
+                    {
+                      "type": "SYMBOL",
+                      "name": "type_field"
+                    },
+                    {
+                      "type": "SYMBOL",
+                      "name": "small_identifier"
+                    }
+                  ]
+                },
+                {
+                  "type": "REPEAT",
+                  "content": {
+                    "type": "SEQ",
+                    "members": [
+                      {
+                        "type": "STRING",
+                        "value": ","
+                      },
+                      {
+                        "type": "CHOICE",
+                        "members": [
+                          {
+                            "type": "SYMBOL",
+                            "name": "type_field"
+                          },
+                          {
+                            "type": "SYMBOL",
+                            "name": "small_identifier"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "CHOICE",
+                  "members": [
+                    {
+                      "type": "STRING",
+                      "value": ","
+                    },
+                    {
+                      "type": "BLANK"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
+        },
+        {
+          "type": "STRING",
+          "value": "]"
         }
       ]
     },
@@ -820,25 +896,142 @@
       ]
     },
     "call_expression": {
-      "type": "SEQ",
-      "members": [
-        {
-          "type": "FIELD",
-          "name": "prefix",
-          "content": {
-            "type": "SYMBOL",
-            "name": "_simple_expression"
+      "type": "PREC_RIGHT",
+      "value": 30,
+      "content": {
+        "type": "SEQ",
+        "members": [
+          {
+            "type": "FIELD",
+            "name": "prefix",
+            "content": {
+              "type": "SYMBOL",
+              "name": "_simple_expression"
+            }
+          },
+          {
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "FIELD",
+                "name": "type_arguments",
+                "content": {
+                  "type": "SYMBOL",
+                  "name": "type_field_list"
+                }
+              },
+              {
+                "type": "FIELD",
+                "name": "arguments",
+                "content": {
+                  "type": "SYMBOL",
+                  "name": "expression_list"
+                }
+              },
+              {
+                "type": "FIELD",
+                "name": "trailing_closure",
+                "content": {
+                  "type": "SYMBOL",
+                  "name": "function_body"
+                }
+              },
+              {
+                "type": "SEQ",
+                "members": [
+                  {
+                    "type": "FIELD",
+                    "name": "arguments",
+                    "content": {
+                      "type": "SYMBOL",
+                      "name": "expression_list"
+                    }
+                  },
+                  {
+                    "type": "FIELD",
+                    "name": "trailing_closure",
+                    "content": {
+                      "type": "SYMBOL",
+                      "name": "function_body"
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "SEQ",
+                "members": [
+                  {
+                    "type": "FIELD",
+                    "name": "type_arguments",
+                    "content": {
+                      "type": "SYMBOL",
+                      "name": "type_field_list"
+                    }
+                  },
+                  {
+                    "type": "FIELD",
+                    "name": "arguments",
+                    "content": {
+                      "type": "SYMBOL",
+                      "name": "expression_list"
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "SEQ",
+                "members": [
+                  {
+                    "type": "FIELD",
+                    "name": "type_arguments",
+                    "content": {
+                      "type": "SYMBOL",
+                      "name": "type_field_list"
+                    }
+                  },
+                  {
+                    "type": "FIELD",
+                    "name": "trailing_closure",
+                    "content": {
+                      "type": "SYMBOL",
+                      "name": "function_body"
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "SEQ",
+                "members": [
+                  {
+                    "type": "FIELD",
+                    "name": "type_arguments",
+                    "content": {
+                      "type": "SYMBOL",
+                      "name": "type_field_list"
+                    }
+                  },
+                  {
+                    "type": "FIELD",
+                    "name": "arguments",
+                    "content": {
+                      "type": "SYMBOL",
+                      "name": "expression_list"
+                    }
+                  },
+                  {
+                    "type": "FIELD",
+                    "name": "trailing_closure",
+                    "content": {
+                      "type": "SYMBOL",
+                      "name": "function_body"
+                    }
+                  }
+                ]
+              }
+            ]
           }
-        },
-        {
-          "type": "FIELD",
-          "name": "arguments",
-          "content": {
-            "type": "SYMBOL",
-            "name": "expression_list"
-          }
-        }
-      ]
+        ]
+      }
     },
     "initializer_expression": {
       "type": "SEQ",
@@ -1456,8 +1649,17 @@
               "type": "FIELD",
               "name": "match_expression",
               "content": {
-                "type": "SYMBOL",
-                "name": "_simple_expression"
+                "type": "CHOICE",
+                "members": [
+                  {
+                    "type": "SYMBOL",
+                    "name": "_simple_expression"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "tagged_expression"
+                  }
+                ]
               }
             },
             {
@@ -1484,8 +1686,17 @@
                   "type": "FIELD",
                   "name": "match_expression",
                   "content": {
-                    "type": "SYMBOL",
-                    "name": "_simple_expression"
+                    "type": "CHOICE",
+                    "members": [
+                      {
+                        "type": "SYMBOL",
+                        "name": "_simple_expression"
+                      },
+                      {
+                        "type": "SYMBOL",
+                        "name": "tagged_expression"
+                      }
+                    ]
                   }
                 },
                 {

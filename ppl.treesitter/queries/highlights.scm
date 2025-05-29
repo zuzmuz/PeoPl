@@ -39,10 +39,12 @@
 ; (set_definition
 ;   name: (identifier) @type.definition)
 ;
-(definition
-  (value_definition
-    identifier: (scoped_identifier
-                  (small_identifier) @function.call)))
+(value_definition
+  identifier: (scoped_identifier
+                (small_identifier) @function.call))
+
+(choice_type_field_list
+  (small_identifier) @variable.member)
 
 (tagged_expression
   identifier: (small_identifier) @variable.member)
@@ -64,7 +66,7 @@
 (pipe_operator) @operator
 
 [
-  "^"
+  ; "^"
   "**"
   "&"
 ] @keyword.operator

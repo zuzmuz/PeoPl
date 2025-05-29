@@ -8,6 +8,7 @@
 // @ts-check
 //
 const PREC = {
+  FUNCTION: 30,
   PARENTHESIS: 20,
   UNARY: 10,
   MULT: 8,
@@ -148,6 +149,7 @@ module.exports = grammar({
       ']'
     ),
 
+
     namespace: _ => "namespace",
 
     nothing_type: _ => choice('Nothing', '_'),
@@ -157,9 +159,23 @@ module.exports = grammar({
 
     sum: $ => seq(
       "choice",
-      $.type_field_list
-    )
-    ,
+      $.choice_type_field_list
+    ),
+
+    choice_type_field_list: $ => seq(
+      '[',
+        optional(
+          seq(
+            choice($.type_field, $.small_identifier),
+            repeat(
+              seq(',', choice($.type_field, $.small_identifier))
+            ),
+            optional(','),
+          ),
+        ),
+      ']'
+    ),
+
     subset: $ => seq(
       "subset",
       optional(field('protocol', $.type_field_list))
@@ -239,10 +255,31 @@ module.exports = grammar({
       $.piped_expression
     ),
 
-    call_expression: $ => seq(
+    call_expression: $ => prec.right(PREC.FUNCTION, seq(
       field("prefix", $._simple_expression),
-      field("arguments", $.expression_list),
-    ),
+      choice(
+        field('type_arguments', $.type_field_list),
+        field("arguments", $.expression_list),
+        field('trailing_closure', $.function_body),
+        seq(
+          field("arguments", $.expression_list),
+          field('trailing_closure', $.function_body),
+        ),
+        seq(
+          field('type_arguments', $.type_field_list),
+          field("arguments", $.expression_list),
+        ),
+        seq(
+          field('type_arguments', $.type_field_list),
+          field('trailing_closure', $.function_body),
+        ),
+        seq(
+          field('type_arguments', $.type_field_list),
+          field("arguments", $.expression_list),
+          field('trailing_closure', $.function_body),
+        ),
+      ),
+    )),
 
     initializer_expression: $ => seq(
       field("prefix", optional($.nominal)),
@@ -392,10 +429,10 @@ module.exports = grammar({
     branch_capture_group: $ => seq(
       '|', 
       choice(
-        field("match_expression", $._simple_expression),
+        field("match_expression", choice($._simple_expression, $.tagged_expression)),
         seq('if', field("guard_expression", $._simple_expression)),
         seq(
-          field("match_expression", $._simple_expression),
+          field("match_expression", choice($._simple_expression, $.tagged_expression)),
           'if', field("guard_expression", $._simple_expression)
         ),
       ),

@@ -1,0 +1,55 @@
+
+
+
+Whatever[T]: [
+    t: T,
+    notGeneric: Int
+]
+
+
+Result[S, E in Error]: choice [
+    success: S,
+    error: E
+]
+
+IntList: List[Int]
+sdf: List[Int](1, 2, 3, 4)
+
+
+
+User: choice [
+    Int, Float
+]
+Sex: choice [
+    male,
+    female,
+    godzilla
+]
+
+from[Model[T]: () -> FetchResult[Model[T]] {_}
+
+filter[Model[T]]: (FetchResult[Model[T]]) [where: (T) -> Bool] ->FetchResult[Model[T]] {
+_
+}
+
+s: 0
+
+main: () -> _ {
+    from[User] |>
+    |$in| in.filter(where: { _ }) |>
+    1 + 3 |>
+    2 + (1 - select[T] { _ }) |> 
+    5 |> // REsult
+    |$s if s > 2| _,
+    |success: s| _,
+    |error: e| _ |> 
+    _
+}
+
+
+User: Model[
+    name: String,
+    lastName: String,
+    age: Int,
+    sex: Sex
+]

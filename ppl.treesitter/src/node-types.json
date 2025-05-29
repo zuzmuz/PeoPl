@@ -364,6 +364,10 @@
             "named": true
           },
           {
+            "type": "tagged_expression",
+            "named": true
+          },
+          {
             "type": "unary_expression",
             "named": true
           }
@@ -392,7 +396,7 @@
     "fields": {
       "arguments": {
         "multiple": false,
-        "required": true,
+        "required": false,
         "types": [
           {
             "type": "expression_list",
@@ -445,7 +449,46 @@
             "named": true
           }
         ]
+      },
+      "trailing_closure": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "function_body",
+            "named": true
+          }
+        ]
+      },
+      "type_arguments": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "type_field_list",
+            "named": true
+          }
+        ]
       }
+    }
+  },
+  {
+    "type": "choice_type_field_list",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "small_identifier",
+          "named": true
+        },
+        {
+          "type": "type_field",
+          "named": true
+        }
+      ]
     }
   },
   {
@@ -1278,7 +1321,7 @@
       "required": true,
       "types": [
         {
-          "type": "type_field_list",
+          "type": "choice_type_field_list",
           "named": true
         }
       ]
