@@ -850,9 +850,9 @@ static const TSFieldMapEntry ts_field_map_entries[] = {
     {field_identifier, 0},
     {field_type_arguments, 1},
   [13] =
-    {field_arguments, 1},
     {field_definition, 3},
     {field_identifier, 0},
+    {field_type_arguments, 1},
   [16] =
     {field_operand, 1},
     {field_operator, 0},
@@ -872,9 +872,9 @@ static const TSFieldMapEntry ts_field_map_entries[] = {
     {field_body, 1},
     {field_capture_group, 0},
   [28] =
-    {field_arguments, 1},
     {field_expression, 3},
     {field_identifier, 0},
+    {field_type_arguments, 1},
   [31] =
     {field_name, 0},
   [32] =

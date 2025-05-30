@@ -1471,16 +1471,6 @@
     "type": "type_definition",
     "named": true,
     "fields": {
-      "arguments": {
-        "multiple": false,
-        "required": false,
-        "types": [
-          {
-            "type": "type_field_list",
-            "named": true
-          }
-        ]
-      },
       "definition": {
         "multiple": false,
         "required": true,
@@ -1537,6 +1527,16 @@
         "types": [
           {
             "type": "scoped_big_identifier",
+            "named": true
+          }
+        ]
+      },
+      "type_arguments": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "type_field_list",
             "named": true
           }
         ]
@@ -1707,16 +1707,6 @@
     "type": "value_definition",
     "named": true,
     "fields": {
-      "arguments": {
-        "multiple": false,
-        "required": false,
-        "types": [
-          {
-            "type": "type_field_list",
-            "named": true
-          }
-        ]
-      },
       "expression": {
         "multiple": false,
         "required": true,
@@ -1781,6 +1771,16 @@
         "types": [
           {
             "type": "scoped_identifier",
+            "named": true
+          }
+        ]
+      },
+      "type_arguments": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "type_field_list",
             "named": true
           }
         ]

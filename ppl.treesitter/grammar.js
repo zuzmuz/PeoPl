@@ -86,14 +86,14 @@ module.exports = grammar({
 
     type_definition: $ => seq(
       field('identifier', $.scoped_big_identifier),
-      optional(field('arguments', $.type_field_list)),
+      optional(field('type_arguments', $.type_field_list)),
       ':',
       field('definition', $._type_specifier)
     ),
 
     value_definition: $ => seq(
       field("identifier", $.scoped_identifier),
-      optional(field('arguments', $.type_field_list)),
+      optional(field('type_arguments', $.type_field_list)),
       ":",
       field("expression", $._expression),
     ),

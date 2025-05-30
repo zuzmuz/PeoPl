@@ -1,6 +1,3 @@
-
-
-
 Whatever[T]: [
     t: T,
     notGeneric: Int
@@ -26,18 +23,27 @@ Sex: choice [
     godzilla
 ]
 
-from[Model[T]: () -> FetchResult[Model[T]] {_}
+DBModel: subset [
+    from: () -> FetchResult[Self],
+    where: (FetchResult[Self]) [predicate: (Self) -> Bool] -> FetchResult[Self],
+    select: (FetchResult[Self]) [transform: (Self) -> some Type T]-> FetchResult[T]
+]
 
-filter[Model[T]]: (FetchResult[Model[T]]) [where: (T) -> Bool] ->FetchResult[Model[T]] {
+from[T in DBModel]: () -> FetchResult[T] {_}
+
+where[T in DBModel]: 
+    (FetchResult[T]) [
+        where: (T) -> Bool
+    ] -> FetchResult[Model[T]] {
 _
 }
 
-s: 0
+s: () -> Int { 0 }
 
 main: () -> _ {
     from[User] |>
-    |$in| in.filter(where: { _ }) |>
-    1 + 3 |>
+    |$in| in.filter |>
+    a + b |>
     2 + (1 - select[T] { _ }) |> 
     5 |> // REsult
     |$s if s > 2| _,

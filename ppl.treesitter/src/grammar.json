@@ -169,7 +169,7 @@
           "members": [
             {
               "type": "FIELD",
-              "name": "arguments",
+              "name": "type_arguments",
               "content": {
                 "type": "SYMBOL",
                 "name": "type_field_list"
@@ -210,7 +210,7 @@
           "members": [
             {
               "type": "FIELD",
-              "name": "arguments",
+              "name": "type_arguments",
               "content": {
                 "type": "SYMBOL",
                 "name": "type_field_list"

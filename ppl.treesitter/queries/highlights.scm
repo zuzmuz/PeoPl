@@ -20,10 +20,9 @@
 (call_expression
   prefix: (scoped_identifier
     (small_identifier) @function.call))
-; (square_call_expression
-;   prefix: (identifier) @function.call)
-; (access_expression
-;   field: (identifier) @variable.member)
+
+(access_expression
+  field: (small_identifier) @function.call)
 
 ;
 ;
@@ -94,7 +93,7 @@
 (nothing_value) @constant.builtin
 (never_value) @constant.builtin
 
-(binding) @keyword.operator
+(binding) @function.call
 "if" @keyword.control
 
 (comment) @comment

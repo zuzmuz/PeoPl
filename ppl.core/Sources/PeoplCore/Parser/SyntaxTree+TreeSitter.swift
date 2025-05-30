@@ -393,12 +393,26 @@ extension Syntax.Sum: TreeSitterNode {
     ) throws(SyntaxError) -> Self {
         // first child is the 'choice' keyword
         guard let typeFieldList = node.child(at: 1) else {
-            throw .errorParsing(element: "Sum", location: .nowhere)
+            throw .errorParsing(
+                element: "Sum",
+                location: node.getLocation(in: source))
         }
 
         let typeFields: [Syntax.TypeField] =
             try typeFieldList.compactMapChildren { child throws(SyntaxError) in
-                try .from(node: child, in: source)
+                if child.nodeType == "type_field" {
+                    return try .from(node: child, in: source)
+                } else if child.nodeType == "small_identifier" {
+                    // handling enums
+                    let small_identifier = try child.getString(in: source)
+                    return .taggedTypeSpecifier(
+                        .init(
+                            identifier: small_identifier,
+                            type: .nothing(location: .nowhere),
+                            location: child.getLocation(in: source)))
+                } else {
+                    return nil
+                }
             }
         return .init(
             typeFields: typeFields,
