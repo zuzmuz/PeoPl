@@ -5,17 +5,18 @@
 
 enum Semantic {
 
-    typealias DefinitionHash = Int
+    // typealias DefinitionHash = Int
     typealias Tag = String
+    typealias TypeDefinitionMap = [Syntax.ScopedIdentifier: (
+        TypeDefinition, Syntax.TypeDefinition
+    )]
+    typealias ValueDefinitionMap = [Syntax.ScopedIdentifier: (
+        ValueDefinition, Syntax.ValueDefinition
+    )]
 
-    struct Module {
-        let definitions: [DefinitionHash: Definition]
-        let definitionsSyntaxNodes: [DefinitionHash: Syntax.Definition]
-    }
-    
-    enum Definition {
-        case specificTypeDefinition(TypeDefinition)
-        case specificValueDefinition(ValueDefinition)
+    struct Context {
+        let typeDefinitions: TypeDefinitionMap
+        let valueDefinition: ValueDefinitionMap
     }
 
     struct TypeDefinition {
@@ -39,4 +40,3 @@ enum Semantic {
     struct Function {
     }
 }
-

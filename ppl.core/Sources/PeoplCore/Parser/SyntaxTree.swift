@@ -143,7 +143,7 @@ enum Syntax {
 
     /// The core type specification language
     /// This represents the full spectrum of types available in the language
-    enum TypeSpecifier: SyntaxNode {
+    enum TypeSpecifier: SyntaxNode, Sendable {
         /// Unit type (empty tuple)
         case nothing(location: NodeLocation)
         /// Unreachable type
@@ -313,7 +313,7 @@ enum Syntax {
             case boolLiteral(Bool)
         }
 
-        indirect enum ExpressionType {
+        indirect enum ExpressionType: Sendable {
             case literal(Literal)
 
             /// Prefix operators expression

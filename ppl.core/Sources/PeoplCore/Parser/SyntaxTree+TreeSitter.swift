@@ -404,10 +404,10 @@ extension Syntax.Sum: TreeSitterNode {
                     return try .from(node: child, in: source)
                 } else if child.nodeType == "small_identifier" {
                     // handling enums
-                    let small_identifier = try child.getString(in: source)
+                    let smallIdentifier = try child.getString(in: source)
                     return .taggedTypeSpecifier(
                         .init(
-                            identifier: small_identifier,
+                            identifier: smallIdentifier,
                             type: .nothing(location: .nowhere),
                             location: child.getLocation(in: source)))
                 } else {

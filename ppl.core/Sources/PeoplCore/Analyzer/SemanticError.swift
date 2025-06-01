@@ -1,10 +1,10 @@
-// import Foundation
+import Foundation
 // //
-// enum SemanticError: LocalizedError {
-//     case type(TypeSemanticError)
-//     case function(FunctionSemanticError)
-//     // case expression(ExpressionSemanticError)
-// }
+enum SemanticError: LocalizedError {
+    case type(TypeSemanticError)
+    // case function(FunctionSemanticError)
+    // case expression(ExpressionSemanticError)
+}
 // //
 // // extension Array<SemanticError>: Error {
 // //     // var localizedDescription: String {
@@ -14,17 +14,21 @@
 // //     // }
 // // }
 // //
-// enum TypeSemanticError: LocalizedError {
-//     case redeclaration(types: [Syntax.TypeDefinition])
-//     case shadowing(
-//         type: Syntax.TypeDefinition,
-//         module: String)
-//     case typeNotInScope(type: Syntax.NominalType)
-//     case cyclicType(
-//         // type: Syntax.TypeDefinition, // TODO: consider detecting cycle
-//         cyclicType: Syntax.NominalType)
-//     case unsupportedYet(String)
-// }
+
+enum TypeSemanticError: LocalizedError {
+    case redeclaration(types: [Syntax.TypeDefinition])
+    // case shadowing(
+    //     type: Syntax.TypeDefinition,
+    //     module: String)
+    case typeNotInScope(type: Syntax.ScopedIdentifier)
+    case homogeneousTypeProductInSum(
+        type: Syntax.TypeSpecifier,
+        field: Syntax.TypeField)
+    case cyclicType(
+        type: Syntax.TypeDefinition, // TODO: consider detecting cycle
+        cyclicType: Syntax.ScopedIdentifier)
+    case unsupportedYet(String)
+}
 //
 // enum FunctionSemanticError: LocalizedError {
 //     case functionRedeclaration([Syntax.FunctionDefinition])

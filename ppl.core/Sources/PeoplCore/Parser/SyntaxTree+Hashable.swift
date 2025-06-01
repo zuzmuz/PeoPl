@@ -1,4 +1,3 @@
-
 extension Syntax.Definition: Hashable {
     func hash(into hasher: inout Hasher) {
         switch self {
@@ -27,7 +26,7 @@ extension Syntax.TypeDefinition: Hashable {
     func hash(into hasher: inout Hasher) {
         hasher.combine(self.identifier)
     }
-    
+
     static func == (
         lhs: Syntax.TypeDefinition,
         rhs: Syntax.TypeDefinition
