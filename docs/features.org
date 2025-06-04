@@ -15,6 +15,10 @@
   - [[#calling-functions][Calling functions]]
 - [[#program-structure][Program structure]]
   - [[#file-structure][File structure]]
+- [[#type-system][Type System]]
+  - [[#tuples-and-records][Tuples and Records]]
+  - [[#enums-and-tagged-unions][Enums and Tagged Unions]]
+  - [[#nothing][Nothing]]
 
 * What is PeoPl
 
@@ -63,6 +67,8 @@ Each function in a pipeline takes the output of the previous function as its pri
 with additional arguments.
 
 PeoPl's expression-only design eliminates the statement/expression dichotomy found in many languages.
+
+We'll get into more details about [[#How Piping Works][piping]] later
 
 ** Input Capturing in Pipelines
 
@@ -247,12 +253,95 @@ There are currently 2 supported definions
 - [[#Type Definitions][Type Definitions]]
 - [[#Value Definitions][Value Definitions]]
 
-*** Value Definitions
+**** Value Definitions
 Value definitions defines compile time expressions. These are usually constants,
 and function definitions.
 
 Functions are values. Values have [[#Types][types]].
 
+Value identifiers always start with a lower case.
 
+**** Type Definitions
+Type definitions create type aliases. All types in PeoPl are actually structural types.
+Nominal types are just aliases to these structural types.
 
+Type identifiers always start  with Upper case.
+
+* Type System
+PeoPl has first class support for algebraic types, mainly product types and sum types.
+
+** Tuples and Records
+The basic building blocks for types are the tuples (untagged product types)
+and records (tagged product types), records are like structs in c.
+Defining tuples or records uses the same syntax.
+#+BEGIN_SRC peopl
+  MyType: [Int, Float, String] // tuple
+  Person: [name: String, age: Int] // record
+#+END_SRC
+
+As stated [[*Definitions][above]], type identifiers are always capitilized,
+while tags always start with a lower case.
+
+To create an instance of types use the `()`.
+`[]` to define the type, `()` to create the type
+#+BEGIN_SRC peopl
+ (1, 3.14, "hi")
+ Person(name: "peopl", age: 14)
+#+END_SRC
+Tagged fields and untagged fields cannot be mixed
+#+BEGIN_SRC peopl
+  Illegal: [Int, what: Int] // error
+#+END_SRC
+
+** Enums and Tagged Unions
+Sum types are defined in the same way as tuples and records with an additional keyword.
+#+BEGIN_SRC peopl
+  
+  Shape: choice [
+       rectangle: [width: Float, height: Float],
+       circle: [radius: Float]
+  ]
+#+END_SRC
+
+The `choice` keyword is an intersting keyword because it can define unions, tagged unions,
+enums as being the same concept, a choice between items.
+
+*** Untagged Unions
+An untagged union is a union of types.
+Untagged unions aren't really useful, so actually untagged choices are actually implicitely tagged.
+However, it doesn't make sense to have a union of the same type, or overlapping types.
+So these are not allowed.
+#+BEGIN_SRC peopl
+Number: choice [Int, Float] // Int has implicit tag 0, and Float has 1
+
+Redundant: choice [String, String] // not allowed, can't really assign tags
+#+END_SRC
+
+*** Tagged Unions
+Tagged unions are a very powerful feature in a language.
+This also covers traditional c enums, because enums are technically
+a tagged union of the [[#Nothing][nothing]] type.
+
+#+BEGIN_SRC peopl
+
+Color: choice [red, green, blue]
+// equivalent to
+Color: choice [red: Nothing, green: Nothing, blue: Nothing]
+#+END_SRC
+
+** Nothing
+Oh I forgot about nothing. Nothing is basically the empty tuple,
+the Unit type, void.
+Actually it's not technically void.
+If a function returns `nothing` it is equivalent to returning void in c.
+Though it is equivalent to None in other languages.
+Nothing, with capital N is the nothing type, while nothing with small n is the value.
+However, because Nothing is too verbose, an alias would be `_`
+#+BEGIN_SRC peopl
+
+Nothing: []
+nothing: ()
+_: Nothing
+
+#+END_SRC
 

@@ -33,10 +33,32 @@ enum Semantic {
         case record([Tag: TypeSpecifier])
         case union([TypeSpecifier])
         case choice([Tag: TypeSpecifier])
-
+        case nominal(Syntax.ScopedIdentifier) // TODO: consider generic
         case function(Function)
     }
 
     struct Function {
+    }
+
+    indirect enum Expression {
+        case nothing
+        case never
+        case intLiteral(UInt64)
+        case floatLiteral(Double)
+        case stringLiteral(String)
+        case boolLiteral(Bool)
+
+        case unary(
+            Operator,
+            expression: Expression,
+            type: TypeSpecifier)
+
+        case binary(
+            Operator,
+            left: Expression,
+            right: Expression,
+            type: TypeSpecifier)
+        
+        case 
     }
 }
