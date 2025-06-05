@@ -3,7 +3,7 @@ import Foundation
 enum SemanticError: LocalizedError {
     case type(TypeSemanticError)
     // case function(FunctionSemanticError)
-    // case expression(ExpressionSemanticError)
+    case expression(ExpressionSemanticError)
 }
 // //
 // // extension Array<SemanticError>: Error {
@@ -39,54 +39,62 @@ enum TypeSemanticError: LocalizedError {
 //     case typeNotInScope(type: Syntax.NominalType)
 // }
 // //
-// // enum ExpressionSemanticError: LocalizedError {
-// //     case inputMismatch(
-// //         expression: Expression,
-// //         expected: TypeIdentifier,
-// //         received: TypeIdentifier)
-// //     case invalidOperation(
-// //         expression: Expression,
-// //         leftType: TypeIdentifier,
-// //         rightType: TypeIdentifier)
-// //     case callingUncallable(
-// //         expression: Expression,
-// //         type: TypeIdentifier)
-// //     case undefinedTypeInitializer(
-// //         nominalType: NominalType)
-// //     case undefinedFunction(
-// //         call: Expression.Call,
-// //         function: FunctionIdentifier)
-// //     case undefinedFunctionOnInput(
-// //         call: Expression.Call,
-// //         input: TypeIdentifier,
-// //         function: FunctionIdentifier)
-// //     case argumentMismatch(
-// //         call: Expression.Call,
-// //         givenArguments: [ParamDefinition],
-// //         inputType: TypeIdentifier,
-// //         function: FunctionIdentifier)
-// //     case typeInitializeArgumentMismatch(
-// //         call: Expression.Call,
-// //         givenArguments: [ParamDefinition],
-// //         typeDefinition: TypeDefinition)
-// //     case fieldNotInScope(
-// //         expression: Expression)
-// //     case captureGroupCountMismatch(
-// //         branch: Expression.Branched.Branch,
-// //         inputType: TypeIdentifier,
-// //         captureGroupCount: Int)
-// //     case loopedExpressionTypeMismatch(
-// //         expression: Expression,
-// //         expectedType: TypeIdentifier,
-// //         receivedType: TypeIdentifier)
-// //     case reachedNever(
-// //         expression: Expression)
-// //     case returnTypeMismatch(
-// //         functionDefinition: FunctionDefinition,
-// //         expectedReturnType: TypeIdentifier,
-// //         receivedType: TypeIdentifier)
-// //     case emptyFunctionBody(
-// //         functionDefinition: FunctionDefinition
-// //     )
-// //     case unsupportedYet(String)
-// // }
+
+enum ExpressionSemanticError: LocalizedError {
+    case inputMismatch(
+        expression: Syntax.Expression,
+        expected: Semantic.TypeSpecifier,
+        received: Semantic.TypeSpecifier)
+    case invalidOperation(
+        expression: Syntax.Expression,
+        leftType: Semantic.TypeSpecifier,
+        rightType: Semantic.TypeSpecifier)
+    case undefinedField(
+        expression: Syntax.Expression,
+        field: String)
+    case undefinedType(
+        expression: Syntax.Expression,
+        identifier: Semantic.ScopedIdentifier)
+    // case callingUncallable(
+    //     expression: Expression,
+    //     type: TypeIdentifier)
+
+    // case undefinedTypeInitializer(
+    //     nominalType: NominalType)
+    // case undefinedFunction(
+    //     call: Expression.Call,
+    //     function: FunctionIdentifier)
+    // case undefinedFunctionOnInput(
+    //     call: Expression.Call,
+    //     input: TypeIdentifier,
+    //     function: FunctionIdentifier)
+    // case argumentMismatch(
+    //     call: Expression.Call,
+    //     givenArguments: [ParamDefinition],
+    //     inputType: TypeIdentifier,
+    //     function: FunctionIdentifier)
+    // case typeInitializeArgumentMismatch(
+    //     call: Expression.Call,
+    //     givenArguments: [ParamDefinition],
+    //     typeDefinition: TypeDefinition)
+    // case fieldNotInScope(
+    //     expression: Expression)
+    // case captureGroupCountMismatch(
+    //     branch: Expression.Branched.Branch,
+    //     inputType: TypeIdentifier,
+    //     captureGroupCount: Int)
+    // case loopedExpressionTypeMismatch(
+    //     expression: Expression,
+    //     expectedType: TypeIdentifier,
+    //     receivedType: TypeIdentifier)
+    // case reachedNever(
+    //     expression: Expression)
+    // case returnTypeMismatch(
+    //     functionDefinition: FunctionDefinition,
+    //     expectedReturnType: TypeIdentifier,
+    //     receivedType: TypeIdentifier)
+    // case emptyFunctionBody(
+    //     functionDefinition: FunctionDefinition
+    // )
+    case unsupportedYet(String)
+}

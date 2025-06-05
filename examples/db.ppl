@@ -42,6 +42,8 @@ s: () -> Int { 0 }
 
 main: () -> _ {
     from[User] |>
+    * 2 |>
+    2 -/ 3 |>
     |$in| in.filter |>
     a + b |>
     2 + (1 - select[T] { _ }) |> 
