@@ -71,41 +71,30 @@ extension Syntax.Expression {
                 expression: self,
                 expected: .nothing,
                 received: input)
-        case (.nothing, .access(prefix: let prefix, field: let identifier)):
+        case (.nothing, .access(prefix: let prefix, field: let fieldIdentifier)):
             let prefixTyped = try prefix.checkType(
                 with: .nothing,
                 localScope: localScope,
                 context: context)
 
-            // TODO: recursively detect record type
-            switch prefixTyped.type {
-            case .nominal(let typeIdentifier):
-                // guard let typeSpecifier = context.typeDefinitions[typeIdentifier],
-                //     let fieldType = typeSpecifier.type. else {
-                //     throw .undefinedType(
-                //         expression: self,
-                //         identifier: typeIdentifier)
-                // }
-                fatalError()
-            case .record(let fields):
-                guard let fieldType = fields[identifier] else {
-                    throw .undefinedField(expression: self, field: identifier)
-                }
-                return .init(
-                    expression: .access(prefix: prefixTyped, field: identifier),
-                    type: fieldType)
-            default:
-                throw .unsupportedYet("accessing fields on unsupported type")
-            }
+            let accessFieldType = try self.accessFieldType(
+                type: prefixTyped.type,
+                fieldIdentifier: fieldIdentifier,
+                context: context)
+            return .init(
+                expression:
+                    .access(prefix: prefixTyped, field: fieldIdentifier),
+                type: accessFieldType)
 
         case (_, .access):
             throw .inputMismatch(
                 expression: self,
                 expected: .nothing,
                 received: input)
+
         case (let input, .call(prefix: let prefix, arguments: let arguments)):
-            
-        
+            fatalError()
+
         case (let input, .piped(left: let left, right: let right)):
             let leftTyped = try left.checkType(
                 with: input,
@@ -121,5 +110,51 @@ extension Syntax.Expression {
             fatalError()
         }
         throw .unsupportedYet("Expression type checking is not implemented yet")
+    }
+
+    func accessFieldType(
+        type: Semantic.TypeSpecifier,
+        fieldIdentifier: String,
+        context: borrowing Semantic.Context
+    ) throws(ExpressionSemanticError) -> Semantic.TypeSpecifier {
+
+        switch type {
+        case .nothing, .never:
+            throw .undefinedField(expression: self, field: fieldIdentifier)
+        case .raw(let rawType):
+            return try self.accessFieldType(
+                rawType: rawType,
+                fieldIdentifier: fieldIdentifier,
+                context: context)
+        case .nominal(let typeIdentifier):
+            guard
+                let rawType = context.typeDefinitions[typeIdentifier]
+            else {
+                throw .undefinedType(
+                    expression: self, identifier: typeIdentifier)
+            }
+            return try self.accessFieldType(
+                rawType: rawType,
+                fieldIdentifier: fieldIdentifier,
+                context: context)
+        }
+    }
+
+    func accessFieldType(
+        rawType: Semantic.RawTypeSpecifier,
+        fieldIdentifier: String,
+        context: borrowing Semantic.Context
+    ) throws(ExpressionSemanticError) -> Semantic.TypeSpecifier {
+
+        switch rawType {
+        case .record(let record):
+            guard let accessedFieldType = record[fieldIdentifier] else {
+                throw .undefinedField(expression: self, field: fieldIdentifier)
+            }
+            return accessedFieldType
+        default:
+            fatalError("Accessing field type is not implemented for \(rawType)")
+
+        }
     }
 }
