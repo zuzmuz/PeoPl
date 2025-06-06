@@ -96,14 +96,6 @@ extension Syntax.Expression {
             fatalError()
 
         case (let input, .piped(left: let left, right: let right)):
-            let leftTyped = try left.checkType(
-                with: input,
-                localScope: localScope,
-                context: context)
-            let rightTyped = try right.checkType(
-                with: leftTyped.type,
-                localScope: localScope,
-                context: context)
             // TODO: join the piped expression
             fatalError()
         default:
@@ -147,11 +139,18 @@ extension Syntax.Expression {
     ) throws(ExpressionSemanticError) -> Semantic.TypeSpecifier {
 
         switch rawType {
-        case .record(let record):
-            guard let accessedFieldType = record[fieldIdentifier] else {
-                throw .undefinedField(expression: self, field: fieldIdentifier)
+        case let .record(record):
+            if let accessedFieldType = record[.named(fieldIdentifier)] {
+                return accessedFieldType
             }
-            return accessedFieldType
+
+            if fieldIdentifier.first == "_",
+                let unnamedTag = UInt64(fieldIdentifier.dropFirst()),
+                let accessedFieldType = record[.unnamed(unnamedTag)]
+            {
+                return accessedFieldType
+            }
+            throw .undefinedField(expression: self, field: fieldIdentifier)
         default:
             fatalError("Accessing field type is not implemented for \(rawType)")
 

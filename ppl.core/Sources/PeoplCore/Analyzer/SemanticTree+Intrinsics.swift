@@ -7,7 +7,7 @@ func getIntrinsicContext() -> Semantic.Context {
             .init(chain: ["Bool"]): .intrinsic(.bool),
             // .init(chain: ["String"]): TODO: ref to bytes
         ],
-        valueDefinition: [:],
+        valueDefinitions: [:],
         typeLookup: [:],
         valueLookup: [:],
         operators: [

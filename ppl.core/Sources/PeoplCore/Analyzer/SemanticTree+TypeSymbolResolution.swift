@@ -2,10 +2,8 @@ protocol TypeDefinitionChecker {
     func getTypeDeclarations() -> [Syntax.TypeDefinition]
 
     func resolveTypeSymbols(context: borrowing Semantic.Context) -> (
-        typeDefinitions: [Semantic.ScopedIdentifier: (
-            Syntax.TypeDefinition,
-            Semantic.RawTypeSpecifier
-        )],
+        typeDefinitions: [Semantic.ScopedIdentifier: Semantic.RawTypeSpecifier],
+        typeLookup: [Semantic.ScopedIdentifier: Syntax.TypeDefinition],
         errors: [TypeSemanticError]
     )
 }
@@ -47,6 +45,82 @@ extension Syntax.TypeSpecifier {
                 && context.typeDefinitions[semanticIdentifier] == nil
         }
     }
+
+    func getSemanticType() throws(TypeSemanticError) -> Semantic.TypeSpecifier {
+        switch self {
+        case .nothing:
+            return .nothing
+        case .never:
+            return .never
+        case let .product(product):
+            var recordFields: [Semantic.Tag: Semantic.TypeSpecifier] = [:]
+            var fieldCounter = UInt64(0)
+            for typeField in product.typeFields {
+                switch typeField {
+                case let .typeSpecifier(typeSpecifier):
+                    recordFields[.unnamed(fieldCounter)] =
+                        try typeSpecifier.getSemanticType()
+                    fieldCounter += 1
+                case let .taggedTypeSpecifier(taggedTypeSpecifier):
+                    recordFields[.named(taggedTypeSpecifier.identifier)] =
+                        try taggedTypeSpecifier.type.getSemanticType()
+                    fieldCounter += 1
+                case let .homogeneousTypeProduct(homogeneousTypeProduct):
+                    let semanticType = try homogeneousTypeProduct.typeSpecifier
+                        .getSemanticType()
+                    switch homogeneousTypeProduct.count {
+                    case let .literal(value):
+                        (0..<value).forEach { index in
+                            recordFields[.unnamed(fieldCounter + index)] =
+                                semanticType
+                        }
+                        fieldCounter += value
+                    case .identifier:
+                        fatalError("compile time values not supported yet")
+                    }
+                }
+            }
+            return .raw(.record(recordFields))
+        case let .sum(sum):
+            var recordFields: [Semantic.Tag: Semantic.TypeSpecifier] = [:]
+            var fieldCounter = UInt64(0)
+            for typeField in sum.typeFields {
+                switch typeField {
+                case let .typeSpecifier(typeSpecifier):
+                    recordFields[.unnamed(fieldCounter)] =
+                        try typeSpecifier.getSemanticType()
+                    fieldCounter += 1
+                case let .taggedTypeSpecifier(taggedTypeSpecifier):
+                    recordFields[.named(taggedTypeSpecifier.identifier)] =
+                        try taggedTypeSpecifier.type.getSemanticType()
+                    fieldCounter += 1
+                case .homogeneousTypeProduct:
+                    throw .homogeneousTypeProductInSum(
+                        type: self, field: typeField)
+                }
+            }
+            return .raw(.choice(recordFields))
+        case let .nominal(nominal):
+            return .nominal(nominal.identifier.getSemanticIdentifier())
+        default:
+            fatalError("Other types are not implemented yet")
+        }
+    }
+}
+
+extension Semantic.TypeSpecifier {
+    func getRawType(
+        typeDefinitions: borrowing [
+            Semantic.ScopedIdentifier: Semantic.TypeSpecifier]
+    ) -> Semantic.RawTypeSpecifier {
+        switch self {
+        case let .nominal(indentifier):
+            return typeDefinitions[indentifier]!.getRawType(
+                typeDefinitions: typeDefinitions)
+        case let .raw(rawTypeSpecifier):
+            return rawTypeSpecifier
+        }
+    }
 }
 
 extension Syntax.TypeField {
@@ -70,7 +144,8 @@ private enum NodeState {
 
 extension TypeDefinitionChecker {
     func resolveTypeSymbols(context: borrowing Semantic.Context) -> (
-        typeDefinitions: Semantic.TypeDefinitionMap,
+        typeDefinitions: [Semantic.ScopedIdentifier: Semantic.RawTypeSpecifier],
+        typeLookup: [Semantic.ScopedIdentifier: Syntax.TypeDefinition],
         errors: [TypeSemanticError]
     ) {
         let declarations = self.getTypeDeclarations()
@@ -93,32 +168,51 @@ extension TypeDefinitionChecker {
             }
         }
 
-        let types = typesLocations.compactMapValues { types in
+        let typeLookup = typesLocations.compactMapValues { types in
             return types.first
         }
 
         // TODO: detecting shadowings
 
         // detecting invalid members types
-        let typesNotInScope = types.flatMap { _, definition in
+        let typesNotInScope = typeLookup.flatMap { _, definition in
             return definition.definition.undefinedTypes(
-                typeDefinitions: types, context: context)
+                typeDefinitions: typeLookup, context: context)
         }.map { TypeSemanticError.typeNotInScope(type: $0) }
 
         // detecting cyclical dependencies
         let cyclicalDependencies = checkCyclicalDependencies(
-            typeDefinitions: types, context: context)
+            typeLookup: typeLookup, context: context)
+
+        var typeDefinitions:
+            [Semantic.ScopedIdentifier: Semantic.TypeSpecifier] = [:]
+        var typeSepcifierErrors: [TypeSemanticError] = []
+
+        for (indentifier, typeDefinition) in typeLookup {
+            do {
+                typeDefinitions[indentifier] =
+                    try typeDefinition.definition.getSemanticType()
+            } catch {
+                typeSepcifierErrors.append(error)
+            }
+        }
+
+        let rawTypeDefinitions = typeDefinitions.mapValues { typeSpecifier in
+            typeSpecifier.getRawType(typeDefinitions: typeDefinitions)
+        }
 
         return (
-            typeDefinitions: [:],
+            typeDefinitions: rawTypeDefinitions,
+            typeLookup: typeLookup,
             errors: redeclarations + typesNotInScope + cyclicalDependencies
         )
     }
 
     private func checkCyclicalDependencies(
-        typeDefinitions: [Semantic.ScopedIdentifier: Syntax.TypeDefinition],
+        typeLookup: [Semantic.ScopedIdentifier: Syntax.TypeDefinition],
         context: borrowing Semantic.Context
     ) -> [TypeSemanticError] {
+
         var nodeStates: [Syntax.ScopedIdentifier: NodeState] = [:]
         var errors: [TypeSemanticError] = []
 
@@ -128,7 +222,7 @@ extension TypeDefinitionChecker {
                 break
             case let .nominal(nominal):
                 checkCyclicalDependencies(
-                    typeDefinition: typeDefinitions[
+                    typeDefinition: typeLookup[
                         nominal.identifier.getSemanticIdentifier()]!)
             case let .product(product):
                 product.typeFields.forEach { field in
@@ -182,10 +276,22 @@ extension TypeDefinitionChecker {
 
         }
 
-        typeDefinitions.forEach { _, typeDefinition in
+        typeLookup.forEach { _, typeDefinition in
             checkCyclicalDependencies(typeDefinition: typeDefinition)
         }
 
         return errors
+    }
+}
+
+extension Syntax.Module: TypeDefinitionChecker {
+    func getTypeDeclarations() -> [Syntax.TypeDefinition] {
+        return self.definitions.compactMap { statement in
+            if case let .typeDefinition(typeDefinition) = statement {
+                return typeDefinition
+            } else {
+                return nil
+            }
+        }
     }
 }

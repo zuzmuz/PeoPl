@@ -301,7 +301,7 @@ class TypeSystemParsingTests: XCTestCase {
     func testComplexMixedTypes() throws {
         let source = """
             Complex: [
-                id: String, 
+                id: String,
                 data: choice [
                     simple: Int,
                     nested: [value: T, meta: [created: String, modified: String]]
@@ -342,8 +342,7 @@ class TypeSystemParsingTests: XCTestCase {
         for source in invalidSources {
             XCTAssertThrowsError(
                 try Syntax.Module(source: source, path: "invalid.lang")
-            ) {
-                error in
+            ) { error in
                 print("Expected error for invalid syntax: \(error)")
             }
         }
@@ -357,8 +356,7 @@ class TypeSystemParsingTests: XCTestCase {
         for source in invalidSources {
             XCTAssertThrowsError(
                 try Syntax.Module(source: source, path: "invalid_caps.lang")
-            ) {
-                error in
+            ) { error in
                 print("Expected error for invalid capitalization: \(error)")
             }
         }

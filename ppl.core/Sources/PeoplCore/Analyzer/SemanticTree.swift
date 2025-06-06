@@ -6,9 +6,10 @@
 enum Semantic {
 
     // typealias DefinitionHash = Int
-    typealias Tag = String
-    typealias TypeDefinitionMap = [ScopedIdentifier: RawTypeSpecifier]
-    typealias ValueDefinitionMap = [ScopedIdentifier: Expression]
+    enum Tag: Hashable {
+        case named(String)
+        case unnamed(UInt64)
+    }
 
     struct ScopedIdentifier: Hashable {
         let chain: [String]
@@ -21,88 +22,18 @@ enum Semantic {
     }
 
     struct Context {
-        let typeDefinitions: TypeDefinitionMap
-        let valueDefinition: ValueDefinitionMap
+        let typeDefinitions: [ScopedIdentifier: Semantic.RawTypeSpecifier]
+        let valueDefinitions: [ScopedIdentifier: Semantic.Expression]
         let typeLookup: [ScopedIdentifier: Syntax.TypeDefinition]
         let valueLookup: [ScopedIdentifier: Syntax.ValueDefinition]
-
-        let operators: [OperatorField: Expression] = [
-            .init(left: .int, right: .int, op: .plus): .init(
-                expression: .intrinsic, type: .int),
-            .init(left: .nothing, right: .int, op: .plus): .init(
-                expression: .intrinsic, type: .int),
-            .init(left: .int, right: .int, op: .minus): .init(
-                expression: .intrinsic, type: .int),
-            .init(left: .nothing, right: .int, op: .plus): .init(
-                expression: .intrinsic, type: .int),
-            .init(left: .int, right: .int, op: .times): .init(
-                expression: .intrinsic, type: .int),
-            .init(left: .int, right: .int, op: .by): .init(
-                expression: .intrinsic, type: .int),
-            .init(left: .int, right: .int, op: .modulo): .init(
-                expression: .intrinsic, type: .int),
-
-            .init(left: .float, right: .float, op: .plus): .init(
-                expression: .intrinsic, type: .float),
-            .init(left: .nothing, right: .float, op: .plus): .init(
-                expression: .intrinsic, type: .float),
-            .init(left: .float, right: .float, op: .minus): .init(
-                expression: .intrinsic, type: .float),
-            .init(left: .nothing, right: .int, op: .plus): .init(
-                expression: .intrinsic, type: .int),
-            .init(left: .float, right: .float, op: .times): .init(
-                expression: .intrinsic, type: .float),
-            .init(left: .float, right: .float, op: .by): .init(
-                expression: .intrinsic, type: .float),
-
-            .init(left: .int, right: .int, op: .equal): .init(
-                expression: .intrinsic, type: .bool),
-            .init(left: .int, right: .int, op: .different): .init(
-                expression: .intrinsic, type: .bool),
-            .init(left: .int, right: .int, op: .lessThan): .init(
-                expression: .intrinsic, type: .bool),
-            .init(left: .int, right: .int, op: .lessThanOrEqual): .init(
-                expression: .intrinsic, type: .bool),
-            .init(left: .int, right: .int, op: .greaterThan): .init(
-                expression: .intrinsic, type: .bool),
-            .init(left: .int, right: .int, op: .greaterThanOrEqual): .init(
-                expression: .intrinsic, type: .bool),
-
-            .init(left: .float, right: .float, op: .equal): .init(
-                expression: .intrinsic, type: .bool),
-            .init(left: .float, right: .float, op: .different): .init(
-                expression: .intrinsic, type: .bool),
-            .init(left: .float, right: .float, op: .lessThan): .init(
-                expression: .intrinsic, type: .bool),
-            .init(left: .float, right: .float, op: .lessThanOrEqual): .init(
-                expression: .intrinsic, type: .bool),
-            .init(left: .float, right: .float, op: .greaterThan): .init(
-                expression: .intrinsic, type: .bool),
-            .init(left: .float, right: .float, op: .greaterThanOrEqual): .init(
-                expression: .intrinsic, type: .bool),
-
-            .init(left: .string, right: .string, op: .equal): .init(
-                expression: .intrinsic, type: .bool),
-            .init(left: .string, right: .string, op: .different): .init(
-                expression: .intrinsic, type: .bool),
-
-            .init(left: .bool, right: .bool, op: .equal): .init(
-                expression: .intrinsic, type: .bool),
-            .init(left: .bool, right: .bool, op: .different): .init(
-                expression: .intrinsic, type: .bool),
-            .init(left: .bool, right: .bool, op: .and): .init(
-                expression: .intrinsic, type: .bool),
-            .init(left: .bool, right: .bool, op: .or): .init(
-                expression: .intrinsic, type: .bool),
-            .init(left: .nothing, right: .bool, op: .not): .init(
-                expression: .intrinsic, type: .bool),
-        ]
+        let operators: [OperatorField: Expression]
     }
 
     struct LocalScope {
     }
 
     enum IntrinsicType: Hashable {
+        case never
         case uint
         case int
         case float
@@ -111,26 +42,26 @@ enum Semantic {
 
     enum RawTypeSpecifier: Hashable {
         case intrinsic(IntrinsicType)
-        case tuple([TypeSpecifier])
         case record([Tag: TypeSpecifier])
-        case union([TypeSpecifier])
         case choice([Tag: TypeSpecifier])
         case function(Function)
     }
 
     enum TypeSpecifier: Hashable {
-        case nothing
-        case never
-
         case raw(RawTypeSpecifier)
         case nominal(ScopedIdentifier)
 
         // NOTE: Builtin types are nominal types that are mapped to raw intrinsic types
+        // NOTE: Intrinsic types can't be directly used
         static let uint = TypeSpecifier.nominal(.init(chain: ["U32"]))
         static let int = TypeSpecifier.nominal(.init(chain: ["I32"]))
         static let float = TypeSpecifier.nominal(.init(chain: ["F64"]))
         static let string = TypeSpecifier.nominal(.init(chain: ["String"]))
         static let bool = TypeSpecifier.nominal(.init(chain: ["Bool"]))
+
+        // FIX: Not like that
+        static let nothing = TypeSpecifier.raw(.record([:]))
+        static let never = TypeSpecifier.nominal(.init(chain: ["Never"]))
     }
 
     struct Function: Hashable {

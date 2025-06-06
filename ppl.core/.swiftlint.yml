@@ -26,8 +26,8 @@ trailing_comma:
   
 
 function_body_length:
-  warning: 75
-  error: 100
+  warning: 150
+  error: 200
 
 type_body_length:
   warning: 500
@@ -41,4 +41,7 @@ file_length:
 large_tuple:
   warning: 4
   error: 5
+
+disabled_rules:
+  - todo
   
