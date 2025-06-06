@@ -1,32 +1,31 @@
-// MARK: Language Semantic Tree
-// ============================
-// This file defines the semantic tree structure of valid type checked
-// Peopl code.
+func getIntrinsicContext() -> Semantic.Context {
+    let intrinsicContext: Semantic.Context = .init(
+        typeDefinitions: [
+            .init(chain: ["U32"]): .intrinsic(.uint),
+            .init(chain: ["I32"]): .intrinsic(.int),
+            .init(chain: ["F64"]): .intrinsic(.float),
+            .init(chain: ["Bool"]): .intrinsic(.bool),
+            // .init(chain: ["String"]): TODO: ref to bytes
+        ],
+        valueDefinition: [:],
+        typeLookup: [:],
+        valueLookup: [:],
+        operators: [
+            .init(left: .uint, right: .uint, op: .plus): .init(
+                expression: .intrinsic, type: .int),
+            .init(left: .nothing, right: .uint, op: .plus): .init(
+                expression: .intrinsic, type: .uint),
+            .init(left: .uint, right: .uint, op: .minus): .init(
+                expression: .intrinsic, type: .uint),
+            .init(left: .nothing, right: .uint, op: .plus): .init(
+                expression: .intrinsic, type: .uint),
+            .init(left: .uint, right: .uint, op: .times): .init(
+                expression: .intrinsic, type: .uint),
+            .init(left: .uint, right: .uint, op: .by): .init(
+                expression: .intrinsic, type: .uint),
+            .init(left: .uint, right: .uint, op: .modulo): .init(
+                expression: .intrinsic, type: .uint),
 
-enum Semantic {
-
-    // typealias DefinitionHash = Int
-    typealias Tag = String
-    typealias TypeDefinitionMap = [ScopedIdentifier: RawTypeSpecifier]
-    typealias ValueDefinitionMap = [ScopedIdentifier: Expression]
-
-    struct ScopedIdentifier: Hashable {
-        let chain: [String]
-    }
-
-    struct OperatorField: Hashable {
-        let left: TypeSpecifier
-        let right: TypeSpecifier
-        let op: Operator
-    }
-
-    struct Context {
-        let typeDefinitions: TypeDefinitionMap
-        let valueDefinition: ValueDefinitionMap
-        let typeLookup: [ScopedIdentifier: Syntax.TypeDefinition]
-        let valueLookup: [ScopedIdentifier: Syntax.ValueDefinition]
-
-        let operators: [OperatorField: Expression] = [
             .init(left: .int, right: .int, op: .plus): .init(
                 expression: .intrinsic, type: .int),
             .init(left: .nothing, right: .int, op: .plus): .init(
@@ -54,6 +53,19 @@ enum Semantic {
                 expression: .intrinsic, type: .float),
             .init(left: .float, right: .float, op: .by): .init(
                 expression: .intrinsic, type: .float),
+
+            .init(left: .uint, right: .uint, op: .equal): .init(
+                expression: .intrinsic, type: .bool),
+            .init(left: .uint, right: .uint, op: .different): .init(
+                expression: .intrinsic, type: .bool),
+            .init(left: .uint, right: .uint, op: .lessThan): .init(
+                expression: .intrinsic, type: .bool),
+            .init(left: .uint, right: .uint, op: .lessThanOrEqual): .init(
+                expression: .intrinsic, type: .bool),
+            .init(left: .uint, right: .uint, op: .greaterThan): .init(
+                expression: .intrinsic, type: .bool),
+            .init(left: .uint, right: .uint, op: .greaterThanOrEqual): .init(
+                expression: .intrinsic, type: .bool),
 
             .init(left: .int, right: .int, op: .equal): .init(
                 expression: .intrinsic, type: .bool),
@@ -97,74 +109,7 @@ enum Semantic {
             .init(left: .nothing, right: .bool, op: .not): .init(
                 expression: .intrinsic, type: .bool),
         ]
-    }
 
-    struct LocalScope {
-    }
-
-    enum IntrinsicType: Hashable {
-        case uint
-        case int
-        case float
-        case bool
-    }
-
-    enum RawTypeSpecifier: Hashable {
-        case intrinsic(IntrinsicType)
-        case tuple([TypeSpecifier])
-        case record([Tag: TypeSpecifier])
-        case union([TypeSpecifier])
-        case choice([Tag: TypeSpecifier])
-        case function(Function)
-    }
-
-    enum TypeSpecifier: Hashable {
-        case nothing
-        case never
-
-        case raw(RawTypeSpecifier)
-        case nominal(ScopedIdentifier)
-
-        // NOTE: Builtin types are nominal types that are mapped to raw intrinsic types
-        static let uint = TypeSpecifier.nominal(.init(chain: ["U32"]))
-        static let int = TypeSpecifier.nominal(.init(chain: ["I32"]))
-        static let float = TypeSpecifier.nominal(.init(chain: ["F64"]))
-        static let string = TypeSpecifier.nominal(.init(chain: ["String"]))
-        static let bool = TypeSpecifier.nominal(.init(chain: ["Bool"]))
-    }
-
-    struct Function: Hashable {
-    }
-
-    struct Expression {
-        let expression: ExpressionType
-        let type: TypeSpecifier
-
-        indirect enum ExpressionType {
-            case intrinsic  // TODO: figure out.intrinsic functionality
-            case nothing
-            case never
-            case intLiteral(UInt64)
-            case floatLiteral(Double)
-            case stringLiteral(String)
-            case boolLiteral(Bool)
-
-            case unary(Operator, expression: Expression)
-            case binary(
-                Operator,
-                left: Expression,
-                right: Expression)
-
-            case call(
-                prefix: Expression,
-                arguments: [Expression])
-
-            case initializer(
-                arguments: [Expression])
-
-            case access(prefix: Expression, field: String)
-
-            case field(Syntax.ScopedIdentifier)
-        }
-    }
+    )
+    return intrinsicContext
 }

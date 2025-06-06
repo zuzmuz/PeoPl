@@ -2,16 +2,22 @@ protocol TypeDefinitionChecker {
     func getTypeDeclarations() -> [Syntax.TypeDefinition]
 
     func resolveTypeSymbols(context: borrowing Semantic.Context) -> (
-        typeDefinitions: [Syntax.ScopedIdentifier: (
+        typeDefinitions: [Semantic.ScopedIdentifier: (
             Syntax.TypeDefinition,
-            Semantic.TypeDefinition
+            Semantic.RawTypeSpecifier
         )],
         errors: [TypeSemanticError]
     )
 }
 
+extension Syntax.ScopedIdentifier {
+    func getSemanticIdentifier() -> Semantic.ScopedIdentifier {
+        return .init(chain: self.chain)
+    }
+}
+
 extension Syntax.TypeSpecifier {
-    func getTypeIdentifiers( /* namespace */
+    func getTypeIdentifiers( /* TODO: handle namespacing */
     ) -> [Syntax.ScopedIdentifier] {
         switch self {
         case .nothing, .never:
@@ -32,12 +38,13 @@ extension Syntax.TypeSpecifier {
     }
 
     func undefinedTypes(
-        typeDefinitions: [Syntax.ScopedIdentifier: Syntax.TypeDefinition],
+        typeDefinitions: [Semantic.ScopedIdentifier: Syntax.TypeDefinition],
         context: borrowing Semantic.Context
     ) -> [Syntax.ScopedIdentifier] {
         self.getTypeIdentifiers().filter { typeIdentifier in
-            typeDefinitions[typeIdentifier] == nil
-                && context.typeDefinitions[typeIdentifier] == nil
+            let semanticIdentifier = typeIdentifier.getSemanticIdentifier()
+            return typeDefinitions[semanticIdentifier] == nil
+                && context.typeDefinitions[semanticIdentifier] == nil
         }
     }
 }
@@ -63,17 +70,19 @@ private enum NodeState {
 
 extension TypeDefinitionChecker {
     func resolveTypeSymbols(context: borrowing Semantic.Context) -> (
-        typeDefinitions: [Syntax.ScopedIdentifier: (
-            Syntax.TypeDefinition,
-            Semantic.TypeDefinition
-        )],
+        typeDefinitions: Semantic.TypeDefinitionMap,
         errors: [TypeSemanticError]
     ) {
         let declarations = self.getTypeDeclarations()
 
-        let typesLocations = declarations.reduce(into: [:]) { acc, type in
-            acc[type.identifier] = (acc[type.identifier] ?? []) + [type]
-        }
+        let typesLocations:
+            [Semantic.ScopedIdentifier: [Syntax.TypeDefinition]] =
+                declarations.reduce(into: [:]) { acc, type in
+                    let semanticIdentifer = Semantic.ScopedIdentifier(
+                        chain: type.identifier.chain)
+                    acc[semanticIdentifer] =
+                        (acc[semanticIdentifer] ?? []) + [type]
+                }
 
         // detecting redeclarations
         let redeclarations = typesLocations.compactMap { _, typeLocations in
@@ -107,7 +116,7 @@ extension TypeDefinitionChecker {
     }
 
     private func checkCyclicalDependencies(
-        typeDefinitions: [Syntax.ScopedIdentifier: Syntax.TypeDefinition],
+        typeDefinitions: [Semantic.ScopedIdentifier: Syntax.TypeDefinition],
         context: borrowing Semantic.Context
     ) -> [TypeSemanticError] {
         var nodeStates: [Syntax.ScopedIdentifier: NodeState] = [:]
@@ -119,7 +128,8 @@ extension TypeDefinitionChecker {
                 break
             case let .nominal(nominal):
                 checkCyclicalDependencies(
-                    typeDefinition: typeDefinitions[nominal.identifier]!)
+                    typeDefinition: typeDefinitions[
+                        nominal.identifier.getSemanticIdentifier()]!)
             case let .product(product):
                 product.typeFields.forEach { field in
                     switch field {
@@ -145,7 +155,8 @@ extension TypeDefinitionChecker {
                             typeSpecifier: taggedTypeSpecifier.type)
                     case .homogeneousTypeProduct:
                         errors.append(
-                            .homogeneousTypeProductInSum(  // TODO: consider cleaning up where this check is done
+                            // TODO: consider cleaning up where this check is done
+                            .homogeneousTypeProductInSum(
                                 type: typeSpecifier, field: field))
                     }
                 }

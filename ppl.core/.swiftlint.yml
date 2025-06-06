@@ -21,6 +21,9 @@ cyclomatic_complexity:
 opening_brace:
   ignore_multiline_statement_conditions: true
 
+trailing_comma:
+  mandatory_comma: true
+  
 
 function_body_length:
   warning: 75
