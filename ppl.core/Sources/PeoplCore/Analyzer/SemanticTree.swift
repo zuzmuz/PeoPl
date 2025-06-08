@@ -21,12 +21,30 @@ enum Semantic {
         let op: Operator
     }
 
-    struct Context {
-        let typeDefinitions: [ScopedIdentifier: Semantic.RawTypeSpecifier]
-        let valueDefinitions: [ScopedIdentifier: Semantic.Expression]
-        let typeLookup: [ScopedIdentifier: Syntax.TypeDefinition]
-        let valueLookup: [ScopedIdentifier: Syntax.ValueDefinition]
+    typealias TypeLookupMap = [ScopedIdentifier: Syntax.TypeDefinition]
+    typealias TypeDeclarationsMap = [ScopedIdentifier: TypeSpecifier]
+    typealias ValueDeclarationsMap = [FunctionSignature: Expression]
+
+    struct FunctionSignature: Hashable {
+        let identifier: ScopedIdentifier
+        let inputType: TypeSpecifier
+        let arguments: [Tag: TypeSpecifier]
+    }
+
+    struct DefinitionsContext {
+        let valueDefinitions: ValueDeclarationsMap
         let operators: [OperatorField: Expression]
+    }
+
+    struct DeclarationsContext {
+        let typeDeclarations: TypeDeclarationsMap
+        let valueDeclarations: [FunctionSignature: TypeSpecifier]
+        // stores values based on identifier only for better error reporting
+    }
+
+    struct LookupContext {
+        let typeLookup: TypeLookupMap
+        // let valueLookup: [ScopedIdentifier: Syntax.ValueDefinition]
     }
 
     struct LocalScope {

@@ -1,17 +1,6 @@
-func getIntrinsicContext() -> Semantic.Context {
-    let intrinsicContext: Semantic.Context = .init(
-        typeDefinitions: [
-            .init(chain: ["U32"]): .intrinsic(.uint),
-            .init(chain: ["I32"]): .intrinsic(.int),
-            .init(chain: ["F64"]): .intrinsic(.float),
-            .init(chain: ["Bool"]): .intrinsic(.bool),
-            // .init(chain: ["String"]): TODO: ref to bytes
-        ],
+func getIntrinsicDefinitions() -> Semantic.DefinitionsContext {
+    let intrinsicContext: Semantic.DefinitionsContext = .init(
         valueDefinitions: [:],
-        typeLookup: [
-            :
-        ], // TODO: handle intrinsic lookup
-        valueLookup: [:],
         operators: [
             .init(left: .uint, right: .uint, op: .plus): .init(
                 expression: .intrinsic, type: .int),

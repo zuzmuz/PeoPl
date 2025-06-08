@@ -2,15 +2,17 @@
 // ===================================
 
 /// Protocol for resolving type symbols
-protocol TypeDefinitionChecker {
+protocol TypeDeclarationsChecker {
     /// Return all type declarations defined in module
     func getTypeDeclarations() -> [Syntax.TypeDefinition]
 
     /// Return resolved type definitions
     /// Maps scoped identifiers to semantic raw type specifiers
     /// Returns list of errors if found
-    func resolveTypeSymbols(context: borrowing Semantic.Context) -> (
-        typeDefinitions: [Semantic.ScopedIdentifier: Semantic.RawTypeSpecifier],
+    func resolveTypeSymbols(
+        typeDeclarations: borrowing Semantic.TypeDeclarationsMap
+    ) -> (
+        typeDeclarations: Semantic.TypeDeclarationsMap,
         typeLookup: [Semantic.ScopedIdentifier: Syntax.TypeDefinition],
         errors: [TypeSemanticError]
     )
@@ -43,13 +45,13 @@ extension Syntax.TypeField {
     /// that do not belong in current type definitions
     /// nor in the context provided
     func undefinedTypes(
-        typeLookup: [Semantic.ScopedIdentifier: Syntax.TypeDefinition],
-        context: borrowing Semantic.Context
+        typeLookup: borrowing Semantic.TypeLookupMap,
+        typeDeclarations: borrowing Semantic.TypeDeclarationsMap
     ) -> [Syntax.ScopedIdentifier] {
         self.getTypeIdentifiers().filter { typeIdentifier in
             let semanticIdentifier = typeIdentifier.getSemanticIdentifier()
             return typeLookup[semanticIdentifier] == nil
-                && context.typeDefinitions[semanticIdentifier] == nil
+                && typeDeclarations[semanticIdentifier] == nil
         }
     }
 }
@@ -82,13 +84,13 @@ extension Syntax.TypeSpecifier {
     /// that do not belong in current type definitions
     /// nor in the context provided
     func undefinedTypes(
-        typeLookup: [Semantic.ScopedIdentifier: Syntax.TypeDefinition],
-        context: borrowing Semantic.Context
+        typeLookup: borrowing Semantic.TypeLookupMap,
+        typeDeclarations: borrowing Semantic.TypeDeclarationsMap
     ) -> [Syntax.ScopedIdentifier] {
         self.getTypeIdentifiers().filter { typeIdentifier in
             let semanticIdentifier = typeIdentifier.getSemanticIdentifier()
             return typeLookup[semanticIdentifier] == nil
-                && context.typeDefinitions[semanticIdentifier] == nil
+                && typeDeclarations[semanticIdentifier] == nil
         }
     }
 
@@ -159,13 +161,13 @@ extension Semantic.TypeSpecifier {
     /// Get the semantic type definition from a type sepcifier.
     /// This will return the raw definition of nominal types from the type definition table lookup
     func getRawType(
-        typeDefinitions: borrowing [Semantic.ScopedIdentifier:
+        typeDeclarations: borrowing [Semantic.ScopedIdentifier:
             Semantic.TypeSpecifier]
     ) -> Semantic.RawTypeSpecifier {
         switch self {
         case let .nominal(indentifier):
-            return typeDefinitions[indentifier]!.getRawType(
-                typeDefinitions: typeDefinitions)
+            return typeDeclarations[indentifier]!.getRawType(
+                typeDeclarations: typeDeclarations)
         case let .raw(rawTypeSpecifier):
             return rawTypeSpecifier
         }
@@ -177,10 +179,12 @@ private enum NodeState {
     case visited
 }
 
-extension TypeDefinitionChecker {
-    func resolveTypeSymbols(context: borrowing Semantic.Context) -> (
-        typeDefinitions: [Semantic.ScopedIdentifier: Semantic.RawTypeSpecifier],
-        typeLookup: [Semantic.ScopedIdentifier: Syntax.TypeDefinition],
+extension TypeDeclarationsChecker {
+    func resolveTypeSymbols(
+        typeDeclarations: borrowing Semantic.TypeDeclarationsMap
+    ) -> (
+        typeDeclarations: Semantic.TypeDeclarationsMap,
+        typeLookup: Semantic.TypeLookupMap,
         errors: [TypeSemanticError]
     ) {
         let declarations = self.getTypeDeclarations()
@@ -212,33 +216,29 @@ extension TypeDefinitionChecker {
         // detecting invalid members types
         let typesNotInScope = typeLookup.flatMap { _, type in
             return type.definition.undefinedTypes(
-                typeLookup: typeLookup, context: context)
+                typeLookup: typeLookup, typeDeclarations: typeDeclarations)
         }.map { TypeSemanticError.typeNotInScope(type: $0) }
 
         // detecting cyclical dependencies
         let cyclicalDependencies = checkCyclicalDependencies(
-            typeLookup: typeLookup, context: context)
+            typeLookup: typeLookup, typeDeclarations: typeDeclarations)
 
         // get semantic type specifier from syntax type specifier
-        var typeDefinitions:
+        var localTypeDeclarations:
             [Semantic.ScopedIdentifier: Semantic.TypeSpecifier] = [:]
         var typeSepcifierErrors: [TypeSemanticError] = []
 
         for (indentifier, typeDefinition) in typeLookup {
             do {
-                typeDefinitions[indentifier] =
+                localTypeDeclarations[indentifier] =
                     try typeDefinition.definition.getSemanticType()
             } catch {
                 typeSepcifierErrors.append(error)
             }
         }
 
-        let rawTypeDefinitions = typeDefinitions.mapValues { typeSpecifier in
-            typeSpecifier.getRawType(typeDefinitions: typeDefinitions)
-        }
-
         return (
-            typeDefinitions: rawTypeDefinitions,
+            typeDeclarations: localTypeDeclarations,
             typeLookup: typeLookup,
             errors: redeclarations
                 + typesNotInScope
@@ -248,8 +248,8 @@ extension TypeDefinitionChecker {
     }
 
     private func checkCyclicalDependencies(
-        typeLookup: [Semantic.ScopedIdentifier: Syntax.TypeDefinition],
-        context: borrowing Semantic.Context
+        typeLookup: borrowing Semantic.TypeLookupMap,
+        typeDeclarations: borrowing Semantic.TypeDeclarationsMap 
     ) -> [TypeSemanticError] {
 
         var nodeStates: [Syntax.ScopedIdentifier: NodeState] = [:]
@@ -326,7 +326,7 @@ extension TypeDefinitionChecker {
     }
 }
 
-extension Syntax.Module: TypeDefinitionChecker {
+extension Syntax.Module: TypeDeclarationsChecker {
     func getTypeDeclarations() -> [Syntax.TypeDefinition] {
         return self.definitions.compactMap { statement in
             if case let .typeDefinition(typeDefinition) = statement {
@@ -338,7 +338,7 @@ extension Syntax.Module: TypeDefinitionChecker {
     }
 }
 
-extension Syntax.Project: TypeDefinitionChecker {
+extension Syntax.Project: TypeDeclarationsChecker {
     func getTypeDeclarations() -> [Syntax.TypeDefinition] {
         return self.modules.values.flatMap { module in
             module.getTypeDeclarations()

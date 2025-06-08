@@ -6,10 +6,15 @@ extension SemanticChecker {
     func semanticCheck() -> Result<Semantic.Context, SemanticErrorList> {
         let intrinsicContext = getIntrinsicContext()
 
+        // TODO: calculating typeDefinitions can be done as a seperate step
         let (typeDefinitions, typeLookup, typeErrors) = self.resolveTypeSymbols(
             context: intrinsicContext)
 
-        let (valueLookup, valueErrors) = self.resolve
+        let (valueLookup, valueErrors) = self.resolveValueSymbols(
+            typeDefinitions: typeDefinitions,
+            typeLookup: typeLookup,
+            context: intrinsicContext)
+
         // if errors.count > 0 {
         //     return .failure(.init(errors: errors.map { .type($0) }))
         // }
