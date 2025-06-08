@@ -1,6 +1,14 @@
+// MARK: - Symbol Resolution For Types
+// ===================================
+
+/// Protocol for resolving type symbols
 protocol TypeDefinitionChecker {
+    /// Return all type declarations defined in module
     func getTypeDeclarations() -> [Syntax.TypeDefinition]
 
+    /// Return resolved type definitions
+    /// Maps scoped identifiers to semantic raw type specifiers
+    /// Returns list of errors if found
     func resolveTypeSymbols(context: borrowing Semantic.Context) -> (
         typeDefinitions: [Semantic.ScopedIdentifier: Semantic.RawTypeSpecifier],
         typeLookup: [Semantic.ScopedIdentifier: Syntax.TypeDefinition],
@@ -9,12 +17,33 @@ protocol TypeDefinitionChecker {
 }
 
 extension Syntax.ScopedIdentifier {
+    /// Create a semantic scoped identifier from self
     func getSemanticIdentifier() -> Semantic.ScopedIdentifier {
         return .init(chain: self.chain)
     }
 }
 
+extension Syntax.TypeField {
+
+    /// Retrieve all scoped identifier defined in this type field
+    /// It represents the names of types used to define the type specifier of this type field
+    func getTypeIdentifiers( /* namespace */
+    ) -> [Syntax.ScopedIdentifier] {
+        switch self {
+        case let .typeSpecifier(typeSpecifier):
+            return typeSpecifier.getTypeIdentifiers()
+        case let .taggedTypeSpecifier(taggedTypeSpecifier):
+            return taggedTypeSpecifier.type.getTypeIdentifiers()
+        case let .homogeneousTypeProduct(homogeneousTypeProduct):
+            return homogeneousTypeProduct.typeSpecifier.getTypeIdentifiers()
+        }
+    }
+}
+
 extension Syntax.TypeSpecifier {
+
+    /// Retrieve all scoped identifier defined in this type
+    /// It represents the names of types used to define the type specifier
     func getTypeIdentifiers( /* TODO: handle namespacing */
     ) -> [Syntax.ScopedIdentifier] {
         switch self {
@@ -35,6 +64,9 @@ extension Syntax.TypeSpecifier {
         }
     }
 
+    /// Return all scoped identifiers from the type specifier
+    /// that do not belong in current type definitions
+    /// nor in the context provided
     func undefinedTypes(
         typeDefinitions: [Semantic.ScopedIdentifier: Syntax.TypeDefinition],
         context: borrowing Semantic.Context
@@ -46,6 +78,7 @@ extension Syntax.TypeSpecifier {
         }
     }
 
+    /// Create a semantic type specifier from self
     func getSemanticType() throws(TypeSemanticError) -> Semantic.TypeSpecifier {
         switch self {
         case .nothing:
@@ -109,6 +142,8 @@ extension Syntax.TypeSpecifier {
 }
 
 extension Semantic.TypeSpecifier {
+    /// Get the semantic type definition from a type sepcifier.
+    /// This will return the raw definition of nominal types from the type definition table lookup
     func getRawType(
         typeDefinitions: borrowing [Semantic.ScopedIdentifier:
             Semantic.TypeSpecifier]
@@ -119,20 +154,6 @@ extension Semantic.TypeSpecifier {
                 typeDefinitions: typeDefinitions)
         case let .raw(rawTypeSpecifier):
             return rawTypeSpecifier
-        }
-    }
-}
-
-extension Syntax.TypeField {
-    func getTypeIdentifiers( /* namespace */
-    ) -> [Syntax.ScopedIdentifier] {
-        switch self {
-        case let .typeSpecifier(typeSpecifier):
-            return typeSpecifier.getTypeIdentifiers()
-        case let .taggedTypeSpecifier(taggedTypeSpecifier):
-            return taggedTypeSpecifier.type.getTypeIdentifiers()
-        case let .homogeneousTypeProduct(homogeneousTypeProduct):
-            return homogeneousTypeProduct.typeSpecifier.getTypeIdentifiers()
         }
     }
 }
@@ -175,8 +196,8 @@ extension TypeDefinitionChecker {
         // TODO: detecting shadowings
 
         // detecting invalid members types
-        let typesNotInScope = typeLookup.flatMap { _, definition in
-            return definition.definition.undefinedTypes(
+        let typesNotInScope = typeLookup.flatMap { _, type in
+            return type.definition.undefinedTypes(
                 typeDefinitions: typeLookup, context: context)
         }.map { TypeSemanticError.typeNotInScope(type: $0) }
 

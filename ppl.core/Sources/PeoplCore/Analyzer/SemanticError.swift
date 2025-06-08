@@ -26,8 +26,7 @@ enum TypeSemanticError: LocalizedError {
 }
 //
 enum ValueSemanticError: LocalizedError {
-//     case functionRedeclaration([Syntax.FunctionDefinition])
-//     case operatorOverloadRedeclaration([Syntax.OperatorOverloadDefinition])
+    case redeclaration(values: [Syntax.ValueDefinition])
 //     case shadowing(
 //         function: Syntax.FunctionDefinition,
 //         module: String)
