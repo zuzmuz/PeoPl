@@ -100,4 +100,65 @@ final class TypesAnalyzerTests: XCTestCase {
             XCTAssertTrue(false)
         }
     }
+
+    func testCyclical() throws {
+        let source = """
+            First: [
+                x: First
+            ]
+        """
+        let module = try Syntax.Module(source: source, path: "main")
+
+        let result = module.semanticCheck()
+
+        switch result {
+        case let .failure(errorList):
+            let errors = errorList.errors
+            XCTAssertEqual(errors.count, 1)
+
+            errors.forEach { error in
+                switch error {
+                case let .type(.cyclicType(type, identifier)):
+                    XCTAssertTrue(true)
+                default:
+                    XCTAssertTrue(false)
+                }
+            }
+        case .success:
+            XCTAssertTrue(false)
+        }
+    }
+
+    func testCyclicalAdvanced() throws {
+        let source = """
+            First: [
+                x: Second
+            ]
+            Second: [
+                x: Third
+            ]
+            Third: [
+                x: First
+            ]
+        """
+        let module = try Syntax.Module(source: source, path: "main")
+        let result = module.semanticCheck()
+
+        switch result {
+        case let .failure(errorList):
+            let errors = errorList.errors
+            XCTAssertEqual(errors.count, 3)
+
+            errors.forEach { error in
+                switch error {
+                case let .type(.cyclicType(type, identifier)):
+                    XCTAssertTrue(true)
+                default:
+                    XCTAssertTrue(false)
+                }
+            }
+        case .success:
+            XCTAssertTrue(false)
+        }
+    }
 }
