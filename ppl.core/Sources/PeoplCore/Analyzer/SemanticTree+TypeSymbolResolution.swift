@@ -38,6 +38,20 @@ extension Syntax.TypeField {
             return homogeneousTypeProduct.typeSpecifier.getTypeIdentifiers()
         }
     }
+
+    /// Return all scoped identifiers from the type specifier
+    /// that do not belong in current type definitions
+    /// nor in the context provided
+    func undefinedTypes(
+        typeLookup: [Semantic.ScopedIdentifier: Syntax.TypeDefinition],
+        context: borrowing Semantic.Context
+    ) -> [Syntax.ScopedIdentifier] {
+        self.getTypeIdentifiers().filter { typeIdentifier in
+            let semanticIdentifier = typeIdentifier.getSemanticIdentifier()
+            return typeLookup[semanticIdentifier] == nil
+                && context.typeDefinitions[semanticIdentifier] == nil
+        }
+    }
 }
 
 extension Syntax.TypeSpecifier {
@@ -68,12 +82,12 @@ extension Syntax.TypeSpecifier {
     /// that do not belong in current type definitions
     /// nor in the context provided
     func undefinedTypes(
-        typeDefinitions: [Semantic.ScopedIdentifier: Syntax.TypeDefinition],
+        typeLookup: [Semantic.ScopedIdentifier: Syntax.TypeDefinition],
         context: borrowing Semantic.Context
     ) -> [Syntax.ScopedIdentifier] {
         self.getTypeIdentifiers().filter { typeIdentifier in
             let semanticIdentifier = typeIdentifier.getSemanticIdentifier()
-            return typeDefinitions[semanticIdentifier] == nil
+            return typeLookup[semanticIdentifier] == nil
                 && context.typeDefinitions[semanticIdentifier] == nil
         }
     }
@@ -198,13 +212,14 @@ extension TypeDefinitionChecker {
         // detecting invalid members types
         let typesNotInScope = typeLookup.flatMap { _, type in
             return type.definition.undefinedTypes(
-                typeDefinitions: typeLookup, context: context)
+                typeLookup: typeLookup, context: context)
         }.map { TypeSemanticError.typeNotInScope(type: $0) }
 
         // detecting cyclical dependencies
         let cyclicalDependencies = checkCyclicalDependencies(
             typeLookup: typeLookup, context: context)
 
+        // get semantic type specifier from syntax type specifier
         var typeDefinitions:
             [Semantic.ScopedIdentifier: Semantic.TypeSpecifier] = [:]
         var typeSepcifierErrors: [TypeSemanticError] = []

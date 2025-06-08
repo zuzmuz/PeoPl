@@ -1,15 +1,18 @@
-protocol SemanticChecker: TypeDefinitionChecker {
+protocol SemanticChecker: TypeDefinitionChecker, ValueDefinitionChecker {
     func semanticCheck() -> Result<Semantic.Context, SemanticErrorList>
 }
 
 extension SemanticChecker {
     func semanticCheck() -> Result<Semantic.Context, SemanticErrorList> {
         let intrinsicContext = getIntrinsicContext()
-        let (typeDefinitions, typeLookup, errors) = self.resolveTypeSymbols(
+
+        let (typeDefinitions, typeLookup, typeErrors) = self.resolveTypeSymbols(
             context: intrinsicContext)
-        if errors.count > 0 {
-            return .failure(.init(errors: errors.map { .type($0) }))
-        }
+
+        let (valueLookup, valueErrors) = self.resolve
+        // if errors.count > 0 {
+        //     return .failure(.init(errors: errors.map { .type($0) }))
+        // }
 
         // let context = Semantic.Context(
         //     typeDefinitions: intrinsicContext.typeDefinitions.merging(

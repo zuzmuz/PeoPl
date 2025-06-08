@@ -30,7 +30,7 @@ enum ValueSemanticError: LocalizedError {
 //     case shadowing(
 //         function: Syntax.FunctionDefinition,
 //         module: String)
-//     case typeNotInScope(type: Syntax.NominalType)
+    case typeNotInScope(type: Syntax.ScopedIdentifier)
 }
 // //
 

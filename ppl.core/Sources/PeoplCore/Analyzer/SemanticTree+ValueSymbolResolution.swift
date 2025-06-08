@@ -1,9 +1,12 @@
 protocol ValueDefinitionChecker {
     func getValueDeclarations() -> [Syntax.ValueDefinition]
     func resolveValueSymbols(
+        typeDefinitions: borrowing [Semantic.ScopedIdentifier: Semantic
+            .RawTypeSpecifier],
+        typeLookup: borrowing [Semantic.ScopedIdentifier: Syntax
+            .TypeDefinition],
         context: borrowing Semantic.Context
     ) -> (
-        valueDefinitions: [Semantic.ScopedIdentifier: Semantic.Expression],
         valueLookup: [Semantic.ScopedIdentifier: Syntax.ValueDefinition],
         errors: [ValueSemanticError]
     )
@@ -11,9 +14,12 @@ protocol ValueDefinitionChecker {
 
 extension ValueDefinitionChecker {
     func resolveValueSymbols(
+        typeDefinitions: borrowing [Semantic.ScopedIdentifier: Semantic
+            .RawTypeSpecifier],
+        typeLookup: borrowing [Semantic.ScopedIdentifier: Syntax
+            .TypeDefinition],
         context: borrowing Semantic.Context
     ) -> (
-        valueDefinitions: [Semantic.ScopedIdentifier: Semantic.Expression],
         valueLookup: [Semantic.ScopedIdentifier: Syntax.ValueDefinition],
         errors: [ValueSemanticError]
     ) {
@@ -44,9 +50,52 @@ extension ValueDefinitionChecker {
         }
 
         // verify function value signature
+        let typesNotInScope = valueLookup.flatMap { _, value in
+            if case let .function(signature, _) =
+                value.definition.expressionType, let signature
+            {
+                let undefinedInputTypes =
+                    signature.inputType?.undefinedTypes(
+                        typeLookup: typeLookup, context: context) ?? []
 
+                let undefinedArgumentsTypes =
+                    signature.arguments.flatMap { typeField in
+                        typeField.undefinedTypes(
+                            typeLookup: typeLookup, context: context)
+                    }
 
+                let undefinedOutputTypes = signature.outputType.undefinedTypes(
+                    typeLookup: typeLookup, context: context)
 
-        fatalError("value definition checker not impemented")
+                return undefinedInputTypes + undefinedArgumentsTypes
+                    + undefinedOutputTypes
+            }
+            return []
+        }.map { ValueSemanticError.typeNotInScope(type: $0) }
+
+        return (
+            valueLookup: valueLookup,
+            errors: redeclarations + typesNotInScope
+        )
+    }
+}
+
+extension Syntax.Module: ValueDefinitionChecker {
+    func getValueDeclarations() -> [Syntax.ValueDefinition] {
+        return self.definitions.compactMap { statement in
+            if case let .valueDefinition(typeDefinition) = statement {
+                return typeDefinition
+            } else {
+                return nil
+            }
+        }
+    }
+}
+
+extension Syntax.Project: ValueDefinitionChecker {
+    func getValueDeclarations() -> [Syntax.ValueDefinition] {
+        return self.modules.values.flatMap { module in
+            module.getValueDeclarations()
+        }
     }
 }
