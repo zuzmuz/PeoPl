@@ -5,13 +5,16 @@ import XCTest
 final class TypesAnalyzerTests: XCTestCase {
     func testSimpleTypes() throws {
         let source = """
-            User: [
-                first_name: String,
-                last_name: String,
-                age: I32,
+            Rectangle: [
+                width: F64,
+                height: F64,
+                x: F64,
+                y: F64
             ]
-            Role: [
-                title: String
+            Circle: [
+                x: F64,
+                y: F64,
+                radius: F64
             ]
             """
         let module = try Syntax.Module(source: source, path: "main")
@@ -19,63 +22,72 @@ final class TypesAnalyzerTests: XCTestCase {
         let result = module.semanticCheck()
 
         switch result {
-        case .errors:
+        case .failure:
             XCTAssertTrue(false)
-        case .context(let context):
-            XCTAssertEqual(context.functions.count, 0)
-            XCTAssertEqual(context.types.count, 2)
+        case let .success(context):
+            XCTAssertEqual(context.typeDefinitions.count, 2)
         }
     }
 
     func testInvalidTypes() throws {
         let source = """
-            type User
-                first_name: Sring
-                last_name: String
-                age: I31
-
-            type Role
-                user: Usr
+            Rectangle: [
+                width: F65,
+                height: F64,
+                x: F64,
+                y: CDD
+            ]
+            Circle: [
+                x: F64,
+                y: F64,
+                radius: F6
+            ]
             """
-        let module = try Module(source: source, path: "main")
+        let module = try Syntax.Module(source: source, path: "main")
 
         let result = module.semanticCheck()
-        
+
         // TODO: think of adding tests for locations
-        let wrongTypes = Set(["Sring", "I31", "Usr"])
+        let wrongTypes = Set(["F6", "F65", "CDD"])
 
         switch result {
-        case .errors(let errors):
+        case let .failure(errorList):
+            let errors = errorList.errors
+
             XCTAssertEqual(errors.count, 3)
-            
+
             errors.forEach { error in
                 switch error {
-                case let .type(.typeNotInScope(_, type, _)):
-                    XCTAssertTrue(wrongTypes.contains(type.chain.first!.typeName))
+                case let .type(.typeNotInScope(type)):
+                    XCTAssertTrue(
+                        wrongTypes.contains(type.chain.first!))
                 default:
                     XCTAssertTrue(false)
                 }
             }
-        case .context:
+        case .success:
             XCTAssertTrue(false)
         }
     }
 
     func testRedeclarations() throws {
         let source = """
-            type User
+            User: [
                 x: I32
-            type User
+            ]
+            User: [
                 y: I32
+            ]
             """
-        let module = try Module(source: source, path: "main")
+        let module = try Syntax.Module(source: source, path: "main")
 
         let result = module.semanticCheck()
 
         switch result {
-        case .errors(let errors):
+        case let .failure(errorList):
+            let errors = errorList.errors
             XCTAssertEqual(errors.count, 1)
-            
+
             errors.forEach { error in
                 switch error {
                 case .type(.redeclaration):
@@ -84,7 +96,7 @@ final class TypesAnalyzerTests: XCTestCase {
                     XCTAssertTrue(false)
                 }
             }
-        case .context:
+        case .success:
             XCTAssertTrue(false)
         }
     }

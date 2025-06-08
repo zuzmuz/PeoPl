@@ -2,18 +2,13 @@ import Foundation
 // //
 enum SemanticError: LocalizedError {
     case type(TypeSemanticError)
-    // case function(FunctionSemanticError)
+    case value(ValueSemanticError)
     case expression(ExpressionSemanticError)
 }
-// //
-// // extension Array<SemanticError>: Error {
-// //     // var localizedDescription: String {
-// //     //     return self.map { error in
-// //     //         return error.localizedDescription
-// //     //     }.joined(separator: "\n")
-// //     // }
-// // }
-// //
+
+struct SemanticErrorList: LocalizedError {
+    let errors: [SemanticError]
+}
 
 enum TypeSemanticError: LocalizedError {
     case redeclaration(types: [Syntax.TypeDefinition])
@@ -30,14 +25,14 @@ enum TypeSemanticError: LocalizedError {
     case unsupportedYet(String)
 }
 //
-// enum FunctionSemanticError: LocalizedError {
+enum ValueSemanticError: LocalizedError {
 //     case functionRedeclaration([Syntax.FunctionDefinition])
 //     case operatorOverloadRedeclaration([Syntax.OperatorOverloadDefinition])
 //     case shadowing(
 //         function: Syntax.FunctionDefinition,
 //         module: String)
 //     case typeNotInScope(type: Syntax.NominalType)
-// }
+}
 // //
 
 enum ExpressionSemanticError: LocalizedError {

@@ -110,8 +110,8 @@ extension Syntax.TypeSpecifier {
 
 extension Semantic.TypeSpecifier {
     func getRawType(
-        typeDefinitions: borrowing [
-            Semantic.ScopedIdentifier: Semantic.TypeSpecifier]
+        typeDefinitions: borrowing [Semantic.ScopedIdentifier:
+            Semantic.TypeSpecifier]
     ) -> Semantic.RawTypeSpecifier {
         switch self {
         case let .nominal(indentifier):
@@ -204,7 +204,10 @@ extension TypeDefinitionChecker {
         return (
             typeDefinitions: rawTypeDefinitions,
             typeLookup: typeLookup,
-            errors: redeclarations + typesNotInScope + cyclicalDependencies
+            errors: redeclarations
+                + typesNotInScope
+                + cyclicalDependencies
+                + typeSepcifierErrors
         )
     }
 
@@ -221,9 +224,12 @@ extension TypeDefinitionChecker {
             case .nothing, .never:
                 break
             case let .nominal(nominal):
-                checkCyclicalDependencies(
-                    typeDefinition: typeLookup[
-                        nominal.identifier.getSemanticIdentifier()]!)
+                // NOTE: intrinsics don't have definition
+                if let typeDefinition = typeLookup[
+                    nominal.identifier.getSemanticIdentifier()]
+                {
+                    checkCyclicalDependencies(typeDefinition: typeDefinition)
+                }
             case let .product(product):
                 product.typeFields.forEach { field in
                     switch field {
@@ -292,6 +298,14 @@ extension Syntax.Module: TypeDefinitionChecker {
             } else {
                 return nil
             }
+        }
+    }
+}
+
+extension Syntax.Project: TypeDefinitionChecker {
+    func getTypeDeclarations() -> [Syntax.TypeDefinition] {
+        return self.modules.values.flatMap { module in
+            module.getTypeDeclarations()
         }
     }
 }

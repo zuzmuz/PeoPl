@@ -8,7 +8,9 @@ func getIntrinsicContext() -> Semantic.Context {
             // .init(chain: ["String"]): TODO: ref to bytes
         ],
         valueDefinitions: [:],
-        typeLookup: [:],
+        typeLookup: [
+            :
+        ], // TODO: handle intrinsic lookup
         valueLookup: [:],
         operators: [
             .init(left: .uint, right: .uint, op: .plus): .init(
@@ -17,7 +19,7 @@ func getIntrinsicContext() -> Semantic.Context {
                 expression: .intrinsic, type: .uint),
             .init(left: .uint, right: .uint, op: .minus): .init(
                 expression: .intrinsic, type: .uint),
-            .init(left: .nothing, right: .uint, op: .plus): .init(
+            .init(left: .nothing, right: .uint, op: .minus): .init(
                 expression: .intrinsic, type: .uint),
             .init(left: .uint, right: .uint, op: .times): .init(
                 expression: .intrinsic, type: .uint),
@@ -32,7 +34,7 @@ func getIntrinsicContext() -> Semantic.Context {
                 expression: .intrinsic, type: .int),
             .init(left: .int, right: .int, op: .minus): .init(
                 expression: .intrinsic, type: .int),
-            .init(left: .nothing, right: .int, op: .plus): .init(
+            .init(left: .nothing, right: .int, op: .minus): .init(
                 expression: .intrinsic, type: .int),
             .init(left: .int, right: .int, op: .times): .init(
                 expression: .intrinsic, type: .int),
@@ -47,7 +49,7 @@ func getIntrinsicContext() -> Semantic.Context {
                 expression: .intrinsic, type: .float),
             .init(left: .float, right: .float, op: .minus): .init(
                 expression: .intrinsic, type: .float),
-            .init(left: .nothing, right: .int, op: .plus): .init(
+            .init(left: .nothing, right: .float, op: .minus): .init(
                 expression: .intrinsic, type: .int),
             .init(left: .float, right: .float, op: .times): .init(
                 expression: .intrinsic, type: .float),
