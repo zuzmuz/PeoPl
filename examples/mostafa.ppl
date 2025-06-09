@@ -1,0 +1,20 @@
+Rectangle: [
+    width: Int,
+    width: Int,
+]
+
+constant: 2
+
+area: (Rectangle) -> Int {
+    |$a| a.width * a.height
+}
+
+scale: (Rectangle) [_ x: Int, Int] -> Rectangle {
+    x * _1
+}
+
+compileTimeValue: funcsdf(a: 1)
+
+main: () -> Nothing {
+    Rectangle(width: 10, height: 20, x: 5, y: 5).scale(x: 2, 3)._2
+}

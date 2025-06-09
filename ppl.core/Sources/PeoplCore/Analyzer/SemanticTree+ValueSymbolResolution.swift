@@ -1,45 +1,118 @@
 protocol ValueDefinitionChecker {
     func getValueDeclarations() -> [Syntax.ValueDefinition]
     func resolveValueSymbols(
-        typeDefinitions: borrowing [Semantic.ScopedIdentifier: Semantic
-            .RawTypeSpecifier],
-        typeLookup: borrowing [Semantic.ScopedIdentifier: Syntax
-            .TypeDefinition],
-        context: borrowing Semantic.Context
+        typeDeclarations: borrowing Semantic.TypeDeclarationsMap,
+        contextValueDeclarations: borrowing Semantic.ValueDeclarationsMap
     ) -> (
-        valueLookup: [Semantic.ScopedIdentifier: Syntax.ValueDefinition],
-        errors: [ValueSemanticError]
+        valueDeclarations: Semantic.ValueDeclarationsMap,
+        valueLookup: Semantic.ValueLookupMap,
+        errors: [SemanticError]
     )
+}
+
+extension Syntax.Expression {
+    func getSignature(
+        identifier: Semantic.ScopedIdentifier
+    ) throws(SemanticError) -> Semantic.ExpressionSignature {
+        switch self.expressionType {
+        case let .function(signature, _):
+            guard let signature else {
+                fatalError("do not support signatureless function")
+            }
+            return .function(
+                try signature.getSignature(
+                    identifier: identifier))
+        default:
+            fatalError("do not support compile time expressions yet")
+        }
+    }
+
+    func getType() throws(SemanticError) -> Semantic.TypeSpecifier {
+        switch self.expressionType {
+        case let .function(signature, _):
+            guard let signature else {
+                fatalError("do not support signatureless function")
+            }
+            return try signature.outputType.getSemanticType()
+        default:
+            fatalError(
+                "do not support compile time expressions yet, should calculate expression at compile time"
+            )
+        }
+    }
+}
+
+extension Syntax.Function {
+    func getSignature(
+        identifier: Semantic.ScopedIdentifier
+    ) throws(SemanticError) -> Semantic.FunctionSignature {
+        let inputType = try self.inputType?.getSemanticType() ?? .nothing
+        let arguments = try self.arguments.getProductSemanticTypes()
+        return .init(
+            identifier: identifier,
+            inputType: inputType,
+            arguments: arguments)
+    }
 }
 
 extension ValueDefinitionChecker {
     func resolveValueSymbols(
-        typeDefinitions: borrowing [Semantic.ScopedIdentifier: Semantic
-            .RawTypeSpecifier],
-        typeLookup: borrowing [Semantic.ScopedIdentifier: Syntax
-            .TypeDefinition],
-        context: borrowing Semantic.Context
+        typeDeclarations: borrowing Semantic.TypeDeclarationsMap,
+        contextValueDeclarations: borrowing Semantic.ValueDeclarationsMap
     ) -> (
-        valueLookup: [Semantic.ScopedIdentifier: Syntax.ValueDefinition],
-        errors: [ValueSemanticError]
+        valueDeclarations: Semantic.ValueDeclarationsMap,
+        valueLookup: Semantic.ValueLookupMap,
+        errors: [SemanticError]
     ) {
         let declarations = self.getValueDeclarations()
 
-        let valuesLocations:
-            [Semantic.ScopedIdentifier: [Syntax.ValueDefinition]] =
-                declarations.reduce(into: [:]) { acc, type in
-                    let semanticIdentifer = Semantic.ScopedIdentifier(
-                        chain: type.identifier.chain)
-                    acc[semanticIdentifer] =
-                        (acc[semanticIdentifer] ?? []) + [type]
-                }
+        let allTypes = Set(Array(typeDeclarations.keys))
+
+        // detecting invalid type identifiers
+        let typesNotInScope = declarations.flatMap { value in
+            if case let .function(signature, _) =
+                value.definition.expressionType, let signature
+            {
+                let undefinedInputTypes =
+                    signature.inputType?.undefinedTypes(
+                        types: allTypes) ?? []
+
+                let undefinedArgumentsTypes =
+                    signature.arguments.flatMap { typeField in
+                        typeField.undefinedTypes(
+                            types: allTypes)
+                    }
+
+                let undefinedOutputTypes = signature.outputType.undefinedTypes(
+                    types: allTypes)
+
+                return undefinedInputTypes + undefinedArgumentsTypes
+                    + undefinedOutputTypes
+            }
+            return []
+        }.map { SemanticError.typeNotInScope(type: $0) }
+
+        // verifying value redeclarations
+        var valuesLocations:
+            [Semantic.ExpressionSignature:
+                [Syntax.ValueDefinition]] = [:]
+        var signatureErrors: [SemanticError] = []
+        for value in declarations {
+            do {
+                let signature = try value.definition.getSignature(
+                    identifier: value.identifier.getSemanticIdentifier())
+                valuesLocations[signature] =
+                    (valuesLocations[signature] ?? []) + [value]
+            } catch {
+                signatureErrors.append(error)
+            }
+        }
 
         // detecting redeclarations
-        // NOTE: not supporting function overloading
         // NOTE: for the future, interesting features to introduce are default arguments values and overloading
         let redeclarations = valuesLocations.compactMap { _, valueLocations in
             if valueLocations.count > 1 {
-                return ValueSemanticError.redeclaration(values: valueLocations)
+                return SemanticError.valueRedeclaration(values: valueLocations)
             } else {
                 return nil
             }
@@ -49,33 +122,21 @@ extension ValueDefinitionChecker {
             return values.first
         }
 
-        // verify function value signature
-        let typesNotInScope = valueLookup.flatMap { _, value in
-            if case let .function(signature, _) =
-                value.definition.expressionType, let signature
-            {
-                let undefinedInputTypes =
-                    signature.inputType?.undefinedTypes(
-                        typeLookup: typeLookup, context: context) ?? []
+        var valueDeclarations: Semantic.ValueDeclarationsMap = [:]
+        var typeSpecifierErrors: [SemanticError] = []
 
-                let undefinedArgumentsTypes =
-                    signature.arguments.flatMap { typeField in
-                        typeField.undefinedTypes(
-                            typeLookup: typeLookup, context: context)
-                    }
-
-                let undefinedOutputTypes = signature.outputType.undefinedTypes(
-                    typeLookup: typeLookup, context: context)
-
-                return undefinedInputTypes + undefinedArgumentsTypes
-                    + undefinedOutputTypes
+        for (signature, value) in valueLookup {
+            do {
+                valueDeclarations[signature] = try value.definition.getType()
+            } catch {
+                typeSpecifierErrors.append(error)
             }
-            return []
-        }.map { ValueSemanticError.typeNotInScope(type: $0) }
-
+        }
         return (
+            valueDeclarations: valueDeclarations,
             valueLookup: valueLookup,
-            errors: redeclarations + typesNotInScope
+            errors: typesNotInScope + signatureErrors + redeclarations
+                + typeSpecifierErrors
         )
     }
 }

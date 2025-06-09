@@ -1,19 +1,20 @@
-protocol SemanticChecker: TypeDefinitionChecker, ValueDefinitionChecker {
+protocol SemanticChecker: TypeDeclarationsChecker, ValueDefinitionChecker {
     func semanticCheck() -> Result<Semantic.Context, SemanticErrorList>
 }
 
 extension SemanticChecker {
     func semanticCheck() -> Result<Semantic.Context, SemanticErrorList> {
-        let intrinsicContext = getIntrinsicContext()
+        let intrinsicDeclarations = getIntrinsicDeclarations()
 
-        // TODO: calculating typeDefinitions can be done as a seperate step
-        let (typeDefinitions, typeLookup, typeErrors) = self.resolveTypeSymbols(
-            context: intrinsicContext)
+        // TODO: calculating typeDeclarations can be done as a seperate step
+        let (typeDeclarations, typeLookup, typeErrors) =
+            self.resolveTypeSymbols(
+                contextTypeDeclarations: intrinsicDeclarations.typeDeclarations)
 
-        let (valueLookup, valueErrors) = self.resolveValueSymbols(
-            typeDefinitions: typeDefinitions,
-            typeLookup: typeLookup,
-            context: intrinsicContext)
+        let (valueDeclarations, valueLookup, valueErrors) =
+            self.resolveValueSymbols(
+                typeDeclarations: typeDeclarations,
+                contextValueDeclarations: intrinsicDeclarations.valueDeclarations)
 
         // if errors.count > 0 {
         //     return .failure(.init(errors: errors.map { .type($0) }))
@@ -29,14 +30,7 @@ extension SemanticChecker {
         //     operators: intrinsicContext.operators)
 
         // NOTE: leaving contexts separate
-
-        return .success(
-            .init(
-                typeDefinitions: typeDefinitions,
-                valueDefinitions: [:],
-                typeLookup: typeLookup,
-                valueLookup: [:],
-                operators: [:]))
+        fatalError()
     }
 }
 

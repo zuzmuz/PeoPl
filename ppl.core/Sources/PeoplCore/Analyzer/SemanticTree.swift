@@ -9,6 +9,35 @@ enum Semantic {
     enum Tag: Hashable {
         case named(String)
         case unnamed(UInt64)
+
+        func hash(into hasher: inout Hasher) {
+            switch self {
+            case let .named(name):
+                hasher.combine(name)
+            case let .unnamed(index):
+                hasher.combine("_\(index)")
+            }
+        }
+
+        static func == (
+            lhs: Semantic.Tag,
+            rhs: Semantic.Tag
+        ) -> Bool {
+            let lhsValue = switch lhs {
+            case let .named(name):
+                name
+            case let .unnamed(index):
+                "_\(index)"
+            }
+            let rhsValue = switch rhs {
+            case let .named(name):
+                name
+            case let .unnamed(index):
+                "_\(index)"
+            }
+
+            return lhsValue == rhsValue
+        }
     }
 
     struct ScopedIdentifier: Hashable {
@@ -23,7 +52,14 @@ enum Semantic {
 
     typealias TypeLookupMap = [ScopedIdentifier: Syntax.TypeDefinition]
     typealias TypeDeclarationsMap = [ScopedIdentifier: TypeSpecifier]
-    typealias ValueDeclarationsMap = [FunctionSignature: Expression]
+    typealias ValueLookupMap = [ExpressionSignature: Syntax.ValueDefinition]
+    typealias ValueDeclarationsMap = [ExpressionSignature: TypeSpecifier]
+    typealias ValueDefinitionsMap = [ExpressionSignature: Expression]
+
+    enum ExpressionSignature: Hashable {
+        case function(FunctionSignature)
+        case value(TypeSpecifier)
+    }
 
     struct FunctionSignature: Hashable {
         let identifier: ScopedIdentifier
@@ -32,19 +68,24 @@ enum Semantic {
     }
 
     struct DefinitionsContext {
-        let valueDefinitions: ValueDeclarationsMap
+        let valueDefinitions: ValueDefinitionsMap
         let operators: [OperatorField: Expression]
     }
 
     struct DeclarationsContext {
         let typeDeclarations: TypeDeclarationsMap
-        let valueDeclarations: [FunctionSignature: TypeSpecifier]
+        let valueDeclarations: ValueDeclarationsMap
         // stores values based on identifier only for better error reporting
     }
 
     struct LookupContext {
         let typeLookup: TypeLookupMap
         // let valueLookup: [ScopedIdentifier: Syntax.ValueDefinition]
+    }
+
+    struct Context {
+        let declarations: DeclarationsContext
+        let definitions: DefinitionsContext
     }
 
     struct LocalScope {

@@ -5,6 +5,7 @@ line_length:
     ignores_urls: true
     ignores_interpolated_strings: true
 
+
 identifier_name:
   min_length: 2
   max_length: 30

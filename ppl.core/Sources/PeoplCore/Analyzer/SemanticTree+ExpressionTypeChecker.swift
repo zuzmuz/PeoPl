@@ -3,7 +3,7 @@ extension Syntax.Expression {
         with input: Semantic.TypeSpecifier,
         localScope: Semantic.LocalScope,
         context: borrowing Semantic.Context
-    ) throws(ExpressionSemanticError) -> Semantic.Expression {
+    ) throws(SemanticError) -> Semantic.Expression {
 
         switch (input, self.expressionType) {
         case (_, .literal(.never)):
@@ -31,7 +31,7 @@ extension Syntax.Expression {
                 context: context)
 
             guard
-                let operation = context.operators[
+                let operation = context.definitions.operators[
                     .init(left: input, right: typedExpression.type, op: op)]
             else {
                 throw .invalidOperation(
@@ -44,7 +44,7 @@ extension Syntax.Expression {
                 type: operation.type)
 
         // Binary
-        case (.nothing, .binary(let op, left: let left, right: let right)):
+        case (.nothing, .binary(let op, let left, let right)):
             let leftTyped = try left.checkType(
                 with: .nothing,
                 localScope: localScope,
@@ -55,7 +55,7 @@ extension Syntax.Expression {
                 context: context)
 
             guard
-                let operation = context.operators[
+                let operation = context.definitions.operators[
                     .init(left: leftTyped.type, right: rightTyped.type, op: op)]
             else {
                 throw .invalidOperation(
@@ -71,7 +71,7 @@ extension Syntax.Expression {
                 expression: self,
                 expected: .nothing,
                 received: input)
-        case (.nothing, .access(prefix: let prefix, field: let fieldIdentifier)):
+        case (.nothing, .access(let prefix, let fieldIdentifier)):
             let prefixTyped = try prefix.checkType(
                 with: .nothing,
                 localScope: localScope,
@@ -108,7 +108,7 @@ extension Syntax.Expression {
         type: Semantic.TypeSpecifier,
         fieldIdentifier: String,
         context: borrowing Semantic.Context
-    ) throws(ExpressionSemanticError) -> Semantic.TypeSpecifier {
+    ) throws(SemanticError) -> Semantic.TypeSpecifier {
 
         switch type {
         case .nothing, .never:
@@ -120,7 +120,10 @@ extension Syntax.Expression {
                 context: context)
         case .nominal(let typeIdentifier):
             guard
-                let rawType = context.typeDefinitions[typeIdentifier]
+                let rawType =
+                    context.declarations.typeDeclarations[typeIdentifier]?
+                    .getRawType(
+                        typeDeclarations: context.declarations.typeDeclarations)
             else {
                 throw .undefinedType(
                     expression: self, identifier: typeIdentifier)
@@ -136,7 +139,7 @@ extension Syntax.Expression {
         rawType: Semantic.RawTypeSpecifier,
         fieldIdentifier: String,
         context: borrowing Semantic.Context
-    ) throws(ExpressionSemanticError) -> Semantic.TypeSpecifier {
+    ) throws(SemanticError) -> Semantic.TypeSpecifier {
 
         switch rawType {
         case let .record(record):

@@ -281,6 +281,7 @@ enum Syntax {
 
     /// Function type: represents the type of functions and procedures
     /// Supports both traditional and dependently-typed function signatures
+    /// - inputType: Optional input type for the function, can be nil for procedures
     struct Function: SyntaxNode {
         let inputType: TypeSpecifier?
         let arguments: [TypeField]

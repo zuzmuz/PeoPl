@@ -1,5 +1,15 @@
+func getIntrinsicDeclarations() -> Semantic.DeclarationsContext {
+    return .init(
+        typeDeclarations: [
+            .init(chain: ["U32"]): .uint,
+            .init(chain: ["I32"]): .int,
+            .init(chain: ["F64"]): .float,
+            .init(chain: ["Bool"]): .bool,
+        ],
+        valueDeclarations: [:]) }
+
 func getIntrinsicDefinitions() -> Semantic.DefinitionsContext {
-    let intrinsicContext: Semantic.DefinitionsContext = .init(
+    return .init(
         valueDefinitions: [:],
         operators: [
             .init(left: .uint, right: .uint, op: .plus): .init(
@@ -102,5 +112,4 @@ func getIntrinsicDefinitions() -> Semantic.DefinitionsContext {
         ]
 
     )
-    return intrinsicContext
 }
