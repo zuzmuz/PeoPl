@@ -39,7 +39,7 @@ extension Syntax.TypeDefinition: Testable {
         with: Self
     ) {
         XCTAssertEqual(self.identifier, with.identifier)
-        self.definition.assertEqual(with: with.definition)
+        self.typeSpecifier.assertEqual(with: with.typeSpecifier)
     }
 }
 
@@ -92,8 +92,8 @@ extension Syntax.TaggedTypeSpecifier: Testable {
     func assertEqual(
         with: Self
     ) {
-        XCTAssertEqual(self.identifier, with.identifier)
-        self.type.assertEqual(with: with.type)
+        XCTAssertEqual(self.tag, with.tag)
+        self.typeSpecifier.assertEqual(with: with.typeSpecifier)
     }
 }
 

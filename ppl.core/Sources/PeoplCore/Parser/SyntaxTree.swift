@@ -141,7 +141,7 @@ enum Syntax {
     struct TypeDefinition: SyntaxNode {
         let identifier: ScopedIdentifier
         let arguments: [TypeField]
-        let definition: TypeSpecifier
+        let typeSpecifier: TypeSpecifier
         let location: NodeLocation
     }
 
@@ -149,7 +149,7 @@ enum Syntax {
     struct ValueDefinition: SyntaxNode {
         let identifier: ScopedIdentifier
         let arguments: [TypeField]
-        let definition: Expression
+        let expression: Expression
         let location: NodeLocation
     }
 
@@ -198,8 +198,8 @@ enum Syntax {
 
     /// A type field with a label/tag for record types and function parameters
     struct TaggedTypeSpecifier: SyntaxNode {
-        let identifier: String
-        let type: TypeSpecifier
+        let tag: String
+        let typeSpecifier: TypeSpecifier
         let location: NodeLocation
     }
 

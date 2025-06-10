@@ -217,7 +217,7 @@ extension Syntax.TypeDefinition: TreeSitterNode {
         return .init(
             identifier: try .from(node: identifierNode, in: source),
             arguments: arguments,
-            definition: try .from(node: definitionNode, in: source),
+            typeSpecifier: try .from(node: definitionNode, in: source),
             location: node.getLocation(in: source)
         )
     }
@@ -255,7 +255,7 @@ extension Syntax.ValueDefinition: TreeSitterNode {
         return .init(
             identifier: try .from(node: identifierNode, in: source),
             arguments: arguments,
-            definition: try .from(node: expressionNode, in: source),
+            expression: try .from(node: expressionNode, in: source),
             location: node.getLocation(in: source)
         )
     }
@@ -306,8 +306,8 @@ extension Syntax.TaggedTypeSpecifier: TreeSitterNode {
         }
 
         return .init(
-            identifier: try identifierNode.getString(in: source),
-            type: try .from(node: definitionNode, in: source),
+            tag: try identifierNode.getString(in: source),
+            typeSpecifier: try .from(node: definitionNode, in: source),
             location: node.getLocation(in: source)
         )
     }
@@ -423,8 +423,8 @@ extension Syntax.Sum: TreeSitterNode {
                     let smallIdentifier = try child.getString(in: source)
                     return .taggedTypeSpecifier(
                         .init(
-                            identifier: smallIdentifier,
-                            type: .nothing(location: .nowhere),
+                            tag: smallIdentifier,
+                            typeSpecifier: .nothing(location: .nowhere),
                             location: child.getLocation(in: source)))
                 } else {
                     return nil

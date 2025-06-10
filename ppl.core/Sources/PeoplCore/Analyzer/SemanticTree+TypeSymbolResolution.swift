@@ -35,7 +35,7 @@ extension Syntax.TypeField {
         case let .typeSpecifier(typeSpecifier):
             return typeSpecifier.getTypeIdentifiers()
         case let .taggedTypeSpecifier(taggedTypeSpecifier):
-            return taggedTypeSpecifier.type.getTypeIdentifiers()
+            return taggedTypeSpecifier.typeSpecifier.getTypeIdentifiers()
         case let .homogeneousTypeProduct(homogeneousTypeProduct):
             return homogeneousTypeProduct.typeSpecifier.getTypeIdentifiers()
         }
@@ -72,12 +72,12 @@ extension [Syntax.TypeField] {
                 fieldCounter += 1
             case let .taggedTypeSpecifier(taggedTypeSpecifier):
                 let fieldTag = Semantic.Tag.named(
-                    taggedTypeSpecifier.identifier)
+                    taggedTypeSpecifier.tag)
                 if recordFields[fieldTag] != nil {
                     throw .duplicateFieldName(field: typeField)
                 }
                 recordFields[fieldTag] =
-                    try taggedTypeSpecifier.type.getSemanticType()
+                    try taggedTypeSpecifier.typeSpecifier.getSemanticType()
                 fieldCounter += 1
             case let .homogeneousTypeProduct(homogeneousTypeProduct):
                 let semanticType = try homogeneousTypeProduct.typeSpecifier
@@ -114,8 +114,8 @@ extension [Syntax.TypeField] {
                     try typeSpecifier.getSemanticType()
                 fieldCounter += 1
             case let .taggedTypeSpecifier(taggedTypeSpecifier):
-                recordFields[.named(taggedTypeSpecifier.identifier)] =
-                    try taggedTypeSpecifier.type.getSemanticType()
+                recordFields[.named(taggedTypeSpecifier.tag)] =
+                    try taggedTypeSpecifier.typeSpecifier.getSemanticType()
                 fieldCounter += 1
             case .homogeneousTypeProduct:
                 throw .homogeneousTypeProductInSum(
@@ -243,7 +243,7 @@ extension TypeDeclarationsChecker {
 
         // detecting invalid members types
         let typesNotInScope = typeLookup.flatMap { _, type in
-            return type.definition.undefinedTypes(types: allTypes)
+            return type.typeSpecifier.undefinedTypes(types: allTypes)
         }.map { SemanticError.typeNotInScope(type: $0) }
 
         // detecting cyclical dependencies
@@ -258,7 +258,7 @@ extension TypeDeclarationsChecker {
         for (indentifier, typeDefinition) in typeLookup {
             do {
                 localTypeDeclarations[indentifier] =
-                    try typeDefinition.definition.getSemanticType()
+                    try typeDefinition.typeSpecifier.getSemanticType()
             } catch {
                 typeSepcifierErrors.append(error)
             }
@@ -300,7 +300,7 @@ extension TypeDeclarationsChecker {
                             typeSpecifier: typeSpecifier)
                     case let .taggedTypeSpecifier(taggedTypeSpecifier):
                         checkCyclicalDependencies(
-                            typeSpecifier: taggedTypeSpecifier.type)
+                            typeSpecifier: taggedTypeSpecifier.typeSpecifier)
                     case let .homogeneousTypeProduct(homogeneousTypeProduct):
                         checkCyclicalDependencies(
                             typeSpecifier: homogeneousTypeProduct.typeSpecifier)
@@ -314,7 +314,7 @@ extension TypeDeclarationsChecker {
                             typeSpecifier: typeSpecifier)
                     case let .taggedTypeSpecifier(taggedTypeSpecifier):
                         checkCyclicalDependencies(
-                            typeSpecifier: taggedTypeSpecifier.type)
+                            typeSpecifier: taggedTypeSpecifier.typeSpecifier)
                     case .homogeneousTypeProduct:
                         errors.append(
                             // TODO: consider cleaning up where this check is done
@@ -339,7 +339,7 @@ extension TypeDeclarationsChecker {
             }
             nodeStates[typeIdentifier] = .visiting
 
-            checkCyclicalDependencies(typeSpecifier: typeDefinition.definition)
+            checkCyclicalDependencies(typeSpecifier: typeDefinition.typeSpecifier)
 
         }
 

@@ -1,127 +1,127 @@
 {
-    "sourceName": "producttypes",
-    "definitions": [
-        {
-            "typeDefinition": {
-                "_0": {
-                    "identifier": {
-                        "chain": ["Basic"],
-                        "location": {}
-                    },
-                    "arguments": [],
-                    "definition": {
-                        "product": {
-                            "_0": {
-                                "typeFields": [
-                                    {
-                                        "taggedTypeSpecifier": {
-                                            "_0": {
-                                                "identifier": "a",
-                                                "type": {
-                                                    "nominal": {
-                                                        "_0": {
-                                                            "identifier": {
-                                                                "chain": ["Int"],
-                                                                "location": {}
-                                                            },
-                                                            "typeArguments": [],
-                                                            "location": {}
-                                                        }
-                                                    }
-                                                },
-                                                "location": {}
-                                            }
-                                        }
-                                    }
-                                ],
-                                "location": {},
-                            }
-                        }
-                    },
-                    "location": {}
-                }
-            }
-        },
-        {
-            "typeDefinition": {
-                "_0": {
-                    "identifier": {
-                        "chain": ["Advanced"],
-                        "location": {}
-                    },
-                    "arguments": [],
-                    "definition": {
-                        "product": {
-                            "_0": {
-                                "location": {},
-                                "typeFields": [
-                                    {
-                                        "taggedTypeSpecifier": {
-                                            "_0": {
-                                                "identifier": "a",
-                                                "type": {
-                                                    "nominal": {
-                                                        "_0": {
-                                                            "identifier": {
-                                                                "chain": ["Int"],
-                                                                "location": {}
-                                                            },
-                                                            "typeArguments": [],
-                                                            "location": {}
-                                                        }
-                                                    }
-                                                },
-                                                "location": {}
-                                            }
-                                        }
-                                    },
-                                    {
-                                        "taggedTypeSpecifier": {
-                                            "_0": {
-                                                "identifier": "b",
-                                                "type": {
-                                                    "nominal": {
-                                                        "_0": {
-                                                            "identifier": {
-                                                                "chain": ["String"],
-                                                                "location": {}
-                                                            },
-                                                            "typeArguments": [],
-                                                            "location": {}
-                                                        }
-                                                    }
-                                                },
-                                                "location": {}
-                                            }
-                                        }
-                                    },
-                                    {
-                                        "taggedTypeSpecifier": {
-                                            "_0": {
-                                                "identifier": "c",
-                                                "type": {
-                                                    "nominal": {
-                                                        "_0": {
-                                                            "identifier": {
-                                                                "chain": ["Bool"],
-                                                                "location": {}
-                                                            },
-                                                            "typeArguments": [],
-                                                            "location": {}
-                                                        }
-                                                    }
-                                                },
-                                                "location": {}
-                                            }
-                                        }
-                                    }
-                                ]
-                            }
-                        }
-                    },
-                    "location": {}
-                }
-            }
-        }
-    ]
+ "sourceName": "producttypes",
+ "definitions": [
+  {
+   "typeDefinition": {
+    "_0": {
+     "identifier": {
+      "chain": ["Basic"],
+      "location": {}
+     },
+     "arguments": [],
+     "typeSpecifier": {
+      "product": {
+       "_0": {
+        "typeFields": [
+         {
+          "taggedTypeSpecifier": {
+           "_0": {
+            "tag": "a",
+            "typeSpecifier": {
+             "nominal": {
+              "_0": {
+               "identifier": {
+                "chain": ["Int"],
+                "location": {}
+               },
+               "typeArguments": [],
+               "location": {}
+              }
+             }
+            },
+            "location": {}
+           }
+          }
+         }
+        ],
+        "location": {},
+       }
+      }
+     },
+     "location": {}
+    }
+   }
+  },
+  {
+   "typeDefinition": {
+    "_0": {
+     "identifier": {
+      "chain": ["Advanced"],
+      "location": {}
+     },
+     "arguments": [],
+     "typeSpecifier": {
+      "product": {
+       "_0": {
+        "location": {},
+        "typeFields": [
+         {
+          "taggedTypeSpecifier": {
+           "_0": {
+            "tag": "a",
+            "typeSpecifier": {
+             "nominal": {
+              "_0": {
+               "identifier": {
+                "chain": ["Int"],
+                "location": {}
+               },
+               "typeArguments": [],
+               "location": {}
+              }
+             }
+            },
+            "location": {}
+           }
+          }
+         },
+         {
+          "taggedTypeSpecifier": {
+           "_0": {
+            "tag": "b",
+            "typeSpecifier": {
+             "nominal": {
+              "_0": {
+               "identifier": {
+                "chain": ["String"],
+                "location": {}
+               },
+               "typeArguments": [],
+               "location": {}
+              }
+             }
+            },
+            "location": {}
+           }
+          }
+         },
+         {
+          "taggedTypeSpecifier": {
+           "_0": {
+            "tag": "c",
+            "typeSpecifier": {
+             "nominal": {
+              "_0": {
+               "identifier": {
+                "chain": ["Bool"],
+                "location": {}
+               },
+               "typeArguments": [],
+               "location": {}
+              }
+             }
+            },
+            "location": {}
+           }
+          }
+         }
+        ]
+       }
+      }
+     },
+     "location": {}
+    }
+   }
+  }
+ ]
 }

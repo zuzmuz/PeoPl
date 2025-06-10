@@ -36,7 +36,7 @@ extension Syntax.Expression {
             return try signature.outputType.getSemanticType()
         default:
             fatalError(
-                "do not support compile time expressions yet, should calculate expression at compile time"
+                "\(self) do not support compile time expressions yet, should calculate expression at compile time"
             )
         }
     }
@@ -71,7 +71,7 @@ extension ValueDefinitionChecker {
         // detecting invalid type identifiers
         let typesNotInScope = declarations.flatMap { value in
             if case let .function(signature, _) =
-                value.definition.expressionType, let signature
+                value.expression.expressionType, let signature
             {
                 let undefinedInputTypes =
                     signature.inputType?.undefinedTypes(
@@ -99,7 +99,7 @@ extension ValueDefinitionChecker {
         var signatureErrors: [SemanticError] = []
         for value in declarations {
             do {
-                let signature = try value.definition.getSignature(
+                let signature = try value.expression.getSignature(
                     identifier: value.identifier.getSemanticIdentifier())
                 valuesLocations[signature] =
                     (valuesLocations[signature] ?? []) + [value]
@@ -127,7 +127,7 @@ extension ValueDefinitionChecker {
 
         for (signature, value) in valueLookup {
             do {
-                valueDeclarations[signature] = try value.definition.getType()
+                valueDeclarations[signature] = try value.expression.getType()
             } catch {
                 typeSpecifierErrors.append(error)
             }
