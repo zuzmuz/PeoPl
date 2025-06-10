@@ -1,3 +1,17 @@
+extension Syntax.Module: Hashable {
+    func hash(into hasher: inout Hasher) {
+        for definition in self.definitions {
+            hasher.combine(definition)
+        }
+    }
+    static func == (
+        lhs: Syntax.Module,
+        rhs: Syntax.Module
+    ) -> Bool {
+        lhs.definitions == rhs.definitions
+    }
+}
+
 extension Syntax.Definition: Hashable {
     func hash(into hasher: inout Hasher) {
         switch self {

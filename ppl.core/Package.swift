@@ -36,7 +36,7 @@ let package = Package(
                 "SwiftTreeSitter",
                 "cllvm",
                 .product(name: "TreeSitterPeoPl", package: "ppl.treesitter"),
-            ]
+            ],
             // cxxSettings: [
             //     .headerSearchPath("/opt/homebrew/Cellar/llvm/19.1.7/include/include"),
             // ]
@@ -45,7 +45,7 @@ let package = Package(
             name: "PeoplCoreTests",
             dependencies: ["PeoplCore"],
             resources: [
-                .copy("Resources")
+                .process("Resources")
             ]
         ),
     ],

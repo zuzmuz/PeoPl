@@ -1,5 +1,6 @@
-Basic: [
-    a: Int
+Basicx: [
+    a: Int,
+    c: Float,
 ]
 
 Advanced: [

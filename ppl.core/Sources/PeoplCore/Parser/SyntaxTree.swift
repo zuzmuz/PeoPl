@@ -52,10 +52,6 @@ enum Syntax {
             lhs.pointRange.lowerBound < rhs.pointRange.lowerBound
         }
 
-        static func == (lhs: NodeLocation, rhs: NodeLocation) -> Bool {
-            true
-        }
-
         static let nowhere = NodeLocation(
             pointRange: Point(
                 line: 0, column: 0)..<Point(
