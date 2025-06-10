@@ -44,6 +44,9 @@ let package = Package(
         .testTarget(
             name: "PeoplCoreTests",
             dependencies: ["PeoplCore"],
+            resources: [
+                .process("Resources")
+            ]
         ),
     ],
     cxxLanguageStandard: .cxx17

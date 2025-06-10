@@ -74,7 +74,7 @@ extension Node {
             )
         return Syntax.NodeLocation(
             pointRange: pointRange,
-            range: range, sourceName: source.name)
+            range: range)
     }
 }
 
@@ -103,6 +103,7 @@ extension Syntax.Module {
                     return nil
                 }
             }
+        self.sourceName = path
     }
 
     init(path: String) throws {

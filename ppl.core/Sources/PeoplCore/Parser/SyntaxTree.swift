@@ -47,20 +47,34 @@ enum Syntax {
         }
         let pointRange: Range<Point>
         let range: Range<Int>
-        let sourceName: String
 
         static func < (lhs: NodeLocation, rhs: NodeLocation) -> Bool {
-            lhs.sourceName < rhs.sourceName
-                || lhs.sourceName == rhs.sourceName
-                    && lhs.pointRange.lowerBound < rhs.pointRange.lowerBound
+            lhs.pointRange.lowerBound < rhs.pointRange.lowerBound
         }
 
         static let nowhere = NodeLocation(
             pointRange: Point(
                 line: 0, column: 0)..<Point(
                     line: 0, column: 0),
-            range: 0..<0,
-            sourceName: "")
+            range: 0..<0)
+
+        init(from decoder: any Decoder) throws {
+            let container = try decoder.container(
+                keyedBy: CodingKeys.self)
+            if container.allKeys.isEmpty {
+                self = .nowhere
+            } else {
+                self.pointRange = try container.decode(
+                    Range<Point>.self, forKey: .pointRange)
+                self.range = try container.decode(
+                    Range<Int>.self, forKey: .range)
+            }
+        }
+
+        init(pointRange: Range<Point>, range: Range<Int>) {
+            self.pointRange = pointRange
+            self.range = range
+        }
     }
 
     // MARK: - Source Code Representation
@@ -91,6 +105,7 @@ enum Syntax {
     /// A compilation unit containing a list of top-level definitions
     /// Modules are basically files
     struct Module: Codable {
+        let sourceName: String
         let definitions: [Definition]
     }
 
@@ -143,7 +158,7 @@ enum Syntax {
 
     /// The core type specification language
     /// This represents the full spectrum of types available in the language
-    enum TypeSpecifier: SyntaxNode, Sendable{
+    enum TypeSpecifier: SyntaxNode, Sendable {
         /// Unit type (empty tuple)
         case nothing(location: NodeLocation)
         /// Unreachable type

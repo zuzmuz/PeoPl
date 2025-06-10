@@ -3,36 +3,34 @@ import Foundation
 do {
     // let module = try Syntax.Module(
     //   path: "/Users/zuz/Desktop/Muz/coding/peopl/examples/main.ppl")
-    let path = "\(FileManager.default.currentDirectoryPath)/Tests/testreferences/producttypes.ppl"
-    let module = try Syntax.Module(
-        path: path)
+    let folderPath =
+        "/Users/zuz/Desktop/Muz/coding/peopl/ppl.core/Tests/testreferences/"
+    print("folderPath: \(folderPath)")
 
-    let encoder = JSONEncoder()
-    let encoded = try encoder.encode(module)
+    let folder = try FileManager.default.contentsOfDirectory(atPath: folderPath)
+    let decoder = JSONDecoder()
 
-    print(String(data: encoded, encoding: .utf8) ?? "")
+    let files = folder.compactMap { fileName in
+        print("fileName: \(fileName)")
+        if fileName.hasSuffix(".json") {
+            let handle = FileHandle(forReadingAtPath: folderPath + fileName)
+            guard let outputData = try? handle?.readToEnd() else {
+                fatalError("unable to read file \(fileName)")
+            }
+            print("Data \(String(data: outputData, encoding: .utf8) ?? "nil")")
+            do {
+                let module = try decoder.decode(
+                    Syntax.Module.self, from: outputData)
+                return module
+            } catch {
+                print("handling error: \(error)")
+            }
+            return nil
+        }
+        return nil
+    }
 
-    // var llvm = LLVM.Builder(name: "main")
-    //
-    // let semanticContext = try module.semanticCheck().get()
-    // try semanticContext.llvmBuildStatement(llvm: &llvm)
-    // // FIX: should parse all functions declarations before generating body IR
-    // print("verifying \(llvm.verify())")
-    // print(llvm.generate())
-    // print(llvm.save(to: "/Users/zuz/Desktop/Muz/coding/peopl/examples/main.ll"))
-    // // let jsonEncoder = JSONEncoder()
-    // jsonEncoder.outputFormatting = .prettyPrinted
-    // let project = Project(modules: ["main": module])
-    // let evaluation = project.evaluate(with: .nothing, and: EvaluationScope(locals: [:]))
-    //
-    // let encoded = switch evaluation {
-    // case let .success(expression):
-    //     try jsonEncoder.encode(expression)
-    // case let .failure(error):
-    //     try jsonEncoder.encode(error)
-    // }
-    // print(String(data: encoded, encoding: .utf8) ?? "")
-
+    print(files.first?.definitions.count)
 } catch {
     print("we catching \(error.localizedDescription)")
 }
