@@ -52,6 +52,10 @@ enum Syntax {
             lhs.pointRange.lowerBound < rhs.pointRange.lowerBound
         }
 
+        static func == (lhs: NodeLocation, rhs: NodeLocation) -> Bool {
+            true
+        }
+
         static let nowhere = NodeLocation(
             pointRange: Point(
                 line: 0, column: 0)..<Point(
@@ -104,7 +108,7 @@ enum Syntax {
 
     /// A compilation unit containing a list of top-level definitions
     /// Modules are basically files
-    struct Module: Codable {
+    struct Module: Equatable, Codable {
         let sourceName: String
         let definitions: [Definition]
     }

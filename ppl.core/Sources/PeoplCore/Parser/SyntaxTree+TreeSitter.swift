@@ -118,6 +118,14 @@ extension Syntax.Module {
         }
         try self.init(source: outputString, path: path)
     }
+
+    init(url: URL) throws {
+        let data = try Data.init(contentsOf: url)
+        guard let source = String(data: data, encoding: .utf8) else {
+            fatalError("File unreadable at url")
+        }
+        try self.init(source: source, path: url.path)
+    }
 }
 
 extension Syntax.Definition: TreeSitterNode {
