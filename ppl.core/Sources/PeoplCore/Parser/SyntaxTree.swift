@@ -6,7 +6,7 @@
 // ----------------------
 
 /// Defines all operators supported by the language, including arithmetic, logical, and comparison operators
-enum Operator: String {
+enum Operator: String, Codable {
     case plus = "+"
     case minus = "-"
     case times = "*"
@@ -35,9 +35,9 @@ enum Syntax {
     // --------------------------------
 
     /// Represents the location of a syntax node in the source code
-    struct NodeLocation: Equatable, Comparable {
+    struct NodeLocation: Comparable, Equatable, Codable {
         /// A point in the source code defined by line and column numbers
-        struct Point: Comparable, Encodable, Equatable {
+        struct Point: Comparable, Equatable, Codable {
             let line: Int
             let column: Int
             static func < (lhs: Point, rhs: Point) -> Bool {
@@ -75,7 +75,7 @@ enum Syntax {
     }
 
     /// Protocol that all syntax tree nodes must implement for source location tracking
-    protocol SyntaxNode {
+    protocol SyntaxNode: Codable {
         var location: NodeLocation { get }
     }
 
@@ -84,19 +84,19 @@ enum Syntax {
 
     /// Top-level container representing an entire program or project
     /// Maps module names to their corresponding module definitions
-    struct Project {
+    struct Project: Codable {
         let modules: [String: Module]
     }
 
     /// A compilation unit containing a list of top-level definitions
     /// Modules are basically files
-    struct Module {
+    struct Module: Codable {
         let definitions: [Definition]
     }
 
     /// Top-level definitions that can appear at module scope
     /// The language supports two kinds of top-level definitions: types and values
-    enum Definition: SyntaxNode {
+    enum Definition: SyntaxNode, Codable {
         case typeDefinition(TypeDefinition)
         case valueDefinition(ValueDefinition)
 
@@ -143,7 +143,7 @@ enum Syntax {
 
     /// The core type specification language
     /// This represents the full spectrum of types available in the language
-    enum TypeSpecifier: SyntaxNode, Sendable {
+    enum TypeSpecifier: SyntaxNode, Sendable{
         /// Unit type (empty tuple)
         case nothing(location: NodeLocation)
         /// Unreachable type
@@ -193,7 +193,7 @@ enum Syntax {
     struct HomogeneousTypeProduct: SyntaxNode {
 
         /// The size/count can be either a literal number or a type-level identifier
-        enum Exponent {
+        enum Exponent: Codable {
             case literal(UInt64)
             case identifier(ScopedIdentifier)
         }
@@ -305,7 +305,7 @@ enum Syntax {
         let location: NodeLocation
 
         /// Literal values that can appear directly in source code
-        enum Literal {
+        enum Literal: Codable {
             case nothing
             case never
             case intLiteral(UInt64)
@@ -314,7 +314,7 @@ enum Syntax {
             case boolLiteral(Bool)
         }
 
-        indirect enum ExpressionType: Sendable {
+        indirect enum ExpressionType: Sendable, Codable {
             case literal(Literal)
 
             /// Prefix operators expression

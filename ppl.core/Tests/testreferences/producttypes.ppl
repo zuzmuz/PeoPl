@@ -1,0 +1,21 @@
+Basic: [
+    a: Int
+]
+
+//Advanced: [
+//    a: Int,
+//    b: String,
+//    c: Bool
+//]
+//
+//Nested: [
+//    a: Int,
+//    b: [
+//        c: String,
+//        d: Bool
+//    ]
+//]
+//
+//Scoped::Basic: [
+//    a: Int
+//]

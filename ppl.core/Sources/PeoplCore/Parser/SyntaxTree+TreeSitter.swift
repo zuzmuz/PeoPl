@@ -96,7 +96,12 @@ extension Syntax.Module {
 
         self.definitions =
             try rootNode.compactMapChildren { node throws(SyntaxError) in
-                try .from(node: node, in: source)
+                if node.nodeType == "type_definition" ||
+                    node.nodeType == "value_definition" {
+                    return try .from(node: node, in: source)
+                } else {
+                    return nil
+                }
             }
     }
 
@@ -108,7 +113,7 @@ extension Syntax.Module {
             let outputString = String(
                 data: outputData, encoding: .utf8)
         else {
-            throw SyntaxError.sourceUnreadable
+            fatalError("File unreadable at path")
         }
         try self.init(source: outputString, path: path)
     }
@@ -131,7 +136,9 @@ extension Syntax.Definition: TreeSitterNode {
                     node: node,
                     in: source))
         default:
-            throw .sourceUnreadable
+            throw .errorParsing(
+                element: node.nodeType ?? "definition",
+                location: node.getLocation(in: source))
         }
     }
 }
@@ -588,7 +595,9 @@ extension Syntax.Expression.Literal {
             }
             return .boolLiteral(boolValue)
         default:
-            throw .sourceUnreadable
+            throw .errorParsing(
+                element: "literal",
+                location: node.getLocation(in: source))
         }
     }
 }
