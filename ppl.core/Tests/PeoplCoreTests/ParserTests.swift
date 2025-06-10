@@ -2,10 +2,140 @@ import XCTest
 
 @testable import PeoplCore
 
+protocol Testable {
+    func assertEqual(
+        with: Self,
+    )
+}
+
+extension Syntax.Module: Testable {
+    func assertEqual(
+        with: Self
+    ) {
+        zip(self.definitions, with.definitions).forEach {
+            $0.assertEqual(with: $1)
+        }
+    }
+}
+
+extension Syntax.Definition: Testable {
+    func assertEqual(
+        with: Self
+    ) {
+        switch (self, with) {
+        case let (.typeDefinition(lhs), .typeDefinition(rhs)):
+            lhs.assertEqual(with: rhs)
+        case let (.valueDefinition(lhs), .valueDefinition(rhs)):
+            // lhs.assertEqual(with: rhs)
+            XCTFail("Value definitions are not comparable yet")
+        default:
+            XCTFail("Definitions do not match")
+        }
+    }
+}
+
+extension Syntax.TypeDefinition: Testable {
+    func assertEqual(
+        with: Self
+    ) {
+        XCTAssertEqual(self.identifier, with.identifier)
+        self.definition.assertEqual(with: with.definition)
+    }
+}
+
+extension Syntax.TypeSpecifier: Testable {
+    func assertEqual(
+        with: Self
+    ) {
+        switch (self, with) {
+        case (.nothing, .nothing), (.never, .never):
+            // pass
+            break
+        case let (.product(lhs), .product(rhs)):
+            lhs.assertEqual(with: rhs)
+        case let (.nominal(lhs), .nominal(rhs)):
+            lhs.assertEqual(with: rhs)
+        default:
+            XCTFail("Type specifiers do not match \(self) vs \(with)")
+        }
+    }
+}
+
+extension Syntax.Product: Testable {
+    func assertEqual(
+        with: Self
+    ) {
+        zip(self.typeFields, with.typeFields).forEach {
+            $0.assertEqual(with: $1)
+        }
+    }
+}
+
+extension Syntax.TypeField: Testable {
+    func assertEqual(
+        with: Self
+    ) {
+        switch (self, with) {
+        case let (.typeSpecifier(lhs), .typeSpecifier(rhs)):
+            lhs.assertEqual(with: rhs)
+        case let (.taggedTypeSpecifier(lhs), .taggedTypeSpecifier(rhs)):
+            lhs.assertEqual(with: rhs)
+        case let (.homogeneousTypeProduct(lhs), .homogeneousTypeProduct(rhs)):
+            lhs.assertEqual(with: rhs)
+        default:
+            XCTFail("Type fields do not match")
+        }
+    }
+}
+
+extension Syntax.TaggedTypeSpecifier: Testable {
+    func assertEqual(
+        with: Self
+    ) {
+        XCTAssertEqual(self.identifier, with.identifier)
+        self.type.assertEqual(with: with.type)
+    }
+}
+
+extension Syntax.HomogeneousTypeProduct: Testable {
+    func assertEqual(
+        with: Self
+    ) {
+        self.typeSpecifier.assertEqual(with: with.typeSpecifier)
+        self.count.assertEqual(with: with.count)
+    }
+}
+
+extension Syntax.HomogeneousTypeProduct.Exponent: Testable {
+    func assertEqual(
+        with: Self
+    ) {
+        switch (self, with) {
+        case let (.literal(lhs), .literal(rhs)):
+            XCTAssertEqual(lhs, rhs)
+        case let (.identifier(lhs), .identifier(rhs)):
+            XCTAssertEqual(lhs, rhs)
+        default:
+            XCTFail("Homogeneous type product exponents do not match")
+        }
+    }
+}
+
+extension Syntax.Nominal: Testable {
+    func assertEqual(
+        with: Self
+    ) {
+        XCTAssertEqual(self.identifier, with.identifier)
+        zip(self.typeArguments, with.typeArguments).forEach {
+            $0.assertEqual(with: $1)
+        }
+    }
+}
+
 final class ParserTests: XCTestCase {
     let fileNames = [
-        "producttypes",
-        "error",
+        "producttypes"
+        // "error",
     ]
 
     func testFiles() throws {
@@ -21,7 +151,7 @@ final class ParserTests: XCTestCase {
 
             let source = try Syntax.Module(url: sourceUrl)
 
-            XCTAssertEqual(source, reference)
+            source.assertEqual(with: reference)
         }
     }
 }

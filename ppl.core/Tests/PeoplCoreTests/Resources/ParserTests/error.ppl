@@ -1,4 +1,4 @@
-Basicx: [
+Basic: [
     a: Int,
     c: Float,
 ]

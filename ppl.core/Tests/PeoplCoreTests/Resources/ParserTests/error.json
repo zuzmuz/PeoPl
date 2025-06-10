@@ -32,6 +32,26 @@
                                                 "location": {}
                                             }
                                         }
+                                    },
+                                    {
+                                        "taggedTypeSpecifier": {
+                                            "_0": {
+                                                "identifier": "c",
+                                                "type": {
+                                                    "nominal": {
+                                                        "_0": {
+                                                            "identifier": {
+                                                                "chain": ["Float"],
+                                                                "location": {}
+                                                            },
+                                                            "typeArguments": [],
+                                                            "location": {}
+                                                        }
+                                                    }
+                                                },
+                                                "location": {}
+                                            }
+                                        }
                                     }
                                 ],
                                 "location": {},

@@ -217,8 +217,8 @@ extension TypeDeclarationsChecker {
         let typesLocations:
             [Semantic.ScopedIdentifier: [Syntax.TypeDefinition]] =
                 declarations.reduce(into: [:]) { acc, type in
-                    let semanticIdentifer = Semantic.ScopedIdentifier(
-                        chain: type.identifier.chain)
+                    let semanticIdentifer =
+                        type.identifier.getSemanticIdentifier()
                     acc[semanticIdentifer] =
                         (acc[semanticIdentifer] ?? []) + [type]
                 }

@@ -104,7 +104,7 @@ enum Syntax {
 
     /// A compilation unit containing a list of top-level definitions
     /// Modules are basically files
-    struct Module: Equatable, Codable {
+    struct Module: Codable {
         let sourceName: String
         let definitions: [Definition]
     }
