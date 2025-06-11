@@ -2,8 +2,48 @@ Basic: [
     a: Int
 ]
 
-Advanced: [
+Multiple: [
     a: Int,
-    b: String,
-    c: Bool
+    b: Float,
+    c: String
 ]
+
+Nested: [
+    a: Int,
+    d: [
+        b: Float,
+        e: Bool
+    ]
+]
+
+Scoped::Basic: [
+    a: Int
+]
+
+Scoped::Multiple::Times [
+    a: Int,
+    e: Bool
+]
+
+ScopedTypes: [
+    x: CG::Float,
+    y: CG::Vector
+]
+
+LongNames: [
+    snake_case_long: A,
+    camelCaseLong: B
+]
+
+TypeWithNothing: [
+    m: _,
+    n: Nothing
+]
+
+Numbered: [
+    _1: One,
+    _2: Two,
+    _3: Three
+]
+
+Tuple: [Int, Float, String, Bool, Nested::Scope, Multiple::Nested::Scope]

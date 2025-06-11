@@ -12,6 +12,10 @@ extension Syntax.Module: Testable {
     func assertEqual(
         with: Self
     ) {
+        XCTAssertEqual(
+            self.definitions.count,
+            with.definitions.count,
+            "Module \(self.sourceName) definition counts do not match")
         zip(self.definitions, with.definitions).forEach {
             $0.assertEqual(with: $1)
         }
@@ -38,7 +42,11 @@ extension Syntax.TypeDefinition: Testable {
     func assertEqual(
         with: Self
     ) {
-        XCTAssertEqual(self.identifier, with.identifier)
+        XCTAssertEqual(
+            self.identifier,
+            with.identifier,
+            "Type definition identifier \(self.identifier) does not match \(with.identifier)"
+        )
         self.typeSpecifier.assertEqual(with: with.typeSpecifier)
     }
 }
@@ -65,6 +73,10 @@ extension Syntax.Product: Testable {
     func assertEqual(
         with: Self
     ) {
+        XCTAssertEqual(
+            self.typeFields.count,
+            with.typeFields.count,
+            "Product \(self.location) type field counts do not match")
         zip(self.typeFields, with.typeFields).forEach {
             $0.assertEqual(with: $1)
         }
@@ -132,25 +144,77 @@ extension Syntax.Nominal: Testable {
     }
 }
 
+extension Syntax.Definition {
+    static func type(
+        identifier: Syntax.ScopedIdentifier,
+        typeSpecifier: Syntax.TypeSpecifier
+    ) -> Syntax.Definition {
+        return .typeDefinition(
+            .init(identifier: identifier, typeSpecifier: typeSpecifier))
+    }
+}
+
+extension Syntax.ScopedIdentifier {
+    static func chain(
+        _ components: [String]
+    ) -> Syntax.ScopedIdentifier {
+        return .init(chain: components)
+    }
+}
+
+extension Syntax.TypeSpecifier {
+    static func productType(
+        typeFields: [Syntax.TypeField]
+    ) -> Syntax.TypeSpecifier {
+        return .product(
+            .init(typeFields: typeFields))
+    }
+
+    static func nominalType(
+        indentifier: Syntax.ScopedIdentifier
+    ) -> Syntax.TypeSpecifier {
+        return .nominal(.init(identifier: indentifier))
+    }
+}
+
+extension Syntax.TypeField {
+    static func tagged(
+        tag: String,
+        typeSpecifier: Syntax.TypeSpecifier
+    ) -> Syntax.TypeField {
+        return .taggedTypeSpecifier(
+            .init(tag: tag, typeSpecifier: typeSpecifier))
+    }
+}
+
 final class ParserTests: XCTestCase {
-    let fileNames = [
-        "producttypes"
-        // "error",
+    let fileNames: [String: Syntax.Module] = [
+        "producttypes": .init(
+            sourceName: "producttypes",
+            definitions: [
+                .type(
+                    identifier: .chain(["Basic"]),
+                    typeSpecifier: .productType(
+                        typeFields: [
+                            .tagged(
+                                tag: "a",
+                                typeSpecifier: .nominalType(
+                                    indentifier: .chain(["Int"])
+                                )
+                            )
+                        ]
+                    )
+                )
+            ]
+        )
     ]
 
     func testFiles() throws {
         let bundle = Bundle.module
 
-        for name in fileNames {
+        for (name, reference) in fileNames {
             let sourceUrl = bundle.url(forResource: name, withExtension: "ppl")!
-            let jsonUrl = bundle.url(forResource: name, withExtension: "json")!
-            let jsonData = try Data(contentsOf: jsonUrl)
-
-            let reference = try JSONDecoder().decode(
-                Syntax.Module.self, from: jsonData)
-
             let source = try Syntax.Module(url: sourceUrl)
-
             source.assertEqual(with: reference)
         }
     }

@@ -107,6 +107,14 @@ enum Syntax {
     struct Module: Codable {
         let sourceName: String
         let definitions: [Definition]
+
+        init(
+            sourceName: String,
+            definitions: [Definition]
+        ) {
+            self.sourceName = sourceName
+            self.definitions = definitions
+        }
     }
 
     /// Top-level definitions that can appear at module scope
@@ -134,6 +142,14 @@ enum Syntax {
     struct ScopedIdentifier: SyntaxNode {
         let chain: [String]
         let location: NodeLocation
+
+        init(
+            chain: [String],
+            location: NodeLocation = .nowhere
+        ) {
+            self.chain = chain
+            self.location = location
+        }
     }
 
     /// Defines a new type with an optional parameter list
@@ -143,6 +159,18 @@ enum Syntax {
         let arguments: [TypeField]
         let typeSpecifier: TypeSpecifier
         let location: NodeLocation
+
+        init(
+            identifier: ScopedIdentifier,
+            arguments: [TypeField] = [],
+            typeSpecifier: TypeSpecifier,
+            location: NodeLocation = .nowhere
+        ) {
+            self.identifier = identifier
+            self.arguments = arguments
+            self.typeSpecifier = typeSpecifier
+            self.location = location
+        }
     }
 
     /// Defines a value (function, constant, or computed expression)
@@ -151,6 +179,18 @@ enum Syntax {
         let arguments: [TypeField]
         let expression: Expression
         let location: NodeLocation
+
+        init(
+            identifier: ScopedIdentifier,
+            arguments: [TypeField] = [],
+            expression: Expression,
+            location: NodeLocation = .nowhere
+        ) {
+            self.identifier = identifier
+            self.arguments = arguments
+            self.expression = expression
+            self.location = location
+        }
     }
 
     // MARK: - Type System
@@ -201,6 +241,16 @@ enum Syntax {
         let tag: String
         let typeSpecifier: TypeSpecifier
         let location: NodeLocation
+
+        init(
+            tag: String,
+            typeSpecifier: TypeSpecifier,
+            location: NodeLocation = .nowhere
+        ) {
+            self.tag = tag
+            self.typeSpecifier = typeSpecifier
+            self.location = location
+        }
     }
 
     /// Represents homogeneous collections with a compile-time known size
@@ -216,6 +266,16 @@ enum Syntax {
         let typeSpecifier: TypeSpecifier
         let count: Exponent
         let location: NodeLocation
+
+        init(
+            typeSpecifier: TypeSpecifier,
+            count: Exponent,
+            location: NodeLocation = .nowhere
+        ) {
+            self.typeSpecifier = typeSpecifier
+            self.count = count
+            self.location = location
+        }
     }
 
     /// Flexible container for different kinds of type fields in compound types
@@ -245,12 +305,28 @@ enum Syntax {
     struct Product: SyntaxNode {
         let typeFields: [TypeField]
         let location: NodeLocation
+
+        init(
+            typeFields: [TypeField] = [],
+            location: NodeLocation = .nowhere
+        ) {
+            self.typeFields = typeFields
+            self.location = location
+        }
     }
 
     /// Represents tagged unions
     struct Sum: SyntaxNode {
         let typeFields: [TypeField]
         let location: NodeLocation
+
+        init(
+            typeFields: [TypeField] = [],
+            location: NodeLocation = .nowhere
+        ) {
+            self.typeFields = typeFields
+            self.location = location
+        }
     }
 
     /// Represents type constraints,
@@ -261,6 +337,14 @@ enum Syntax {
     struct Subset: SyntaxNode {
         let typeFields: [TypeField]
         let location: NodeLocation
+
+        init(
+            typeFields: [TypeField] = [],
+            location: NodeLocation = .nowhere
+        ) {
+            self.typeFields = typeFields
+            self.location = location
+        }
     }
 
     /// Represents existential types,
@@ -269,6 +353,16 @@ enum Syntax {
         let type: ScopedIdentifier
         let alias: String?
         let location: NodeLocation
+
+        init(
+            type: ScopedIdentifier,
+            alias: String? = nil,
+            location: NodeLocation = .nowhere
+        ) {
+            self.type = type
+            self.alias = alias
+            self.location = location
+        }
     }
 
     /// Represents universal types,
@@ -276,6 +370,14 @@ enum Syntax {
     struct Universal: SyntaxNode {
         let type: ScopedIdentifier
         let location: NodeLocation
+
+        init(
+            type: ScopedIdentifier,
+            location: NodeLocation = .nowhere
+        ) {
+            self.type = type
+            self.location = location
+        }
     }
 
     /// Represents constrained generic types,
@@ -284,6 +386,16 @@ enum Syntax {
         let alias: String
         let subset: ScopedIdentifier
         let location: NodeLocation
+
+        init(
+            alias: String,
+            subset: ScopedIdentifier,
+            location: NodeLocation = .nowhere
+        ) {
+            self.alias = alias
+            self.subset = subset
+            self.location = location
+        }
     }
 
     /// Nominal type: a named type with optional type arguments
@@ -292,6 +404,16 @@ enum Syntax {
         let identifier: ScopedIdentifier
         let typeArguments: [TypeSpecifier]
         let location: NodeLocation
+
+        init(
+            identifier: ScopedIdentifier,
+            typeArguments: [TypeSpecifier] = [],
+            location: NodeLocation = .nowhere
+        ) {
+            self.identifier = identifier
+            self.typeArguments = typeArguments
+            self.location = location
+        }
     }
 
     /// Function type: represents the type of functions and procedures
@@ -302,6 +424,18 @@ enum Syntax {
         let arguments: [TypeField]
         let outputType: TypeSpecifier
         let location: NodeLocation
+
+        init(
+            inputType: TypeSpecifier? = nil,
+            arguments: [TypeField] = [],
+            outputType: TypeSpecifier,
+            location: NodeLocation = .nowhere
+        ) {
+            self.inputType = inputType
+            self.arguments = arguments
+            self.outputType = outputType
+            self.location = location
+        }
     }
 
     // MARK: - Expressions
@@ -312,12 +446,30 @@ enum Syntax {
         let identifier: String
         let expression: Expression
         let location: NodeLocation
+
+        init(
+            identifier: String,
+            expression: Expression,
+            location: NodeLocation = .nowhere
+        ) {
+            self.identifier = identifier
+            self.expression = expression
+            self.location = location
+        }
     }
 
     /// Core expression node representing all computations and values in the language
     struct Expression: SyntaxNode {
         let expressionType: ExpressionType
         let location: NodeLocation
+
+        init(
+            expressionType: ExpressionType,
+            location: NodeLocation = .nowhere
+        ) {
+            self.expressionType = expressionType
+            self.location = location
+        }
 
         /// Literal values that can appear directly in source code
         enum Literal: Codable {
@@ -366,6 +518,14 @@ enum Syntax {
             let branches: [Branch]
             let location: NodeLocation
 
+            init(
+                branches: [Branch],
+                location: NodeLocation = .nowhere
+            ) {
+                self.branches = branches
+                self.location = location
+            }
+
             /// A single branch in a pattern match expression
             struct Branch: SyntaxNode {
                 /// Pattern to match against
@@ -374,6 +534,18 @@ enum Syntax {
                 let guardExpression: Expression?
                 let body: Expression
                 let location: NodeLocation
+
+                init(
+                    matchExpression: Expression,
+                    guardExpression: Expression? = nil,
+                    body: Expression,
+                    location: NodeLocation = .nowhere
+                ) {
+                    self.matchExpression = matchExpression
+                    self.guardExpression = guardExpression
+                    self.body = body
+                    self.location = location
+                }
             }
         }
     }
