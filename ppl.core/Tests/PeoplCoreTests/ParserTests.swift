@@ -171,9 +171,9 @@ extension Syntax.TypeSpecifier {
     }
 
     static func nominalType(
-        indentifier: Syntax.ScopedIdentifier
+        identifier: Syntax.ScopedIdentifier
     ) -> Syntax.TypeSpecifier {
-        return .nominal(.init(identifier: indentifier))
+        return .nominal(.init(identifier: identifier))
     }
 }
 
@@ -184,6 +184,12 @@ extension Syntax.TypeField {
     ) -> Syntax.TypeField {
         return .taggedTypeSpecifier(
             .init(tag: tag, typeSpecifier: typeSpecifier))
+    }
+
+    static func untagged(
+        typeSpecifier: Syntax.TypeSpecifier
+    ) -> Syntax.TypeField {
+        return .typeSpecifier(typeSpecifier)
     }
 }
 
@@ -199,7 +205,208 @@ final class ParserTests: XCTestCase {
                             .tagged(
                                 tag: "a",
                                 typeSpecifier: .nominalType(
-                                    indentifier: .chain(["Int"])
+                                    identifier: .chain(["Int"])
+                                )
+                            )
+                        ]
+                    )
+                ),
+                .type(
+                    identifier: .chain(["Multiple"]),
+                    typeSpecifier: .productType(
+                        typeFields: [
+                            .tagged(
+                                tag: "a",
+                                typeSpecifier: .nominalType(
+                                    identifier: .chain(["Int"])
+                                )
+                            ),
+                            .tagged(
+                                tag: "b",
+                                typeSpecifier: .nominalType(
+                                    identifier: .chain(["Float"])
+                                )
+                            ),
+                            .tagged(
+                                tag: "c",
+                                typeSpecifier: .nominalType(
+                                    identifier: .chain(["String"])
+                                )
+                            ),
+                        ]
+                    )
+                ),
+                .type(
+                    identifier: .chain(["Nested"]),
+                    typeSpecifier: .productType(
+                        typeFields: [
+                            .tagged(
+                                tag: "a",
+                                typeSpecifier: .nominalType(
+                                    identifier: .chain(["Int"])
+                                )
+                            ),
+                            .tagged(
+                                tag: "d",
+                                typeSpecifier: .productType(
+                                    typeFields: [
+                                        .tagged(
+                                            tag: "b",
+                                            typeSpecifier: .nominalType(
+                                                identifier: .chain(["Float"])
+                                            )
+                                        ),
+                                        .tagged(
+                                            tag: "e",
+                                            typeSpecifier: .productType(
+                                                typeFields: [
+                                                    .tagged(
+                                                        tag: "c",
+                                                        typeSpecifier:
+                                                            .nominalType(
+                                                                identifier:
+                                                                    .chain([
+                                                                        "String"
+                                                                    ]
+                                                                    )
+                                                            )
+                                                    )
+                                                ]
+                                            )
+                                        ),
+                                    ]
+                                )
+                            ),
+                        ]
+                    )
+                ),
+                .type(
+                    identifier: .chain(["Scoped", "Basic"]),
+                    typeSpecifier: .productType(
+                        typeFields: [
+                            .tagged(
+                                tag: "a",
+                                typeSpecifier: .nominalType(
+                                    identifier: .chain(["Int"])
+                                )
+                            )
+                        ]
+                    )
+                ),
+                .type(
+                    identifier: .chain(["Scoped", "Multiple", "Times"]),
+                    typeSpecifier: .productType(
+                        typeFields: [
+                            .tagged(
+                                tag: "a",
+                                typeSpecifier: .nominalType(
+                                    identifier: .chain(["Int"])
+                                )
+                            ),
+                            .tagged(
+                                tag: "e",
+                                typeSpecifier: .nominalType(
+                                    identifier: .chain(["Bool"])
+                                )
+                            ),
+                        ]
+                    )
+                ),
+                .type(
+                    identifier: .chain(["ScopedTypes"]),
+                    typeSpecifier: .productType(
+                        typeFields: [
+                            .tagged(
+                                tag: "x",
+                                typeSpecifier: .nominalType(
+                                    identifier: .chain(["CG", "Float"])
+                                )
+                            ),
+                            .tagged(
+                                tag: "y",
+                                typeSpecifier: .nominalType(
+                                    identifier: .chain(["CG", "Vector"])
+                                )
+                            ),
+                        ]
+                    )
+                ),
+                .type(
+                    identifier: .chain(["TypeWithNothing"]),
+                    typeSpecifier: .productType(
+                        typeFields: [
+                            .tagged(
+                                tag: "m",
+                                typeSpecifier: .nothing(location: .nowhere)
+                            ),
+                            .tagged(
+                                tag: "n",
+                                typeSpecifier: .nothing(location: .nowhere)
+                            ),
+                        ]
+                    )
+                ),
+                .type(
+                    identifier: .chain(["Numbered"]),
+                    typeSpecifier: .productType(
+                        typeFields: [
+                            .tagged(
+                                tag: "_1",
+                                typeSpecifier: .nominalType(
+                                    identifier: .chain(["One"])
+                                )
+                            ),
+                            .tagged(
+                                tag: "_2",
+                                typeSpecifier: .nominalType(
+                                    identifier: .chain(["Two"])
+                                )
+                            ),
+                            .tagged(
+                                tag: "_3",
+                                typeSpecifier: .nominalType(
+                                    identifier: .chain(["Three"])
+                                )
+                            ),
+                        ]
+                    )
+                ),
+                .type(
+                    identifier: .chain(["Tuple"]),
+                    typeSpecifier: .productType(
+                        typeFields: [
+                            .untagged(
+                                typeSpecifier: .nominalType(
+                                    identifier: .chain(["Int"])
+                                )
+                            ),
+                            .untagged(
+                                typeSpecifier: .nominalType(
+                                    identifier: .chain(["Float"])
+                                )
+                            ),
+                            .untagged(
+                                typeSpecifier: .nominalType(
+                                    identifier: .chain(["String"])
+                                )
+                            ),
+                            .untagged(
+                                typeSpecifier: .nominalType(
+                                    identifier: .chain(["Bool"])
+                                )
+                            ),
+                            .untagged(
+                                typeSpecifier: .nominalType(
+                                    identifier: .chain(["Nested", "Scope"])
+                                )
+                            ),
+                            .untagged(
+                                typeSpecifier: .nominalType(
+                                    identifier: .chain([
+                                        "Multiple",
+                                        "Nested",
+                                        "Scope"]
+                                    )
                                 )
                             )
                         ]

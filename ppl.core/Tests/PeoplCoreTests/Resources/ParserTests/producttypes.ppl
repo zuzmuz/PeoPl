@@ -12,7 +12,9 @@ Nested: [
     a: Int,
     d: [
         b: Float,
-        e: Bool
+        e: [
+            c: String
+        ]
     ]
 ]
 
@@ -20,7 +22,7 @@ Scoped::Basic: [
     a: Int
 ]
 
-Scoped::Multiple::Times [
+Scoped::Multiple::Times: [
     a: Int,
     e: Bool
 ]
@@ -28,11 +30,6 @@ Scoped::Multiple::Times [
 ScopedTypes: [
     x: CG::Float,
     y: CG::Vector
-]
-
-LongNames: [
-    snake_case_long: A,
-    camelCaseLong: B
 ]
 
 TypeWithNothing: [
