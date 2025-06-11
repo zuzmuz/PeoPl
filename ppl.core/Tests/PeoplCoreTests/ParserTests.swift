@@ -61,6 +61,8 @@ extension Syntax.TypeSpecifier: Testable {
             break
         case let (.product(lhs), .product(rhs)):
             lhs.assertEqual(with: rhs)
+        case let (.sum(lhs), .sum(rhs)):
+            lhs.assertEqual(with: rhs)
         case let (.nominal(lhs), .nominal(rhs)):
             lhs.assertEqual(with: rhs)
         default:
@@ -77,6 +79,18 @@ extension Syntax.Product: Testable {
             self.typeFields.count,
             with.typeFields.count,
             "Product \(self.location) type field counts do not match")
+        zip(self.typeFields, with.typeFields).forEach {
+            $0.assertEqual(with: $1)
+        }
+    }
+}
+
+extension Syntax.Sum: Testable {
+    func assertEqual(with: Syntax.Sum) {
+        XCTAssertEqual(
+            self.typeFields.count,
+            with.typeFields.count,
+            "Sum \(self.location) type field counts do not match")
         zip(self.typeFields, with.typeFields).forEach {
             $0.assertEqual(with: $1)
         }
@@ -170,6 +184,13 @@ extension Syntax.TypeSpecifier {
             .init(typeFields: typeFields))
     }
 
+    static func sumType(
+        typeFields: [Syntax.TypeField]
+    ) -> Syntax.TypeSpecifier {
+        return .sum(
+            .init(typeFields: typeFields))
+    }
+
     static func nominalType(
         identifier: Syntax.ScopedIdentifier
     ) -> Syntax.TypeSpecifier {
@@ -195,8 +216,8 @@ extension Syntax.TypeField {
 
 final class ParserTests: XCTestCase {
     let fileNames: [String: Syntax.Module] = [
-        "producttypes": .init(
-            sourceName: "producttypes",
+        "types": .init(
+            sourceName: "types",
             definitions: [
                 .type(
                     identifier: .chain(["Basic"]),
@@ -405,13 +426,230 @@ final class ParserTests: XCTestCase {
                                     identifier: .chain([
                                         "Multiple",
                                         "Nested",
-                                        "Scope"]
-                                    )
+                                        "Scope",
+                                    ])
                                 )
-                            )
+                            ),
                         ]
                     )
-                )
+                ),
+                .type(
+                    identifier: .chain(["Mix"]),
+                    typeSpecifier: .productType(typeFields: [
+                        .untagged(
+                            typeSpecifier: .nominalType(
+                                identifier: .chain(["Int"])
+                            )
+                        ),
+                        .tagged(
+                            tag: "named",
+                            typeSpecifier: .nominalType(
+                                identifier: .chain(["Int"])
+                            )
+                        ),
+                        .untagged(
+                            typeSpecifier: .nominalType(
+                                identifier: .chain(["Float"])
+                            )
+                        ),
+                        .tagged(
+                            tag: "other",
+                            typeSpecifier: .nominalType(
+                                identifier: .chain(["Float"])
+                            )
+                        ),
+
+                    ])
+                ),
+                .type(
+                    identifier: .chain(["Choice"]),
+                    typeSpecifier: .sumType(typeFields: [
+                        .tagged(
+                            tag: "first",
+                            typeSpecifier: .nothing(location: .nowhere)),
+                        .tagged(
+                            tag: "second",
+                            typeSpecifier: .nothing(location: .nowhere)),
+                        .tagged(
+                            tag: "third",
+                            typeSpecifier: .nothing(location: .nowhere)),
+                    ])
+                ),
+                .type(
+                    identifier: .chain(["Shape"]),
+                    typeSpecifier: .sumType(typeFields: [
+                        .tagged(
+                            tag: "circle",
+                            typeSpecifier: .productType(typeFields: [
+                                .tagged(
+                                    tag: "radius",
+                                    typeSpecifier: .nominalType(
+                                        identifier: .chain(["Float"])))
+                            ])),
+                        .tagged(
+                            tag: "rectangle",
+                            typeSpecifier: .productType(typeFields: [
+                                .tagged(
+                                    tag: "width",
+                                    typeSpecifier: .nominalType(
+                                        identifier: .chain(["Float"]))),
+                                .tagged(
+                                    tag: "height",
+                                    typeSpecifier: .nominalType(
+                                        identifier: .chain(["Float"]))),
+                            ])),
+                        .tagged(
+                            tag: "triangle",
+                            typeSpecifier: .productType(typeFields: [
+                                .tagged(
+                                    tag: "base",
+                                    typeSpecifier: .nominalType(
+                                        identifier: .chain(["Float"]))),
+                                .tagged(
+                                    tag: "height",
+                                    typeSpecifier: .nominalType(
+                                        identifier: .chain(["Float"]))),
+                            ])),
+                    ])
+                ),
+                .type(
+                    identifier: .chain(["Graphix", "Color"]),
+                    typeSpecifier: .sumType(typeFields: [
+                        .tagged(
+                            tag: "rgb",
+                            typeSpecifier: .productType(typeFields: [
+                                .tagged(
+                                    tag: "red",
+                                    typeSpecifier: .nominalType(
+                                        identifier: .chain(["Float"]))),
+                                .tagged(
+                                    tag: "green",
+                                    typeSpecifier: .nominalType(
+                                        identifier: .chain(["Float"]))),
+                                .tagged(
+                                    tag: "blue",
+                                    typeSpecifier: .nominalType(
+                                        identifier: .chain(["Float"]))),
+                            ])),
+                        .tagged(
+                            tag: "named",
+                            typeSpecifier: .nominalType(
+                                identifier: .chain(["Graphix", "ColorName"]))
+                        ),
+                        .tagged(
+                            tag: "hsv",
+                            typeSpecifier: .productType(typeFields: [
+                                .tagged(
+                                    tag: "hue",
+                                    typeSpecifier: .nominalType(
+                                        identifier: .chain(["Float"]))),
+                                .tagged(
+                                    tag: "saturation",
+                                    typeSpecifier: .nominalType(
+                                        identifier: .chain(["Float"]))),
+                                .tagged(
+                                    tag: "value",
+                                    typeSpecifier: .nominalType(
+                                        identifier: .chain(["Float"]))),
+                            ])),
+                    ])
+                ),
+                .type(
+                    identifier: .chain(["Union"]),
+                    typeSpecifier: .sumType(typeFields: [
+                        .untagged(
+                            typeSpecifier: .nominalType(
+                                identifier: .chain(["Int"])
+                            )
+                        ),
+                        .untagged(
+                            typeSpecifier: .nominalType(
+                                identifier: .chain(["Float"])
+                            )
+                        ),
+                        .untagged(
+                            typeSpecifier: .nominalType(
+                                identifier: .chain(["String"])
+                            )
+                        ),
+                    ])
+                ),
+                .type(
+                    identifier: .chain(["Nested", "Stuff"]),
+                    typeSpecifier: .productType(
+                        typeFields: [
+                            .tagged(
+                                tag: "first",
+                                typeSpecifier: .sumType(
+                                    typeFields: [
+                                        .untagged(
+                                            typeSpecifier: .nominalType(
+                                                identifier: .chain(["A"]))),
+                                        .untagged(
+                                            typeSpecifier: .nominalType(
+                                                identifier: .chain(["B"]))),
+                                        .untagged(
+                                            typeSpecifier: .nominalType(
+                                                identifier: .chain(["C"]))),
+                                    ]
+                                )
+                            ),
+                            .tagged(
+                                tag: "second",
+                                typeSpecifier: .sumType(
+                                    typeFields: [
+                                        .tagged(
+                                            tag: "a",
+                                            typeSpecifier: .nothing(
+                                                location: .nowhere)),
+                                        .tagged(
+                                            tag: "b",
+                                            typeSpecifier: .nothing(
+                                                location: .nowhere)),
+                                        .tagged(
+                                            tag: "c",
+                                            typeSpecifier: .nothing(
+                                                location: .nowhere)),
+                                    ]
+                                )
+                            ),
+                            .tagged(
+                                tag: "mix",
+                                typeSpecifier: .sumType(
+                                    typeFields: [
+                                        .untagged(
+                                            typeSpecifier: .nominalType(
+                                                identifier: .chain(["First"]))),
+                                        .tagged(
+                                            tag: "second",
+                                            typeSpecifier: .nominalType(
+                                                identifier: .chain(["Second"]))),
+                                        .tagged(
+                                            tag: "third",
+                                            typeSpecifier: .sumType(
+                                                typeFields: [
+                                                    .tagged(
+                                                        tag: "_1",
+                                                        typeSpecifier: .nothing(
+                                                            location: .nowhere)),
+                                                    .tagged(
+                                                        tag: "_2",
+                                                        typeSpecifier: .nothing(
+                                                            location: .nowhere)),
+                                                    .tagged(
+                                                        tag: "_3",
+                                                        typeSpecifier: .nothing(
+                                                            location: .nowhere)),
+
+                                                ]
+                                            )
+                                        ),
+                                    ]
+                                )
+                            ),
+                        ]
+                    )
+                ),
             ]
         )
     ]
