@@ -472,7 +472,7 @@ enum Syntax {
         }
 
         /// Literal values that can appear directly in source code
-        enum Literal: Codable {
+        enum Literal: Equatable, Codable {
             case nothing
             case never
             case intLiteral(UInt64)

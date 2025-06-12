@@ -1,6 +1,0 @@
-
-main: () -> String
-    3 |>
-    |$i: i % 2 = 0| "is even",
-    |_| "is odd"
-

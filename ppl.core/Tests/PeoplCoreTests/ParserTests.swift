@@ -30,8 +30,7 @@ extension Syntax.Definition: Testable {
         case let (.typeDefinition(lhs), .typeDefinition(rhs)):
             lhs.assertEqual(with: rhs)
         case let (.valueDefinition(lhs), .valueDefinition(rhs)):
-            // lhs.assertEqual(with: rhs)
-            XCTFail("Value definitions are not comparable yet")
+            lhs.assertEqual(with: rhs)
         default:
             XCTFail("Definitions do not match")
         }
@@ -48,6 +47,17 @@ extension Syntax.TypeDefinition: Testable {
             "Type definition identifier \(self.identifier) does not match \(with.identifier)"
         )
         self.typeSpecifier.assertEqual(with: with.typeSpecifier)
+    }
+}
+
+extension Syntax.ValueDefinition: Testable {
+    func assertEqual(with: Syntax.ValueDefinition) {
+        XCTAssertEqual(
+            self.identifier,
+            with.identifier,
+            "Value specifier identifier \(self.identifier) does not match \(with.identifier)"
+        )
+        self.expression.assertEqual(with: with.expression)
     }
 }
 
@@ -158,6 +168,24 @@ extension Syntax.Nominal: Testable {
     }
 }
 
+extension Syntax.Expression: Testable {
+    func assertEqual(
+        with: Self
+    ) {
+        switch (self.expressionType, with.expressionType) {
+        case (.literal(let lhs), .literal(let rhs)):
+            XCTAssertEqual(lhs, rhs)
+        case (.binary(let lhsOp, let lhsLeft, let lhsRight),
+              .binary(let rhsOp, let rhsLeft, let rhsRight)):
+            XCTAssertEqual(lhsOp, rhsOp)
+            lhsLeft.assertEqual(with: rhsLeft)
+            lhsRight.assertEqual(with: rhsRight)
+        default:
+            XCTFail("Expressions do not match")
+        }
+    }
+}
+
 extension Syntax.Definition {
     static func type(
         identifier: Syntax.ScopedIdentifier,
@@ -165,6 +193,14 @@ extension Syntax.Definition {
     ) -> Syntax.Definition {
         return .typeDefinition(
             .init(identifier: identifier, typeSpecifier: typeSpecifier))
+    }
+
+    static func value(
+        identifier: Syntax.ScopedIdentifier,
+        expression: Syntax.Expression
+    ) -> Syntax.Definition {
+        return .valueDefinition(
+            .init(identifier: identifier, expression: expression))
     }
 }
 
@@ -211,6 +247,25 @@ extension Syntax.TypeField {
         typeSpecifier: Syntax.TypeSpecifier
     ) -> Syntax.TypeField {
         return .typeSpecifier(typeSpecifier)
+    }
+}
+
+extension Syntax.Expression {
+    static let nothing: Syntax.Expression = .init(
+        expressionType: .literal(.nothing), location: .nowhere)
+    static func binary(
+        _ lhs: Syntax.Expression,
+        _ op: Operator,
+        _ rhs: Syntax.Expression
+    ) -> Syntax.Expression {
+        return .init(
+            expressionType: .binary(op, left: lhs, right: rhs),
+            location: .nowhere)
+    }
+    static func intLiteral(_ value: UInt64) -> Syntax.Expression {
+        return .init(
+            expressionType: .literal(.intLiteral(value)),
+            location: .nowhere)
     }
 }
 
@@ -651,7 +706,21 @@ final class ParserTests: XCTestCase {
                     )
                 ),
             ]
-        )
+        ),
+        "simpleexpressions": .init(
+            sourceName: "expressions",
+            definitions: [
+                .value(identifier: .chain(["well"]), expression: .nothing),
+                .value(
+                    identifier: .chain(["arithmetics"]),
+                    expression: .binary(
+                        .intLiteral(1),
+                        .minus,
+                        .intLiteral(10)
+                    )
+                ),
+            ]
+        ),
     ]
 
     func testFiles() throws {

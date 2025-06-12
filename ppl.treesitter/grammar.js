@@ -52,7 +52,7 @@ module.exports = grammar({
     // Identifiers
     // -----------
      
-    small_identifier: $ => /_*[a-z0-9_][a-zA-Z0-9_]*/,
+    small_identifier: $ => /_*[a-z_][a-zA-Z0-9_]*/,
     big_identifier: $ => /_*[A-Z][a-zA-Z0-9_]*/,
 
     scoped_big_identifier: $ => choice(
