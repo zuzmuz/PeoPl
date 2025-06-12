@@ -1,8 +1,8 @@
 extension Syntax.Expression {
     func checkType(
         with input: Semantic.TypeSpecifier,
-        localScope: Semantic.LocalScope,
-        context: borrowing Semantic.Context
+        localScope: borrowing Semantic.LocalScope,
+        context: borrowing Semantic.DeclarationsContext,
     ) throws(SemanticError) -> Semantic.Expression {
 
         switch (input, self.expressionType) {
@@ -31,7 +31,7 @@ extension Syntax.Expression {
                 context: context)
 
             guard
-                let operation = context.definitions.operators[
+                let opReturnType = context.operatorDeclarations[
                     .init(left: input, right: typedExpression.type, op: op)]
             else {
                 throw .invalidOperation(
@@ -41,7 +41,7 @@ extension Syntax.Expression {
             }
             return .init(
                 expression: .unary(op, expression: typedExpression),
-                type: operation.type)
+                type: opReturnType)
 
         // Binary
         case (.nothing, .binary(let op, let left, let right)):
@@ -55,7 +55,7 @@ extension Syntax.Expression {
                 context: context)
 
             guard
-                let operation = context.definitions.operators[
+                let opReturnType = context.operatorDeclarations[
                     .init(left: leftTyped.type, right: rightTyped.type, op: op)]
             else {
                 throw .invalidOperation(
@@ -65,7 +65,7 @@ extension Syntax.Expression {
             }
             return .init(
                 expression: .binary(op, left: leftTyped, right: rightTyped),
-                type: operation.type)
+                type: opReturnType)
         case (_, .binary):
             throw .inputMismatch(
                 expression: self,
@@ -92,12 +92,15 @@ extension Syntax.Expression {
                 expected: .nothing,
                 received: input)
 
-        case (let input, .call(prefix: let prefix, arguments: let arguments)):
-            fatalError()
+        case let (input, .call(prefix, arguments)):
+            fatalError("Call expression type checking is not implemented yet")
 
         case (let input, .piped(left: let left, right: let right)):
             // TODO: join the piped expression
-            fatalError()
+            fatalError("Piped expression type checking is not implemented yet")
+        case let (input, .function(signature, expression)):
+            // NOTE: here I shoul infer signature if not present
+            fatalError("Function expression type checking is not implemented yet")
         default:
             fatalError()
         }
@@ -107,7 +110,7 @@ extension Syntax.Expression {
     func accessFieldType(
         type: Semantic.TypeSpecifier,
         fieldIdentifier: String,
-        context: borrowing Semantic.Context
+        context: borrowing Semantic.DeclarationsContext
     ) throws(SemanticError) -> Semantic.TypeSpecifier {
 
         switch type {
@@ -121,9 +124,9 @@ extension Syntax.Expression {
         case .nominal(let typeIdentifier):
             guard
                 let rawType =
-                    context.declarations.typeDeclarations[typeIdentifier]?
+                    context.typeDeclarations[typeIdentifier]?
                     .getRawType(
-                        typeDeclarations: context.declarations.typeDeclarations)
+                        typeDeclarations: context.typeDeclarations)
             else {
                 throw .undefinedType(
                     expression: self, identifier: typeIdentifier)
@@ -138,7 +141,7 @@ extension Syntax.Expression {
     func accessFieldType(
         rawType: Semantic.RawTypeSpecifier,
         fieldIdentifier: String,
-        context: borrowing Semantic.Context
+        context: borrowing Semantic.DeclarationsContext
     ) throws(SemanticError) -> Semantic.TypeSpecifier {
 
         switch rawType {

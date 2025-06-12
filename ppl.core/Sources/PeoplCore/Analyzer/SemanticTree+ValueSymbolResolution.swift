@@ -6,6 +6,7 @@ protocol ValueDefinitionChecker {
     ) -> (
         valueDeclarations: Semantic.ValueDeclarationsMap,
         valueLookup: Semantic.ValueLookupMap,
+        functionExpressions: [Semantic.FunctionSignature: Syntax.Expression],
         errors: [SemanticError]
     )
 }
@@ -62,6 +63,7 @@ extension ValueDefinitionChecker {
     ) -> (
         valueDeclarations: Semantic.ValueDeclarationsMap,
         valueLookup: Semantic.ValueLookupMap,
+        functionExpressions: [Semantic.FunctionSignature: Syntax.Expression],
         errors: [SemanticError]
     ) {
         let declarations = self.getValueDeclarations()
@@ -122,6 +124,17 @@ extension ValueDefinitionChecker {
             return values.first
         }
 
+        let functionExpressions:
+            [Semantic.FunctionSignature: Syntax.Expression] =
+                valueLookup.reduce(into: [:]) { acc, pair in
+                    switch (pair.key, pair.value.expression.expressionType) {
+                    case let (.function(function), .function(_, expression)):
+                        acc[function] = expression
+                    default:
+                        break
+                    }
+                }
+
         var valueDeclarations: Semantic.ValueDeclarationsMap = [:]
         var typeSpecifierErrors: [SemanticError] = []
 
@@ -135,6 +148,7 @@ extension ValueDefinitionChecker {
         return (
             valueDeclarations: valueDeclarations,
             valueLookup: valueLookup,
+            functionExpressions: functionExpressions,
             errors: typesNotInScope + signatureErrors + redeclarations
                 + typeSpecifierErrors
         )

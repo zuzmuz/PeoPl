@@ -58,7 +58,7 @@ enum Semantic {
 
     enum ExpressionSignature: Hashable {
         case function(FunctionSignature)
-        case value(TypeSpecifier)
+        case value(TypeSpecifier) // FIX: this is wrong
     }
 
     struct FunctionSignature: Hashable {
@@ -69,22 +69,17 @@ enum Semantic {
 
     struct DefinitionsContext {
         let valueDefinitions: ValueDefinitionsMap
-        let operators: [OperatorField: Expression]
+        // let operators: [OperatorField: Expression]
     }
 
     struct DeclarationsContext {
         let typeDeclarations: TypeDeclarationsMap
         let valueDeclarations: ValueDeclarationsMap
+        let operatorDeclarations: [OperatorField: TypeSpecifier]
         // stores values based on identifier only for better error reporting
     }
 
-    struct LookupContext {
-        let typeLookup: TypeLookupMap
-        // let valueLookup: [ScopedIdentifier: Syntax.ValueDefinition]
-    }
-
     struct Context {
-        let declarations: DeclarationsContext
         let definitions: DefinitionsContext
     }
 
@@ -92,7 +87,6 @@ enum Semantic {
     }
 
     enum IntrinsicType: Hashable {
-        case never
         case uint
         case int
         case float
@@ -100,7 +94,7 @@ enum Semantic {
     }
 
     enum RawTypeSpecifier: Hashable {
-        case intrinsic(IntrinsicType)
+        // case intrinsic(IntrinsicType)
         case record([Tag: TypeSpecifier])
         case choice([Tag: TypeSpecifier])
         case function(Function)
@@ -109,18 +103,6 @@ enum Semantic {
     enum TypeSpecifier: Hashable {
         case raw(RawTypeSpecifier)
         case nominal(ScopedIdentifier)
-
-        // NOTE: Builtin types are nominal types that are mapped to raw intrinsic types
-        // NOTE: Intrinsic types can't be directly used
-        static let uint = TypeSpecifier.nominal(.init(chain: ["U32"]))
-        static let int = TypeSpecifier.nominal(.init(chain: ["I32"]))
-        static let float = TypeSpecifier.nominal(.init(chain: ["F64"]))
-        static let string = TypeSpecifier.nominal(.init(chain: ["String"]))
-        static let bool = TypeSpecifier.nominal(.init(chain: ["Bool"]))
-
-        // FIX: Not like that
-        static let nothing = TypeSpecifier.raw(.record([:]))
-        static let never = TypeSpecifier.nominal(.init(chain: ["Never"]))
     }
 
     struct Function: Hashable {
@@ -131,7 +113,7 @@ enum Semantic {
         let type: TypeSpecifier
 
         indirect enum ExpressionType {
-            case intrinsic  // TODO: figure out.intrinsic functionality
+            // case intrinsic  // TODO: figure out.intrinsic functionality
             case nothing
             case never
             case intLiteral(UInt64)

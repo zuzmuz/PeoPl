@@ -6,31 +6,73 @@ extension SemanticChecker {
     func semanticCheck() -> Result<Semantic.Context, SemanticErrorList> {
         let intrinsicDeclarations = getIntrinsicDeclarations()
 
-        // TODO: calculating typeDeclarations can be done as a seperate step
+        // Getting type declarations
         let (typeDeclarations, typeLookup, typeErrors) =
             self.resolveTypeSymbols(
                 contextTypeDeclarations: intrinsicDeclarations.typeDeclarations)
 
-        let (valueDeclarations, valueLookup, valueErrors) =
+        let allTypeDeclarations = intrinsicDeclarations.typeDeclarations
+            .merging(typeDeclarations) { $1 }
+        // Getting value decalrations
+        let (valueDeclarations, valueLookup, functionExpressions, valueErrors) =
             self.resolveValueSymbols(
-                typeDeclarations: typeDeclarations,
-                contextValueDeclarations: intrinsicDeclarations.valueDeclarations)
+                typeDeclarations: allTypeDeclarations,
+                contextValueDeclarations: intrinsicDeclarations
+                    .valueDeclarations)
 
-        // if errors.count > 0 {
-        //     return .failure(.init(errors: errors.map { .type($0) }))
-        // }
+        let allValueDeclarations = intrinsicDeclarations.valueDeclarations
+            .merging(valueDeclarations) { $1 }
 
-        // let context = Semantic.Context(
-        //     typeDefinitions: intrinsicContext.typeDefinitions.merging(
-        //         typeDefinitions
-        //     ) { $1 },
-        //     valueDefinitions: intrinsicContext.valueDefinitions,
-        //     typeLookup: intrinsicContext.typeLookup.merging(typeLookup) { $1 },
-        //     valueLookup: intrinsicContext.valueLookup,
-        //     operators: intrinsicContext.operators)
+        let valueDefinitionsResults:
+            [Result<
+                (Semantic.FunctionSignature, Semantic.Expression), SemanticError
+            >] =
+                functionExpressions.map { signature, expression in
+                    do {
+                        return .success(
+                            (
+                                signature,
+                                try expression.checkType(
+                                    with: signature.inputType,
+                                    localScope: .init(),  // TODO: handle extra arguments
+                                    context: .init(
+                                        typeDeclarations: allTypeDeclarations,
+                                        valueDeclarations: allValueDeclarations,
+                                        operatorDeclarations:
+                                            intrinsicDeclarations
+                                            .operatorDeclarations
+                                    ))
+                            ))
+                    } catch {
+                        fatalError(
+                            "Value definition resolution failed: \(error)")
+                    }
+                }
 
-        // NOTE: leaving contexts separate
-        fatalError()
+        let typeCheckingErrors = valueDefinitionsResults.compactMap { result in
+            if case let .failure(error) = result {
+                return error
+            }
+            return nil
+        }
+
+        let allErrors = typeErrors + valueErrors + typeCheckingErrors
+        if allErrors.count > 0 {
+            return .failure(.init(errors: allErrors))
+        }
+
+        let valueDefinitions: Semantic.ValueDefinitionsMap =
+            Dictionary(
+                uniqueKeysWithValues:
+                    valueDefinitionsResults.compactMap { result in
+                        if case let .success((signature, expression)) = result {
+                            return (.function(signature), expression)
+                        }
+                        return nil
+                    })
+        // NOTE: I might need to send only function to code gen
+        return .success(
+            .init(definitions: .init(valueDefinitions: valueDefinitions)))  //, operators: [Semantic.OperatorField : Semantic.Expression])))
     }
 }
 
