@@ -27,6 +27,7 @@ extension SemanticChecker {
             [Result<
                 (Semantic.FunctionSignature, Semantic.Expression), SemanticError
             >] =
+                // TODO: reconsider functions expression, do we need for declarations to be function expressions
                 functionExpressions.map { signature, expression in
                     do {
                         return .success(
@@ -34,7 +35,7 @@ extension SemanticChecker {
                                 signature,
                                 try expression.checkType(
                                     with: signature.inputType,
-                                    localScope: .init(),  // TODO: handle extra arguments
+                                    localScope: .init(scope: signature.arguments),  // TODO: handle extra arguments
                                     context: .init(
                                         typeDeclarations: allTypeDeclarations,
                                         valueDeclarations: allValueDeclarations,

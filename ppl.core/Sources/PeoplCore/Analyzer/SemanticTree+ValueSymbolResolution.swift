@@ -34,6 +34,7 @@ extension Syntax.Expression {
             guard let signature else {
                 fatalError("do not support signatureless function")
             }
+            // TODO: think about the type of the expression (shouldn't be a function
             return try signature.outputType.getSemanticType()
         default:
             fatalError(

@@ -1,3 +1,42 @@
+extension [Syntax.Expression] {
+    func checkType(
+        with input: Semantic.TypeSpecifier,
+        localScope: borrowing Semantic.LocalScope,
+        context: borrowing Semantic.DeclarationsContext
+    ) throws(SemanticError) -> [Semantic.Tag: Semantic.Expression] {
+        var expressions: [Semantic.Tag: Semantic.Expression] = [:]
+        var fieldCounter = UInt64(0)
+        for expression in self {
+            switch expression.expressionType {
+            case let .taggedExpression(taggedExpression):
+                let expressionTag = Semantic.Tag.named(taggedExpression.tag)
+                if expressions[expressionTag] != nil {
+                    throw .duplicatedExpressionFieldName(expression: expression)
+                }
+                expressions[expressionTag] =
+                    try taggedExpression.expression.checkType(
+                        with: input,
+                        localScope: localScope,
+                        context: context)
+            default:
+                let expressionTag = Semantic.Tag.unnamed(fieldCounter)
+                fieldCounter += 1
+                if expressions[expressionTag] != nil {
+                    throw .duplicatedExpressionFieldName(expression: expression)
+                }
+                expressions[expressionTag] =
+                    try expression.checkType(
+                        with: input,
+                        localScope: localScope,
+                        context: context)
+            }
+        }
+        return expressions
+    }
+}
+
+
+
 extension Syntax.Expression {
     func checkType(
         with input: Semantic.TypeSpecifier,
@@ -15,7 +54,8 @@ extension Syntax.Expression {
         case (.nothing, .literal(.floatLiteral(let value))):
             return .init(expression: .floatLiteral(value), type: .float)
         case (.nothing, .literal(.stringLiteral(let value))):
-            return .init(expression: .stringLiteral(value), type: .string)
+            fatalError("String literal type checking is not implemented yet")
+        // return .init(expression: .stringLiteral(value), type: .string)
         case (.nothing, .literal(.boolLiteral(let value))):
             return .init(expression: .boolLiteral(value), type: .bool)
         case (_, .literal):
@@ -71,7 +111,24 @@ extension Syntax.Expression {
                 expression: self,
                 expected: .nothing,
                 received: input)
-        case (.nothing, .access(let prefix, let fieldIdentifier)):
+        case let (input, .field(identifier)):
+            if identifier.chain.count == 1,
+                let field = identifier.chain.first,
+                let fieldTypeInScope = localScope.scope[.named(field)]
+            {
+                return .init(
+                    expression: .fieldInScope(.named(field)),
+                    type: fieldTypeInScope)
+            }
+            if let value = context.valueDeclarations[
+                .value(identifier.getSemanticIdentifier())]
+            {
+                fatalError(
+                    "Not sure what to do here, this is a global static const")
+            }
+            fatalError("Field expression type checking is not implemented yet")
+        // NOTE: should bindings shadow definitions in scope or context
+        case let (.nothing, .access(prefix, fieldIdentifier)):
             let prefixTyped = try prefix.checkType(
                 with: .nothing,
                 localScope: localScope,
@@ -93,14 +150,22 @@ extension Syntax.Expression {
                 received: input)
 
         case let (input, .call(prefix, arguments)):
-            fatalError("Call expression type checking is not implemented yet")
+            return try self.functionCallType(
+                input: input,
+                prefix: prefix,
+                arguments: arguments,
+                localScope: localScope,
+                context: context)
+
+        // fatalError("Call expression type checking is not implemented yet")
 
         case (let input, .piped(left: let left, right: let right)):
             // TODO: join the piped expression
             fatalError("Piped expression type checking is not implemented yet")
         case let (input, .function(signature, expression)):
             // NOTE: here I shoul infer signature if not present
-            fatalError("Function expression type checking is not implemented yet")
+            fatalError(
+                "Function expression type checking is not implemented yet")
         default:
             fatalError()
         }
@@ -160,6 +225,36 @@ extension Syntax.Expression {
         default:
             fatalError("Accessing field type is not implemented for \(rawType)")
 
+        }
+    }
+
+    func functionCallType(
+        input: Semantic.TypeSpecifier,
+        prefix: Syntax.Expression,
+        arguments: [Syntax.Expression],
+        localScope: borrowing Semantic.LocalScope,
+        context: borrowing Semantic.DeclarationsContext
+    ) throws(SemanticError) -> Semantic.Expression {
+
+        let argumentsTyped = try arguments.checkType(
+            with: input,
+            localScope: localScope,
+            context: context)
+        switch prefix.expressionType {
+        case let .access(accessPrefix, field):
+            fatalError()
+        case let .field(identifier):
+            if let function =
+                context.valueDeclarations[
+                    .function(
+                        .init(
+                            identifier: identifier.getSemanticIdentifier(),
+                            inputType: input,
+                            arguments: argumentsTyped.mapValues { $0.type }))] {
+            }
+            fatalError()
+        default:
+            fatalError("Not implemented")
         }
     }
 }

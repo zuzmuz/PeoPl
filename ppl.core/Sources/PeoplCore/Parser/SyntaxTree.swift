@@ -443,7 +443,7 @@ enum Syntax {
 
     /// An expression with a label/tag for pattern matching and named parameters
     struct TaggedExpression: SyntaxNode {
-        let identifier: String
+        let tag: String
         let expression: Expression
         let location: NodeLocation
 
@@ -452,7 +452,7 @@ enum Syntax {
             expression: Expression,
             location: NodeLocation = .nowhere
         ) {
-            self.identifier = identifier
+            self.tag = identifier
             self.expression = expression
             self.location = location
         }

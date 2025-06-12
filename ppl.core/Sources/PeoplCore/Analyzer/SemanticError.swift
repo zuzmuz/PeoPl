@@ -30,6 +30,9 @@ enum SemanticError: LocalizedError {
     case undefinedType(
         expression: Syntax.Expression,
         identifier: Semantic.ScopedIdentifier)
+
+    case duplicatedExpressionFieldName(
+        expression: Syntax.Expression)
 }
 
 struct SemanticErrorList: LocalizedError {

@@ -1,9 +1,9 @@
 extension Semantic.TypeSpecifier {
-    static let uint = Semantic.TypeSpecifier.nominal(.init(chain: ["UInt"]))
-    static let int = Semantic.TypeSpecifier.nominal(.init(chain: ["Int"]))
-    static let float = Semantic.TypeSpecifier.nominal(.init(chain: ["Float"]))
-    static let string = Semantic.TypeSpecifier.nominal(.init(chain: ["String"]))
-    static let bool = Semantic.TypeSpecifier.nominal(.init(chain: ["Bool"]))
+    static let uint = Semantic.TypeSpecifier.raw(.intrinsic(.uint))
+    static let int = Semantic.TypeSpecifier.raw(.intrinsic(.int))
+    static let float = Semantic.TypeSpecifier.raw(.intrinsic(.float))
+    // static let string = Semantic.TypeSpecifier.(.intrinsic(Semantic.IntrinsicType))
+    static let bool = Semantic.TypeSpecifier.raw(.intrinsic(.bool))
 
     // FIX: Not like that
     static let nothing = Semantic.TypeSpecifier.raw(.record([:]))
@@ -64,8 +64,8 @@ func getIntrinsicDeclarations() -> Semantic.DeclarationsContext {
             .init(left: .float, right: .float, op: .greaterThan): .bool,
             .init(left: .float, right: .float, op: .greaterThanOrEqual): .bool,
 
-            .init(left: .string, right: .string, op: .equal): .bool,
-            .init(left: .string, right: .string, op: .different): .bool,
+            // .init(left: .string, right: .string, op: .equal): .bool,
+            // .init(left: .string, right: .string, op: .different): .bool,
 
             .init(left: .bool, right: .bool, op: .equal): .bool,
             .init(left: .bool, right: .bool, op: .different): .bool,

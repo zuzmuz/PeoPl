@@ -58,7 +58,7 @@ enum Semantic {
 
     enum ExpressionSignature: Hashable {
         case function(FunctionSignature)
-        case value(TypeSpecifier) // FIX: this is wrong
+        case value(ScopedIdentifier)
     }
 
     struct FunctionSignature: Hashable {
@@ -84,6 +84,7 @@ enum Semantic {
     }
 
     struct LocalScope {
+        let scope: [Tag: TypeSpecifier]
     }
 
     enum IntrinsicType: Hashable {
@@ -94,7 +95,7 @@ enum Semantic {
     }
 
     enum RawTypeSpecifier: Hashable {
-        // case intrinsic(IntrinsicType)
+        case intrinsic(IntrinsicType)
         case record([Tag: TypeSpecifier])
         case choice([Tag: TypeSpecifier])
         case function(Function)
@@ -113,7 +114,6 @@ enum Semantic {
         let type: TypeSpecifier
 
         indirect enum ExpressionType {
-            // case intrinsic  // TODO: figure out.intrinsic functionality
             case nothing
             case never
             case intLiteral(UInt64)
@@ -127,6 +127,10 @@ enum Semantic {
                 left: Expression,
                 right: Expression)
 
+            case taggedExpression(
+                tag: Semantic.Tag,
+                expression: Expression)
+
             case call(
                 prefix: Expression,
                 arguments: [Expression])
@@ -137,6 +141,7 @@ enum Semantic {
             case access(prefix: Expression, field: String)
 
             case field(Syntax.ScopedIdentifier)
+            case fieldInScope(Tag)
         }
     }
 }
