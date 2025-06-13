@@ -35,9 +35,125 @@ extension [Syntax.Expression] {
     }
 }
 
-
-
 extension Syntax.Expression {
+
+    func checkLiteral(
+        with input: Semantic.TypeSpecifier,
+        literal: Syntax.Expression.Literal,
+        localScope: borrowing Semantic.LocalScope,
+        context: borrowing Semantic.DeclarationsContext,
+    ) throws(SemanticError) -> Semantic.Expression {
+
+        switch (input, literal) {
+        case (_, .never):
+            return .init(expression: .never, type: .never)
+        case (.nothing, .nothing):
+            return .init(expression: .nothing, type: .nothing)
+        case (.nothing, .intLiteral(let value)):
+            return .init(expression: .intLiteral(value), type: .int)
+        case (.nothing, .floatLiteral(let value)):
+            return .init(expression: .floatLiteral(value), type: .float)
+        case (.nothing, .stringLiteral(let value)):
+            fatalError("String literal type checking is not implemented yet")
+        // return .init(expression: .stringLiteral(value), type: .string)
+        case (.nothing, .boolLiteral(let value)):
+            return .init(expression: .boolLiteral(value), type: .bool)
+        default:
+            throw .inputMismatch(
+                expression: self,
+                expected: .nothing,
+                received: input)
+        }
+    }
+
+    func checkTypeUnary(
+        with input: Semantic.TypeSpecifier,
+        op: Operator,
+        expression: Syntax.Expression,
+        localScope: borrowing Semantic.LocalScope,
+        context: borrowing Semantic.DeclarationsContext,
+    ) throws(SemanticError) -> Semantic.Expression {
+        let typedExpression = try expression.checkType(
+            with: .nothing,
+            localScope: localScope,
+            context: context)
+
+        guard
+            let opReturnType = context.operatorDeclarations[
+                .init(left: input, right: typedExpression.type, op: op)]
+        else {
+            throw .invalidOperation(
+                expression: self,
+                leftType: input,
+                rightType: typedExpression.type)
+        }
+        return .init(
+            expression: .unary(op, expression: typedExpression),
+            type: opReturnType)
+    }
+
+    func checkTypeBinary(
+        left: Syntax.Expression,
+        op: Operator,
+        right: Syntax.Expression,
+        localScope: borrowing Semantic.LocalScope,
+        context: borrowing Semantic.DeclarationsContext,
+    ) throws(SemanticError) -> Semantic.Expression {
+
+        let leftTyped = try left.checkType(
+            with: .nothing,
+            localScope: localScope,
+            context: context)
+        let rightTyped = try right.checkType(
+            with: .nothing,
+            localScope: localScope,
+            context: context)
+
+        guard
+            let opReturnType = context.operatorDeclarations[
+                .init(left: leftTyped.type, right: rightTyped.type, op: op)]
+        else {
+            throw .invalidOperation(
+                expression: self,
+                leftType: leftTyped.type,
+                rightType: rightTyped.type)
+        }
+        return .init(
+            expression: .binary(op, left: leftTyped, right: rightTyped),
+            type: opReturnType)
+    }
+
+    func checkFunctionCall(
+        input: Semantic.TypeSpecifier,
+        prefix: Syntax.Expression,
+        arguments: [Syntax.Expression],
+        localScope: borrowing Semantic.LocalScope,
+        context: borrowing Semantic.DeclarationsContext
+    ) throws(SemanticError) -> Semantic.Expression {
+
+        let argumentsTyped = try arguments.checkType(
+            with: input,
+            localScope: localScope,
+            context: context)
+        switch prefix.expressionType {
+        case let .access(accessPrefix, field):
+            fatalError()
+        case let .field(identifier):
+            if let function =
+                context.valueDeclarations[
+                    .function(
+                        .init(
+                            identifier: identifier.getSemanticIdentifier(),
+                            inputType: input,
+                            arguments: argumentsTyped.mapValues { $0.type }))]
+            {
+            }
+            fatalError()
+        default:
+            fatalError("Not implemented")
+        }
+    }
+
     func checkType(
         with input: Semantic.TypeSpecifier,
         localScope: borrowing Semantic.LocalScope,
@@ -45,67 +161,28 @@ extension Syntax.Expression {
     ) throws(SemanticError) -> Semantic.Expression {
 
         switch (input, self.expressionType) {
-        case (_, .literal(.never)):
-            return .init(expression: .never, type: .never)
-        case (.nothing, .literal(.nothing)):
-            return .init(expression: .nothing, type: .nothing)
-        case (.nothing, .literal(.intLiteral(let value))):
-            return .init(expression: .intLiteral(value), type: .int)
-        case (.nothing, .literal(.floatLiteral(let value))):
-            return .init(expression: .floatLiteral(value), type: .float)
-        case (.nothing, .literal(.stringLiteral(let value))):
-            fatalError("String literal type checking is not implemented yet")
-        // return .init(expression: .stringLiteral(value), type: .string)
-        case (.nothing, .literal(.boolLiteral(let value))):
-            return .init(expression: .boolLiteral(value), type: .bool)
-        case (_, .literal):
-            throw .inputMismatch(
-                expression: self,
-                expected: .nothing,
-                received: input)
-        // Unary
-        case (let input, .unary(let op, let expression)):
-            let typedExpression = try expression.checkType(
-                with: .nothing,
+        case let (input, .literal(literal)):
+            return try self.checkLiteral(
+                with: input,
+                literal: literal,
                 localScope: localScope,
                 context: context)
-
-            guard
-                let opReturnType = context.operatorDeclarations[
-                    .init(left: input, right: typedExpression.type, op: op)]
-            else {
-                throw .invalidOperation(
-                    expression: self,
-                    leftType: input,
-                    rightType: typedExpression.type)
-            }
-            return .init(
-                expression: .unary(op, expression: typedExpression),
-                type: opReturnType)
-
+        // Unary
+        case let (input, .unary(op, expression)):
+            return try self.checkTypeUnary(
+                with: input,
+                op: op,
+                expression: expression,
+                localScope: localScope,
+                context: context)
         // Binary
         case (.nothing, .binary(let op, let left, let right)):
-            let leftTyped = try left.checkType(
-                with: .nothing,
+            return try self.checkTypeBinary(
+                left: left,
+                op: op,
+                right: right,
                 localScope: localScope,
                 context: context)
-            let rightTyped = try right.checkType(
-                with: .nothing,
-                localScope: localScope,
-                context: context)
-
-            guard
-                let opReturnType = context.operatorDeclarations[
-                    .init(left: leftTyped.type, right: rightTyped.type, op: op)]
-            else {
-                throw .invalidOperation(
-                    expression: self,
-                    leftType: leftTyped.type,
-                    rightType: rightTyped.type)
-            }
-            return .init(
-                expression: .binary(op, left: leftTyped, right: rightTyped),
-                type: opReturnType)
         case (_, .binary):
             throw .inputMismatch(
                 expression: self,
@@ -150,7 +227,7 @@ extension Syntax.Expression {
                 received: input)
 
         case let (input, .call(prefix, arguments)):
-            return try self.functionCallType(
+            return try self.checkFunctionCall(
                 input: input,
                 prefix: prefix,
                 arguments: arguments,
@@ -228,33 +305,4 @@ extension Syntax.Expression {
         }
     }
 
-    func functionCallType(
-        input: Semantic.TypeSpecifier,
-        prefix: Syntax.Expression,
-        arguments: [Syntax.Expression],
-        localScope: borrowing Semantic.LocalScope,
-        context: borrowing Semantic.DeclarationsContext
-    ) throws(SemanticError) -> Semantic.Expression {
-
-        let argumentsTyped = try arguments.checkType(
-            with: input,
-            localScope: localScope,
-            context: context)
-        switch prefix.expressionType {
-        case let .access(accessPrefix, field):
-            fatalError()
-        case let .field(identifier):
-            if let function =
-                context.valueDeclarations[
-                    .function(
-                        .init(
-                            identifier: identifier.getSemanticIdentifier(),
-                            inputType: input,
-                            arguments: argumentsTyped.mapValues { $0.type }))] {
-            }
-            fatalError()
-        default:
-            fatalError("Not implemented")
-        }
-    }
 }
