@@ -96,8 +96,9 @@ extension Syntax.Module {
 
         self.definitions =
             try rootNode.compactMapChildren { node throws(SyntaxError) in
-                if node.nodeType == "type_definition" ||
-                    node.nodeType == "value_definition" {
+                if node.nodeType == "type_definition"
+                    || node.nodeType == "value_definition"
+                {
                     return try .from(node: node, in: source)
                 } else {
                     return nil
@@ -541,6 +542,7 @@ extension Syntax.Expression: TreeSitterNode {
         node: Node,
         in source: Syntax.Source
     ) throws(SyntaxError) -> Self {
+        print("expression node type: \(node.nodeType ?? "nil")")
         if node.nodeType == "parenthisized_expression" {
             guard let parenthesizedExpressionNode = node.child(at: 1) else {
                 throw .errorParsing(
@@ -612,6 +614,22 @@ extension Syntax.Expression.Literal {
 }
 
 extension Syntax.Expression.ExpressionType: TreeSitterNode {
+
+    static let expressionNodeTypes = Set([
+        "literal",
+        "unary_expression",
+        "binary_expression",
+        "scoped_identifier",
+        "parenthisized_expression",
+        "function_definition",
+        "call_expression",
+        "initializer_expression",
+        "access_expression",
+        "binding",
+        "tagged_expression",
+        "branched_expression",
+        "piped_expressio",
+    ])
 
     static func parseUnary(
         from node: Node,
@@ -708,7 +726,7 @@ extension Syntax.Expression.ExpressionType: TreeSitterNode {
         let arguments =
             try argumentListNode
             .compactMapChildren { child throws(SyntaxError) in
-                if child.nodeType == "expression" {
+                if expressionNodeTypes.contains(child.nodeType ?? "") {
                     try Syntax.Expression.from(node: child, in: source)
                 } else {
                     nil
