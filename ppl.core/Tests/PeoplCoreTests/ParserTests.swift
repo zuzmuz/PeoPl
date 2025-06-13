@@ -2,12 +2,6 @@ import XCTest
 
 @testable import PeoplCore
 
-protocol Testable {
-    func assertEqual(
-        with: Self,
-    )
-}
-
 extension Syntax.Module: Testable {
     func assertEqual(
         with: Self
@@ -727,7 +721,9 @@ final class ParserTests: XCTestCase {
         let bundle = Bundle.module
 
         for (name, reference) in fileNames {
-            let sourceUrl = bundle.url(forResource: name, withExtension: "ppl")!
+            let sourceUrl = bundle.url(
+                forResource: "parser_\(name)",
+                withExtension: "ppl")!
             let source = try Syntax.Module(url: sourceUrl)
             source.assertEqual(with: reference)
         }
