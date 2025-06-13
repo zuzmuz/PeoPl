@@ -1,9 +1,9 @@
 extension Semantic.TypeSpecifier {
-    static let uint = Semantic.TypeSpecifier.raw(.intrinsic(.uint))
-    static let int = Semantic.TypeSpecifier.raw(.intrinsic(.int))
-    static let float = Semantic.TypeSpecifier.raw(.intrinsic(.float))
+    static let uint = Semantic.TypeSpecifier.nominal(.init(chain: ["UInt"]))
+    static let int = Semantic.TypeSpecifier.nominal(.init(chain: ["Int"]))
+    static let float = Semantic.TypeSpecifier.nominal(.init(chain: ["Float"]))
     // static let string = Semantic.TypeSpecifier.(.intrinsic(Semantic.IntrinsicType))
-    static let bool = Semantic.TypeSpecifier.raw(.intrinsic(.bool))
+    static let bool = Semantic.TypeSpecifier.nominal(.init(chain: ["Bool"]))
 
     // FIX: Not like that
     static let nothing = Semantic.TypeSpecifier.raw(.record([:]))
