@@ -127,13 +127,9 @@ enum Semantic {
                 left: Expression,
                 right: Expression)
 
-            case taggedExpression(
-                tag: Semantic.Tag,
-                expression: Expression)
-
             case call(
-                prefix: Expression,
-                arguments: [Expression])
+                signature: FunctionSignature,
+                arguments: [Tag: Expression])
 
             case initializer(
                 arguments: [Expression])

@@ -30,6 +30,8 @@ enum SemanticError: LocalizedError {
     case undefinedType(
         expression: Syntax.Expression,
         identifier: Semantic.ScopedIdentifier)
+    case undefinedCall(
+        expression: Syntax.Expression)
 
     case duplicatedExpressionFieldName(
         expression: Syntax.Expression)

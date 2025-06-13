@@ -25,28 +25,30 @@ extension SemanticChecker {
 
         let valueDefinitionsResults:
             [Result<
-                (Semantic.FunctionSignature, Semantic.Expression), SemanticError
+                (Semantic.FunctionSignature, Semantic.Expression),
+                SemanticError
             >] =
                 // TODO: reconsider functions expression, do we need for declarations to be function expressions
                 functionExpressions.map { signature, expression in
-                    do {
+                    do throws(SemanticError) {
+                        let checkedExpression =
+                            try expression.checkType(
+                                with: signature.inputType,
+                                localScope: .init(scope: signature.arguments),
+                                context: .init(
+                                    typeDeclarations: allTypeDeclarations,
+                                    valueDeclarations: allValueDeclarations,
+                                    operatorDeclarations:
+                                        intrinsicDeclarations
+                                        .operatorDeclarations
+                                ))
                         return .success(
                             (
                                 signature,
-                                try expression.checkType(
-                                    with: signature.inputType,
-                                    localScope: .init(scope: signature.arguments),  // TODO: handle extra arguments
-                                    context: .init(
-                                        typeDeclarations: allTypeDeclarations,
-                                        valueDeclarations: allValueDeclarations,
-                                        operatorDeclarations:
-                                            intrinsicDeclarations
-                                            .operatorDeclarations
-                                    ))
+                                checkedExpression
                             ))
                     } catch {
-                        fatalError(
-                            "Value definition resolution failed: \(error)")
+                        return .failure(error)
                     }
                 }
 
@@ -73,7 +75,7 @@ extension SemanticChecker {
                     })
         // NOTE: I might need to send only function to code gen
         return .success(
-            .init(definitions: .init(valueDefinitions: valueDefinitions)))  //, operators: [Semantic.OperatorField : Semantic.Expression])))
+            .init(definitions: .init(valueDefinitions: valueDefinitions)))
     }
 }
 

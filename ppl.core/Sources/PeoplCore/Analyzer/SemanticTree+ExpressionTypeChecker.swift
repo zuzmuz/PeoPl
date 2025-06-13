@@ -1,9 +1,24 @@
 extension [Syntax.Expression] {
+    /// Transforms a list of syntax expressions to a tagged list of semantic expressions.
+    /// If an expression of the list is a tagged expressions,
+    /// then the semantic expression is deconstructed.
+    /// If the expression is untagged then an implicit tag is assigned to it, which is the index.
+    /// # Params
+    /// - with: the type specifier of the input expression
+    /// - localScope: the local scope of the current context
+    /// - context: the declarations context of the current module
+    ///
+    /// # Returns
+    /// Dictionary of tagged expressions, where the tag is either a named tag or an unnamed tag
+    ///
+    /// # throws
+    /// ``SemanticError`` if there is a duplicated expression field name or if the type checking fails
     func checkType(
         with input: Semantic.TypeSpecifier,
         localScope: borrowing Semantic.LocalScope,
         context: borrowing Semantic.DeclarationsContext
     ) throws(SemanticError) -> [Semantic.Tag: Semantic.Expression] {
+
         var expressions: [Semantic.Tag: Semantic.Expression] = [:]
         var fieldCounter = UInt64(0)
         for expression in self {
@@ -135,20 +150,28 @@ extension Syntax.Expression {
             with: input,
             localScope: localScope,
             context: context)
+
         switch prefix.expressionType {
         case let .access(accessPrefix, field):
-            fatalError()
+            fatalError("Not ready for this yet")
         case let .field(identifier):
-            if let function =
-                context.valueDeclarations[
-                    .function(
-                        .init(
-                            identifier: identifier.getSemanticIdentifier(),
-                            inputType: input,
-                            arguments: argumentsTyped.mapValues { $0.type }))]
-            {
+            let functionSignature: Semantic.FunctionSignature =
+                .init(
+                    identifier: identifier.getSemanticIdentifier(),
+                    inputType: input,
+                    arguments: argumentsTyped.mapValues { $0.type })
+            let signature: Semantic.ExpressionSignature = .function(
+                functionSignature)
+
+            if let functionOutputType = context.valueDeclarations[signature] {
+                return .init(
+                    expression: .call(
+                        signature: functionSignature,
+                        arguments: argumentsTyped),
+                    type: functionOutputType)
+            } else {
+                throw .undefinedCall(expression: prefix)
             }
-            fatalError()
         default:
             fatalError("Not implemented")
         }
@@ -233,8 +256,6 @@ extension Syntax.Expression {
                 arguments: arguments,
                 localScope: localScope,
                 context: context)
-
-        // fatalError("Call expression type checking is not implemented yet")
 
         case (let input, .piped(left: let left, right: let right)):
             // TODO: join the piped expression
