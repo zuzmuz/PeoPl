@@ -121,6 +121,8 @@ enum Semantic {
             case stringLiteral(String)
             case boolLiteral(Bool)
 
+            case input
+
             case unary(Operator, expression: Expression)
             case binary(
                 Operator,
@@ -129,15 +131,22 @@ enum Semantic {
 
             case call(
                 signature: FunctionSignature,
+                input: Expression,
                 arguments: [Tag: Expression])
 
-            case initializer(
-                arguments: [Expression])
+            // TODO: function calls require an input, function signature and arguments
 
-            case access(prefix: Expression, field: String)
+            // a.sdf(asd: asd) needs to be analyzed as 1 node
+            // a.b.sdfds(asd: sdf)
 
-            case field(Syntax.ScopedIdentifier)
-            case fieldInScope(Tag)
+
+            // case initializer(
+            //     arguments: [Expression])
+            //
+            // case access(prefix: Expression, field: String)
+            //
+            // case field(Syntax.ScopedIdentifier)
+            // case fieldInScope(Tag)
         }
     }
 }
