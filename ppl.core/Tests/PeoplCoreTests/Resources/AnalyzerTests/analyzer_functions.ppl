@@ -1,6 +1,6 @@
 
 add: [a: Int, b: Int] -> Int {
-    a + b
+    a + b -- c - * 3
 }
 
 main: () -> Int {

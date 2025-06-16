@@ -542,7 +542,6 @@ extension Syntax.Expression: TreeSitterNode {
         node: Node,
         in source: Syntax.Source
     ) throws(SyntaxError) -> Self {
-        print("expression node type: \(node.nodeType ?? "nil")")
         if node.nodeType == "parenthisized_expression" {
             guard let parenthesizedExpressionNode = node.child(at: 1) else {
                 throw .errorParsing(

@@ -88,6 +88,9 @@ extension Syntax.Expression {
         localScope: borrowing Semantic.LocalScope,
         context: borrowing Semantic.DeclarationsContext,
     ) throws(SemanticError) -> Semantic.Expression {
+        if case .unary = expression.expressionType {
+            throw .consecutiveUnary(expression: self)
+        }
         let typedExpression = try expression.checkType(
             with: .init(expression: .nothing, type: .nothing),
             localScope: localScope,
@@ -119,10 +122,19 @@ extension Syntax.Expression {
             with: .init(expression: .nothing, type: .nothing),
             localScope: localScope,
             context: context)
+
+        if case .unary = left.expressionType {
+            throw .consecutiveUnary(expression: self)
+        }
+
         let rightTyped = try right.checkType(
             with: .init(expression: .nothing, type: .nothing),
             localScope: localScope,
             context: context)
+
+        if case .unary = right.expressionType {
+            throw .consecutiveUnary(expression: self)
+        }
 
         guard
             let opReturnType = context.operatorDeclarations[
@@ -176,6 +188,16 @@ extension Syntax.Expression {
         default:
             fatalError("Not implemented")
         }
+    }
+
+    func checkPipe(
+        input: Semantic.Expression,
+        left: Syntax.Expression,
+        right: Syntax.Expression,
+        localScope: borrowing Semantic.LocalScope,
+        context: borrowing Semantic.DeclarationsContext
+    ) throws(SemanticError) -> Semantic.Expression {
+        fatalError() 
     }
 
     func checkType(
@@ -260,15 +282,13 @@ extension Syntax.Expression {
                 context: context)
 
         case let (_, .piped(left, right)):
-            // TODO: join the piped expression
-
-            let leftTyped = try left.checkType(
-                with: input,
+            return try self.checkPipe(
+                input: input,
+                left: left,
+                right: right,
                 localScope: localScope,
                 context: context)
 
-
-            fatalError("Piped expression type checking is not implemented yet")
         case let (input, .function(signature, expression)):
             // NOTE: here I shoul infer signature if not present
             fatalError(

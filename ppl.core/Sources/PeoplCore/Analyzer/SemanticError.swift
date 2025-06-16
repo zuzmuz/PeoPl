@@ -35,6 +35,9 @@ enum SemanticError: LocalizedError {
 
     case duplicatedExpressionFieldName(
         expression: Syntax.Expression)
+
+    case consecutiveUnary(
+        expression: Syntax.Expression)
 }
 
 struct SemanticErrorList: LocalizedError {
