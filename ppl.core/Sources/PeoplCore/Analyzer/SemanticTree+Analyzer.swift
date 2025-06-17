@@ -34,7 +34,7 @@ extension SemanticChecker {
                         let checkedExpression =
                             try expression.checkType(
                                 with: .init(
-                                    expression: .input,
+                                    expressionType: .input,
                                     type: signature.inputType),
                                 localScope: .init(scope: signature.arguments),
                                 context: .init(

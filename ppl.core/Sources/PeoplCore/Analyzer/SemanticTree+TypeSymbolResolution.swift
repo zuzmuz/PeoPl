@@ -55,9 +55,8 @@ extension Syntax.TypeField {
 }
 
 extension [Syntax.TypeField] {
-    func getProductSemanticTypes() throws(SemanticError) -> [Semantic.Tag:
-        Semantic.TypeSpecifier]
-    {
+    func getProductSemanticTypes(
+    ) throws(SemanticError) -> [Semantic.Tag: Semantic.TypeSpecifier] {
         var recordFields: [Semantic.Tag: Semantic.TypeSpecifier] = [:]
         var fieldCounter = UInt64(0)
         for typeField in self {
@@ -102,9 +101,8 @@ extension [Syntax.TypeField] {
         return recordFields
     }
 
-    func getSumSemanticTypes() throws(SemanticError) -> [Semantic.Tag:
-        Semantic.TypeSpecifier]
-    {
+    func getSumSemanticTypes(
+    ) throws(SemanticError) -> [Semantic.Tag: Semantic.TypeSpecifier] {
         var recordFields: [Semantic.Tag: Semantic.TypeSpecifier] = [:]
         var fieldCounter = UInt64(0)
         for typeField in self {
@@ -339,7 +337,8 @@ extension TypeDeclarationsChecker {
             }
             nodeStates[typeIdentifier] = .visiting
 
-            checkCyclicalDependencies(typeSpecifier: typeDefinition.typeSpecifier)
+            checkCyclicalDependencies(
+                typeSpecifier: typeDefinition.typeSpecifier)
 
         }
 

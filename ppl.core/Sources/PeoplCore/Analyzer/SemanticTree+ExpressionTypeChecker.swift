@@ -61,18 +61,18 @@ extension Syntax.Expression {
 
         switch (input.type, literal) {
         case (_, .never):
-            return .init(expression: .never, type: .never)
+            return .init(expressionType: .never, type: .never)
         case (.nothing, .nothing):
-            return .init(expression: .nothing, type: .nothing)
+            return .init(expressionType: .nothing, type: .nothing)
         case (.nothing, .intLiteral(let value)):
-            return .init(expression: .intLiteral(value), type: .int)
+            return .init(expressionType: .intLiteral(value), type: .int)
         case (.nothing, .floatLiteral(let value)):
-            return .init(expression: .floatLiteral(value), type: .float)
+            return .init(expressionType: .floatLiteral(value), type: .float)
         case (.nothing, .stringLiteral(let value)):
             fatalError("String literal type checking is not implemented yet")
         // return .init(expression: .stringLiteral(value), type: .string)
         case (.nothing, .boolLiteral(let value)):
-            return .init(expression: .boolLiteral(value), type: .bool)
+            return .init(expressionType: .boolLiteral(value), type: .bool)
         default:
             throw .inputMismatch(
                 expression: self,
@@ -88,11 +88,15 @@ extension Syntax.Expression {
         localScope: borrowing Semantic.LocalScope,
         context: borrowing Semantic.DeclarationsContext,
     ) throws(SemanticError) -> Semantic.Expression {
+        // multiple consecutive unary operations are not allowed
+        // because things like `+ * - exp` are allowed syntactically
         if case .unary = expression.expressionType {
             throw .consecutiveUnary(expression: self)
         }
+
+        
         let typedExpression = try expression.checkType(
-            with: .init(expression: .nothing, type: .nothing),
+            with: .nothing,
             localScope: localScope,
             context: context)
 
@@ -105,9 +109,18 @@ extension Syntax.Expression {
                 leftType: input.type,
                 rightType: typedExpression.type)
         }
-        return .init(
-            expression: .unary(op, expression: typedExpression),
-            type: opReturnType)
+
+        switch input.type {
+        case .nothing:
+            return .init(
+                expressionType: .unary(op, expression: typedExpression),
+                type: opReturnType)
+        // if input is not nothing than this expression is considered a binary expression
+        default:
+            return .init(
+                expressionType: .binary(op, left: input, right: typedExpression),
+                type: opReturnType) 
+        }
     }
 
     func checkTypeBinary(
@@ -119,7 +132,7 @@ extension Syntax.Expression {
     ) throws(SemanticError) -> Semantic.Expression {
 
         let leftTyped = try left.checkType(
-            with: .init(expression: .nothing, type: .nothing),
+            with: .init(expressionType: .nothing, type: .nothing),
             localScope: localScope,
             context: context)
 
@@ -128,7 +141,7 @@ extension Syntax.Expression {
         }
 
         let rightTyped = try right.checkType(
-            with: .init(expression: .nothing, type: .nothing),
+            with: .init(expressionType: .nothing, type: .nothing),
             localScope: localScope,
             context: context)
 
@@ -146,7 +159,7 @@ extension Syntax.Expression {
                 rightType: rightTyped.type)
         }
         return .init(
-            expression: .binary(op, left: leftTyped, right: rightTyped),
+            expressionType: .binary(op, left: leftTyped, right: rightTyped),
             type: opReturnType)
     }
 
@@ -177,7 +190,7 @@ extension Syntax.Expression {
 
             if let functionOutputType = context.valueDeclarations[signature] {
                 return .init(
-                    expression: .call(
+                    expressionType: .call(
                         signature: functionSignature,
                         input: input,
                         arguments: argumentsTyped),
@@ -197,7 +210,76 @@ extension Syntax.Expression {
         localScope: borrowing Semantic.LocalScope,
         context: borrowing Semantic.DeclarationsContext
     ) throws(SemanticError) -> Semantic.Expression {
-        fatalError() 
+        let leftTyped = try left.checkType(
+            with: input,
+            localScope: localScope,
+            context: context)
+
+        switch right.expressionType {
+        case let .branched(branched):
+            fatalError("branched not supported yet")
+        default:
+            return try right.checkType(
+                with: leftTyped,
+                localScope: localScope,
+                context: context)
+        }
+    }
+
+    func accessFieldType(
+        type: Semantic.TypeSpecifier,
+        fieldIdentifier: String,
+        context: borrowing Semantic.DeclarationsContext
+    ) throws(SemanticError) -> Semantic.TypeSpecifier {
+
+        switch type {
+        case .nothing, .never:
+            throw .undefinedField(expression: self, field: fieldIdentifier)
+        case .raw(let rawType):
+            return try self.accessFieldType(
+                rawType: rawType,
+                fieldIdentifier: fieldIdentifier,
+                context: context)
+        case .nominal(let typeIdentifier):
+            guard
+                let rawType =
+                    context.typeDeclarations[typeIdentifier]?
+                    .getRawType(
+                        typeDeclarations: context.typeDeclarations)
+            else {
+                throw .undefinedType(
+                    expression: self, identifier: typeIdentifier)
+            }
+            return try self.accessFieldType(
+                rawType: rawType,
+                fieldIdentifier: fieldIdentifier,
+                context: context)
+        }
+    }
+
+    func accessFieldType(
+        rawType: Semantic.RawTypeSpecifier,
+        fieldIdentifier: String,
+        context: borrowing Semantic.DeclarationsContext
+    ) throws(SemanticError) -> Semantic.TypeSpecifier {
+
+        switch rawType {
+        case let .record(record):
+            if let accessedFieldType = record[.named(fieldIdentifier)] {
+                return accessedFieldType
+            }
+
+            if fieldIdentifier.first == "_",
+                let unnamedTag = UInt64(fieldIdentifier.dropFirst()),
+                let accessedFieldType = record[.unnamed(unnamedTag)]
+            {
+                return accessedFieldType
+            }
+            throw .undefinedField(expression: self, field: fieldIdentifier)
+        default:
+            fatalError("Accessing field type is not implemented for \(rawType)")
+
+        }
     }
 
     func checkType(
@@ -261,11 +343,11 @@ extension Syntax.Expression {
                 type: prefixTyped.type,
                 fieldIdentifier: fieldIdentifier,
                 context: context)
+            fatalError()
             // return .init(
-            //     expression:
+            //     expressionType:
             //         .access(prefix: prefixTyped, field: fieldIdentifier),
             //     type: accessFieldType)
-            fatalError("access expression type checking is not implemented yet")
 
         case (_, .access):
             throw .inputMismatch(
@@ -297,62 +379,6 @@ extension Syntax.Expression {
             fatalError()
         }
         throw .unsupportedYet("Expression type checking is not implemented yet")
-    }
-
-    func accessFieldType(
-        type: Semantic.TypeSpecifier,
-        fieldIdentifier: String,
-        context: borrowing Semantic.DeclarationsContext
-    ) throws(SemanticError) -> Semantic.TypeSpecifier {
-
-        switch type {
-        case .nothing, .never:
-            throw .undefinedField(expression: self, field: fieldIdentifier)
-        case .raw(let rawType):
-            return try self.accessFieldType(
-                rawType: rawType,
-                fieldIdentifier: fieldIdentifier,
-                context: context)
-        case .nominal(let typeIdentifier):
-            guard
-                let rawType =
-                    context.typeDeclarations[typeIdentifier]?
-                    .getRawType(
-                        typeDeclarations: context.typeDeclarations)
-            else {
-                throw .undefinedType(
-                    expression: self, identifier: typeIdentifier)
-            }
-            return try self.accessFieldType(
-                rawType: rawType,
-                fieldIdentifier: fieldIdentifier,
-                context: context)
-        }
-    }
-
-    func accessFieldType(
-        rawType: Semantic.RawTypeSpecifier,
-        fieldIdentifier: String,
-        context: borrowing Semantic.DeclarationsContext
-    ) throws(SemanticError) -> Semantic.TypeSpecifier {
-
-        switch rawType {
-        case let .record(record):
-            if let accessedFieldType = record[.named(fieldIdentifier)] {
-                return accessedFieldType
-            }
-
-            if fieldIdentifier.first == "_",
-                let unnamedTag = UInt64(fieldIdentifier.dropFirst()),
-                let accessedFieldType = record[.unnamed(unnamedTag)]
-            {
-                return accessedFieldType
-            }
-            throw .undefinedField(expression: self, field: fieldIdentifier)
-        default:
-            fatalError("Accessing field type is not implemented for \(rawType)")
-
-        }
     }
 
 }

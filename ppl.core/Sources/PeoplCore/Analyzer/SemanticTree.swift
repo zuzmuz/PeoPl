@@ -110,7 +110,7 @@ enum Semantic {
     }
 
     struct Expression {
-        let expression: ExpressionType
+        let expressionType: ExpressionType
         let type: TypeSpecifier
 
         indirect enum ExpressionType {
@@ -134,6 +134,8 @@ enum Semantic {
                 input: Expression,
                 arguments: [Tag: Expression])
 
+            // case access(prefix: Expression, field: String)
+
             // TODO: function calls require an input, function signature and arguments
 
             // a.sdf(asd: asd) needs to be analyzed as 1 node
@@ -143,10 +145,11 @@ enum Semantic {
             // case initializer(
             //     arguments: [Expression])
             //
-            // case access(prefix: Expression, field: String)
             //
             // case field(Syntax.ScopedIdentifier)
             // case fieldInScope(Tag)
         }
+
+        static let nothing = Expression(expressionType: .nothing, type: .nothing)
     }
 }
