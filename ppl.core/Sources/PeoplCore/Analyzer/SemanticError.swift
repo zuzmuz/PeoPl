@@ -38,6 +38,9 @@ enum SemanticError: LocalizedError {
 
     case consecutiveUnary(
         expression: Syntax.Expression)
+
+    case bindingNotAllowed(
+        expression: Syntax.Expression)
 }
 
 struct SemanticErrorList: LocalizedError {

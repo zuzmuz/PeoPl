@@ -94,7 +94,6 @@ extension Syntax.Expression {
             throw .consecutiveUnary(expression: self)
         }
 
-        
         let typedExpression = try expression.checkType(
             with: .nothing,
             localScope: localScope,
@@ -118,8 +117,9 @@ extension Syntax.Expression {
         // if input is not nothing than this expression is considered a binary expression
         default:
             return .init(
-                expressionType: .binary(op, left: input, right: typedExpression),
-                type: opReturnType) 
+                expressionType: .binary(
+                    op, left: input, right: typedExpression),
+                type: opReturnType)
         }
     }
 
@@ -344,10 +344,10 @@ extension Syntax.Expression {
                 fieldIdentifier: fieldIdentifier,
                 context: context)
             fatalError()
-            // return .init(
-            //     expressionType:
-            //         .access(prefix: prefixTyped, field: fieldIdentifier),
-            //     type: accessFieldType)
+        // return .init(
+        //     expressionType:
+        //         .access(prefix: prefixTyped, field: fieldIdentifier),
+        //     type: accessFieldType)
 
         case (_, .access):
             throw .inputMismatch(

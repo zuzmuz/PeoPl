@@ -134,6 +134,9 @@ enum Semantic {
                 input: Expression,
                 arguments: [Tag: Expression])
 
+            // case branching(
+            //     branches: [(match: Expression, body: Expression)])
+
             // case access(prefix: Expression, field: String)
 
             // TODO: function calls require an input, function signature and arguments
