@@ -1,6 +1,5 @@
 import Foundation
 
-// //
 extension Semantic {
     enum Error: LocalizedError {
 

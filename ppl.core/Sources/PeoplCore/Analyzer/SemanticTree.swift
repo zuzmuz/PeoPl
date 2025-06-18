@@ -23,18 +23,20 @@ enum Semantic {
             lhs: Semantic.Tag,
             rhs: Semantic.Tag
         ) -> Bool {
-            let lhsValue = switch lhs {
-            case let .named(name):
-                name
-            case let .unnamed(index):
-                "_\(index)"
-            }
-            let rhsValue = switch rhs {
-            case let .named(name):
-                name
-            case let .unnamed(index):
-                "_\(index)"
-            }
+            let lhsValue =
+                switch lhs {
+                case let .named(name):
+                    name
+                case let .unnamed(index):
+                    "_\(index)"
+                }
+            let rhsValue =
+                switch rhs {
+                case let .named(name):
+                    name
+                case let .unnamed(index):
+                    "_\(index)"
+                }
 
             return lhsValue == rhsValue
         }
@@ -144,7 +146,6 @@ enum Semantic {
             // a.sdf(asd: asd) needs to be analyzed as 1 node
             // a.b.sdfds(asd: sdf)
 
-
             // case initializer(
             //     arguments: [Expression])
             //
@@ -153,6 +154,7 @@ enum Semantic {
             // case fieldInScope(Tag)
         }
 
-        static let nothing = Expression(expressionType: .nothing, type: .nothing)
+        static let nothing = Expression(
+            expressionType: .nothing, type: .nothing)
     }
 }

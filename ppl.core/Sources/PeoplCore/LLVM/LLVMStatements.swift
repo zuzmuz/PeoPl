@@ -1,4 +1,5 @@
-// import cllvm
+import cllvm
+
 //
 // extension Module: LLVM.StatementBuilder {
 //     func llvmBuildStatement(llvm: inout LLVM.Builder) throws(LLVM.Error) {
@@ -57,34 +58,34 @@
 //             paramTypes.withUnsafeMutableBufferPointer { buffer in
 //                 LLVMStructSetBody(structType, buffer.baseAddress, UInt32(buffer.count), 0)
 //             }
-//             
+//
 //         case let .sum(sum):
 //             throw .notImplemented
 //             // Claude shit
 //             // // For sum types (enums/unions), we need to create a tagged union
 //             // // This typically involves a struct with a tag field and a union field
 //             // let name = sum.identifier.chain.map { $0.typeName }.joined(separator: ".")
-//             // 
+//             //
 //             // // First, create a discriminator (tag) type - typically i32
 //             // let tagType = LLVMInt32TypeInContext(llvm.context)
-//             // 
+//             //
 //             // // Find the largest case to determine union size
 //             // var maxCaseSize: UInt64 = 0
 //             // var caseTypes: [LLVMTypeRef] = []
-//             // 
+//             //
 //             // for caseType in sum.cases {
 //             //     let caseParamTypes = caseType.params.map { $0.type.toLLVMType(llvm: &llvm) }
 //             //     let caseStructType = LLVMStructTypeInContext(llvm.context, caseParamTypes, UInt32(caseParamTypes.count), 0)
 //             //     caseTypes.append(caseStructType)
-//             //     
+//             //
 //             //     // Calculate size of this case
 //             //     let typeSize = LLVMABISizeOfType(LLVMModuleGetDataLayout(llvm.module), caseStructType)
 //             //     maxCaseSize = max(maxCaseSize, typeSize)
 //             // }
-//             // 
+//             //
 //             // // Create a union type using an array of i8 with the size of the largest case
 //             // let unionType = LLVMArrayType(LLVMInt8TypeInContext(llvm.context), UInt32(maxCaseSize))
-//             // 
+//             //
 //             // // Create the final tagged union struct (tag + union data)
 //             // let sumTypeElements = [tagType, unionType]
 //             // let sumType = LLVMStructCreateNamed(llvm.context, name)
@@ -124,9 +125,55 @@
 //         //         paramValues[param.name] = paramValue
 //         //     }
 //         //     let returnValue = try body.llvmBuildValue(llvm: &llvm, scope: paramValues) //, function: function)
-//         //     
+//         //
 //         //     LLVMBuildRet(llvm.builder, returnValue)
 //         // }
 //     }
 // }
 //
+
+extension Semantic.Context: LLVM.StatementBuilder {
+    func llvmBuildFunction(
+        llvm: inout LLVM.Builder,
+        signature: Semantic.FunctionSignature,
+        body: Semantic.Expression
+    ) throws(LLVM.Error) {
+
+        let functionName = signature.identifier.chain.joined(
+            separator: "_")
+        var paramTypes: [LLVMTypeRef?] = []
+
+        if signature.inputType != .nothing {
+            paramTypes.append(
+                try signature.inputType.llvmGetType(llvm: &llvm))
+        }
+
+        for argument in signature.arguments {
+            paramTypes.append(try argument.value.llvmGetType(llvm: &llvm))
+        }
+
+        let outputType = try body.type.llvmGetType(llvm: &llvm)
+
+        let functionType = paramTypes.withUnsafeMutableBufferPointer { buffer in
+            LLVMFunctionType(
+                outputType, buffer.baseAddress, UInt32(buffer.count), 0)
+        }
+
+        let function = LLVMAddFunction(llvm.module, functionName, functionType)
+    }
+
+    func llvmBuildStatement(llvm: inout LLVM.Builder) throws(LLVM.Error) {
+        for (signature, expression) in self.definitions.valueDefinitions {
+            switch signature {
+            case let .function(function):
+                try self.llvmBuildFunction(
+                    llvm: &llvm,
+                    signature: function,
+                    body: expression)
+
+            case .value:
+                fatalError("code gen for value not supported")
+            }
+        }
+    }
+}
