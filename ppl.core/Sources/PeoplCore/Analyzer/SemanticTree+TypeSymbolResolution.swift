@@ -14,7 +14,7 @@ protocol TypeDeclarationsChecker {
     ) -> (
         typeDeclarations: Semantic.TypeDeclarationsMap,
         typeLookup: [Semantic.ScopedIdentifier: Syntax.TypeDefinition],
-        errors: [SemanticError]
+        errors: [Semantic.Error]
     )
 }
 
@@ -56,7 +56,7 @@ extension Syntax.TypeField {
 
 extension [Syntax.TypeField] {
     func getProductSemanticTypes(
-    ) throws(SemanticError) -> [Semantic.Tag: Semantic.TypeSpecifier] {
+    ) throws(Semantic.Error) -> [Semantic.Tag: Semantic.TypeSpecifier] {
         var recordFields: [Semantic.Tag: Semantic.TypeSpecifier] = [:]
         var fieldCounter = UInt64(0)
         for typeField in self {
@@ -102,7 +102,7 @@ extension [Syntax.TypeField] {
     }
 
     func getSumSemanticTypes(
-    ) throws(SemanticError) -> [Semantic.Tag: Semantic.TypeSpecifier] {
+    ) throws(Semantic.Error) -> [Semantic.Tag: Semantic.TypeSpecifier] {
         var recordFields: [Semantic.Tag: Semantic.TypeSpecifier] = [:]
         var fieldCounter = UInt64(0)
         for typeField in self {
@@ -161,7 +161,7 @@ extension Syntax.TypeSpecifier {
     }
 
     /// Create a semantic type specifier from self
-    func getSemanticType() throws(SemanticError) -> Semantic.TypeSpecifier {
+    func getSemanticType() throws(Semantic.Error) -> Semantic.TypeSpecifier {
         switch self {
         case .nothing:
             return .nothing
@@ -208,7 +208,7 @@ extension TypeDeclarationsChecker {
     ) -> (
         typeDeclarations: Semantic.TypeDeclarationsMap,
         typeLookup: Semantic.TypeLookupMap,
-        errors: [SemanticError]
+        errors: [Semantic.Error]
     ) {
         let declarations = self.getTypeDeclarations()
 
@@ -224,7 +224,7 @@ extension TypeDeclarationsChecker {
         // detecting redeclarations
         let redeclarations = typesLocations.compactMap { _, typeLocations in
             if typeLocations.count > 1 {
-                return SemanticError.typeRedeclaration(types: typeLocations)
+                return Semantic.Error.typeRedeclaration(types: typeLocations)
             } else {
                 return nil
             }
@@ -242,7 +242,7 @@ extension TypeDeclarationsChecker {
         // detecting invalid members types
         let typesNotInScope = typeLookup.flatMap { _, type in
             return type.typeSpecifier.undefinedTypes(types: allTypes)
-        }.map { SemanticError.typeNotInScope(type: $0) }
+        }.map { Semantic.Error.typeNotInScope(type: $0) }
 
         // detecting cyclical dependencies
         let cyclicalDependencies = checkCyclicalDependencies(
@@ -251,7 +251,7 @@ extension TypeDeclarationsChecker {
         // get semantic type specifier from syntax type specifier
         var localTypeDeclarations:
             [Semantic.ScopedIdentifier: Semantic.TypeSpecifier] = [:]
-        var typeSepcifierErrors: [SemanticError] = []
+        var typeSepcifierErrors: [Semantic.Error] = []
 
         for (indentifier, typeDefinition) in typeLookup {
             do {
@@ -274,10 +274,10 @@ extension TypeDeclarationsChecker {
 
     private func checkCyclicalDependencies(
         typeLookup: borrowing Semantic.TypeLookupMap
-    ) -> [SemanticError] {
+    ) -> [Semantic.Error] {
 
         var nodeStates: [Syntax.ScopedIdentifier: NodeState] = [:]
-        var errors: [SemanticError] = []
+        var errors: [Semantic.Error] = []
 
         func checkCyclicalDependencies(typeSpecifier: Syntax.TypeSpecifier) {
             switch typeSpecifier {

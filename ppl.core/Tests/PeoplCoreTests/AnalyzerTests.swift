@@ -6,7 +6,7 @@ final class AnalyzerTests: XCTestCase {
     let fileNames:
         [String: Result<
             Semantic.Context,
-            SemanticErrorList
+            Semantic.ErrorList
         >] = [
             "functions": .success(
                 .init(definitions: .init(valueDefinitions: [:])))

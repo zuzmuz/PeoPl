@@ -12,12 +12,12 @@ extension [Syntax.Expression] {
     /// Dictionary of tagged expressions, where the tag is either a named tag or an unnamed tag
     ///
     /// # throws
-    /// ``SemanticError`` if there is a duplicated expression field name or if the type checking fails
+    /// ``Semantic.Error`` if there is a duplicated expression field name or if the type checking fails
     func checkType(
         with input: Semantic.Expression,
         localScope: borrowing Semantic.LocalScope,
         context: borrowing Semantic.DeclarationsContext
-    ) throws(SemanticError) -> [Semantic.Tag: Semantic.Expression] {
+    ) throws(Semantic.Error) -> [Semantic.Tag: Semantic.Expression] {
 
         var expressions: [Semantic.Tag: Semantic.Expression] = [:]
         var fieldCounter = UInt64(0)
@@ -57,7 +57,7 @@ extension Syntax.Expression {
         literal: Syntax.Expression.Literal,
         localScope: borrowing Semantic.LocalScope,
         context: borrowing Semantic.DeclarationsContext,
-    ) throws(SemanticError) -> Semantic.Expression {
+    ) throws(Semantic.Error) -> Semantic.Expression {
 
         switch (input.type, literal) {
         case (_, .never):
@@ -87,7 +87,7 @@ extension Syntax.Expression {
         expression: Syntax.Expression,
         localScope: borrowing Semantic.LocalScope,
         context: borrowing Semantic.DeclarationsContext,
-    ) throws(SemanticError) -> Semantic.Expression {
+    ) throws(Semantic.Error) -> Semantic.Expression {
         // multiple consecutive unary operations are not allowed
         // because things like `+ * - exp` are allowed syntactically
         if case .unary = expression.expressionType {
@@ -129,7 +129,7 @@ extension Syntax.Expression {
         right: Syntax.Expression,
         localScope: borrowing Semantic.LocalScope,
         context: borrowing Semantic.DeclarationsContext,
-    ) throws(SemanticError) -> Semantic.Expression {
+    ) throws(Semantic.Error) -> Semantic.Expression {
 
         let leftTyped = try left.checkType(
             with: .init(expressionType: .nothing, type: .nothing),
@@ -169,7 +169,7 @@ extension Syntax.Expression {
         arguments: [Syntax.Expression],
         localScope: borrowing Semantic.LocalScope,
         context: borrowing Semantic.DeclarationsContext
-    ) throws(SemanticError) -> Semantic.Expression {
+    ) throws(Semantic.Error) -> Semantic.Expression {
 
         let argumentsTyped = try arguments.checkType(
             with: input,
@@ -209,7 +209,7 @@ extension Syntax.Expression {
         right: Syntax.Expression,
         localScope: borrowing Semantic.LocalScope,
         context: borrowing Semantic.DeclarationsContext
-    ) throws(SemanticError) -> Semantic.Expression {
+    ) throws(Semantic.Error) -> Semantic.Expression {
         let leftTyped = try left.checkType(
             with: input,
             localScope: localScope,
@@ -230,7 +230,7 @@ extension Syntax.Expression {
         type: Semantic.TypeSpecifier,
         fieldIdentifier: String,
         context: borrowing Semantic.DeclarationsContext
-    ) throws(SemanticError) -> Semantic.TypeSpecifier {
+    ) throws(Semantic.Error) -> Semantic.TypeSpecifier {
 
         switch type {
         case .nothing, .never:
@@ -261,7 +261,7 @@ extension Syntax.Expression {
         rawType: Semantic.RawTypeSpecifier,
         fieldIdentifier: String,
         context: borrowing Semantic.DeclarationsContext
-    ) throws(SemanticError) -> Semantic.TypeSpecifier {
+    ) throws(Semantic.Error) -> Semantic.TypeSpecifier {
 
         switch rawType {
         case let .record(record):
@@ -286,7 +286,7 @@ extension Syntax.Expression {
         with input: Semantic.Expression,
         localScope: borrowing Semantic.LocalScope,
         context: borrowing Semantic.DeclarationsContext,
-    ) throws(SemanticError) -> Semantic.Expression {
+    ) throws(Semantic.Error) -> Semantic.Expression {
 
         switch (input.type, self.expressionType) {
         case let (_, .literal(literal)):
@@ -362,7 +362,9 @@ extension Syntax.Expression {
                 arguments: arguments,
                 localScope: localScope,
                 context: context)
-
+        
+        case let (_, .branched(branched)):
+            fatalError("branching not supported")
         case let (_, .piped(left, right)):
             return try self.checkPipe(
                 input: input,
@@ -370,7 +372,9 @@ extension Syntax.Expression {
                 right: right,
                 localScope: localScope,
                 context: context)
-
+        
+        case (_, .binding):
+            throw .bindingNotAllowed(expression: self)
         case let (input, .function(signature, expression)):
             // NOTE: here I shoul infer signature if not present
             fatalError(

@@ -10,7 +10,7 @@ protocol TreeSitterNode {
     static func from(
         node: Node,
         in source: Syntax.Source
-    ) throws(SyntaxError) -> Self
+    ) throws(Syntax.Error) -> Self
 }
 
 /// Parses an integer from a string, supporting hex, octal, and binary formats.
@@ -53,7 +53,7 @@ extension Node {
         return optionalMap.compactMap { $0 }
     }
 
-    func getString(in source: Syntax.Source) throws(SyntaxError) -> String {
+    func getString(in source: Syntax.Source) throws(Syntax.Error) -> String {
         guard
             let range = Swift.Range.init(
                 self.range,
@@ -89,13 +89,13 @@ extension Syntax.Module {
 
         let tree = parser.parse(source)
         guard let rootNode = tree?.rootNode else {
-            throw SyntaxError.sourceUnreadable
+            throw Syntax.Error.sourceUnreadable
         }
 
         let source = Syntax.Source(content: source, name: path)
 
         self.definitions =
-            try rootNode.compactMapChildren { node throws(SyntaxError) in
+            try rootNode.compactMapChildren { node throws(Syntax.Error) in
                 if node.nodeType == "type_definition"
                     || node.nodeType == "value_definition"
                 {
@@ -133,7 +133,7 @@ extension Syntax.Definition: TreeSitterNode {
     static func from(
         node: Node,
         in source: Syntax.Source
-    ) throws(SyntaxError) -> Self {
+    ) throws(Syntax.Error) -> Self {
         switch node.nodeType {
         case "type_definition":
             return .typeDefinition(
@@ -157,7 +157,7 @@ extension Syntax.ScopedIdentifier: TreeSitterNode {
     static func getScopedIdentifier(
         node: Node,
         in source: Syntax.Source
-    ) throws(SyntaxError) -> [String] {
+    ) throws(Syntax.Error) -> [String] {
         guard let identifier = node.child(byFieldName: "identifier") else {
             throw .errorParsing(
                 element: "ScopedIdentifier",
@@ -178,7 +178,7 @@ extension Syntax.ScopedIdentifier: TreeSitterNode {
     static func from(
         node: Node,
         in source: Syntax.Source
-    ) throws(SyntaxError) -> Self {
+    ) throws(Syntax.Error) -> Self {
         .init(
             chain: try Self.getScopedIdentifier(node: node, in: source),
             location: node.getLocation(in: source)
@@ -190,7 +190,7 @@ extension Syntax.TypeDefinition: TreeSitterNode {
     static func from(
         node: Node,
         in source: Syntax.Source
-    ) throws(SyntaxError) -> Self {
+    ) throws(Syntax.Error) -> Self {
         guard let identifierNode = node.child(byFieldName: "identifier"),
             let definitionNode = node.child(byFieldName: "definition")
         else {
@@ -203,7 +203,7 @@ extension Syntax.TypeDefinition: TreeSitterNode {
         if let argumentsNode = node.child(byFieldName: "type_arguments") {
             arguments =
                 try argumentsNode
-                .compactMapChildren { child throws(SyntaxError) in
+                .compactMapChildren { child throws(Syntax.Error) in
                     if child.nodeType == "type_field" {
                         return try Syntax.TypeField.from(
                             node: child, in: source)
@@ -228,7 +228,7 @@ extension Syntax.ValueDefinition: TreeSitterNode {
     static func from(
         node: Node,
         in source: Syntax.Source
-    ) throws(SyntaxError) -> Self {
+    ) throws(Syntax.Error) -> Self {
         guard let identifierNode = node.child(byFieldName: "identifier"),
             let expressionNode = node.child(byFieldName: "expression")
         else {
@@ -241,7 +241,7 @@ extension Syntax.ValueDefinition: TreeSitterNode {
         if let argumentsNode = node.child(byFieldName: "type_arguments") {
             arguments =
                 try argumentsNode
-                .compactMapChildren { child throws(SyntaxError) in
+                .compactMapChildren { child throws(Syntax.Error) in
                     if child.nodeType == "type_field" {
                         return try Syntax.TypeField.from(
                             node: child, in: source)
@@ -270,7 +270,7 @@ extension Syntax.TypeSpecifier {
     static func from(
         node: Node,
         in source: Syntax.Source
-    ) throws(SyntaxError) -> Self {
+    ) throws(Syntax.Error) -> Self {
         let location = node.getLocation(in: source)
         switch node.nodeType {
         case "nothing_type":
@@ -297,7 +297,7 @@ extension Syntax.TaggedTypeSpecifier: TreeSitterNode {
     static func from(
         node: Node,
         in source: Syntax.Source
-    ) throws(SyntaxError) -> Self {
+    ) throws(Syntax.Error) -> Self {
         guard let identifierNode = node.child(byFieldName: "identifier"),
             let definitionNode = node.child(byFieldName: "type")
         else {
@@ -318,7 +318,7 @@ extension Syntax.HomogeneousTypeProduct: TreeSitterNode {
     static func from(
         node: Node,
         in source: Syntax.Source
-    ) throws(SyntaxError) -> Self {
+    ) throws(Syntax.Error) -> Self {
         guard let typeSpecifierNode = node.child(byFieldName: "type_specifier"),
             let exponentNode = node.child(byFieldName: "exponent")
         else {
@@ -359,7 +359,7 @@ extension Syntax.TypeField: TreeSitterNode {
     static func from(
         node: Node,
         in source: Syntax.Source
-    ) throws(SyntaxError) -> Self {
+    ) throws(Syntax.Error) -> Self {
         guard let child = node.child(at: 0) else {
             throw .errorParsing(
                 element: "TypeField",
@@ -383,13 +383,13 @@ extension Syntax.Product: TreeSitterNode {
     static func from(
         node: Node,
         in source: Syntax.Source
-    ) throws(SyntaxError) -> Self {
+    ) throws(Syntax.Error) -> Self {
         guard let typeFieldsNode = node.child(at: 0) else {
             throw .errorParsing(element: "Product", location: .nowhere)
         }
 
         let typeFields: [Syntax.TypeField] =
-            try typeFieldsNode.compactMapChildren { child throws(SyntaxError) in
+            try typeFieldsNode.compactMapChildren { child throws(Syntax.Error) in
                 if child.nodeType == "type_field" {
                     try .from(node: child, in: source)
                 } else {
@@ -407,7 +407,7 @@ extension Syntax.Sum: TreeSitterNode {
     static func from(
         node: Node,
         in source: Syntax.Source
-    ) throws(SyntaxError) -> Self {
+    ) throws(Syntax.Error) -> Self {
         // first child is the 'choice' keyword
         guard let typeFieldList = node.child(at: 1) else {
             throw .errorParsing(
@@ -416,7 +416,7 @@ extension Syntax.Sum: TreeSitterNode {
         }
 
         let typeFields: [Syntax.TypeField] =
-            try typeFieldList.compactMapChildren { child throws(SyntaxError) in
+            try typeFieldList.compactMapChildren { child throws(Syntax.Error) in
                 if child.nodeType == "type_field" {
                     return try .from(node: child, in: source)
                 } else if child.nodeType == "small_identifier" {
@@ -442,7 +442,7 @@ extension Syntax.Nominal: TreeSitterNode {
     static func from(
         node: Node,
         in source: Syntax.Source
-    ) throws(SyntaxError) -> Self {
+    ) throws(Syntax.Error) -> Self {
         guard let identifierNode = node.child(byFieldName: "identifier") else {
             throw .errorParsing(element: "Nominal", location: .nowhere)
         }
@@ -451,7 +451,7 @@ extension Syntax.Nominal: TreeSitterNode {
         if let typeArgumentsNode = node.child(byFieldName: "type_arguments") {
             typeArguments =
                 try typeArgumentsNode
-                .compactMapChildren { child throws(SyntaxError) in
+                .compactMapChildren { child throws(Syntax.Error) in
                     if child.nodeType == "type_specifier" {
                         try Syntax.TypeSpecifier.from(node: child, in: source)
                     } else {
@@ -474,7 +474,7 @@ extension Syntax.Function: TreeSitterNode {
     static func from(
         node: Node,
         in source: Syntax.Source
-    ) throws(SyntaxError) -> Self {
+    ) throws(Syntax.Error) -> Self {
         let inputType: Syntax.TypeSpecifier?
         if let inputTypeNode = node.child(byFieldName: "input_type") {
             inputType = try .from(node: inputTypeNode, in: source)
@@ -486,7 +486,7 @@ extension Syntax.Function: TreeSitterNode {
         if let argumentsNode = node.child(byFieldName: "arguments") {
             arguments =
                 try argumentsNode
-                .compactMapChildren { child throws(SyntaxError) in
+                .compactMapChildren { child throws(Syntax.Error) in
                     if child.nodeType == "type_field" {
                         return try Syntax.TypeField.from(
                             node: child, in: source)
@@ -521,7 +521,7 @@ extension Syntax.TaggedExpression: TreeSitterNode {
     static func from(
         node: Node,
         in source: Syntax.Source
-    ) throws(SyntaxError) -> Self {
+    ) throws(Syntax.Error) -> Self {
         guard let identifierNode = node.child(byFieldName: "identifier"),
             let expressionNode = node.child(byFieldName: "expression")
         else {
@@ -541,7 +541,7 @@ extension Syntax.Expression: TreeSitterNode {
     static func from(
         node: Node,
         in source: Syntax.Source
-    ) throws(SyntaxError) -> Self {
+    ) throws(Syntax.Error) -> Self {
         if node.nodeType == "parenthisized_expression" {
             guard let parenthesizedExpressionNode = node.child(at: 1) else {
                 throw .errorParsing(
@@ -564,7 +564,7 @@ extension Syntax.Expression.Literal {
     static func from(
         node: Node,
         in source: Syntax.Source
-    ) throws(SyntaxError) -> Self {
+    ) throws(Syntax.Error) -> Self {
         guard let child = node.child(at: 0) else {
             throw .errorParsing(
                 element: "Literal",
@@ -633,7 +633,7 @@ extension Syntax.Expression.ExpressionType: TreeSitterNode {
     static func parseUnary(
         from node: Node,
         in source: Syntax.Source
-    ) throws(SyntaxError) -> Self {
+    ) throws(Syntax.Error) -> Self {
         guard let operatorNode = node.child(byFieldName: "operator"),
             let operandNode = node.child(byFieldName: "operand")
         else {
@@ -655,7 +655,7 @@ extension Syntax.Expression.ExpressionType: TreeSitterNode {
     static func parseBinary(
         from node: Node,
         in source: Syntax.Source
-    ) throws(SyntaxError) -> Self {
+    ) throws(Syntax.Error) -> Self {
         guard let leftNode = node.child(byFieldName: "left"),
             let operatorNode = node.child(byFieldName: "operator"),
             let rightNode = node.child(byFieldName: "right")
@@ -682,7 +682,7 @@ extension Syntax.Expression.ExpressionType: TreeSitterNode {
     static func parseFunction(
         from node: Node,
         in source: Syntax.Source
-    ) throws(SyntaxError) -> Self {
+    ) throws(Syntax.Error) -> Self {
 
         guard let bodyNode = node.child(byFieldName: "body"),
             let bodyExpressionNode = bodyNode.child(at: 1)
@@ -708,7 +708,7 @@ extension Syntax.Expression.ExpressionType: TreeSitterNode {
     static func parseCallExpression(
         from node: Node,
         in source: Syntax.Source
-    ) throws(SyntaxError) -> Self {
+    ) throws(Syntax.Error) -> Self {
         guard let prefixNode = node.child(byFieldName: "prefix")
         else {
             throw .errorParsing(
@@ -724,7 +724,7 @@ extension Syntax.Expression.ExpressionType: TreeSitterNode {
 
         let arguments =
             try argumentListNode
-            .compactMapChildren { child throws(SyntaxError) in
+            .compactMapChildren { child throws(Syntax.Error) in
                 if expressionNodeTypes.contains(child.nodeType ?? "") {
                     try Syntax.Expression.from(node: child, in: source)
                 } else {
@@ -741,7 +741,7 @@ extension Syntax.Expression.ExpressionType: TreeSitterNode {
     static func parseInitializerExpression(
         from node: Node,
         in source: Syntax.Source
-    ) throws(SyntaxError) -> Self {
+    ) throws(Syntax.Error) -> Self {
 
         let prefix: Syntax.Nominal?
         if let prefixNode = node.child(byFieldName: "prefix") {
@@ -758,7 +758,7 @@ extension Syntax.Expression.ExpressionType: TreeSitterNode {
 
         let arguments =
             try argumentListNode
-            .compactMapChildren { child throws(SyntaxError) in
+            .compactMapChildren { child throws(Syntax.Error) in
                 if child.nodeType == "expression" {
                     try Syntax.Expression.from(node: child, in: source)
                 } else {
@@ -775,7 +775,7 @@ extension Syntax.Expression.ExpressionType: TreeSitterNode {
     static func parseAccess(
         from node: Node,
         in source: Syntax.Source
-    ) throws(SyntaxError) -> Self {
+    ) throws(Syntax.Error) -> Self {
         guard let prefixNode = node.child(byFieldName: "prefix"),
             let fieldNode = node.child(byFieldName: "field")
         else {
@@ -792,7 +792,7 @@ extension Syntax.Expression.ExpressionType: TreeSitterNode {
     static func parsePiped(
         from node: Node,
         in source: Syntax.Source
-    ) throws(SyntaxError) -> Self {
+    ) throws(Syntax.Error) -> Self {
         guard let leftNode = node.child(byFieldName: "left"),
             let rightNode = node.child(byFieldName: "right")
         else {
@@ -809,7 +809,7 @@ extension Syntax.Expression.ExpressionType: TreeSitterNode {
     static func from(
         node: Node,
         in source: Syntax.Source
-    ) throws(SyntaxError) -> Self {
+    ) throws(Syntax.Error) -> Self {
         switch node.nodeType {
         case "literal":
             return .literal(try .from(node: node, in: source))
@@ -847,11 +847,11 @@ extension Syntax.Expression.Branched {
     static func from(
         node: Node,
         in source: Syntax.Source
-    ) throws(SyntaxError) -> Self {
+    ) throws(Syntax.Error) -> Self {
         return .init(
             branches:
                 try node
-                .compactMapChildren { child throws(SyntaxError) in
+                .compactMapChildren { child throws(Syntax.Error) in
                     if child.nodeType == "branch" {
                         try .from(
                             node: child,
@@ -869,7 +869,7 @@ extension Syntax.Expression.Branched.Branch {
     static func from(
         node: Node,
         in source: Syntax.Source
-    ) throws(SyntaxError) -> Self {
+    ) throws(Syntax.Error) -> Self {
 
         guard
             let matchExpressionNode = node.child(

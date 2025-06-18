@@ -7,14 +7,14 @@ protocol ValueDefinitionChecker {
         valueDeclarations: Semantic.ValueDeclarationsMap,
         valueLookup: Semantic.ValueLookupMap,
         functionExpressions: [Semantic.FunctionSignature: Syntax.Expression],
-        errors: [SemanticError]
+        errors: [Semantic.Error]
     )
 }
 
 extension Syntax.Expression {
     func getSignature(
         identifier: Semantic.ScopedIdentifier
-    ) throws(SemanticError) -> Semantic.ExpressionSignature {
+    ) throws(Semantic.Error) -> Semantic.ExpressionSignature {
         switch self.expressionType {
         case let .function(signature, _):
             guard let signature else {
@@ -28,7 +28,7 @@ extension Syntax.Expression {
         }
     }
 
-    func getType() throws(SemanticError) -> Semantic.TypeSpecifier {
+    func getType() throws(Semantic.Error) -> Semantic.TypeSpecifier {
         switch self.expressionType {
         case let .function(signature, _):
             guard let signature else {
@@ -47,7 +47,7 @@ extension Syntax.Expression {
 extension Syntax.Function {
     func getSignature(
         identifier: Semantic.ScopedIdentifier
-    ) throws(SemanticError) -> Semantic.FunctionSignature {
+    ) throws(Semantic.Error) -> Semantic.FunctionSignature {
         let inputType = try self.inputType?.getSemanticType() ?? .nothing
         let arguments = try self.arguments.getProductSemanticTypes()
         return .init(
@@ -65,7 +65,7 @@ extension ValueDefinitionChecker {
         valueDeclarations: Semantic.ValueDeclarationsMap,
         valueLookup: Semantic.ValueLookupMap,
         functionExpressions: [Semantic.FunctionSignature: Syntax.Expression],
-        errors: [SemanticError]
+        errors: [Semantic.Error]
     ) {
         let declarations = self.getValueDeclarations()
 
@@ -93,13 +93,13 @@ extension ValueDefinitionChecker {
                     + undefinedOutputTypes
             }
             return []
-        }.map { SemanticError.typeNotInScope(type: $0) }
+        }.map { Semantic.Error.typeNotInScope(type: $0) }
 
         // verifying value redeclarations
         var valuesLocations:
             [Semantic.ExpressionSignature:
                 [Syntax.ValueDefinition]] = [:]
-        var signatureErrors: [SemanticError] = []
+        var signatureErrors: [Semantic.Error] = []
         for value in declarations {
             do {
                 let signature = try value.expression.getSignature(
@@ -115,7 +115,7 @@ extension ValueDefinitionChecker {
         // NOTE: for the future, interesting features to introduce are default arguments values and overloading
         let redeclarations = valuesLocations.compactMap { _, valueLocations in
             if valueLocations.count > 1 {
-                return SemanticError.valueRedeclaration(values: valueLocations)
+                return Semantic.Error.valueRedeclaration(values: valueLocations)
             } else {
                 return nil
             }
@@ -137,7 +137,7 @@ extension ValueDefinitionChecker {
                 }
 
         var valueDeclarations: Semantic.ValueDeclarationsMap = [:]
-        var typeSpecifierErrors: [SemanticError] = []
+        var typeSpecifierErrors: [Semantic.Error] = []
 
         for (signature, value) in valueLookup {
             do {

@@ -1,9 +1,9 @@
 protocol SemanticChecker: TypeDeclarationsChecker, ValueDefinitionChecker {
-    func semanticCheck() -> Result<Semantic.Context, SemanticErrorList>
+    func semanticCheck() -> Result<Semantic.Context, Semantic.ErrorList>
 }
 
 extension SemanticChecker {
-    func semanticCheck() -> Result<Semantic.Context, SemanticErrorList> {
+    func semanticCheck() -> Result<Semantic.Context, Semantic.ErrorList> {
         let intrinsicDeclarations = getIntrinsicDeclarations()
 
         // Getting type declarations
@@ -26,11 +26,11 @@ extension SemanticChecker {
         let valueDefinitionsResults:
             [Result<
                 (Semantic.FunctionSignature, Semantic.Expression),
-                SemanticError
+                Semantic.Error
             >] =
                 // TODO: reconsider functions expression, do we need for declarations to be function expressions
                 functionExpressions.map { signature, expression in
-                    do throws(SemanticError) {
+                    do throws(Semantic.Error) {
                         let checkedExpression =
                             try expression.checkType(
                                 with: .init(
