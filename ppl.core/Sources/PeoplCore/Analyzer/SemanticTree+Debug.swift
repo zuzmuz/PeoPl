@@ -1,4 +1,3 @@
-
 extension Semantic.Context {
     func display() -> String {
         self.definitions.display()
@@ -60,7 +59,6 @@ extension Semantic.TypeSpecifier {
     }
 }
 
-
 extension Semantic.Expression {
     func display() -> String {
         switch self.expressionType {
@@ -72,10 +70,14 @@ extension Semantic.Expression {
             return "\(value)"
         case let .input:
             return "\(self.type.display())(in)"
+        case let .fieldInScope(tag):
+            return "\(tag.display())"
         case let .unary(op, expression):
-            return "\(self.type.display())(\(op.rawValue) \(expression.display()))"
+            return
+                "\(self.type.display())(\(op.rawValue) \(expression.display()))"
         case let .binary(op, left, right):
-            return "\(self.type.display())(\(left.display()) \(op.rawValue) \(right.display()))"
+            return
+                "\(self.type.display())(\(left.display()) \(op.rawValue) \(right.display()))"
         case let .call(signature, input, arguments):
             return "\(signature.display())(in: \(input.display()), )"
         default:

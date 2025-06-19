@@ -172,7 +172,7 @@ extension Syntax.Expression {
     ) throws(Semantic.Error) -> Semantic.Expression {
 
         let argumentsTyped = try arguments.checkType(
-            with: input,
+            with: .nothing,
             localScope: localScope,
             context: context)
 

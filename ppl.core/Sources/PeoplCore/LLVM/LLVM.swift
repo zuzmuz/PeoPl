@@ -65,6 +65,7 @@ extension LLVM {
 
     enum Error: LocalizedError {
         case notImplemented
+        case unreachable
     }
 
     struct Function {

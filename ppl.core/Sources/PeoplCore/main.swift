@@ -3,14 +3,14 @@ import Foundation
 do {
     let module = try Syntax.Module(
         source: """
-            other: [a: Int, b: Int, c: Int] -> Int {
-                other(b: a + c, a: b + c)
+            other: (Int) [a: Int, b: Int, c: Int] -> Int {
+                - a |> other()
             }
-            other: [a: Int, b: Int] -> Int {
-                a + b
+            other: (Int) -> Int {
+                - 2
             }
             main: () -> Int {
-                other(a: 10, b: 1, c: 5)
+                1 |> other(a: 10, b: 1, c: 5)
             }
             """,
         path: "main")
@@ -31,7 +31,6 @@ do {
     case let .failure(error):
         print("Semantic check failed with errors: \(error.errors)")
     }
-
 } catch {
     print("we catching \(error)")
 }

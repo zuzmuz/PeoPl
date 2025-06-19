@@ -9,8 +9,11 @@ extension Semantic.Expression: LLVM.ValueBuilder {
         // also consider using the generic undefined literals (getting type from expression rather assuming the literal)
         switch self.expressionType {
         case .input:
-            // TODO: build value based on input type and get it from scope
-            return LLVMConstNull(LLVMVoidTypeInContext(llvm.context))
+            if let inputValue = scope[.input] {
+                return inputValue
+            } else {
+                return LLVMConstNull(LLVMVoidTypeInContext(llvm.context))
+            }
         case .nothing:
             return LLVMConstNull(LLVMVoidTypeInContext(llvm.context))
         case .never:
@@ -30,6 +33,26 @@ extension Semantic.Expression: LLVM.ValueBuilder {
                 LLVMInt1TypeInContext(llvm.context),
                 value ? 1 : 0,
                 0)
+        case let .unary(op, expression):
+            let value = try expression.llvmBuildValue(llvm: &llvm, scope: scope)
+
+            switch op {
+            case .plus:
+                return value
+            case .minus:
+                let llvmType = try expression.type.llvmGetType(llvm: &llvm)
+                if LLVMGetTypeKind(llvmType) == LLVMFloatTypeKind
+                    || LLVMGetTypeKind(llvmType) == LLVMDoubleTypeKind
+                {
+                    return LLVMBuildFNeg(llvm.builder, value, "neg")
+                } else {
+                    return LLVMBuildNeg(llvm.builder, value, "neg")
+                }
+            case .not:
+                return LLVMBuildNot(llvm.builder, value, "not")
+            default:
+                throw .unreachable
+            }
         case let .binary(op, left, right):
             let lhs = try left.llvmBuildValue(llvm: &llvm, scope: scope)
             let rhs = try right.llvmBuildValue(llvm: &llvm, scope: scope)
@@ -170,11 +193,10 @@ extension Semantic.Expression: LLVM.ValueBuilder {
                         llvm.builder, LLVMIntSGE, lhs, rhs, "icmp_sge")
                 }
             case .not:
-                fatalError("Not supported in binary expressions")
+                throw .unreachable
             }
         case let .fieldInScope(tag):
             return scope[tag.llvmTag()]!
-            
         // case let .field(field):
         //     if let fieldValue = scope[field] {
         //         return fieldValue
@@ -201,7 +223,7 @@ extension Semantic.Expression: LLVM.ValueBuilder {
                 let value = try argument.llvmBuildValue(
                     llvm: &llvm, scope: scope)
                 let index = function.paramNames[tag.llvmTag()]!
-                params[index + inputCount] = value
+                params[index] = value
             }
 
             return params.withUnsafeMutableBufferPointer { buffer in
