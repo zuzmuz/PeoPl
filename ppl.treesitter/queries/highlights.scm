@@ -63,6 +63,7 @@
 (and_operator) @operator
 (or_operator) @operator
 (pipe_operator) @operator
+(optional_pipe_operator) @operator
 
 [
   ; "^"

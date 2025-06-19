@@ -811,7 +811,7 @@
           "name": "expression",
           "content": {
             "type": "SYMBOL",
-            "name": "_expression"
+            "name": "_simple_expression"
           }
         }
       ]
@@ -1592,23 +1592,10 @@
         "type": "SEQ",
         "members": [
           {
-            "type": "SYMBOL",
-            "name": "branch"
-          },
-          {
-            "type": "REPEAT",
+            "type": "REPEAT1",
             "content": {
-              "type": "SEQ",
-              "members": [
-                {
-                  "type": "STRING",
-                  "value": ","
-                },
-                {
-                  "type": "SYMBOL",
-                  "name": "branch"
-                }
-              ]
+              "type": "SYMBOL",
+              "name": "branch"
             }
           }
         ]
@@ -1629,8 +1616,17 @@
           "type": "FIELD",
           "name": "body",
           "content": {
-            "type": "SYMBOL",
-            "name": "_simple_expression"
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "SYMBOL",
+                "name": "_simple_expression"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "tagged_expression"
+              }
+            ]
           }
         }
       ]
@@ -1723,7 +1719,7 @@
     },
     "piped_expression": {
       "type": "PREC_LEFT",
-      "value": 2,
+      "value": 1,
       "content": {
         "type": "SEQ",
         "members": [
@@ -1739,8 +1735,17 @@
             "type": "FIELD",
             "name": "operator",
             "content": {
-              "type": "SYMBOL",
-              "name": "pipe_operator"
+              "type": "CHOICE",
+              "members": [
+                {
+                  "type": "SYMBOL",
+                  "name": "pipe_operator"
+                },
+                {
+                  "type": "SYMBOL",
+                  "name": "optional_pipe_operator"
+                }
+              ]
             }
           },
           {
@@ -1757,6 +1762,19 @@
     "pipe_operator": {
       "type": "STRING",
       "value": "|>"
+    },
+    "optional_pipe_operator": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "STRING",
+          "value": "?"
+        },
+        {
+          "type": "STRING",
+          "value": "|>"
+        }
+      ]
     }
   },
   "extras": [

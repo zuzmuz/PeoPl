@@ -256,6 +256,10 @@
             "named": true
           },
           {
+            "type": "tagged_expression",
+            "named": true
+          },
+          {
             "type": "unary_expression",
             "named": true
           }
@@ -963,6 +967,11 @@
     "fields": {}
   },
   {
+    "type": "optional_pipe_operator",
+    "named": true,
+    "fields": {}
+  },
+  {
     "type": "parenthisized_expression",
     "named": true,
     "fields": {},
@@ -1024,6 +1033,11 @@
         }
       ]
     }
+  },
+  {
+    "type": "pipe_operator",
+    "named": true,
+    "fields": {}
   },
   {
     "type": "piped_expression",
@@ -1091,6 +1105,10 @@
         "multiple": false,
         "required": true,
         "types": [
+          {
+            "type": "optional_pipe_operator",
+            "named": true
+          },
           {
             "type": "pipe_operator",
             "named": true
@@ -1348,10 +1366,6 @@
             "named": true
           },
           {
-            "type": "branched_expression",
-            "named": true
-          },
-          {
             "type": "call_expression",
             "named": true
           },
@@ -1372,15 +1386,7 @@
             "named": true
           },
           {
-            "type": "piped_expression",
-            "named": true
-          },
-          {
             "type": "scoped_identifier",
-            "named": true
-          },
-          {
-            "type": "tagged_expression",
             "named": true
           },
           {
@@ -1868,6 +1874,10 @@
     "named": false
   },
   {
+    "type": "?",
+    "named": false
+  },
+  {
     "type": "Nothing",
     "named": false
   },
@@ -1952,10 +1962,6 @@
     "named": true
   },
   {
-    "type": "pipe_operator",
-    "named": true
-  },
-  {
     "type": "small_identifier",
     "named": true
   },
@@ -1981,6 +1987,10 @@
   },
   {
     "type": "|",
+    "named": false
+  },
+  {
+    "type": "|>",
     "named": false
   },
   {

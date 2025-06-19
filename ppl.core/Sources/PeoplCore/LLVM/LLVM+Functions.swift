@@ -132,6 +132,12 @@ import cllvm
 // }
 //
 
+extension Semantic.FunctionSignature {
+    var identifyingName: String {
+        "\(self.identifier.chain.joined(separator: "_"))_\(self.hashValue)"
+    }
+}
+
 extension Semantic.Context: LLVM.StatementBuilder {
     func llvmBuildFunction(
         llvm: inout LLVM.Builder,
@@ -139,8 +145,8 @@ extension Semantic.Context: LLVM.StatementBuilder {
         body: Semantic.Expression
     ) throws(LLVM.Error) {
 
-        let functionName = signature.identifier.chain.joined(
-            separator: "_")
+        let functionName = signature.identifyingName
+
         var paramTypes: [LLVMTypeRef?] = []
 
         if signature.inputType != .nothing {
@@ -160,6 +166,23 @@ extension Semantic.Context: LLVM.StatementBuilder {
         }
 
         let function = LLVMAddFunction(llvm.module, functionName, functionType)
+
+        let entryBlock = LLVMAppendBasicBlockInContext(
+            llvm.context, function, "entry")
+        LLVMPositionBuilderAtEnd(llvm.builder, entryBlock)
+        var paramValues: [String: LLVMValueRef] = [:]
+
+        // for (index, param) in params.enumerated() {
+        //     let paramValue = LLVMGetParam(function, UInt32(index))
+        //     LLVMSetValueName2(paramValue, param.name, param.name.utf8.count)
+        //     paramValues[param.name] = paramValue
+        // }
+
+        let returnValue = try body.llvmBuildValue(
+            llvm: &llvm, scope: paramValues)
+
+        //             return LLVMConstInt(try self.type.llvmGetType(llvm: &llvm), value, 0)
+        LLVMBuildRet(llvm.builder, returnValue)
     }
 
     func llvmBuildStatement(llvm: inout LLVM.Builder) throws(LLVM.Error) {

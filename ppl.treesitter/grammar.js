@@ -16,8 +16,8 @@ const PREC = {
   COMP: 5,
   AND: 4,
   OR: 3,
-  PIPE: 2,
-  SUBPIPE: 1,
+  SUBPIPE: 2,
+  PIPE: 1,
 };
 
 module.exports = grammar({
@@ -231,7 +231,7 @@ module.exports = grammar({
     tagged_expression: $ => seq(
       field("identifier", $.small_identifier),
       ":",
-      field("expression", $._expression),
+      field("expression", $._simple_expression),
     ),
 
     expression_list: $ => seq(
@@ -417,13 +417,12 @@ module.exports = grammar({
     or_operator: $ => 'or',
 
     branched_expression: $ => prec.left(seq(
-      $.branch,
-      repeat(seq(',', $.branch)),
+      repeat1($.branch),
     )),
 
     branch: $ => seq(
       field("capture_group", $.branch_capture_group),
-      field("body", $._simple_expression)
+      field("body", choice($._simple_expression, $.tagged_expression))
     ),
 
     branch_capture_group: $ => seq(
@@ -441,10 +440,11 @@ module.exports = grammar({
 
     piped_expression: $ => prec.left(PREC.PIPE, seq(
         field("left", $._expression),
-        field("operator", $.pipe_operator),
+        field("operator", choice($.pipe_operator, $.optional_pipe_operator)),
         field("right", $._expression),
     )),
 
     pipe_operator: $ => '|>',
+    optional_pipe_operator: $ => seq('?', '|>'),
   }
 });

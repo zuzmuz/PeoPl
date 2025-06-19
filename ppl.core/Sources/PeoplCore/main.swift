@@ -3,15 +3,11 @@ import Foundation
 do {
     let module = try Syntax.Module(
         source: """
-            other: (Int) -> Bool {
-                > 1
-            }
-
-            main: (Int) -> Bool {
+            other: (Int) -> Int {
                 + 4
-                |> - 2
-                |> other()
-                |> and true
+            }
+            main: () -> Int {
+                0
             }
             """,
         path: "main")
@@ -20,7 +16,17 @@ do {
 
     switch result {
     case let .success(context):
-        print(context.display())
+        context.display()
+        
+        var llvm = LLVM.Builder(name: "name")
+
+        try context.llvmBuildStatement(llvm: &llvm)
+        
+        print("llvm")
+        print(llvm.generate())
+
+
+
     case let .failure(error):
         print("Semantic check failed with errors: \(error.errors)")
     }
