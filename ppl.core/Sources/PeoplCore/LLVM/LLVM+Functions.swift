@@ -144,7 +144,12 @@ extension Semantic.Tag {
 }
 extension Semantic.FunctionSignature {
     var llvmName: String {
-        "\(self.identifier.chain.joined(separator: "_"))_\(self.hashValue)"
+        // FIXME: this is stupid should thing about main function
+        if self.identifier.chain == ["main"] {
+            "main"
+        } else {
+            "\(self.identifier.chain.joined(separator: "_"))_\(self.hashValue)"
+        }
     }
 
     func llvmFunction(
@@ -154,12 +159,16 @@ extension Semantic.FunctionSignature {
         var paramTypes: [LLVMTypeRef?] = []
         var paramNames: [LLVM.ParamTag: Int] = [:]
 
-        paramTypes.append(try self.inputType.llvmGetType(llvm: &llvm))
-        paramNames[.input] = 0
+        let inputCount = self.inputType != .nothing ? 1 : 0
+
+        if inputCount == 1 {
+            paramTypes.append(try self.inputType.llvmGetType(llvm: &llvm))
+            paramNames[.input] = 0
+        }
 
         for (index, argument) in self.arguments.enumerated() {
             // input alwas first param
-            paramNames[argument.key.llvmTag()] = index + 1
+            paramNames[argument.key.llvmTag()] = index + inputCount
             paramTypes.append(try argument.value.llvmGetType(llvm: &llvm))
         }
 
@@ -174,7 +183,6 @@ extension Semantic.FunctionSignature {
             llvm.module,
             llvmName,
             functionType)
-
 
         return .init(
             name: self.llvmName,
@@ -221,21 +229,6 @@ extension Semantic.Context: LLVM.StatementBuilder {
             body: body, llvm: &llvm)
 
         llvm.functions[functionName] = function
-
-        // let entryBlock = LLVMAppendBasicBlockInContext(
-        //     llvm.context, function.functionValue, "entry")
-        // LLVMPositionBuilderAtEnd(llvm.builder, entryBlock)
-        // var paramValues: [String: LLVMValueRef] = [:]
-
-        // for (index, param) in params.enumerated() {
-        //     let paramValue = LLVMGetParam(function, UInt32(index))
-        //     LLVMSetValueName2(paramValue, param.name, param.name.utf8.count)
-        //     paramValues[param.name] = paramValue
-        // }
-
-        // let returnValue = try body.llvmBuildValue(
-        //     llvm: &llvm, scope: paramValues)
-        // LLVMBuildRet(llvm.builder, returnValue)
     }
 
     func llvmBuildStatement(llvm: inout LLVM.Builder) throws(LLVM.Error) {

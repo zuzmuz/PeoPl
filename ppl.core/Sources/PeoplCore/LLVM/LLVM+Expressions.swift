@@ -189,12 +189,16 @@ extension Semantic.Expression: LLVM.ValueBuilder {
                 repeating: nil,
                 count: function.paramTypes.count)
 
-            params[0] = try input.llvmBuildValue(llvm: &llvm, scope: scope)
+            let inputCount = input.type != .nothing ? 1 : 0
+
+            if inputCount == 1 {
+                params[0] = try input.llvmBuildValue(llvm: &llvm, scope: scope)
+            }
             for (tag, argument) in arguments {
                 let value = try argument.llvmBuildValue(
                     llvm: &llvm, scope: scope)
                 let index = function.paramNames[tag.llvmTag()]!
-                params[index + 1] = value
+                params[index + inputCount] = value
             }
 
             return params.withUnsafeMutableBufferPointer { buffer in
