@@ -317,20 +317,14 @@ extension Syntax.Expression {
                 expected: .nothing,
                 received: input.type)
         case let (_, .field(identifier)):
-            // if identifier.chain.count == 1,
-            //     let field = identifier.chain.first,
-            //     let fieldTypeInScope = localScope.scope[.named(field)]
-            // {
-            //     return .init(
-            //         expression: .fieldInScope(.named(field)),
-            //         type: fieldTypeInScope)
-            // }
-            // if let value = context.valueDeclarations[
-            //     .value(identifier.getSemanticIdentifier())]
-            // {
-            //     fatalError(
-            //         "Not sure what to do here, this is a global static const")
-            // }
+            if identifier.chain.count == 1,
+                let field = identifier.chain.first,
+                let fieldTypeInScope = localScope.scope[.named(field)]
+            { // NOTE: named and unnamed are equivalent, but I should figure out how to switch between the two
+                return .init(
+                    expressionType: .fieldInScope(.named(field)),
+                    type: fieldTypeInScope)
+            }
             fatalError("Field expression type checking is not implemented yet")
         // NOTE: should bindings shadow definitions in scope or context
         case let (.nothing, .access(prefix, fieldIdentifier)):

@@ -207,12 +207,12 @@ extension Semantic.Context: LLVM.StatementBuilder {
         LLVMPositionBuilderAtEnd(llvm.builder, entryBlock)
 
         var paramValues: [LLVM.ParamTag: LLVMValueRef?] = [:]
-        
 
         for (tag, index) in function.paramNames {
             let paramValue = LLVMGetParam(function.functionValue, UInt32(index))
             paramValues[tag] = paramValue
-            let paramName = "p_\(tag.hashValue)"
+            // let paramName = "p_\(tag.hashValue)"
+            let paramName = tag.value
             LLVMSetValueName2(paramValue, paramName, paramName.utf8.count)
         }
 

@@ -151,7 +151,7 @@ enum Semantic {
             //
             //
             // case field(Syntax.ScopedIdentifier)
-            // case fieldInScope(Tag)
+            case fieldInScope(Tag)
         }
 
         static let nothing = Expression(

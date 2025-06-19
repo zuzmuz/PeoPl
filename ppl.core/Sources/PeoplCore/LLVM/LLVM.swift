@@ -60,7 +60,7 @@ extension LLVM {
         func llvmBuildValue(
             llvm: inout Builder,
             scope: borrowing [LLVM.ParamTag: LLVMValueRef?]
-        ) throws(LLVM.Error) -> LLVMValueRef
+        ) throws(LLVM.Error) -> LLVMValueRef?
     }
 
     enum Error: LocalizedError {
@@ -81,6 +81,17 @@ extension LLVM {
         case named(String)
         case unnamed(UInt64)
         case input
+
+        var value: String {
+            switch self {
+            case .input:
+                "_in_" // FIXME: should be unique
+            case let .named(value):
+                value
+            case let .unnamed(value):
+                "_\(value)"
+            }
+        }
     }
 }
 
