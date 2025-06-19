@@ -132,29 +132,34 @@ import cllvm
 // }
 //
 
-extension Semantic.FunctionSignature {
-    var identifyingName: String {
-        "\(self.identifier.chain.joined(separator: "_"))_\(self.hashValue)"
+extension Semantic.Tag {
+    func llvmTag() -> LLVM.ParamTag {
+        switch self {
+        case let .named(value):
+            return .named(value)
+        case let .unnamed(value):
+            return .unnamed(value)
+        }
     }
 }
+extension Semantic.FunctionSignature {
+    var llvmName: String {
+        "\(self.identifier.chain.joined(separator: "_"))_\(self.hashValue)"
+    }
 
-extension Semantic.Context: LLVM.StatementBuilder {
-    func llvmBuildFunction(
-        llvm: inout LLVM.Builder,
-        signature: Semantic.FunctionSignature,
-        body: Semantic.Expression
-    ) throws(LLVM.Error) {
-
-        let functionName = signature.identifyingName
-
+    func llvmFunction(
+        body: borrowing Semantic.Expression,
+        llvm: inout LLVM.Builder
+    ) throws(LLVM.Error) -> LLVM.Function {
         var paramTypes: [LLVMTypeRef?] = []
+        var paramNames: [LLVM.ParamTag: Int] = [:]
 
-        if signature.inputType != .nothing {
-            paramTypes.append(
-                try signature.inputType.llvmGetType(llvm: &llvm))
-        }
+        paramTypes.append(try self.inputType.llvmGetType(llvm: &llvm))
+        paramNames[.input] = 0
 
-        for argument in signature.arguments {
+        for (index, argument) in self.arguments.enumerated() {
+            // input alwas first param
+            paramNames[argument.key.llvmTag()] = index + 1
             paramTypes.append(try argument.value.llvmGetType(llvm: &llvm))
         }
 
@@ -165,12 +170,62 @@ extension Semantic.Context: LLVM.StatementBuilder {
                 outputType, buffer.baseAddress, UInt32(buffer.count), 0)
         }
 
-        let function = LLVMAddFunction(llvm.module, functionName, functionType)
+        let functionValue = LLVMAddFunction(
+            llvm.module,
+            llvmName,
+            functionType)
 
+
+        return .init(
+            name: self.llvmName,
+            paramTypes: paramTypes,
+            paramNames: paramNames,
+            outputType: outputType,
+            functionType: functionType!,
+            functionValue: functionValue!)
+    }
+}
+
+extension Semantic.Context: LLVM.StatementBuilder {
+    func llvmBuildFunctionDefinition(
+        llvm: inout LLVM.Builder,
+        signature: Semantic.FunctionSignature,
+        body: Semantic.Expression
+    ) throws(LLVM.Error) {
+        let functionName = signature.llvmName
+        let function = llvm.functions[functionName]
         let entryBlock = LLVMAppendBasicBlockInContext(
-            llvm.context, function, "entry")
+            llvm.context, function?.functionValue, "entry")
         LLVMPositionBuilderAtEnd(llvm.builder, entryBlock)
         var paramValues: [String: LLVMValueRef] = [:]
+
+        // for (index, param) in signature.arguments.enumerated() {
+        //     let paramValue = LLVMGetParam(llvmFunction, UInt32(index + 1))
+        //     LLVMSetValueName2(paramValue, param.key.display().cString, Int32(param.key.display().utf8.count))
+        //     paramValues[param.key.display()] = paramValue
+        // }
+
+        let returnValue = try body.llvmBuildValue(
+            llvm: &llvm, scope: paramValues)
+        LLVMBuildRet(llvm.builder, returnValue)
+    }
+
+    func llvmBuildFunctionDeclaration(
+        llvm: inout LLVM.Builder,
+        signature: Semantic.FunctionSignature,
+        body: Semantic.Expression
+    ) throws(LLVM.Error) {
+
+        let functionName = signature.llvmName
+        let function = try signature.llvmFunction(
+            body: body, llvm: &llvm)
+
+        llvm.functions[functionName] = function
+
+        // let entryBlock = LLVMAppendBasicBlockInContext(
+        //     llvm.context, function.functionValue, "entry")
+        // LLVMPositionBuilderAtEnd(llvm.builder, entryBlock)
+        // var paramValues: [String: LLVMValueRef] = [:]
 
         // for (index, param) in params.enumerated() {
         //     let paramValue = LLVMGetParam(function, UInt32(index))
@@ -178,18 +233,28 @@ extension Semantic.Context: LLVM.StatementBuilder {
         //     paramValues[param.name] = paramValue
         // }
 
-        let returnValue = try body.llvmBuildValue(
-            llvm: &llvm, scope: paramValues)
-
-        //             return LLVMConstInt(try self.type.llvmGetType(llvm: &llvm), value, 0)
-        LLVMBuildRet(llvm.builder, returnValue)
+        // let returnValue = try body.llvmBuildValue(
+        //     llvm: &llvm, scope: paramValues)
+        // LLVMBuildRet(llvm.builder, returnValue)
     }
 
     func llvmBuildStatement(llvm: inout LLVM.Builder) throws(LLVM.Error) {
         for (signature, expression) in self.definitions.valueDefinitions {
             switch signature {
             case let .function(function):
-                try self.llvmBuildFunction(
+                try self.llvmBuildFunctionDeclaration(
+                    llvm: &llvm,
+                    signature: function,
+                    body: expression)
+
+            case .value:
+                fatalError("code gen for value not supported")
+            }
+        }
+        for (signature, expression) in self.definitions.valueDefinitions {
+            switch signature {
+            case let .function(function):
+                try self.llvmBuildFunctionDefinition(
                     llvm: &llvm,
                     signature: function,
                     body: expression)

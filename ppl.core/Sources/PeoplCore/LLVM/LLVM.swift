@@ -9,7 +9,7 @@ extension LLVM {
         let context: LLVMContextRef
         let builder: LLVMBuilderRef
 
-        var functionTypes: [String: LLVMTypeRef]
+        var functions: [String: Function]
 
         init(name: String) {
             context = LLVMContextCreate()
@@ -23,6 +23,8 @@ extension LLVM {
 
             module = LLVMModuleCreateWithNameInContext(name, context)
             builder = LLVMCreateBuilderInContext(context)
+
+            functions = [:]
 
         }
 
@@ -63,6 +65,22 @@ extension LLVM {
 
     enum Error: LocalizedError {
         case notImplemented
+    }
+
+    struct Function {
+        let name: String
+        let paramTypes: [LLVMTypeRef?]
+        let paramNames: [LLVM.ParamTag: Int]
+        let outputType: LLVMTypeRef
+        let functionType: LLVMTypeRef
+        let functionValue: LLVMValueRef
+        // Mayby Body Expression
+    }
+
+    enum ParamTag: Hashable {
+        case named(String)
+        case unnamed(UInt64)
+        case input
     }
 }
 

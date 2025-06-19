@@ -8,6 +8,9 @@ extension Semantic.Expression: LLVM.ValueBuilder {
         // TODO: generate typeref for builtins to use in literals,
         // also consider using the generic undefined literals (getting type from expression rather assuming the literal)
         switch self.expressionType {
+        case .input:
+            // TODO: build value based on input type and get it from scope
+            return LLVMConstNull(LLVMVoidTypeInContext(llvm.context))
         case .nothing:
             return LLVMConstNull(LLVMVoidTypeInContext(llvm.context))
         case .never:
@@ -176,47 +179,35 @@ extension Semantic.Expression: LLVM.ValueBuilder {
         //         throw .unsupportedExpression(self)
         //     }
         case let .call(signature, input, arguments):
-            let function = LLVMGetNamedFunction(
+            let llvmFunction = LLVMGetNamedFunction(
                 llvm.module,
-                signature.identifyingName)
-                    var arguments = try call.arguments.map {
-                        argument throws(LLVM.Error) in
-                        try argument.value.llvmBuildValue(
-                            llvm: &llvm, scope: scope) as Optional
-                    }
-                    var paramTypes = try call.arguments.map {
-                        argument throws(LLVM.Error) in
-                        try argument.value.typeIdentifier.llvmGetType(
-                            llvm: &llvm) as Optional
-                    }
-                    let callType = try call.typeIdentifier.llvmGetType(
-                        llvm: &llvm)
+                signature.llvmName)
 
-                    let functionType = paramTypes.withUnsafeMutableBufferPointer
-                    { buffer in
-                        return LLVMFunctionType(
-                            callType, buffer.baseAddress, UInt32(buffer.count),
-                            0)
-                    }
-                    // FIX: I might need to save the function types for each function name
+            let function = llvm.functions[signature.llvmName]!
 
-                    return arguments.withUnsafeMutableBufferPointer { buffer in
-                        return LLVMBuildCall2(
-                            llvm.builder,
-                            functionType,
-                            function,
-                            buffer.baseAddress,
-                            UInt32(buffer.count),
-                            "")
-                    }
-                default:
-                    throw .notImplemented
-                }
-            default:
-                throw .notImplemented
+            var params: [LLVMValueRef?] = .init(
+                repeating: nil,
+                count: function.paramTypes.count)
+
+            params[0] = try input.llvmBuildValue(llvm: &llvm, scope: scope)
+            for (tag, argument) in arguments {
+                let value = try argument.llvmBuildValue(
+                    llvm: &llvm, scope: scope)
+                let index = function.paramNames[tag.llvmTag()]!
+                params[index + 1] = value
+            }
+
+            return params.withUnsafeMutableBufferPointer { buffer in
+                return LLVMBuildCall2(
+                    llvm.builder,
+                    function.functionType,
+                    llvmFunction,
+                    buffer.baseAddress,
+                    UInt32(buffer.count),
+                    "")
             }
         default:
-            throw .unsupportedExpression(self)
+            fatalError("not implemented: \(self.expressionType)")
         }
     }
 }

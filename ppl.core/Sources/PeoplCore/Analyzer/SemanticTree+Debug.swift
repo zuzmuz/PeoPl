@@ -55,7 +55,7 @@ extension Semantic.TypeSpecifier {
         case let .nominal(nominal):
             nominal.display()
         case let .raw(raw):
-            fatalError()
+            "()"
         }
     }
 }

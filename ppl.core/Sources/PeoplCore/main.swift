@@ -3,11 +3,11 @@ import Foundation
 do {
     let module = try Syntax.Module(
         source: """
-            other: (Int) -> Int {
-                + 4
+            other: () -> Int {
+                3
             }
             main: () -> Int {
-                0
+                other()
             }
             """,
         path: "main")
