@@ -201,17 +201,20 @@ extension Semantic.Context: LLVM.StatementBuilder {
         body: Semantic.Expression
     ) throws(LLVM.Error) {
         let functionName = signature.llvmName
-        let function = llvm.functions[functionName]
+        let function = llvm.functions[functionName]!
         let entryBlock = LLVMAppendBasicBlockInContext(
-            llvm.context, function?.functionValue, "entry")
+            llvm.context, function.functionValue, "entry")
         LLVMPositionBuilderAtEnd(llvm.builder, entryBlock)
-        var paramValues: [String: LLVMValueRef] = [:]
 
-        // for (index, param) in signature.arguments.enumerated() {
-        //     let paramValue = LLVMGetParam(llvmFunction, UInt32(index + 1))
-        //     LLVMSetValueName2(paramValue, param.key.display().cString, Int32(param.key.display().utf8.count))
-        //     paramValues[param.key.display()] = paramValue
-        // }
+        var paramValues: [LLVM.ParamTag: LLVMValueRef?] = [:]
+        
+
+        for (tag, index) in function.paramNames {
+            let paramValue = LLVMGetParam(function.functionValue, UInt32(index))
+            paramValues[tag] = paramValue
+            let paramName = "p_\(tag.hashValue)"
+            LLVMSetValueName2(paramValue, paramName, paramName.utf8.count)
+        }
 
         let returnValue = try body.llvmBuildValue(
             llvm: &llvm, scope: paramValues)

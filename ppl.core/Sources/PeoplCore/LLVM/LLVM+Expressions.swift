@@ -3,7 +3,7 @@ import cllvm
 extension Semantic.Expression: LLVM.ValueBuilder {
     func llvmBuildValue(
         llvm: inout LLVM.Builder,
-        scope: borrowing [String: LLVMValueRef]
+        scope: borrowing [LLVM.ParamTag: LLVMValueRef?]
     ) throws(LLVM.Error) -> LLVMValueRef {
         // TODO: generate typeref for builtins to use in literals,
         // also consider using the generic undefined literals (getting type from expression rather assuming the literal)
