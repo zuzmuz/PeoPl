@@ -59,6 +59,7 @@ extension LLVM {
     protocol ValueBuilder {
         func llvmBuildValue(
             llvm: inout Builder,
+            // function: LLVM.Function,
             scope: borrowing [LLVM.ParamTag: LLVMValueRef?]
         ) throws(LLVM.Error) -> LLVMValueRef?
     }

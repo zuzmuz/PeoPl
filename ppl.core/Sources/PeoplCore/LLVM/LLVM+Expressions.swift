@@ -3,6 +3,7 @@ import cllvm
 extension Semantic.Expression: LLVM.ValueBuilder {
     func llvmBuildValue(
         llvm: inout LLVM.Builder,
+        // function: LLVM.Function,
         scope: borrowing [LLVM.ParamTag: LLVMValueRef?]
     ) throws(LLVM.Error) -> LLVMValueRef? {
         // TODO: generate typeref for builtins to use in literals,
@@ -235,6 +236,40 @@ extension Semantic.Expression: LLVM.ValueBuilder {
                     UInt32(buffer.count),
                     "")
             }
+        case let .branching(branches):
+            let function = LLVMGetBasicBlockParent(
+                LLVMGetInsertBlock(llvm.builder))
+
+            let defaultBlock = LLVMAppendBasicBlockInContext(
+                llvm.context, function, "default")
+            // TODO: add unique identifiers to branches
+
+            let switchExpression = LLVMBuildSwitch(
+                llvm.builder, // TODO: should be input here, if input is nothing I should create an expression based on all branches expressions
+                LLVMConstInt(
+                    LLVMInt32TypeInContext(llvm.context), UInt64(0), 0),
+                defaultBlock,
+                UInt32(branches.count))
+
+            for (index, branch) in branches.dropLast().enumerated() {
+                let block = LLVMAppendBasicBlockInContext(
+                    llvm.context, function, "b_\(index)")
+                // let matchValue = try branch.match.condition.llvmBuildValue(
+                //     llvm: &llvm, scope: scope)
+                let matchValue = LLVMConstInt(
+                    LLVMInt32TypeInContext(llvm.context), UInt64(index), 0)
+                LLVMAddCase(switchExpression, matchValue, block)
+                LLVMPositionBuilderAtEnd(llvm.builder, block)
+
+                try branch.body.llvmBuildValue(
+                    llvm: &llvm, scope: scope)
+            }
+            LLVMPositionBuilderAtEnd(llvm.builder, defaultBlock)
+
+            try branches.last?.body.llvmBuildValue(
+                llvm: &llvm, scope: scope)
+            
+            return switchExpression
         default:
             fatalError("not implemented: \(self.expressionType)")
         }

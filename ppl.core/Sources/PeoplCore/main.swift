@@ -4,8 +4,7 @@ do {
     let module = try Syntax.Module(
         source: """
             other: [a: Int] -> Int {
-                |if a = 5| 10
-                |_| 1
+                a + 2 + 4 + 5
             }
             main: () -> Int {
                 other(a: 5)
@@ -19,12 +18,12 @@ do {
     case let .success(context):
         print(context.display())
 
-        // var llvm = LLVM.Builder(name: "name")
+        var llvm = LLVM.Builder(name: "name")
 
-        // try context.llvmBuildStatement(llvm: &llvm)
+        try context.llvmBuildStatement(llvm: &llvm)
 
         print("llvm")
-        // print(llvm.generate())
+        print(llvm.generate())
 
     case let .failure(error):
         print("Semantic check failed with errors: \(error.errors)")

@@ -204,6 +204,7 @@ extension Semantic.Context: LLVM.StatementBuilder {
         let function = llvm.functions[functionName]!
         let entryBlock = LLVMAppendBasicBlockInContext(
             llvm.context, function.functionValue, "entry")
+
         LLVMPositionBuilderAtEnd(llvm.builder, entryBlock)
 
         var paramValues: [LLVM.ParamTag: LLVMValueRef?] = [:]
