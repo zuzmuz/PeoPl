@@ -3,11 +3,10 @@ import Foundation
 do {
     let module = try Syntax.Module(
         source: """
-            other: [c: Int, d: Int] -> Int {
-                c * d
-            }
-            other: [a: Int, b: Int] -> Bool {
-                a = b 
+            other: [a: Int, b: Int] -> Int {
+                |if a = b| 10
+                |if a > b| 20
+                |if a < b| 30
             }
             main: () -> Int {
                 other(a: 1, b: 2)

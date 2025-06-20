@@ -247,15 +247,49 @@ extension Semantic.Expression: LLVM.ValueBuilder {
         let resultValue = LLVMBuildAlloca(
             llvm.builder,
             branchingType,
-            "branch_result")  // TODO: should be unique
+            "branch_result")
+
+        // this is convoluted and I think can be improved but is a general solution
+        let switchCondition: LLVMValueRef =
+            try branches.map { branch throws(LLVM.Error) in
+                let matchCondition = try branch.match.condition.llvmBuildValue(
+                    llvm: &llvm, scope: scope)
+                let guardCondition = try branch.guard.llvmBuildValue(
+                    llvm: &llvm, scope: scope)
+                let combinedCondition = LLVMBuildAnd(
+                    llvm.builder, matchCondition, guardCondition, "combined")
+
+                return LLVMBuildIntCast2(
+                    llvm.builder,
+                    combinedCondition,
+                    LLVMInt32TypeInContext(llvm.context),
+                    0,
+                    "cast")
+            }.enumerated().reduce(
+                LLVMConstInt(
+                    LLVMInt32TypeInContext(llvm.context),
+                    0,
+                    0)
+            ) { llvmValue, enumeratedValue in
+                LLVMBuildAdd(
+                    llvm.builder,
+                    llvmValue,
+                    LLVMBuildMul(
+                        llvm.builder,
+                        enumeratedValue.element,
+                        LLVMConstInt(
+                            LLVMInt32TypeInContext(llvm.context),
+                            UInt64(enumeratedValue.offset),
+                            0),
+                        "mul"),
+                    "added")
+            }
 
         let switchExpression = LLVMBuildSwitch(
             llvm.builder,
-            // TODO: should be input here, if input is nothing I should create an expression based on all branches expressions
-            LLVMConstInt(
-                LLVMInt32TypeInContext(llvm.context), UInt64(0), 0),
+            switchCondition,
             defaultBlock,
-            UInt32(branches.count))
+            UInt32(branches.count) - 1)
 
         let continueBlock = LLVMAppendBasicBlockInContext(
             llvm.context,
