@@ -237,6 +237,8 @@ extension Semantic.Expression: LLVM.ValueBuilder {
                     "")
             }
         case let .branching(branches):
+
+            let branchingType = try self.type.llvmGetType(llvm: &llvm)
             let function = LLVMGetBasicBlockParent(
                 LLVMGetInsertBlock(llvm.builder))
 
@@ -244,12 +246,23 @@ extension Semantic.Expression: LLVM.ValueBuilder {
                 llvm.context, function, "default")
             // TODO: add unique identifiers to branches
 
+            let resultValue = LLVMBuildAlloca(
+                llvm.builder,
+                branchingType,
+                "branch_result")  // TODO: should be unique
+
             let switchExpression = LLVMBuildSwitch(
-                llvm.builder, // TODO: should be input here, if input is nothing I should create an expression based on all branches expressions
+                llvm.builder,
+                // TODO: should be input here, if input is nothing I should create an expression based on all branches expressions
                 LLVMConstInt(
                     LLVMInt32TypeInContext(llvm.context), UInt64(0), 0),
                 defaultBlock,
                 UInt32(branches.count))
+
+            let continueBlock = LLVMAppendBasicBlockInContext(
+                llvm.context,
+                function,
+                "continue")
 
             for (index, branch) in branches.dropLast().enumerated() {
                 let block = LLVMAppendBasicBlockInContext(
@@ -261,15 +274,25 @@ extension Semantic.Expression: LLVM.ValueBuilder {
                 LLVMAddCase(switchExpression, matchValue, block)
                 LLVMPositionBuilderAtEnd(llvm.builder, block)
 
-                try branch.body.llvmBuildValue(
-                    llvm: &llvm, scope: scope)
-            }
-            LLVMPositionBuilderAtEnd(llvm.builder, defaultBlock)
+                LLVMBuildStore(
+                    llvm.builder,
+                    try branch.body.llvmBuildValue(llvm: &llvm, scope: scope),
+                    resultValue)
 
-            try branches.last?.body.llvmBuildValue(
-                llvm: &llvm, scope: scope)
-            
-            return switchExpression
+                LLVMBuildBr(llvm.builder, continueBlock)
+            }
+
+            LLVMPositionBuilderAtEnd(llvm.builder, defaultBlock)
+            LLVMBuildStore(
+                llvm.builder,
+                try branches.last?.body.llvmBuildValue(
+                    llvm: &llvm, scope: scope),
+                resultValue)
+            LLVMBuildBr(llvm.builder, continueBlock)
+
+            LLVMPositionBuilderAtEnd(llvm.builder, continueBlock)
+
+            return LLVMBuildLoad2(llvm.builder, branchingType, resultValue, "result")
         default:
             fatalError("not implemented: \(self.expressionType)")
         }

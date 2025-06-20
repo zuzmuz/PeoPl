@@ -4,7 +4,10 @@ do {
     let module = try Syntax.Module(
         source: """
             other: [a: Int] -> Int {
-                a + 2 + 4 + 5
+                |if a = 0| 10
+                |if a = 1| 20
+                |if a = 2| 30
+                |_| 1
             }
             main: () -> Int {
                 other(a: 5)
