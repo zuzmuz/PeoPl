@@ -110,6 +110,10 @@ extension Semantic.Expression: LLVM.ValueBuilder {
             } else {
                 return LLVMBuildICmp(
                     llvm.builder, LLVMIntEQ, lhs, rhs, "icmp_eq")
+                // return LLVMBuildIntCast2(
+                //     llvm.builder, cmp,
+                //     LLVMInt32TypeInContext(llvm.context),
+                //     0, "cast")
             }
 
         case .different:
@@ -224,7 +228,8 @@ extension Semantic.Expression: LLVM.ValueBuilder {
         branches: [(
             match: Semantic.BindingExpression,
             guard: Semantic.Expression,
-            body: Semantic.Expression)],
+            body: Semantic.Expression
+        )],
         llvm: inout LLVM.Builder,
         scope: borrowing [LLVM.ParamTag: LLVMValueRef?]
     ) throws(LLVM.Error) -> LLVMValueRef? {
@@ -266,6 +271,12 @@ extension Semantic.Expression: LLVM.ValueBuilder {
                 LLVMInt32TypeInContext(llvm.context), UInt64(index), 0)
             LLVMAddCase(switchExpression, matchValue, block)
             LLVMPositionBuilderAtEnd(llvm.builder, block)
+
+            // TODO: add values to the scope based on bindings
+            // bindings can be
+            // - simple pure binding (capturing the whole input)
+            // - complex pattern matching (capturing inner members of structures)
+            // - tagged expressions (for sum types)
 
             LLVMBuildStore(
                 llvm.builder,

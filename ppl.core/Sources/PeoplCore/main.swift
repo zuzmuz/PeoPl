@@ -3,14 +3,14 @@ import Foundation
 do {
     let module = try Syntax.Module(
         source: """
-            other: [a: Int] -> Int {
-                |if a = 0| 10 // 0
-                |if a = 1| 20 // 1
-                |if a = 2| 30 // 2
-                |_| 1
+            other: [c: Int, d: Int] -> Int {
+                c * d
+            }
+            other: [a: Int, b: Int] -> Bool {
+                a = b 
             }
             main: () -> Int {
-                other(a: 5)
+                other(a: 1, b: 2)
             }
             """,
         path: "main")

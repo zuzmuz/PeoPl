@@ -75,16 +75,16 @@ Todo list:
   - [ ] Namespaces
     - [ ] Definining namespaces
     - [ ] Importing scopes
-- [ ] Parser based on Treesitter
-- [ ] Semantic Analyzer
-  - [ ] Type definitions check
-    - [ ] Checking invalid definitions
-    - [ ] Checking redefinitions
+- [X] Parser based on Treesitter
+- [-] Semantic Analyzer
+  - [-] Type definitions check
+    - [X] Checking invalid definitions
+    - [X] Checking redefinitions
     - [ ] Checking shadowing
-    - [ ] Checking cyclical definitions
-  - [ ] Expressions type checking
-    - [ ] Basic piping type checking
-    - [ ] Function call type checking
+    - [X] Checking cyclical definitions
+  - [-] Expressions type checking
+    - [X] Basic piping type checking
+    - [X] Function call type checking
     - [ ] Branching type checking
       - [ ] Exhaustive branching
     - [ ] Lambdas type checking

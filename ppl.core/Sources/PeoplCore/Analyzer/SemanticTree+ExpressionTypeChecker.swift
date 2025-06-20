@@ -293,6 +293,27 @@ extension Syntax.Expression {
                     type: .bool),
                 bindings: [Semantic.Tag.named(binding): input.type])
         // TODO: more complicated pattern matching
+        case let (inputType, .literal(literal)):
+            let literalTyped = try self.checkLiteral(
+                with: .nothing,
+                literal: literal,
+                localScope: localScope,
+                context: context)
+            if inputType != literalTyped.type {
+                throw .inputMismatch(
+                    expression: self,
+                    expected: inputType,
+                    received: literalTyped.type)
+            }
+            return .init(
+                condition: .init(
+                    expressionType: .binary(
+                        .equal,
+                        left: input,
+                        right: literalTyped),
+                    type: .bool),
+                bindings: [:])
+        // TODO: other complex pattern matching requires expression to be an initializer expression
         default:
             fatalError("Advanced pattern matching is not implemented yet")
         }
