@@ -4,9 +4,9 @@ do {
     let module = try Syntax.Module(
         source: """
             other: [a: Int] -> Int {
-                |if a = 0| 10
-                |if a = 1| 20
-                |if a = 2| 30
+                |if a = 0| 10 // 0
+                |if a = 1| 20 // 1
+                |if a = 2| 30 // 2
                 |_| 1
             }
             main: () -> Int {
