@@ -421,11 +421,11 @@ module.exports = grammar({
     )),
 
     branch: $ => seq(
-      field("capture_group", $.branch_capture_group),
+      $._branch_capture_group,
       field("body", choice($._simple_expression, $.tagged_expression))
     ),
 
-    branch_capture_group: $ => seq(
+    _branch_capture_group: $ => seq(
       '|', 
       choice(
         field("match_expression", choice($._simple_expression, $.tagged_expression)),

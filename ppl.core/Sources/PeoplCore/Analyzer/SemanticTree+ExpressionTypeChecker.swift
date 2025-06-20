@@ -203,6 +203,101 @@ extension Syntax.Expression {
         }
     }
 
+    func checkBranched(
+        input: Semantic.Expression,
+        branched: Syntax.Expression.Branched,
+        localScope: Semantic.LocalScope,
+        context: borrowing Semantic.DeclarationsContext
+    ) throws(Semantic.Error) -> Semantic.Expression {
+        let branches =
+            try branched.branches.map { branch throws(Semantic.Error) in
+                let bindingExpression =
+                    try branch.matchExpression.checkBindingExpression(
+                        input: input, localScope: localScope, context: context
+                    )
+                let extendedLocalScope =
+                    localScope.merging(bindingExpression.bindings) { $1 }
+
+                let guardExpression =
+                    try branch.guardExpression?.checkType(
+                        with: .nothing,
+                        localScope: extendedLocalScope,
+                        context: context)
+                    ?? .init(
+                        expressionType: .boolLiteral(true), type: .bool)
+
+                if guardExpression.type != .bool {
+                    throw .guardShouldReturnBool(expression: self)
+                }
+
+                let bodyExpression =
+                    try branch.body.checkType(
+                        with: .nothing,
+                        localScope: extendedLocalScope,
+                        context: context)
+
+                return (
+                    match: bindingExpression,
+                    guard: guardExpression,
+                    body: bodyExpression
+                )
+            }
+
+        // removing duplicate types while keeping order
+        let branchesType: [Semantic.TypeSpecifier] =
+            branches.reduce(into: []) { arr, branch in
+                let branchType = branch.body.type
+
+                // Never type can be ignored
+                if !arr.contains(branchType) && branchType != .never {
+                    arr.append(branchType)
+                }
+            }
+
+        let type: Semantic.TypeSpecifier
+        if branchesType.count == 1, let branchType = branchesType.first {
+            type = branchType
+        } else {
+            type = .raw(
+                .choice(
+                    branchesType
+                        .enumerated()
+                        .reduce(into: [:]) { acc, element in
+                            acc[.unnamed(UInt64(element.offset))] =
+                                element.element
+                        }))
+        }
+        return .init(
+            expressionType: .branching(branches: branches),
+            type: type)
+    }
+
+    func checkBindingExpression(
+        input: Semantic.Expression,
+        localScope: borrowing Semantic.LocalScope,
+        context: borrowing Semantic.DeclarationsContext
+    ) throws(Semantic.Error) -> Semantic.BindingExpression {
+        switch (input.type, self.expressionType) {
+        case (.nothing, .literal(.nothing)):
+            return .init(
+                condition: .init(
+                    expressionType: .boolLiteral(true),
+                    type: .bool),
+                bindings: [:])
+        case (_, .literal(.nothing)):
+            throw .bindingMismatch(expression: self)
+        case let (_, .binding(binding)):
+            return .init(
+                condition: .init(
+                    expressionType: .boolLiteral(true),
+                    type: .bool),
+                bindings: [Semantic.Tag.named(binding): input.type])
+        // TODO: more complicated pattern matching
+        default:
+            fatalError("Advanced pattern matching is not implemented yet")
+        }
+    }
+
     func checkPipe(
         input: Semantic.Expression,
         left: Syntax.Expression,
@@ -217,7 +312,11 @@ extension Syntax.Expression {
 
         switch right.expressionType {
         case let .branched(branched):
-            fatalError("branched not supported yet")
+            return try self.checkBranched(
+                input: leftTyped,
+                branched: branched,
+                localScope: localScope,
+                context: context)
         default:
             return try right.checkType(
                 with: leftTyped,
@@ -319,8 +418,8 @@ extension Syntax.Expression {
         case let (_, .field(identifier)):
             if identifier.chain.count == 1,
                 let field = identifier.chain.first,
-                let fieldTypeInScope = localScope.scope[.named(field)]
-            { // NOTE: named and unnamed are equivalent, but I should figure out how to switch between the two
+                let fieldTypeInScope = localScope[.named(field)]
+            {  // NOTE: named and unnamed are equivalent, but I should figure out how to switch between the two
                 return .init(
                     expressionType: .fieldInScope(.named(field)),
                     type: fieldTypeInScope)
@@ -356,9 +455,14 @@ extension Syntax.Expression {
                 arguments: arguments,
                 localScope: localScope,
                 context: context)
-        
+
         case let (_, .branched(branched)):
-            fatalError("branching not supported")
+            return try self.checkBranched(
+                input: input,
+                branched: branched,
+                localScope: localScope,
+                context: context)
+
         case let (_, .piped(left, right)):
             return try self.checkPipe(
                 input: input,
@@ -366,7 +470,7 @@ extension Syntax.Expression {
                 right: right,
                 localScope: localScope,
                 context: context)
-        
+
         case (_, .binding):
             throw .bindingNotAllowed(expression: self)
         case let (input, .function(signature, expression)):

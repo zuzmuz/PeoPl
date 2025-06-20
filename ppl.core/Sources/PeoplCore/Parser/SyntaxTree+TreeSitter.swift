@@ -872,12 +872,22 @@ extension Syntax.Expression.Branched.Branch {
     ) throws(Syntax.Error) -> Self {
 
         guard
-            let matchExpressionNode = node.child(
-                byFieldName: "match_expression"),
             let bodyNode = node.child(byFieldName: "body")
         else {
             throw .errorParsing(
                 element: "Branch",
+                location: node.getLocation(in: source))
+        }
+
+        let matchExpression: Syntax.Expression
+        if let matchExpressionNode =
+            node.child(byFieldName: "match_expression")
+        {
+            matchExpression = try .from(
+                node: matchExpressionNode, in: source)
+        } else {
+            matchExpression = .init(
+                expressionType: .literal(.nothing),
                 location: node.getLocation(in: source))
         }
 
@@ -892,7 +902,7 @@ extension Syntax.Expression.Branched.Branch {
         }
 
         return .init(
-            matchExpression: try .from(node: matchExpressionNode, in: source),
+            matchExpression: matchExpression,
             guardExpression: guardExpression,
             body: try .from(node: bodyNode, in: source),
             location: node.getLocation(in: source)

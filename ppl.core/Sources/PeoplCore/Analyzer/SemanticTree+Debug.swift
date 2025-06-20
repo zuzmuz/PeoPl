@@ -80,6 +80,9 @@ extension Semantic.Expression {
                 "\(self.type.display())(\(left.display()) \(op.rawValue) \(right.display()))"
         case let .call(signature, input, arguments):
             return "\(signature.display())(in: \(input.display()), )"
+        case let .branching(branches: branches):
+            return branches.map { "guard: \($0.guard.display()), body: \($0.body.display())" }
+                .joined(separator: "\n")
         default:
             print(self.expressionType)
             return ""

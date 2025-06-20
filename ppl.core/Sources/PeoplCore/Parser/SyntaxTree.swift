@@ -528,7 +528,7 @@ enum Syntax {
 
             /// A single branch in a pattern match expression
             struct Branch: SyntaxNode {
-                /// Pattern to match against
+                /// Pattern to match against, if no match expression, nothing is the match expression
                 let matchExpression: Expression
                 /// Optional guard condition
                 let guardExpression: Expression?

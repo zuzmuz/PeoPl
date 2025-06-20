@@ -265,22 +265,6 @@
           }
         ]
       },
-      "capture_group": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "branch_capture_group",
-            "named": true
-          }
-        ]
-      }
-    }
-  },
-  {
-    "type": "branch_capture_group",
-    "named": true,
-    "fields": {
       "guard_expression": {
         "multiple": false,
         "required": false,

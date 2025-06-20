@@ -41,6 +41,12 @@ extension Semantic {
 
         case bindingNotAllowed(
             expression: Syntax.Expression)
+
+        case bindingMismatch(
+            expression: Syntax.Expression)
+
+        case guardShouldReturnBool(
+            expression: Syntax.Expression)
     }
 
     struct ErrorList: LocalizedError {

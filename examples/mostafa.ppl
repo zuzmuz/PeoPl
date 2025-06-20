@@ -5,12 +5,31 @@ Result[S, E]: choice [
 ]
 
 
-something: (Int) -> Optional[Int] {
-    error: _
+Transform[T, U]: (T) -> U
+
+map[T, U]: (List[T]) [transform: (T) -> U] -> List[U] {
+    _
 }
 
+Something: (Int) -> Optional[Int]
+
 somethingElse: (Int) -> Result[Int, _] {
-    success: $s
+    (a: 1, b: 2).map(a: "whatever")
+}
+
+
+TimeSeconds: Double
+
+TimeMinutes: Double
+
+
+take: [time: TimeSeconds] -> TimeMinutes {
+    time / 60.0
+}
+
+
+map: ([String, a: Int, b: Int]) -> Int {
+    take(time: TimeSeconds(1000))
 }
 
 mapError[S, E1, E2]: (Result[S, E1]) [transform: (E1)->E2]-> Result[S, E2] {
@@ -19,13 +38,22 @@ mapError[S, E1, E2]: (Result[S, E1]) [transform: (E1)->E2]-> Result[S, E2] {
 }
 
 mapNothing[S, E]: (Optional[S]) [transform: ()->E]-> Result[S, E] {
-    |something: $s| success: s 
+    |if a = 5| success: s 
     |> sdfsd |>
     |_| transform()
 }
 main: (Result[Int, _]) -> Result[Int, _] {
     something()
-    |> somethingElse()
+    |> map {
+        _
+    }
     //|> print("sdfsfsdf %_0  %_1")
     |> whaterver()
+    |>
+    |success: $value if value < 0|
+        value.checjsdf()
+    |success: $value|
+        value.xdfxdf()
+    |error: $error|
+        "sdfdfs"
 }

@@ -36,7 +36,7 @@ extension SemanticChecker {
                                 with: .init(
                                     expressionType: .input,
                                     type: signature.inputType),
-                                localScope: .init(scope: signature.arguments),
+                                localScope: signature.arguments,
                                 context: .init(
                                     typeDeclarations: allTypeDeclarations,
                                     valueDeclarations: allValueDeclarations,

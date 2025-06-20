@@ -85,9 +85,7 @@ enum Semantic {
         let definitions: DefinitionsContext
     }
 
-    struct LocalScope {
-        let scope: [Tag: TypeSpecifier]
-    }
+    typealias LocalScope = [Tag: TypeSpecifier]
 
     enum IntrinsicType: Hashable {
         case uint
@@ -136,6 +134,13 @@ enum Semantic {
                 input: Expression,
                 arguments: [Tag: Expression])
 
+            case branching(
+                branches: [(
+                    match: BindingExpression,
+                    guard: Expression,
+                    body: Expression
+                )])
+
             // case branching(
             //     branches: [(match: Expression, body: Expression)])
 
@@ -156,5 +161,11 @@ enum Semantic {
 
         static let nothing = Expression(
             expressionType: .nothing, type: .nothing)
+    }
+
+    struct BindingExpression {
+        let condition: Expression
+        let bindings: [Tag: TypeSpecifier]
+        // TODO: figure out how to capture complicated expressions
     }
 }

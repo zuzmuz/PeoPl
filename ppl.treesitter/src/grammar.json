@@ -1605,12 +1605,8 @@
       "type": "SEQ",
       "members": [
         {
-          "type": "FIELD",
-          "name": "capture_group",
-          "content": {
-            "type": "SYMBOL",
-            "name": "branch_capture_group"
-          }
+          "type": "SYMBOL",
+          "name": "_branch_capture_group"
         },
         {
           "type": "FIELD",
@@ -1631,7 +1627,7 @@
         }
       ]
     },
-    "branch_capture_group": {
+    "_branch_capture_group": {
       "type": "SEQ",
       "members": [
         {
