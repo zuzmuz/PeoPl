@@ -393,8 +393,6 @@ extension Semantic.Expression: LLVM.ValueBuilder {
                 branches: branches,
                 llvm: &llvm,
                 scope: scope)
-        default:
-            fatalError("not implemented: \(self.expressionType)")
         }
     }
 }

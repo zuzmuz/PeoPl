@@ -3,7 +3,7 @@ import Foundation
 do {
     let module = try Syntax.Module(
         source: """
-            other: [a: Int, b: Int] -> Int {
+            factorial: [a: Int, b: Int] -> Int {
                 |if a = b| 10
                 |if a > b| 20
                 |if a < b| 30
