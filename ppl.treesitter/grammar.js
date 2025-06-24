@@ -85,6 +85,7 @@ module.exports = grammar({
     ),
 
     type_definition: $ => seq(
+      optional(field('access_modifier', 'private')),
       field('identifier', $.scoped_big_identifier),
       optional(field('type_arguments', $.type_field_list)),
       ':',
@@ -92,6 +93,7 @@ module.exports = grammar({
     ),
 
     value_definition: $ => seq(
+      optional(field('access_modifier', 'private')),
       field("identifier", $.scoped_identifier),
       optional(field('type_arguments', $.type_field_list)),
       ":",
@@ -107,7 +109,7 @@ module.exports = grammar({
       $.never_type,
       $.product,
       $.sum,
-      $.subset,
+      $.typeset,
       $.some,
       $.in,
       $.any,
@@ -126,6 +128,7 @@ module.exports = grammar({
     ),
 
     tagged_type_specifier: $ => seq(
+      optional(field('access_modifier', 'private')),
       field("identifier", $.small_identifier),
       ":",
       field("type", $._type_specifier),
@@ -176,16 +179,16 @@ module.exports = grammar({
       ']'
     ),
 
-    subset: $ => seq(
-      "subset",
+    typeset: $ => seq(
+      "typeset",
       optional(field('protocol', $.type_field_list))
     ),
 
-    subset_intersection: $ => choice(
+    typeset_intersection: $ => choice(
       field('name', $.scoped_big_identifier),
       seq(
-        field('scope', $.subset_intersection),
-        '&',
+        field('scope', $.typeset_intersection),
+        'and',
         field('name', $.scoped_big_identifier),
       )
     ),
@@ -193,18 +196,18 @@ module.exports = grammar({
     in: $ => seq(
       field("identifier", $.big_identifier),
       "in",
-      field("subset", $.subset_intersection),
+      field("typeset", $.typeset_intersection),
     ),
 
     some: $ => prec.left(seq(
       "some",
-      field('subset', $.scoped_big_identifier),
+      field('typeset', $.scoped_big_identifier),
       optional(field('alias', $.big_identifier))
     )),
 
     any: $ => seq(
       "any",
-      field('subset', $.scoped_big_identifier),
+      field('typeset', $.scoped_big_identifier),
     ),
 
     nominal: $ => seq(

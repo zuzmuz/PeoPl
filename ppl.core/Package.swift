@@ -24,12 +24,12 @@ let package = Package(
             providers: [
                 .brew(["llvm"])
             ]),
-        // .target(
-        //     name: "PeoplLsp",
-        //     dependencies: [
-        //         "SwiftTreeSitter",
-        //         .product(name: "TreeSitterPeoPl", package: "ppl.treesitter"),
-        //     ]),
+        .target(
+            name: "PeoplLsp",
+            dependencies: [
+                "SwiftTreeSitter",
+                .product(name: "TreeSitterPeoPl", package: "ppl.treesitter"),
+            ]),
         .executableTarget(
             name: "PeoplCore",
             dependencies: [

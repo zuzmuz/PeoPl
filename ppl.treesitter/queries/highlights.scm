@@ -1,10 +1,11 @@
 
 [
  "choice"
- "subset"
+ "typeset"
  "some"
  "any"
  "in"
+ "private"
 ] @keyword.type
 
 (namespace) @keyword.import
@@ -68,7 +69,7 @@
 [
   ; "^"
   "**"
-  "&"
+  "and"
 ] @keyword.operator
 
 [

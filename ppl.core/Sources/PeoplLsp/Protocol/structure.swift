@@ -30,19 +30,21 @@ enum LSP {
     }
 
     enum Method: String, Codable {
+        case fff
     }
 
     enum Params: Codable {
+        case sdf
     }
 
-    struct RequestMessage {
+    struct RequestMessage: Codable {
         let jsonrpc: String
         let id: Id
         let method: Method
         let params: Params?
     }
 
-    struct NotificationMessage {
+    struct NotificationMessage: Codable {
         let jsonrpc: String
         let method: Method
         let params: Params
@@ -51,13 +53,19 @@ enum LSP {
     struct ResponseMessage: Codable {
         let jsonrpc: String
         let id: Id?
-        let result: Result<ResponseResult, ResponseError>
+        // let result: Result<ResponseResult, ResponseError>
+    }
+
+    struct UnknownMessage: Codable {
+        let method: Method
     }
 
     enum ResponseResult: Codable {
+        case sdf
     }
 
     enum ResponseError: Codable, Error {
+        case dfg
     }
 
 }

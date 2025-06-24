@@ -3,13 +3,11 @@ import Foundation
 do {
     let module = try Syntax.Module(
         source: """
-            factorial: [a: Int, b: Int] -> Int {
-                |if a = b| 10
-                |if a > b| 20
-                |if a < b| 30
+            factorial: [a: Int] -> Int {
+                |1| 1
             }
             main: () -> Int {
-                other(a: 1, b: 2)
+                facotrial(a: 5)
             }
             """,
         path: "main")

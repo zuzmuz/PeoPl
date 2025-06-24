@@ -67,10 +67,15 @@
     "fields": {}
   },
   {
+    "type": "and_operator",
+    "named": true,
+    "fields": {}
+  },
+  {
     "type": "any",
     "named": true,
     "fields": {
-      "subset": {
+      "typeset": {
         "multiple": false,
         "required": true,
         "types": [
@@ -602,11 +607,11 @@
             "named": true
           },
           {
-            "type": "subset",
+            "type": "sum",
             "named": true
           },
           {
-            "type": "sum",
+            "type": "typeset",
             "named": true
           }
         ]
@@ -652,11 +657,11 @@
             "named": true
           },
           {
-            "type": "subset",
+            "type": "sum",
             "named": true
           },
           {
-            "type": "sum",
+            "type": "typeset",
             "named": true
           }
         ]
@@ -811,11 +816,11 @@
             "named": true
           },
           {
-            "type": "subset",
+            "type": "sum",
             "named": true
           },
           {
-            "type": "sum",
+            "type": "typeset",
             "named": true
           }
         ]
@@ -836,12 +841,12 @@
           }
         ]
       },
-      "subset": {
+      "typeset": {
         "multiple": false,
         "required": true,
         "types": [
           {
-            "type": "subset_intersection",
+            "type": "typeset_intersection",
             "named": true
           }
         ]
@@ -1240,7 +1245,7 @@
           }
         ]
       },
-      "subset": {
+      "typeset": {
         "multiple": false,
         "required": true,
         "types": [
@@ -1270,48 +1275,6 @@
           "named": true
         }
       ]
-    }
-  },
-  {
-    "type": "subset",
-    "named": true,
-    "fields": {
-      "protocol": {
-        "multiple": false,
-        "required": false,
-        "types": [
-          {
-            "type": "type_field_list",
-            "named": true
-          }
-        ]
-      }
-    }
-  },
-  {
-    "type": "subset_intersection",
-    "named": true,
-    "fields": {
-      "name": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "scoped_big_identifier",
-            "named": true
-          }
-        ]
-      },
-      "scope": {
-        "multiple": false,
-        "required": false,
-        "types": [
-          {
-            "type": "subset_intersection",
-            "named": true
-          }
-        ]
-      }
     }
   },
   {
@@ -1395,6 +1358,16 @@
     "type": "tagged_type_specifier",
     "named": true,
     "fields": {
+      "access_modifier": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "private",
+            "named": false
+          }
+        ]
+      },
       "identifier": {
         "multiple": false,
         "required": true,
@@ -1446,11 +1419,11 @@
             "named": true
           },
           {
-            "type": "subset",
+            "type": "sum",
             "named": true
           },
           {
-            "type": "sum",
+            "type": "typeset",
             "named": true
           }
         ]
@@ -1461,6 +1434,16 @@
     "type": "type_definition",
     "named": true,
     "fields": {
+      "access_modifier": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "private",
+            "named": false
+          }
+        ]
+      },
       "definition": {
         "multiple": false,
         "required": true,
@@ -1502,11 +1485,11 @@
             "named": true
           },
           {
-            "type": "subset",
+            "type": "sum",
             "named": true
           },
           {
-            "type": "sum",
+            "type": "typeset",
             "named": true
           }
         ]
@@ -1582,15 +1565,15 @@
           "named": true
         },
         {
-          "type": "subset",
-          "named": true
-        },
-        {
           "type": "sum",
           "named": true
         },
         {
           "type": "tagged_type_specifier",
+          "named": true
+        },
+        {
+          "type": "typeset",
           "named": true
         }
       ]
@@ -1609,6 +1592,48 @@
           "named": true
         }
       ]
+    }
+  },
+  {
+    "type": "typeset",
+    "named": true,
+    "fields": {
+      "protocol": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "type_field_list",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "typeset_intersection",
+    "named": true,
+    "fields": {
+      "name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "scoped_big_identifier",
+            "named": true
+          }
+        ]
+      },
+      "scope": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "typeset_intersection",
+            "named": true
+          }
+        ]
+      }
     }
   },
   {
@@ -1697,6 +1722,16 @@
     "type": "value_definition",
     "named": true,
     "fields": {
+      "access_modifier": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "private",
+            "named": false
+          }
+        ]
+      },
       "expression": {
         "multiple": false,
         "required": true,
@@ -1783,10 +1818,6 @@
   },
   {
     "type": "%",
-    "named": false
-  },
-  {
-    "type": "&",
     "named": false
   },
   {
@@ -1878,8 +1909,8 @@
     "named": false
   },
   {
-    "type": "and_operator",
-    "named": true
+    "type": "and",
+    "named": false
   },
   {
     "type": "any",
@@ -1946,6 +1977,10 @@
     "named": true
   },
   {
+    "type": "private",
+    "named": false
+  },
+  {
     "type": "small_identifier",
     "named": true
   },
@@ -1958,11 +1993,11 @@
     "named": true
   },
   {
-    "type": "subset",
+    "type": "true",
     "named": false
   },
   {
-    "type": "true",
+    "type": "typeset",
     "named": false
   },
   {
