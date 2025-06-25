@@ -52,11 +52,11 @@
 // }
 //
 extension Syntax.ScopedIdentifier: Hashable {
-    func hash(into hasher: inout Hasher) {
+    public func hash(into hasher: inout Hasher) {
         hasher.combine(self.chain)
     }
 
-    static func == (
+    public static func == (
         lhs: Self,
         rhs: Self
     ) -> Bool {

@@ -103,7 +103,7 @@ extension Semantic.Context: LLVM.StatementBuilder {
         llvm.functions[functionName] = function
     }
 
-    func llvmBuildStatement(llvm: inout LLVM.Builder) throws(LLVM.Error) {
+    public func llvmBuildStatement(llvm: inout LLVM.Builder) throws(LLVM.Error) {
         for (signature, expression) in self.definitions.valueDefinitions {
             switch signature {
             case let .function(function):

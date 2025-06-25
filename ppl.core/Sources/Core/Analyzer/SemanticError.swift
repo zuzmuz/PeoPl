@@ -1,7 +1,7 @@
 import Foundation
 
 extension Semantic {
-    enum Error: LocalizedError {
+    public enum Error: LocalizedError {
 
         case typeRedeclaration(types: [Syntax.TypeDefinition])
         case typeNotInScope(type: Syntax.ScopedIdentifier)
@@ -49,7 +49,7 @@ extension Semantic {
             expression: Syntax.Expression)
     }
 
-    struct ErrorList: LocalizedError {
-        let errors: [Error]
+    public struct ErrorList: LocalizedError {
+        public let errors: [Error]
     }
 }

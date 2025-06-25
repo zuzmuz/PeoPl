@@ -82,7 +82,7 @@ extension Node {
 // -------------------------
 
 extension Syntax.Module {
-    init(source: String, path: String) throws {
+    public init(source: String, path: String) throws {
         let language = Language(tree_sitter_peopl())
         let parser = Parser()
         try parser.setLanguage(language)
@@ -107,7 +107,7 @@ extension Syntax.Module {
         self.sourceName = path
     }
 
-    init(path: String) throws {
+    public init(path: String) throws {
 
         let fileHandle = FileHandle(forReadingAtPath: path)
 
@@ -120,7 +120,7 @@ extension Syntax.Module {
         try self.init(source: outputString, path: path)
     }
 
-    init(url: URL) throws {
+    public init(url: URL) throws {
         let data = try Data.init(contentsOf: url)
         guard let source = String(data: data, encoding: .utf8) else {
             fatalError("File unreadable at url")

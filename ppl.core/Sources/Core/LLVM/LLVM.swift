@@ -1,17 +1,17 @@
 import cllvm
 import Foundation
 
-enum LLVM {}
+public enum LLVM {}
 
 extension LLVM {
-    struct Builder: ~Copyable {
+    public struct Builder: ~Copyable {
         let module: LLVMModuleRef
         let context: LLVMContextRef
         let builder: LLVMBuilderRef
 
         var functions: [String: Function]
 
-        init(name: String) {
+        public init(name: String) {
             context = LLVMContextCreate()
             // initializing llvm
             LLVMInitializeAllTargets()
@@ -28,7 +28,7 @@ extension LLVM {
 
         }
 
-        func generate() -> String {
+        public func generate() -> String {
             return String(cString: LLVMPrintModuleToString(module))
         }
 
@@ -47,7 +47,7 @@ extension LLVM {
         }
     }
 
-    protocol StatementBuilder {
+    public protocol StatementBuilder {
         func llvmBuildStatement(llvm: inout Builder) throws(LLVM.Error)
     }
 
@@ -64,7 +64,7 @@ extension LLVM {
         ) throws(LLVM.Error) -> LLVMValueRef?
     }
 
-    enum Error: LocalizedError {
+    public enum Error: LocalizedError {
         case notImplemented
         case unreachable
     }

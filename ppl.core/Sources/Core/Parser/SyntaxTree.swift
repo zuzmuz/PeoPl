@@ -6,7 +6,7 @@
 // ----------------------
 
 /// Defines all operators supported by the language, including arithmetic, logical, and comparison operators
-enum Operator: String, Codable {
+public enum Operator: String, Codable, Sendable {
     case plus = "+"
     case minus = "-"
     case times = "*"
@@ -29,13 +29,13 @@ enum Operator: String, Codable {
 // ------------------------------
 
 /// Main namespace containing all syntax tree node definitions
-enum Syntax {
+public enum Syntax {
 
     // MARK: - Source Location Tracking
     // --------------------------------
 
     /// Represents the location of a syntax node in the source code
-    struct NodeLocation: Comparable, Equatable, Codable {
+    public struct NodeLocation: Comparable, Equatable, Codable, Sendable {
         /// A point in the source code defined by line and column numbers
         struct Point: Comparable, Equatable, Codable {
             let line: Int
@@ -48,7 +48,7 @@ enum Syntax {
         let pointRange: Range<Point>
         let range: Range<Int>
 
-        static func < (lhs: NodeLocation, rhs: NodeLocation) -> Bool {
+        public static func < (lhs: NodeLocation, rhs: NodeLocation) -> Bool {
             lhs.pointRange.lowerBound < rhs.pointRange.lowerBound
         }
 
@@ -58,7 +58,7 @@ enum Syntax {
                     line: 0, column: 0),
             range: 0..<0)
 
-        init(from decoder: any Decoder) throws {
+        public init(from decoder: any Decoder) throws {
             let container = try decoder.container(
                 keyedBy: CodingKeys.self)
             if container.allKeys.isEmpty {
@@ -89,7 +89,7 @@ enum Syntax {
     }
 
     /// Protocol that all syntax tree nodes must implement for source location tracking
-    protocol SyntaxNode: Codable {
+    public protocol SyntaxNode: Codable {
         var location: NodeLocation { get }
     }
 
@@ -98,13 +98,13 @@ enum Syntax {
 
     /// Top-level container representing an entire program or project
     /// Maps module names to their corresponding module definitions
-    struct Project: Codable {
+    public struct Project: Codable {
         let modules: [String: Module]
     }
 
     /// A compilation unit containing a list of top-level definitions
     /// Modules are basically files
-    struct Module: Codable {
+    public struct Module: Codable {
         let sourceName: String
         let definitions: [Definition]
 
@@ -139,9 +139,9 @@ enum Syntax {
     /// - Simple identifier: ["foo"] represents `foo`
     /// - Qualified identifier: ["Module", "foo"] represents `Module::foo`
     /// - Deeply nested: ["A", "B", "C", "foo"] represents `A::B::C::foo`
-    struct ScopedIdentifier: SyntaxNode {
+    public struct ScopedIdentifier: SyntaxNode, Sendable {
         let chain: [String]
-        let location: NodeLocation
+        public let location: NodeLocation
 
         init(
             chain: [String],
@@ -154,11 +154,11 @@ enum Syntax {
 
     /// Defines a new type with an optional parameter list
     /// Can define type aliases, algebraic data types, or constrained types
-    struct TypeDefinition: SyntaxNode {
+    public struct TypeDefinition: SyntaxNode, Sendable {
         let identifier: ScopedIdentifier
         let arguments: [TypeField]
         let typeSpecifier: TypeSpecifier
-        let location: NodeLocation
+        public let location: NodeLocation
 
         init(
             identifier: ScopedIdentifier,
@@ -174,11 +174,11 @@ enum Syntax {
     }
 
     /// Defines a value (function, constant, or computed expression)
-    struct ValueDefinition: SyntaxNode {
+    public struct ValueDefinition: SyntaxNode, Sendable {
         let identifier: ScopedIdentifier
         let arguments: [TypeField]
         let expression: Expression
-        let location: NodeLocation
+        public let location: NodeLocation
 
         init(
             identifier: ScopedIdentifier,
@@ -198,7 +198,7 @@ enum Syntax {
 
     /// The core type specification language
     /// This represents the full spectrum of types available in the language
-    enum TypeSpecifier: SyntaxNode, Sendable {
+    public enum TypeSpecifier: SyntaxNode, Sendable {
         /// Unit type (empty tuple)
         case nothing(location: NodeLocation)
         /// Unreachable type
@@ -220,7 +220,7 @@ enum Syntax {
         // Function types
         indirect case function(Function)
 
-        var location: NodeLocation {
+        public var location: NodeLocation {
             return switch self {
             case let .nothing(location): location
             case let .never(location): location
@@ -237,10 +237,10 @@ enum Syntax {
     }
 
     /// A type field with a label/tag for record types and function parameters
-    struct TaggedTypeSpecifier: SyntaxNode {
+    public struct TaggedTypeSpecifier: SyntaxNode, Sendable {
         let tag: String
         let typeSpecifier: TypeSpecifier
-        let location: NodeLocation
+        public let location: NodeLocation
 
         init(
             tag: String,
@@ -255,7 +255,7 @@ enum Syntax {
 
     /// Represents homogeneous collections with a compile-time known size
     /// Used for arrays, vectors, or other fixed-size collections
-    struct HomogeneousTypeProduct: SyntaxNode {
+    public struct HomogeneousTypeProduct: SyntaxNode, Sendable {
 
         /// The size/count can be either a literal number or a type-level identifier
         enum Exponent: Codable {
@@ -265,7 +265,7 @@ enum Syntax {
 
         let typeSpecifier: TypeSpecifier
         let count: Exponent
-        let location: NodeLocation
+        public let location: NodeLocation
 
         init(
             typeSpecifier: TypeSpecifier,
@@ -281,12 +281,12 @@ enum Syntax {
     /// Flexible container for different kinds of type fields in compound types
     /// A type field can either be an untagged type specifier, a tagged specifier or a homogeneous product.
     /// Useful for defining composible types
-    enum TypeField: SyntaxNode {
+    public enum TypeField: SyntaxNode, Sendable {
         case typeSpecifier(TypeSpecifier)
         case taggedTypeSpecifier(TaggedTypeSpecifier)
         case homogeneousTypeProduct(HomogeneousTypeProduct)
 
-        var location: NodeLocation {
+        public var location: NodeLocation {
             return switch self {
             case let .typeSpecifier(typeSpecifier):
                 typeSpecifier.location
@@ -302,9 +302,9 @@ enum Syntax {
     // ----------------------------
 
     /// Represents tuples, records, and struct-like types
-    struct Product: SyntaxNode {
+    public struct Product: SyntaxNode, Sendable {
         let typeFields: [TypeField]
-        let location: NodeLocation
+        public let location: NodeLocation
 
         init(
             typeFields: [TypeField] = [],
@@ -316,9 +316,9 @@ enum Syntax {
     }
 
     /// Represents tagged unions
-    struct Sum: SyntaxNode {
+    public struct Sum: SyntaxNode, Sendable {
         let typeFields: [TypeField]
-        let location: NodeLocation
+        public let location: NodeLocation
 
         init(
             typeFields: [TypeField] = [],
@@ -334,9 +334,9 @@ enum Syntax {
     /// The subset conforms to certain constraints,
     /// therefore can behave as an unbounded union of all types belonging to the subset
     /// or a generic constraint for generic types
-    struct Subset: SyntaxNode {
+    public struct Subset: SyntaxNode, Sendable {
         let typeFields: [TypeField]
-        let location: NodeLocation
+        public let location: NodeLocation
 
         init(
             typeFields: [TypeField] = [],
@@ -349,10 +349,10 @@ enum Syntax {
 
     /// Represents existential types,
     /// An opaque type belonging to a subset, statically discoverable at compile time
-    struct Existential: SyntaxNode {
+    public struct Existential: SyntaxNode, Sendable {
         let type: ScopedIdentifier
         let alias: String?
-        let location: NodeLocation
+        public let location: NodeLocation
 
         init(
             type: ScopedIdentifier,
@@ -367,9 +367,9 @@ enum Syntax {
 
     /// Represents universal types,
     /// An erased type that can be used to represent any type belonging to a subset
-    struct Universal: SyntaxNode {
+    public struct Universal: SyntaxNode, Sendable {
         let type: ScopedIdentifier
-        let location: NodeLocation
+        public let location: NodeLocation
 
         init(
             type: ScopedIdentifier,
@@ -382,10 +382,10 @@ enum Syntax {
 
     /// Represents constrained generic types,
     /// Used to bind generic types to a subset of types
-    struct Belonging: SyntaxNode {
+    public struct Belonging: SyntaxNode, Sendable {
         let alias: String
         let subset: ScopedIdentifier
-        let location: NodeLocation
+        public let location: NodeLocation
 
         init(
             alias: String,
@@ -400,10 +400,10 @@ enum Syntax {
 
     /// Nominal type: a named type with optional type arguments
     /// References user-defined types, built-in types, or generic instantiations
-    struct Nominal: SyntaxNode {
+    public struct Nominal: SyntaxNode, Sendable {
         let identifier: ScopedIdentifier
         let typeArguments: [TypeSpecifier]
-        let location: NodeLocation
+        public let location: NodeLocation
 
         init(
             identifier: ScopedIdentifier,
@@ -419,11 +419,11 @@ enum Syntax {
     /// Function type: represents the type of functions and procedures
     /// Supports both traditional and dependently-typed function signatures
     /// - inputType: Optional input type for the function, can be nil for procedures
-    struct Function: SyntaxNode {
+    public struct Function: SyntaxNode, Sendable {
         let inputType: TypeSpecifier?
         let arguments: [TypeField]
         let outputType: TypeSpecifier
-        let location: NodeLocation
+        public let location: NodeLocation
 
         init(
             inputType: TypeSpecifier? = nil,
@@ -459,9 +459,9 @@ enum Syntax {
     }
 
     /// Core expression node representing all computations and values in the language
-    struct Expression: SyntaxNode {
+    public struct Expression: SyntaxNode, Sendable {
         let expressionType: ExpressionType
-        let location: NodeLocation
+        public let location: NodeLocation
 
         init(
             expressionType: ExpressionType,

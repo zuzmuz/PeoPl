@@ -1,5 +1,6 @@
+
 extension Semantic.Context {
-    func display() -> String {
+    public func display() -> String {
         self.definitions.display()
     }
 }

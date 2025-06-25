@@ -2,7 +2,7 @@
 // ===================================
 
 /// Protocol for resolving type symbols
-protocol TypeDeclarationsChecker {
+public protocol TypeDeclarationsChecker {
     /// Return all type declarations defined in module
     func getTypeDeclarations() -> [Syntax.TypeDefinition]
 
@@ -203,7 +203,7 @@ private enum NodeState {
 }
 
 extension TypeDeclarationsChecker {
-    func resolveTypeSymbols(
+    public func resolveTypeSymbols(
         contextTypeDeclarations: borrowing Semantic.TypeDeclarationsMap
     ) -> (
         typeDeclarations: Semantic.TypeDeclarationsMap,
@@ -351,7 +351,7 @@ extension TypeDeclarationsChecker {
 }
 
 extension Syntax.Module: TypeDeclarationsChecker {
-    func getTypeDeclarations() -> [Syntax.TypeDefinition] {
+    public func getTypeDeclarations() -> [Syntax.TypeDefinition] {
         return self.definitions.compactMap { statement in
             if case let .typeDefinition(typeDefinition) = statement {
                 return typeDefinition
@@ -363,7 +363,7 @@ extension Syntax.Module: TypeDeclarationsChecker {
 }
 
 extension Syntax.Project: TypeDeclarationsChecker {
-    func getTypeDeclarations() -> [Syntax.TypeDefinition] {
+    public func getTypeDeclarations() -> [Syntax.TypeDefinition] {
         return self.modules.values.flatMap { module in
             module.getTypeDeclarations()
         }

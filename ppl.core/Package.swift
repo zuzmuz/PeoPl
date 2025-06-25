@@ -23,27 +23,31 @@ let package = Package(
             pkgConfig: "cllvm",
             providers: [
                 .brew(["llvm"])
-            ]),
+            ]
+        ),
         .target(
-            name: "PeoplLsp",
-            dependencies: [
-                "SwiftTreeSitter",
-                .product(name: "TreeSitterPeoPl", package: "ppl.treesitter"),
-            ]),
-        .executableTarget(
-            name: "PeoplCore",
+            name: "Core",
             dependencies: [
                 "SwiftTreeSitter",
                 "cllvm",
                 .product(name: "TreeSitterPeoPl", package: "ppl.treesitter"),
             ],
-            // cxxSettings: [
-            //     .headerSearchPath("/opt/homebrew/Cellar/llvm/19.1.7/include/include"),
-            // ]
+        ),
+        .target(
+            name: "Lsp",
+            dependencies: [
+                "Core"
+            ]
+        ),
+        .executableTarget(
+            name: "Main",
+            dependencies: [
+                "Core", "Lsp",
+            ]
         ),
         .testTarget(
-            name: "PeoplCoreTests",
-            dependencies: ["PeoplCore"],
+            name: "CoreTests",
+            dependencies: ["Core"],
             resources: [
                 .process("Resources")
             ]

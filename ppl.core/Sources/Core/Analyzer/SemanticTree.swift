@@ -3,14 +3,14 @@
 // This file defines the semantic tree structure of valid type checked
 // Peopl code.
 
-enum Semantic {
+public enum Semantic {
 
     // typealias DefinitionHash = Int
-    enum Tag: Hashable {
+    public enum Tag: Hashable, Sendable {
         case named(String)
         case unnamed(UInt64)
 
-        func hash(into hasher: inout Hasher) {
+        public func hash(into hasher: inout Hasher) {
             switch self {
             case let .named(name):
                 hasher.combine(name)
@@ -19,7 +19,7 @@ enum Semantic {
             }
         }
 
-        static func == (
+        public static func == (
             lhs: Semantic.Tag,
             rhs: Semantic.Tag
         ) -> Bool {
@@ -42,78 +42,79 @@ enum Semantic {
         }
     }
 
-    struct ScopedIdentifier: Hashable {
+    public struct ScopedIdentifier: Hashable, Sendable {
         let chain: [String]
     }
 
-    struct OperatorField: Hashable {
+    public struct OperatorField: Hashable {
         let left: TypeSpecifier
         let right: TypeSpecifier
         let op: Operator
     }
 
-    typealias TypeLookupMap = [ScopedIdentifier: Syntax.TypeDefinition]
-    typealias TypeDeclarationsMap = [ScopedIdentifier: TypeSpecifier]
-    typealias ValueLookupMap = [ExpressionSignature: Syntax.ValueDefinition]
-    typealias ValueDeclarationsMap = [ExpressionSignature: TypeSpecifier]
-    typealias ValueDefinitionsMap = [ExpressionSignature: Expression]
+    public typealias TypeLookupMap = [ScopedIdentifier: Syntax.TypeDefinition]
+    public typealias TypeDeclarationsMap = [ScopedIdentifier: TypeSpecifier]
+    public typealias ValueLookupMap =
+        [ExpressionSignature: Syntax.ValueDefinition]
+    public typealias ValueDeclarationsMap = [ExpressionSignature: TypeSpecifier]
+    public typealias ValueDefinitionsMap = [ExpressionSignature: Expression]
 
-    enum ExpressionSignature: Hashable {
+    public enum ExpressionSignature: Hashable {
         case function(FunctionSignature)
         case value(ScopedIdentifier)
     }
 
-    struct FunctionSignature: Hashable {
-        let identifier: ScopedIdentifier
-        let inputType: TypeSpecifier
-        let arguments: [Tag: TypeSpecifier]
+    public struct FunctionSignature: Hashable, Sendable {
+        public let identifier: ScopedIdentifier
+        public let inputType: TypeSpecifier
+        public let arguments: [Tag: TypeSpecifier]
     }
 
-    struct DefinitionsContext {
-        let valueDefinitions: ValueDefinitionsMap
+    public struct DefinitionsContext {
+        public let valueDefinitions: ValueDefinitionsMap
         // let operators: [OperatorField: Expression]
     }
 
-    struct DeclarationsContext {
-        let typeDeclarations: TypeDeclarationsMap
-        let valueDeclarations: ValueDeclarationsMap
-        let operatorDeclarations: [OperatorField: TypeSpecifier]
+    public struct DeclarationsContext {
+        public let typeDeclarations: TypeDeclarationsMap
+        public let valueDeclarations: ValueDeclarationsMap
+        public let operatorDeclarations: [OperatorField: TypeSpecifier]
         // stores values based on identifier only for better error reporting
     }
 
-    struct Context {
-        let definitions: DefinitionsContext
+    public struct Context {
+        public let definitions: DefinitionsContext
     }
 
-    typealias LocalScope = [Tag: TypeSpecifier]
+    public typealias LocalScope = [Tag: TypeSpecifier]
 
-    enum IntrinsicType: Hashable {
+    public enum IntrinsicType: Hashable, Sendable {
         case uint
         case int
         case float
         case bool
     }
 
-    enum RawTypeSpecifier: Hashable {
+    public enum RawTypeSpecifier: Hashable, Sendable {
         case intrinsic(IntrinsicType)
         case record([Tag: TypeSpecifier])
         case choice([Tag: TypeSpecifier])
         case function(Function)
     }
 
-    enum TypeSpecifier: Hashable {
+    public enum TypeSpecifier: Hashable, Sendable {
         case raw(RawTypeSpecifier)
         case nominal(ScopedIdentifier)
     }
 
-    struct Function: Hashable {
+    public struct Function: Hashable, Sendable {
     }
 
-    struct Expression {
-        let expressionType: ExpressionType
-        let type: TypeSpecifier
+    public struct Expression: Sendable {
+        public let expressionType: ExpressionType
+        public let type: TypeSpecifier
 
-        indirect enum ExpressionType {
+        public indirect enum ExpressionType: Sendable {
             case nothing
             case never
             case intLiteral(UInt64)
@@ -163,7 +164,7 @@ enum Semantic {
             expressionType: .nothing, type: .nothing)
     }
 
-    struct BindingExpression {
+    public struct BindingExpression: Sendable {
         let condition: Expression
         let bindings: [Tag: TypeSpecifier]
         // TODO: figure out how to capture complicated expressions

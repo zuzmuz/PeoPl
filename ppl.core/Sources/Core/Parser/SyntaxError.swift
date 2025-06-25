@@ -1,7 +1,7 @@
 import Foundation
 
 extension Syntax {
-    enum Error: LocalizedError {
+    public enum Error: LocalizedError {
         case sourceUnreadable
         case notImplemented(
             element: String,
@@ -13,7 +13,7 @@ extension Syntax {
             location: Syntax.NodeLocation
         )
 
-        var errorDescription: String? {
+        public var errorDescription: String? {
             switch self {
             case .sourceUnreadable:
                 return "Source is unreadable"

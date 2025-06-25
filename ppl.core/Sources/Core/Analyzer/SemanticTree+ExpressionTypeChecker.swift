@@ -13,7 +13,7 @@ extension [Syntax.Expression] {
     ///
     /// # throws
     /// ``Semantic.Error`` if there is a duplicated expression field name or if the type checking fails
-    func checkType(
+    public func checkType(
         with input: Semantic.Expression,
         localScope: borrowing Semantic.LocalScope,
         context: borrowing Semantic.DeclarationsContext
