@@ -420,13 +420,13 @@ public enum Syntax {
     /// Supports both traditional and dependently-typed function signatures
     /// - inputType: Optional input type for the function, can be nil for procedures
     public struct Function: SyntaxNode, Sendable {
-        let inputType: TypeSpecifier?
+        let inputType: TypeField?
         let arguments: [TypeField]
         let outputType: TypeSpecifier
         public let location: NodeLocation
 
         init(
-            inputType: TypeSpecifier? = nil,
+            inputType: TypeField? = nil,
             arguments: [TypeField] = [],
             outputType: TypeSpecifier,
             location: NodeLocation = .nowhere

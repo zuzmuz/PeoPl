@@ -48,7 +48,23 @@ extension Syntax.Function {
     func getSignature(
         identifier: Semantic.ScopedIdentifier
     ) throws(Semantic.Error) -> Semantic.FunctionSignature {
-        let inputType = try self.inputType?.getSemanticType() ?? .nothing
+        let inputType: Semantic.TypeSpecifier =
+            switch self.inputType {
+            case let .typeSpecifier(typeSpecifier):
+                try typeSpecifier.getSemanticType()
+            case let .taggedTypeSpecifier(taggedTypeSpecifier):
+                try taggedTypeSpecifier.typeSpecifier.getSemanticType()
+            case let .homogeneousTypeProduct(homogeneousTypeProduct):
+                .raw(
+                    .record(
+                        try [
+                            Syntax.TypeField.homogeneousTypeProduct(
+                                homogeneousTypeProduct)
+                        ].getProductSemanticTypes()))
+
+            case .none:
+                .nothing
+            }
         let arguments = try self.arguments.getProductSemanticTypes()
         return .init(
             identifier: identifier,

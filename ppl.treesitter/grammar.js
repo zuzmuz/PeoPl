@@ -181,7 +181,7 @@ module.exports = grammar({
 
     typeset: $ => seq(
       "typeset",
-      optional(field('protocol', $.type_field_list))
+      field('protocol', $.type_field_list)
     ),
 
     typeset_intersection: $ => choice(
@@ -217,10 +217,10 @@ module.exports = grammar({
 
     function: $ => seq(
       choice(
-        seq('(', optional(field('input_type', $._type_specifier)), ')'),
+        seq('(', field('input_type', $.type_field), ')'),
         field('arguments', $.type_field_list),
         seq(
-          '(', field('input_type', $._type_specifier), ')',
+          seq('(', field('input_type', $.type_field), ')'),
           field('arguments', $.type_field_list),
         ),
       ),

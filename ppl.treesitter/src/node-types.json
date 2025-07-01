@@ -571,47 +571,7 @@
         "required": false,
         "types": [
           {
-            "type": "any",
-            "named": true
-          },
-          {
-            "type": "function",
-            "named": true
-          },
-          {
-            "type": "in",
-            "named": true
-          },
-          {
-            "type": "namespace",
-            "named": true
-          },
-          {
-            "type": "never_type",
-            "named": true
-          },
-          {
-            "type": "nominal",
-            "named": true
-          },
-          {
-            "type": "nothing_type",
-            "named": true
-          },
-          {
-            "type": "product",
-            "named": true
-          },
-          {
-            "type": "some",
-            "named": true
-          },
-          {
-            "type": "sum",
-            "named": true
-          },
-          {
-            "type": "typeset",
+            "type": "type_field",
             "named": true
           }
         ]
@@ -1600,7 +1560,7 @@
     "fields": {
       "protocol": {
         "multiple": false,
-        "required": false,
+        "required": true,
         "types": [
           {
             "type": "type_field_list",

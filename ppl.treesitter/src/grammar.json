@@ -588,20 +588,12 @@
           "value": "typeset"
         },
         {
-          "type": "CHOICE",
-          "members": [
-            {
-              "type": "FIELD",
-              "name": "protocol",
-              "content": {
-                "type": "SYMBOL",
-                "name": "type_field_list"
-              }
-            },
-            {
-              "type": "BLANK"
-            }
-          ]
+          "type": "FIELD",
+          "name": "protocol",
+          "content": {
+            "type": "SYMBOL",
+            "name": "type_field_list"
+          }
         }
       ]
     },
@@ -765,20 +757,12 @@
                   "value": "("
                 },
                 {
-                  "type": "CHOICE",
-                  "members": [
-                    {
-                      "type": "FIELD",
-                      "name": "input_type",
-                      "content": {
-                        "type": "SYMBOL",
-                        "name": "_type_specifier"
-                      }
-                    },
-                    {
-                      "type": "BLANK"
-                    }
-                  ]
+                  "type": "FIELD",
+                  "name": "input_type",
+                  "content": {
+                    "type": "SYMBOL",
+                    "name": "type_field"
+                  }
                 },
                 {
                   "type": "STRING",
@@ -798,20 +782,25 @@
               "type": "SEQ",
               "members": [
                 {
-                  "type": "STRING",
-                  "value": "("
-                },
-                {
-                  "type": "FIELD",
-                  "name": "input_type",
-                  "content": {
-                    "type": "SYMBOL",
-                    "name": "_type_specifier"
-                  }
-                },
-                {
-                  "type": "STRING",
-                  "value": ")"
+                  "type": "SEQ",
+                  "members": [
+                    {
+                      "type": "STRING",
+                      "value": "("
+                    },
+                    {
+                      "type": "FIELD",
+                      "name": "input_type",
+                      "content": {
+                        "type": "SYMBOL",
+                        "name": "type_field"
+                      }
+                    },
+                    {
+                      "type": "STRING",
+                      "value": ")"
+                    }
+                  ]
                 },
                 {
                   "type": "FIELD",

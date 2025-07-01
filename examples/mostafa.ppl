@@ -1,6 +1,5 @@
 Almost: namespace
 
-
 private Result[S, E in Error]: choice [
     success: S,
     private error: E
@@ -39,12 +38,13 @@ mapError[S, E1, E2]: (Result[S, E1]) [transform: (E1)->E2]-> Result[S, E2] {
     |$s| s
 }
 
-mapNothing[S, E]: (Optional[S]) [transform: ()->E]-> Result[S, E] {
+mapNothing[S, E]: (Optional[S]) [transform: ()->E] -> Result[S, E] {
     |if a = 5| success: s 
     |> sdfsd 
     |>
     |_| transform()
 }
+
 main: (Result[Int, _]) -> Result[Int, _] {
     something()
     |> map {

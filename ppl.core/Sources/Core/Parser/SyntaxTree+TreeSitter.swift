@@ -389,7 +389,8 @@ extension Syntax.Product: TreeSitterNode {
         }
 
         let typeFields: [Syntax.TypeField] =
-            try typeFieldsNode.compactMapChildren { child throws(Syntax.Error) in
+            try typeFieldsNode
+            .compactMapChildren { child throws(Syntax.Error) in
                 if child.nodeType == "type_field" {
                     try .from(node: child, in: source)
                 } else {
@@ -475,7 +476,7 @@ extension Syntax.Function: TreeSitterNode {
         node: Node,
         in source: Syntax.Source
     ) throws(Syntax.Error) -> Self {
-        let inputType: Syntax.TypeSpecifier?
+        let inputType: Syntax.TypeField?
         if let inputTypeNode = node.child(byFieldName: "input_type") {
             inputType = try .from(node: inputTypeNode, in: source)
         } else {
