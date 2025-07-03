@@ -83,19 +83,7 @@ extension LLVM {
         case named(String)
         case unnamed(UInt64)
         case input
-
-        var value: String {
-            switch self {
-            case .input:
-                "_in_" // FIXME: should be unique
-            case let .named(value):
-                value
-            case let .unnamed(value):
-                "_\(value)"
-            }
-        }
     }
 }
 
     // -lc++ -stdlib=libc++  -L/opt/homebrew/Cellar/llvm/19.1.7/lib -Wl,-search_paths_first -Wl,-headerpad_max_install_names
-

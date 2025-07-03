@@ -7,15 +7,23 @@ public enum Semantic {
 
     // typealias DefinitionHash = Int
     public enum Tag: Hashable, Sendable {
+        case input
         case named(String)
         case unnamed(UInt64)
 
         public func hash(into hasher: inout Hasher) {
+            hasher.combine(id)
+        }
+
+        private var id: AnyHashable {
             switch self {
+            case .input:
+                // semantic input is a special tag
+                return "#input#"
             case let .named(name):
-                hasher.combine(name)
+                return name
             case let .unnamed(index):
-                hasher.combine("_\(index)")
+                return "_\(index)"
             }
         }
 
@@ -23,22 +31,7 @@ public enum Semantic {
             lhs: Semantic.Tag,
             rhs: Semantic.Tag
         ) -> Bool {
-            let lhsValue =
-                switch lhs {
-                case let .named(name):
-                    name
-                case let .unnamed(index):
-                    "_\(index)"
-                }
-            let rhsValue =
-                switch rhs {
-                case let .named(name):
-                    name
-                case let .unnamed(index):
-                    "_\(index)"
-                }
-
-            return lhsValue == rhsValue
+            return lhs.id == rhs.id
         }
     }
 
@@ -65,25 +58,41 @@ public enum Semantic {
     }
 
     public struct FunctionSignature: Hashable, Sendable {
-        public let identifier: ScopedIdentifier
-        public let inputType: TypeSpecifier
-        public let arguments: [Tag: TypeSpecifier]
+        // TODO: input type can be tagged, it should not affect the hashing but
+        let identifier: ScopedIdentifier
+        let inputType: (tag: Tag, type: TypeSpecifier)
+        let arguments: [Tag: TypeSpecifier]
+
+        public func hash(into hasher: inout Hasher) {
+            hasher.combine(identifier)
+            hasher.combine(inputType.type)
+            hasher.combine(arguments)
+        }
+
+        public static func == (
+            lhs: Self,
+            rhs: Self
+        ) -> Bool {
+            return lhs.identifier == rhs.identifier &&
+                lhs.inputType.type == rhs.inputType.type &&
+                lhs.arguments == rhs.arguments
+        }
     }
 
     public struct DefinitionsContext {
-        public let valueDefinitions: ValueDefinitionsMap
+        let valueDefinitions: ValueDefinitionsMap
         // let operators: [OperatorField: Expression]
     }
 
     public struct DeclarationsContext {
-        public let typeDeclarations: TypeDeclarationsMap
-        public let valueDeclarations: ValueDeclarationsMap
-        public let operatorDeclarations: [OperatorField: TypeSpecifier]
+        let typeDeclarations: TypeDeclarationsMap
+        let valueDeclarations: ValueDeclarationsMap
+        let operatorDeclarations: [OperatorField: TypeSpecifier]
         // stores values based on identifier only for better error reporting
     }
 
     public struct Context {
-        public let definitions: DefinitionsContext
+        let definitions: DefinitionsContext
     }
 
     public typealias LocalScope = [Tag: TypeSpecifier]
@@ -111,10 +120,10 @@ public enum Semantic {
     }
 
     public struct Expression: Sendable {
-        public let expressionType: ExpressionType
-        public let type: TypeSpecifier
+        let expressionType: ExpressionType
+        let type: TypeSpecifier
 
-        public indirect enum ExpressionType: Sendable {
+        indirect enum ExpressionType: Sendable {
             case nothing
             case never
             case intLiteral(UInt64)

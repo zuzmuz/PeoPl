@@ -1,10 +1,12 @@
-public protocol SemanticChecker: TypeDeclarationsChecker, ValueDefinitionChecker {
+public protocol SemanticChecker:
+    TypeDeclarationsChecker, ValueDefinitionChecker
+{
     func semanticCheck() -> Result<Semantic.Context, Semantic.ErrorList>
 }
 
 extension SemanticChecker {
-    public func semanticCheck(
-    ) -> Result<Semantic.Context, Semantic.ErrorList> {
+    public func semanticCheck() -> Result<Semantic.Context, Semantic.ErrorList>
+    {
         let intrinsicDeclarations = getIntrinsicDeclarations()
 
         // Getting type declarations
@@ -32,12 +34,27 @@ extension SemanticChecker {
                 // TODO: reconsider functions expression, do we need for declarations to be function expressions
                 functionExpressions.map { signature, expression in
                     do throws(Semantic.Error) {
+                        let inputExpression: Semantic.Expression
+                        let localScope: [Semantic.Tag: Semantic.TypeSpecifier]
+                        switch signature.inputType.tag {
+                        case .input:
+                            localScope = signature.arguments
+                            inputExpression = .init(
+                                expressionType: .input,
+                                type: signature.inputType.type)
+                        default:
+                            localScope = signature.arguments.merging([
+                                signature.inputType.tag: signature.inputType
+                                    .type
+                            ]) { $1 }
+                            inputExpression = .init(
+                                expressionType: .input,
+                                type: .nothing)
+                        }
                         let checkedExpression =
                             try expression.checkType(
-                                with: .init(
-                                    expressionType: .input,
-                                    type: signature.inputType),
-                                localScope: signature.arguments,
+                                with: inputExpression,
+                                localScope: localScope,
                                 context: .init(
                                     typeDeclarations: allTypeDeclarations,
                                     valueDeclarations: allValueDeclarations,

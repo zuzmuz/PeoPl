@@ -3,6 +3,8 @@ import cllvm
 extension Semantic.Tag {
     func llvmTag() -> LLVM.ParamTag {
         switch self {
+        case .input:
+            return .input
         case let .named(value):
             return .named(value)
         case let .unnamed(value):
@@ -27,11 +29,11 @@ extension Semantic.FunctionSignature {
         var paramTypes: [LLVMTypeRef?] = []
         var paramNames: [LLVM.ParamTag: Int] = [:]
 
-        let inputCount = self.inputType != .nothing ? 1 : 0
+        let inputCount = self.inputType.type != .nothing ? 1 : 0
 
         if inputCount == 1 {
-            paramTypes.append(try self.inputType.llvmGetType(llvm: &llvm))
-            paramNames[.input] = 0
+            paramTypes.append(try self.inputType.type.llvmGetType(llvm: &llvm))
+            paramNames[self.inputType.tag.llvmTag()] = 0
         }
 
         for (index, argument) in self.arguments.enumerated() {
@@ -80,8 +82,7 @@ extension Semantic.Context: LLVM.StatementBuilder {
         for (tag, index) in function.paramNames {
             let paramValue = LLVMGetParam(function.functionValue, UInt32(index))
             paramValues[tag] = paramValue
-            // let paramName = "p_\(tag.hashValue)"
-            let paramName = tag.value
+            let paramName = "p_\(index)"
             LLVMSetValueName2(paramValue, paramName, paramName.utf8.count)
         }
 
@@ -103,7 +104,8 @@ extension Semantic.Context: LLVM.StatementBuilder {
         llvm.functions[functionName] = function
     }
 
-    public func llvmBuildStatement(llvm: inout LLVM.Builder) throws(LLVM.Error) {
+    public func llvmBuildStatement(llvm: inout LLVM.Builder) throws(LLVM.Error)
+    {
         for (signature, expression) in self.definitions.valueDefinitions {
             switch signature {
             case let .function(function):

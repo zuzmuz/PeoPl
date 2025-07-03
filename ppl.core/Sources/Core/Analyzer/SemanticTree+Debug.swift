@@ -41,6 +41,8 @@ extension Semantic.ScopedIdentifier {
 extension Semantic.Tag {
     func display() -> String {
         switch self {
+        case .input:
+            "#input#"
         case let .named(name):
             name
         case let .unnamed(value):

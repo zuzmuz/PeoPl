@@ -48,24 +48,41 @@ extension Syntax.Function {
     func getSignature(
         identifier: Semantic.ScopedIdentifier
     ) throws(Semantic.Error) -> Semantic.FunctionSignature {
-        let inputType: Semantic.TypeSpecifier =
+        let inputType: (tag: Semantic.Tag, type: Semantic.TypeSpecifier) =
             switch self.inputType {
             case let .typeSpecifier(typeSpecifier):
-                try typeSpecifier.getSemanticType()
+                (tag: .input, type: try typeSpecifier.getSemanticType())
             case let .taggedTypeSpecifier(taggedTypeSpecifier):
-                try taggedTypeSpecifier.typeSpecifier.getSemanticType()
+                (
+                    tag: .named(taggedTypeSpecifier.tag),
+                    type: try taggedTypeSpecifier
+                        .typeSpecifier.getSemanticType()
+                )
             case let .homogeneousTypeProduct(homogeneousTypeProduct):
-                .raw(
+                (
+                    tag: .input,
+                    type: .raw(
                     .record(
                         try [
                             Syntax.TypeField.homogeneousTypeProduct(
                                 homogeneousTypeProduct)
                         ].getProductSemanticTypes()))
+                )
 
             case .none:
-                .nothing
+                (
+                    tag: .input,
+                    type: .nothing
+                )
             }
         let arguments = try self.arguments.getProductSemanticTypes()
+
+        if let inputTypeField = self.inputType,
+            arguments[inputType.tag] != nil
+        {
+            throw Semantic.Error.duplicateFieldName(
+                field: inputTypeField)
+        }
         return .init(
             identifier: identifier,
             inputType: inputType,

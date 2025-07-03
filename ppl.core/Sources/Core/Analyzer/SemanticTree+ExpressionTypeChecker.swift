@@ -183,7 +183,7 @@ extension Syntax.Expression {
             let functionSignature: Semantic.FunctionSignature =
                 .init(
                     identifier: identifier.getSemanticIdentifier(),
-                    inputType: input.type,
+                    inputType: (tag: .input, type: input.type),
                     arguments: argumentsTyped.mapValues { $0.type })
             let signature: Semantic.ExpressionSignature = .function(
                 functionSignature)
