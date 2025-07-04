@@ -1,36 +1,36 @@
 extension Lsp {
 
-    enum PositionEncoding: String, Codable {
+    public enum PositionEncoding: String, Codable {
         case utf8 = "utf-8"
         case utf16 = "utf-16"
         case utf32 = "utf-32"
     }
-    struct InitializeParams: Codable {
+    public struct InitializeParams: Codable {
         let processId: Int
         let capabilities: ClientCapabilities
         let clientInfo: ClientInfo?
     }
 
-    struct ClientCapabilities: Codable {
+    public struct ClientCapabilities: Codable {
         let workspace: WorkspaceClientCapabilities?
         let textDocument: TextDocumentClientCapabilities?
         let general: GeneralClientCapabilities?
     }
 
-    struct ClientInfo: Codable {
+    public struct ClientInfo: Codable {
         let name: String
         let version: String
     }
 
-    struct ValueSetClientCapabilities<T: Codable>: Codable {
+    public struct ValueSetClientCapabilities<T: Codable>: Codable {
         let valueSet: [T]?
     }
 
-    struct GeneralClientCapabilities: Codable {
+    public struct GeneralClientCapabilities: Codable {
         let positionEncodings: [PositionEncoding]?
     }
 
-    struct WorkspaceClientCapabilities: Codable {
+    public struct WorkspaceClientCapabilities: Codable {
         let applyEdit: Bool?
         // let workspaceEdit: WorkspaceEditClientCapabilities?
         // let didChangeConfiguration: DidChangeConfigurationClientCapabilities?
@@ -41,14 +41,14 @@ extension Lsp {
         // let configuration: Bool?
     }
 
-    struct TextDocumentSyncClientCapabilities: Codable {
+    public struct TextDocumentSyncClientCapabilities: Codable {
         let dynamicRegistration: Bool?
         let willSave: Bool?
         let willSaveWaitUntil: Bool?
         let didSave: Bool?
     }
 
-    struct TextDocumentClientCapabilities: Codable {
+    public struct TextDocumentClientCapabilities: Codable {
         let synchronization: TextDocumentSyncClientCapabilities?
         // let completion: CompletionClientCapabilities?
         // let hover: HoverClientCapabilities?
@@ -108,5 +108,46 @@ extension Lsp {
         // struct InlineValueClientCapabilities: Codable {}
         // struct InlayHintClientCapabilities: Codable {}
         // struct DiagnosticClientCapabilities: Codable {}
+    }
+
+    public struct InitializeResult: Codable {
+        let capabilities: ServerCapabilities
+        let serverInfo: ServerInfo?
+    }
+
+    public struct ServerCapabilities: Codable {
+
+        public enum TextDocumentSync: Int, Codable {
+            /// Documents are not synced
+            case none = 0
+            /// Documents are synced by always sending the full content
+            case full = 1
+            /// Documents are synced by sending the full content on open. After that only incremental updates to the document are sent
+            case incremental = 2
+        }
+
+        public struct CompletionProvider: Codable {
+            let triggerCharacters: [String]
+            let resolveProvider: Bool
+        }
+
+        let positionEncoding: PositionEncoding?
+        let textDocumentSync: TextDocumentSync?
+        // let completionProvider: CompletionProvider?
+        // let foldingRangeProvider: Bool?
+        // let semanticTokensProvider: SemanticTokensOptions?
+
+        init(
+            positionEncoding: PositionEncoding? = nil,
+            textDocumentSync: TextDocumentSync? = nil,
+        ) {
+            self.positionEncoding = positionEncoding
+            self.textDocumentSync = textDocumentSync
+        }
+    }
+
+    public struct ServerInfo: Codable {
+        let name: String
+        let version: String?
     }
 }

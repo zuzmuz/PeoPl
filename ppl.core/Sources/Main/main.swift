@@ -1,5 +1,6 @@
-import Foundation
 import Core
+import Foundation
+import Lsp
 
 func compileExample() {
     do {
@@ -8,7 +9,7 @@ func compileExample() {
                 factorial: [a: Int] -> Int {
                     |1| 1
                 }
-                main: () -> Int {
+                main: [] -> Int {
                     facotrial(a: 5)
                 }
                 """,
@@ -35,14 +36,66 @@ func compileExample() {
     }
 }
 
-func runLSP() {
+class Handler: Lsp.Handler {
+    var logger: (any Lsp.Logger)?
+
+    init(logger: (any Lsp.Logger)? = nil) {
+        self.logger = logger
+    }
+
+    func handle(request: Lsp.RequestMessage) -> Lsp.ResponseMessage {
+        switch request.method {
+        case let .initialize(params):
+            self.logger?.log(
+                level: .info,
+                message: "Initialize request with params: \(params)")
+            return .init(
+                id: request.id,
+                result: .success(
+                    .initialize(
+                        .init(
+                            capabilities: .init(
+                                positionEncoding: .utf16,
+                                textDocumentSync: .full),
+                            serverInfo: .init(
+                                name: "peopls",
+                                version: "0.0.1.0")))))
+        case .shutdown:
+            return .init(id: request.id)
+        }
+    }
+
+    func handle(notification: Lsp.NotificationMessage) {
+        switch notification.method {
+        default:
+            break
+        }
+    }
 }
 
-if let argument = CommandLine.arguments.first {
+func runLSP() async throws {
+    let server = Lsp.Server(
+        handler: Handler(),
+        transport: Lsp.StandardTransport(),
+        logger: try Lsp.FileLogger(
+            path: FileManager
+                .default
+                .homeDirectoryForCurrentUser
+                .appending(path: ".peopl/log/"),
+            fileName: "lsp.log",
+            level: .verbose))
+
+    await server.run()
+}
+
+if CommandLine.arguments.count == 2 {
+    let argument = CommandLine.arguments[1]
     switch argument {
     case "lsp":
-        runLSP()
+        try await runLSP()
     default:
         compileExample()
     }
+} else {
+    compileExample()
 }

@@ -25,29 +25,34 @@ let package = Package(
                 .brew(["llvm"])
             ]
         ),
-        .target(
-            name: "Core",
+        // .target(
+        //     name: "Core",
+        //     dependencies: [
+        //         "SwiftTreeSitter",
+        //         "cllvm",
+        //         .product(name: "TreeSitterPeoPl", package: "ppl.treesitter"),
+        //     ],
+        // ),
+        // .target(
+        //     name: "Lsp",
+        //     dependencies: [
+        //         "Core"
+        //     ]
+        // ),
+        .executableTarget(
+            name: "Main",
+            // dependencies: [
+            //     "Core", "Lsp",
+            // ]
             dependencies: [
                 "SwiftTreeSitter",
                 "cllvm",
                 .product(name: "TreeSitterPeoPl", package: "ppl.treesitter"),
             ],
         ),
-        .target(
-            name: "Lsp",
-            dependencies: [
-                "Core"
-            ]
-        ),
-        .executableTarget(
-            name: "Main",
-            dependencies: [
-                "Core", "Lsp",
-            ]
-        ),
         .testTarget(
             name: "CoreTests",
-            dependencies: ["Core"],
+            dependencies: ["Main"],
             resources: [
                 .process("Resources")
             ]
