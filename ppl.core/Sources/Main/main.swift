@@ -1,6 +1,4 @@
-import Core
 import Foundation
-import Lsp
 
 func compileExample() {
     do {
@@ -74,16 +72,17 @@ class Handler: Lsp.Handler {
 }
 
 func runLSP() async throws {
-    let server = Lsp.Server(
-        handler: Handler(),
-        transport: Lsp.StandardTransport(),
-        logger: try Lsp.FileLogger(
+    let logger = try Lsp.FileLogger(
             path: FileManager
                 .default
                 .homeDirectoryForCurrentUser
                 .appending(path: ".peopl/log/"),
             fileName: "lsp.log",
-            level: .verbose))
+            level: .verbose)
+    let server = Lsp.Server(
+        handler: Handler(logger: logger),
+        transport: Lsp.StandardTransport(),
+        logger: logger)
 
     await server.run()
 }

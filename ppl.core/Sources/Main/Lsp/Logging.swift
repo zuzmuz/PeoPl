@@ -46,7 +46,7 @@ extension Lsp {
     public final class FileLogger: Logger, Sendable {
         private let handle: FileHandle
         private let dateFormatter: DateFormatter
-        private let level: LogLevel = .info
+        private let level: LogLevel
         private let queue = DispatchQueue(label: "file-logger", qos: .utility)
 
         public init(path: URL, fileName: String, level: LogLevel) throws {
@@ -65,6 +65,7 @@ extension Lsp {
             self.handle = try FileHandle(forWritingTo: filePath)
             self.dateFormatter = DateFormatter()
             self.dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+            self.level = level
         }
 
         deinit {

@@ -5,6 +5,7 @@ extension Lsp {
         case utf16 = "utf-16"
         case utf32 = "utf-32"
     }
+
     public struct InitializeParams: Codable {
         let processId: Int
         let capabilities: ClientCapabilities

@@ -140,7 +140,9 @@ extension Lsp {
                 switch method {
                 case "initialize":
                     self = .initialize(
-                        try InitializeParams(from: decoder))
+                        try container.decode(
+                            InitializeParams.self,
+                            forKey: .params))
                 default:
                     throw DecodingError.dataCorruptedError(
                         forKey: .method, in: container,
