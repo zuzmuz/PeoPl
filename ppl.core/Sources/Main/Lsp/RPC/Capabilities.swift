@@ -10,6 +10,12 @@ extension Lsp {
         let processId: Int
         let capabilities: ClientCapabilities
         let clientInfo: ClientInfo?
+        let workspaceFolders: [WorkspaceFolder]?
+    }
+
+    public struct WorkspaceFolder: Codable {
+        let uri: String
+        let name: String
     }
 
     public struct ClientCapabilities: Codable {

@@ -69,15 +69,24 @@ public enum Lsp {
                         level: .info,
                         message: "Request id(\(request.id)) \(request.method)")
                     let response = handler.handle(request: request)
+                    logger?.log(
+                        level: .info,
+                        message: "Response id(\(String(describing: response.id))) \(String(describing: response.result))")
                     if let encodedResponse = self.coder.encode(
                         response: response)
                     {
+                        logger?.log(level: .verbose, message: encodedResponse)
                         await self.transport.write(encodedResponse)
                     } else {
                         logger?.log(
                             level: .error, message: "Failed to encode response")
                     }
                 case let .error(message):
+                    if message == "Unkown method exit" {
+                        logger?.log(
+                            level: .error, message: "Exiting cause error")
+                        return
+                    }
                     logger?.log(level: .error, message: message)
                 case .incomplete:
                     logger?.log(level: .debug, message: "Incomplete message")

@@ -143,6 +143,8 @@ extension Lsp {
                         try container.decode(
                             InitializeParams.self,
                             forKey: .params))
+                case "shutdown":
+                    self = .shutdown
                 default:
                     throw DecodingError.dataCorruptedError(
                         forKey: .method, in: container,
@@ -187,38 +189,140 @@ extension Lsp {
         let jsonrpc: String
         public let method: Method
 
-        public enum Method: String, Codable {
+        public enum Method: Codable {
             case initialized
             case exit
-            // case didOpenTextDocument = "textDocument/didOpen"
+            case didOpenTextDocument(TextDocumentParams.DidOpen)
             // case didChangeTextDocument = "textDocument/didChange"
             // case didSaveTextDocument = "textDocument/didSave"
+
+            var label: String {
+                switch self {
+                case .initialized:
+                    return "initialized"
+                case .exit:
+                    return "exit"
+                case let .didOpenTextDocument(params):
+                    return "textDocument/didOpen"
+                // case let .didChangeTextDocument(params):
+                //     return "textDocument/didChange"
+                // case let .didSaveTextDocument(params):
+                //     return "textDocument/didSave"
+                }
+            }
+
+            enum ParamCodingKeys: CodingKey {
+                case method
+                case params
+            }
+
+            public init(from decoder: Decoder) throws {
+                let container = try decoder.container(
+                    keyedBy: ParamCodingKeys.self)
+
+                let method = try container.decode(String.self, forKey: .method)
+
+                switch method {
+                case "initialized":
+                    self = .initialized
+                case "exit":
+                    self = .exit
+                case "textDocument/didOpen":
+                    self = .didOpenTextDocument(
+                        try container.decode(
+                            TextDocumentParams.DidOpen.self,
+                            forKey: .params))
+                default:
+                    throw DecodingError.dataCorruptedError(
+                        forKey: .method, in: container,
+                        debugDescription: "unknown method")
+                }
+            }
+
+            public func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: ParamCodingKeys.self)
+                try container.encode(self.label, forKey: .method)
+                switch self {
+                case .initialized:
+                    break
+                case .exit:
+                    break
+                case let .didOpenTextDocument(params):
+                    try container.encode(params, forKey: .params)
+                }
+            }
         }
 
-        // enum Params: Codable {
-        //     case initialized
-        //     case exit
-        // case didOpentTextDocument(TextDocumentParams.DidOpen)
-        // case didChangeTextDocument(TextDocumentParams.DidChange)
-        // case didSaveTextDocument(TextDocumentParams.DidSave)
-        // }
+        enum CodingKeys: CodingKey {
+            case jsonrpc
+            case method
+        }
+
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+
+            self.jsonrpc = try container.decode(String.self, forKey: .jsonrpc)
+            self.method = try Method(from: decoder)
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: CodingKeys.self)
+            try container.encode(jsonrpc, forKey: .jsonrpc)
+            try self.method.encode(to: encoder)
+        }
     }
 
     public struct ResponseMessage: Codable {
         let jsonrpc: String
         public let id: Id?
-        public let result: ResponseResult?
+        public let result: Result<ResponseSuccess, ResponseError>?
 
-        public init(id: Id? = nil, result: ResponseResult? = nil) {
+        public init(
+            id: Id? = nil,
+            result: Result<ResponseSuccess, ResponseError>? = nil
+        ) {
             self.jsonrpc = "2.0"
             self.id = id
             self.result = result
         }
-    }
 
-    public enum ResponseResult: Codable {
-        case success(ResponseSuccess)
-        case error(ResponseError)
+        enum CodingKeys: String, CodingKey {
+            case jsonrpc
+            case id
+            case result
+            case error
+        }
+
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+
+            self.jsonrpc = try container.decode(String.self, forKey: .jsonrpc)
+            self.id = try container.decodeIfPresent(Id.self, forKey: .id)
+
+            // if let result = try? container.decode(
+            //     ResponseResult.self, forKey: .result)
+            // {
+            //     self.result = result
+            // } else {
+                self.result = nil
+            // }
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: CodingKeys.self)
+
+            try container.encode(jsonrpc, forKey: .jsonrpc)
+            try container.encode(id, forKey: .id)
+
+            switch self.result {
+            case let .failure(failure):
+                try container.encode(failure, forKey: .error)
+            case let .success(success):
+                try container.encode(success, forKey: .result)
+            case .none:
+                break
+            }
+        }
     }
 
     public struct UnknownMessage: Codable {
@@ -227,6 +331,14 @@ extension Lsp {
 
     public enum ResponseSuccess: Codable {
         case initialize(InitializeResult)
+
+
+        public func encode(to encoder: any Encoder) throws {
+            switch self {
+            case let .initialize(result):
+                try result.encode(to: encoder)
+            }
+        }
     }
 
     public enum ResponseError: Codable, Error {
