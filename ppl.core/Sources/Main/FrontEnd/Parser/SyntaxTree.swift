@@ -37,16 +37,16 @@ public enum Syntax {
     /// Represents the location of a syntax node in the source code
     public struct NodeLocation: Comparable, Equatable, Codable, Sendable {
         /// A point in the source code defined by line and column numbers
-        struct Point: Comparable, Equatable, Codable {
+        public struct Point: Comparable, Equatable, Codable, Sendable {
             let line: Int
             let column: Int
-            static func < (lhs: Point, rhs: Point) -> Bool {
+            public static func < (lhs: Point, rhs: Point) -> Bool {
                 lhs.line < rhs.line
                     || lhs.line == rhs.line && lhs.column < rhs.column
             }
         }
-        let pointRange: Range<Point>
-        let range: Range<Int>
+        public let pointRange: Range<Point>
+        public let range: Range<Int>
 
         public static func < (lhs: NodeLocation, rhs: NodeLocation) -> Bool {
             lhs.pointRange.lowerBound < rhs.pointRange.lowerBound

@@ -9,10 +9,10 @@ extension Lsp {
         case full(
             resultId: String?,
             items: [Diagnostic],
-            relatedDocuments: [String: DocumentDiagnosticReport])
+            relatedDocuments: [String: DocumentDiagnosticReport]?)
         case unchanged(
             resultId: String,
-            relatedDocuments: [String: DocumentDiagnosticReport])
+            relatedDocuments: [String: DocumentDiagnosticReport]?)
 
         enum CodingKeys: String, CodingKey {
             case kind
@@ -37,7 +37,7 @@ extension Lsp {
                     [Diagnostic].self, forKey: .items)
                 let relatedDocuments = try container.decodeIfPresent(
                     [String: DocumentDiagnosticReport].self,
-                    forKey: .relatedDocuments) ?? [:]
+                    forKey: .relatedDocuments)
                 self = .full(
                     resultId: resultId,
                     items: items,
@@ -48,7 +48,7 @@ extension Lsp {
                     forKey: .resultId)
                 let relatedDocuments = try container.decodeIfPresent(
                     [String: DocumentDiagnosticReport].self,
-                    forKey: .relatedDocuments) ?? [:]
+                    forKey: .relatedDocuments)
                 self = .unchanged(
                     resultId: resultId,
                     relatedDocuments: relatedDocuments)
@@ -83,6 +83,26 @@ extension Lsp {
         let message: String
         let tags: [DiagnosticTag]?
         let relatedInformation: [DiagnosticRelatedInformation]?
+
+        public init(
+            range: Range,
+            severity: DiagnosticSeverity,
+            code: DiagnosticCode? = nil,
+            codeDescription: DiagnosticCodeDescription? = nil,
+            source: String? = nil,
+            message: String,
+            tags: [DiagnosticTag]? = nil,
+            relatedInformation: [DiagnosticRelatedInformation]? = nil
+        ) {
+            self.range = range
+            self.severity = severity
+            self.code = code
+            self.codeDescription = codeDescription
+            self.source = source
+            self.message = message
+            self.tags = tags
+            self.relatedInformation = relatedInformation
+        }
     }
 
     public enum DiagnosticSeverity: Int, Codable, Sendable {
@@ -95,6 +115,15 @@ extension Lsp {
     public enum DiagnosticCode: Codable, Sendable {
         case integer(Int)
         case string(String)
+
+        public func encode(to encoder: any Encoder) throws {
+            switch self {
+            case let .integer(value):
+                try value.encode(to: encoder)
+            case let .string(value):
+                try value.encode(to: encoder)
+            }
+        }
     }
 
     public struct DiagnosticCodeDescription: Codable, Sendable {
@@ -114,5 +143,24 @@ extension Lsp {
     public struct Location: Codable, Sendable {
         let uri: String
         let range: Range
+    }
+}
+
+extension Syntax.Error {
+    var lspRange: Lsp.Range {
+        switch self {
+        case .rangeNotInContent, .languageNotSupported, .sourceUnreadable:
+            return .init(
+                start: .init(line: 0, character: 0),
+                end: .init(line: 0, character: 0))
+        case .notImplemented(_, let location), .errorParsing(_, let location):
+            return .init(
+                start: .init(
+                    line: location.pointRange.lowerBound.line,
+                    character: location.pointRange.lowerBound.column / 2),
+                end: .init(
+                    line: location.pointRange.upperBound.line,
+                    character: location.pointRange.upperBound.column / 2))
+        }
     }
 }

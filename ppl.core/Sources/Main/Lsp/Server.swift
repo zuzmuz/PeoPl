@@ -57,26 +57,26 @@ public enum Lsp {
                 case let .notification(notification):
                     logger?.log(
                         level: .info,
-                        message: "Notification \(notification.method)"
+                        message: "Notification \(notification.method.name)"
                     )
-                    Task {
+                    // Task {
                         await handler.handle(notification: notification)
-                    }
+                    // }
                     if case .exit = notification.method {
                         logger?.log(level: .notice, message: "Exiting")
                         return
                     }
                 case let .request(request):
                     logger?.log(
-                        level: .verbose,
-                        message: "Request id(\(request.id)) \(request.method)")
+                        level: .info,
+                        message: "Request id(\(request.id)) \(request.method.name)")
 
-                    Task {
+                    // Task {
                         let response = await handler.handle(request: request)
 
                         logger?.log(
-                            level: .verbose,
-                            message: "Response id(\(String(describing: response.id))) \(String(describing: response.result))")
+                            level: .info,
+                            message: "Response id(\(String(describing: response.id))")
                         if let encodedResponse = self.coder.encode(
                             response: response)
                         {
@@ -90,7 +90,7 @@ public enum Lsp {
                                 level: .error,
                                 message: "Failed to encode response")
                         }
-                    }
+                    // }
                 case let .error(message):
                     if message == "Unknown method exit" {
                         logger?.log(

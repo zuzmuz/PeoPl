@@ -367,10 +367,13 @@ extension Lsp {
 
     public enum ResponseSuccess: Codable, Sendable {
         case initialize(InitializeResult)
+        case diagnostic(DocumentDiagnosticReport)
 
         public func encode(to encoder: any Encoder) throws {
             switch self {
             case let .initialize(result):
+                try result.encode(to: encoder)
+            case let .diagnostic(result):
                 try result.encode(to: encoder)
             }
         }

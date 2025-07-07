@@ -67,10 +67,20 @@ extension Lsp {
     public struct Range: Codable, Sendable {
         let start: Position
         let end: Position
+
+        public init(start: Position, end: Position) {
+            self.start = start
+            self.end = end
+        }
     }
 
     public struct Position: Codable, Sendable {
         let line: Int
         let character: Int
+
+        public init(line: Int, character: Int) {
+            self.line = line
+            self.character = character
+        }
     }
 }

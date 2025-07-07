@@ -1,13 +1,11 @@
 import Foundation
 
 actor Handler: Lsp.Handler {
-    var logger: (any Lsp.Logger)?
-    var state: [String: String]
-    var project: Syntax.Project?
+    let logger: (any Lsp.Logger)?
+    var modulesContent: [String: String] = [:]
 
     init(logger: (any Lsp.Logger)? = nil) {
         self.logger = logger
-        self.state = [:]
     }
 
     private func scanWorkspaceFolders(folders: [Lsp.WorkspaceFolder]) {
@@ -35,34 +33,77 @@ actor Handler: Lsp.Handler {
                 return
             }
 
-            let modules: [String: Result<Syntax.Module, Syntax.Error>] =
+            self.modulesContent =
                 urls.reduce(into: [:]) { acc, file in
                     guard let file = file as? URL,
                         file.isFileURL,
                         file.pathExtension == "ppl"
                     else { return }
-                    do throws(Syntax.Error) {
-                        acc[file.absoluteString] = .success(
-                            try Syntax.Module(url: file))
-                    } catch {
-                        acc[file.absoluteString] = .failure(error)
-                    }
+                    guard let data = try? Data.init(contentsOf: file),
+                        let source = String(data: data, encoding: .utf8)
+                    else { return }
+                    acc[file.absoluteString] = source
                 }
 
-            self.project = Syntax.Project(
-                modules: modules.compactMapValues { result in
-                    switch result {
-                    case let .success(module):
-                        return module
-                    case .failure:
-                        return nil
-                    }
-                }
-            )
-
-            let result = self.project?.semanticCheck()
-
+            logger?.log(
+                level: .debug,
+                message: "modules content: \(self.modulesContent)")
         }
+    }
+
+    private func generateDiagnostics(
+        for uri: String,
+    ) -> [Lsp.Diagnostic] {
+        // let project = Syntax.Project.init(
+        var diagnostics: [Lsp.Diagnostic] = []
+
+        let modulesResult: [String: Result<Syntax.Module, Syntax.Error>] =
+            self.modulesContent.reduce(into: [:]) { acc, file in
+                do throws(Syntax.Error) {
+                    acc[file.key] = .success(
+                        try Syntax.Module.init(
+                            source: file.value, path: file.key))
+                } catch {
+                    acc[file.key] = .failure(error)
+                }
+            }
+
+        for (moduleUri, result) in modulesResult {
+            if moduleUri == uri, case let .failure(error) = result {
+                    diagnostics.append(
+                        .init(
+                            range: error.lspRange,
+                            severity: .error,
+                            message: error.localizedDescription))
+                }
+            }
+
+        let project = Syntax.Project.init(
+            modules: modulesResult.compactMapValues { result in
+                switch result {
+                case let .success(module):
+                    return module
+                case .failure:
+                    return nil
+                }
+            })
+
+        let context = project.semanticCheck()
+
+        // switch context {
+        // case let .failure(errorList):
+        //     for error in errorList.errors {
+        //         diagnostics.append(
+        //             .init(
+        //                 range: error.lspRange,
+        //                 severity: .error,
+        //                 message: error.localizedDescription))
+        //     }
+        // case .success:
+        //     break 
+        // }
+
+        return diagnostics
     }
 
     func handle(request: Lsp.RequestMessage) -> Lsp.ResponseMessage {
@@ -91,7 +132,17 @@ actor Handler: Lsp.Handler {
                                 name: "peopls",
                                 version: "0.0.1.0")))))
         case let .diagnostic(params):
-            return .init(id: request.id)
+            let resultId = params.previousResultId
+
+            return .init(
+                id: request.id,
+                result: .success(
+                    .diagnostic(
+                        .full(
+                            resultId: resultId,
+                            items: self.generateDiagnostics(
+                                for: params.textDocument.uri),
+                            relatedDocuments: nil))))
         case .shutdown:
             return .init(id: request.id)
         }
@@ -102,12 +153,21 @@ actor Handler: Lsp.Handler {
         case .initialized:
             break
         case let .didOpenTextDocument(params):
-            break
-        case .didChangeTextDocument(_):
-            break
-        case .didOpenTextDocument(_):
-            break
-        case .didSaveTextDocument(_):
+            self.modulesContent[params.textDocument.uri] =
+                params.textDocument.text
+            logger?.log(
+                level: .debug,
+                message: "modules content: \(self.modulesContent)")
+        case let .didChangeTextDocument(params):
+            params.contentChanges.forEach { contentChange in
+                if case let .full(text) = contentChange {
+                    self.modulesContent[params.textDocument.uri] = text
+                }
+            }
+            logger?.log(
+                level: .debug,
+                message: "modules content: \(self.modulesContent)")
+        case let .didSaveTextDocument(params):
             break
         case .exit:
             break
@@ -122,7 +182,9 @@ func runLSP() async throws {
             .homeDirectoryForCurrentUser
             .appending(path: ".peopl/log/"),
         fileName: "lsp.log",
-        level: .verbose)
+        level: .debug)
+
+    logger.log(level: .notice, message: "Starting Server")
     let server = Lsp.Server(
         handler: Handler(logger: logger),
         transport: Lsp.StandardTransport(),
