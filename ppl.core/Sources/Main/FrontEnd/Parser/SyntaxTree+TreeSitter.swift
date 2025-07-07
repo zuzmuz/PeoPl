@@ -85,7 +85,11 @@ extension Syntax.Module {
     public init(source: String, path: String) throws(Syntax.Error) {
         let language = Language(tree_sitter_peopl())
         let parser = Parser()
-        try parser.setLanguage(language)
+        do {
+            try parser.setLanguage(language)
+        } catch {
+            throw .languageNotSupported
+        }
 
         let tree = parser.parse(source)
         guard let rootNode = tree?.rootNode else {
@@ -111,19 +115,20 @@ extension Syntax.Module {
 
         let fileHandle = FileHandle(forReadingAtPath: path)
 
-        guard let outputData = try fileHandle?.read(upToCount: Int.max),
+        guard let outputData = try? fileHandle?.read(upToCount: Int.max),
             let outputString = String(
                 data: outputData, encoding: .utf8)
         else {
-            fatalError("File unreadable at path")
+            throw .sourceUnreadable
         }
         try self.init(source: outputString, path: path)
     }
 
     public init(url: URL) throws(Syntax.Error) {
-        let data = try Data.init(contentsOf: url)
-        guard let source = String(data: data, encoding: .utf8) else {
-            fatalError("File unreadable at url")
+        guard let data = try? Data.init(contentsOf: url),
+            let source = String(data: data, encoding: .utf8)
+        else {
+            throw .sourceUnreadable
         }
         try self.init(source: source, path: url.path)
     }

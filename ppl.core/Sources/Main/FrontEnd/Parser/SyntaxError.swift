@@ -2,6 +2,7 @@ import Foundation
 
 extension Syntax {
     public enum Error: LocalizedError {
+        case languageNotSupported
         case sourceUnreadable
         case notImplemented(
             element: String,
@@ -15,6 +16,8 @@ extension Syntax {
 
         public var errorDescription: String? {
             switch self {
+            case .languageNotSupported:
+                return "Error loading language parser"
             case .sourceUnreadable:
                 return "Source is unreadable"
             case let .notImplemented(element, location):
