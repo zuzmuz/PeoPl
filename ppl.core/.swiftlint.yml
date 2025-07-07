@@ -21,6 +21,8 @@ cyclomatic_complexity:
 
 opening_brace:
   ignore_multiline_statement_conditions: true
+  ignore_multiline_function_signatures: true
+  ignore_multiline_type_headers: true
 
 
 function_body_length:

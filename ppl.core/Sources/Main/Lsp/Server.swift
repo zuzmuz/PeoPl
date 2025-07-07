@@ -2,12 +2,12 @@ import Foundation
 
 public enum Lsp {
 
-    public protocol Handler {
+    public protocol Handler: Actor {
         func handle(request: RequestMessage) async -> ResponseMessage
         func handle(notification: NotificationMessage) async
     }
 
-    public protocol Transport {
+    public protocol Transport: Actor {
         func read() async -> Data
         func write(_ data: Data) async
     }
@@ -59,9 +59,9 @@ public enum Lsp {
                         level: .info,
                         message: "Notification \(notification.method)"
                     )
-                    // Task {
+                    Task {
                         await handler.handle(notification: notification)
-                    // }
+                    }
                     if case .exit = notification.method {
                         logger?.log(level: .notice, message: "Exiting")
                         return
@@ -71,7 +71,7 @@ public enum Lsp {
                         level: .verbose,
                         message: "Request id(\(request.id)) \(request.method)")
 
-                    // Task {
+                    Task {
                         let response = await handler.handle(request: request)
 
                         logger?.log(
@@ -90,7 +90,7 @@ public enum Lsp {
                                 level: .error,
                                 message: "Failed to encode response")
                         }
-                    // }
+                    }
                 case let .error(message):
                     if message == "Unknown method exit" {
                         logger?.log(

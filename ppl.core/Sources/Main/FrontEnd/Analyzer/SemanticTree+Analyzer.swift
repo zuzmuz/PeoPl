@@ -1,12 +1,13 @@
 public protocol SemanticChecker:
-    TypeDeclarationsChecker, ValueDefinitionChecker
+    TypeDeclarationsChecker,
+    ValueDefinitionChecker
 {
     func semanticCheck() -> Result<Semantic.Context, Semantic.ErrorList>
 }
 
 extension SemanticChecker {
-    public func semanticCheck() -> Result<Semantic.Context, Semantic.ErrorList>
-    {
+    public func semanticCheck(
+    ) -> Result<Semantic.Context, Semantic.ErrorList> {
         let intrinsicDeclarations = getIntrinsicDeclarations()
 
         // Getting type declarations

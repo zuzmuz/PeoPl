@@ -201,11 +201,11 @@ extension Lsp {
         }
     }
 
-    public struct NotificationMessage: Codable {
+    public struct NotificationMessage: Codable, Sendable {
         let jsonrpc: String
         public let method: Method
 
-        public enum Method: Codable {
+        public enum Method: Codable, Sendable {
             case initialized
             case exit
             case didOpenTextDocument(TextDocumentParams.DidOpen)
