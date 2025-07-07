@@ -79,7 +79,6 @@ class Handler: Lsp.Handler {
                         acc[file.absoluteString] = module
                     }
                 }
-
             self.project = Syntax.Project(modules: modules)
         }
     }
@@ -102,7 +101,10 @@ class Handler: Lsp.Handler {
                         .init(
                             capabilities: .init(
                                 positionEncoding: .utf16,
-                                textDocumentSync: .full),
+                                textDocumentSync: .full,
+                                diagnosticProvider: .init(
+                                    interFileDependencies: true,
+                                    workspaceDiagnostics: true)),
                             serverInfo: .init(
                                 name: "peopls",
                                 version: "0.0.1.0")))))
@@ -113,7 +115,17 @@ class Handler: Lsp.Handler {
 
     func handle(notification: Lsp.NotificationMessage) {
         switch notification.method {
-        default:
+        case .initialized:
+            break
+        case let .didOpenTextDocument(params):
+            break
+        case .didChangeTextDocument(_):
+            break
+        case .didOpenTextDocument(_):
+            break
+        case .didSaveTextDocument(_):
+            break
+        case .exit:
             break
         }
     }

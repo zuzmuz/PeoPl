@@ -11,6 +11,7 @@ extension Lsp {
         let capabilities: ClientCapabilities
         let clientInfo: ClientInfo?
         let workspaceFolders: [WorkspaceFolder]?
+        let locale: String?
     }
 
     public struct WorkspaceFolder: Codable {
@@ -138,8 +139,14 @@ extension Lsp {
             let resolveProvider: Bool
         }
 
+        public struct DiagnosticOptions: Codable {
+            let interFileDependencies: Bool
+            let workspaceDiagnostics: Bool
+        }
+
         let positionEncoding: PositionEncoding?
         let textDocumentSync: TextDocumentSync?
+        let diagnosticProvider: DiagnosticOptions?
         // let completionProvider: CompletionProvider?
         // let foldingRangeProvider: Bool?
         // let semanticTokensProvider: SemanticTokensOptions?
@@ -147,9 +154,11 @@ extension Lsp {
         init(
             positionEncoding: PositionEncoding? = nil,
             textDocumentSync: TextDocumentSync? = nil,
+            diagnosticProvider: DiagnosticOptions? = nil,
         ) {
             self.positionEncoding = positionEncoding
             self.textDocumentSync = textDocumentSync
+            self.diagnosticProvider = diagnosticProvider
         }
     }
 

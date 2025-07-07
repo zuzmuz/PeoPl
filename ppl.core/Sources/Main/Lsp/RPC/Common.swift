@@ -106,24 +106,36 @@ extension Lsp {
 
         public enum Method: Codable {
             case initialize(InitializeParams)
+            case diagnostic(DocumentDiagnosticParams)
             // case completion(CompletionParams)
             // case foldingRange(FoldingRangeParams)
             // case semanticTokensFull(SematanicTokensFullParams)
             case shutdown
 
-            var label: String {
+            var name: MethodName {
                 switch self {
                 case .initialize:
-                    return "initialize"
+                    return .initialize
                 case .shutdown:
-                    return "shutdown"
+                    return .shutdown
+                case .diagnostic:
+                    return .diagnostic
                 // case .completion:
-                //     return "textDocument/completion"
+                //     return .completion
                 // case .foldingRange:
-                //     return "textDocument/foldingRange"
+                //     return .foldingRange
                 // case .semanticTokensFull:
-                //     return "textDocument/semanticTokens/full"
+                //     return .semanticTokensFull
                 }
+            }
+
+            enum MethodName: String, Codable {
+                case initialize
+                case shutdown
+                case diagnostic = "textDocument/diagnostic"
+                // case completion = "textDocument/completion"
+                // case foldingRange = "textDocument/foldingRange"
+                // case semanticTokensFull = "textDocument/semanticTokens/full"
             }
 
             enum ParamCodingKeys: CodingKey {
@@ -135,26 +147,23 @@ extension Lsp {
                 let container = try decoder.container(
                     keyedBy: ParamCodingKeys.self)
 
-                let method = try container.decode(String.self, forKey: .method)
+                let method = try container.decode(
+                    MethodName.self, forKey: .method)
 
                 switch method {
-                case "initialize":
+                case .initialize:
                     self = .initialize(
                         try container.decode(
                             InitializeParams.self,
                             forKey: .params))
-                case "shutdown":
+                case .shutdown:
                     self = .shutdown
-                default:
-                    throw DecodingError.dataCorruptedError(
-                        forKey: .method, in: container,
-                        debugDescription: "unknown method")
                 }
             }
 
             public func encode(to encoder: any Encoder) throws {
                 var container = encoder.container(keyedBy: ParamCodingKeys.self)
-                try container.encode(self.label, forKey: .method)
+                try container.encode(self.name, forKey: .method)
                 switch self {
                 case let .initialize(params):
                     try container.encode(params, forKey: .params)
@@ -193,22 +202,30 @@ extension Lsp {
             case initialized
             case exit
             case didOpenTextDocument(TextDocumentParams.DidOpen)
-            // case didChangeTextDocument = "textDocument/didChange"
-            // case didSaveTextDocument = "textDocument/didSave"
+            case didChangeTextDocument(TextDocumentParams.DidChange)
+            case didSaveTextDocument(TextDocumentParams.DidSave)
 
-            var label: String {
+            var name: MethodName {
                 switch self {
                 case .initialized:
-                    return "initialized"
+                    return .initialized
                 case .exit:
-                    return "exit"
-                case let .didOpenTextDocument(params):
-                    return "textDocument/didOpen"
-                // case let .didChangeTextDocument(params):
-                //     return "textDocument/didChange"
-                // case let .didSaveTextDocument(params):
-                //     return "textDocument/didSave"
+                    return .exit
+                case .didOpenTextDocument:
+                    return .didOpenTextDocument
+                case .didChangeTextDocument:
+                    return .didChangeTextDocument
+                case .didSaveTextDocument:
+                    return .didSaveTextDocument
                 }
+            }
+
+            enum MethodName: String, Codable {
+                case initialized
+                case exit
+                case didOpenTextDocument = "textDocument/didOpen"
+                case didChangeTextDocument = "textDocument/didChange"
+                case didSaveTextDocument = "textDocument/didSave"
             }
 
             enum ParamCodingKeys: CodingKey {
@@ -220,34 +237,46 @@ extension Lsp {
                 let container = try decoder.container(
                     keyedBy: ParamCodingKeys.self)
 
-                let method = try container.decode(String.self, forKey: .method)
+                let method = try container.decode(
+                    MethodName.self,
+                    forKey: .method)
 
                 switch method {
-                case "initialized":
+                case .initialized:
                     self = .initialized
-                case "exit":
+                case .exit:
                     self = .exit
-                case "textDocument/didOpen":
+                case .didOpenTextDocument:
                     self = .didOpenTextDocument(
                         try container.decode(
                             TextDocumentParams.DidOpen.self,
                             forKey: .params))
-                default:
-                    throw DecodingError.dataCorruptedError(
-                        forKey: .method, in: container,
-                        debugDescription: "unknown method")
+                case .didChangeTextDocument:
+                    self = .didChangeTextDocument(
+                        try container.decode(
+                            TextDocumentParams.DidChange.self,
+                            forKey: .params))
+                case .didSaveTextDocument:
+                    self = .didSaveTextDocument(
+                        try container.decode(
+                            TextDocumentParams.DidSave.self,
+                            forKey: .params))
                 }
             }
 
             public func encode(to encoder: any Encoder) throws {
                 var container = encoder.container(keyedBy: ParamCodingKeys.self)
-                try container.encode(self.label, forKey: .method)
+                try container.encode(self.name, forKey: .method)
                 switch self {
                 case .initialized:
                     break
                 case .exit:
                     break
                 case let .didOpenTextDocument(params):
+                    try container.encode(params, forKey: .params)
+                case let .didChangeTextDocument(params):
+                    try container.encode(params, forKey: .params)
+                case let .didSaveTextDocument(params):
                     try container.encode(params, forKey: .params)
                 }
             }

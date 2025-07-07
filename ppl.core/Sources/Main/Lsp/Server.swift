@@ -66,15 +66,19 @@ public enum Lsp {
                     }
                 case let .request(request):
                     logger?.log(
-                        level: .info,
+                        level: .verbose,
                         message: "Request id(\(request.id)) \(request.method)")
+
                     let response = handler.handle(request: request)
+
                     logger?.log(
-                        level: .info,
+                        level: .verbose,
                         message: "Response id(\(String(describing: response.id))) \(String(describing: response.result))")
                     if let encodedResponse = self.coder.encode(
                         response: response)
                     {
+
+                        logger?.log(level: .verbose, message: "Output")
                         logger?.log(level: .verbose, message: encodedResponse)
                         await self.transport.write(encodedResponse)
                     } else {
