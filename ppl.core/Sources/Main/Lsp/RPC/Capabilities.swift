@@ -1,12 +1,12 @@
 extension Lsp {
 
-    public enum PositionEncoding: String, Codable {
+    public enum PositionEncoding: String, Codable, Sendable {
         case utf8 = "utf-8"
         case utf16 = "utf-16"
         case utf32 = "utf-32"
     }
 
-    public struct InitializeParams: Codable {
+    public struct InitializeParams: Codable, Sendable {
         let processId: Int
         let capabilities: ClientCapabilities
         let clientInfo: ClientInfo?
@@ -14,18 +14,18 @@ extension Lsp {
         let locale: String?
     }
 
-    public struct WorkspaceFolder: Codable {
+    public struct WorkspaceFolder: Codable, Sendable {
         let uri: String
         let name: String
     }
 
-    public struct ClientCapabilities: Codable {
+    public struct ClientCapabilities: Codable, Sendable {
         let workspace: WorkspaceClientCapabilities?
         let textDocument: TextDocumentClientCapabilities?
         let general: GeneralClientCapabilities?
     }
 
-    public struct ClientInfo: Codable {
+    public struct ClientInfo: Codable, Sendable {
         let name: String
         let version: String
     }
@@ -34,11 +34,11 @@ extension Lsp {
         let valueSet: [T]?
     }
 
-    public struct GeneralClientCapabilities: Codable {
+    public struct GeneralClientCapabilities: Codable, Sendable {
         let positionEncodings: [PositionEncoding]?
     }
 
-    public struct WorkspaceClientCapabilities: Codable {
+    public struct WorkspaceClientCapabilities: Codable, Sendable {
         let applyEdit: Bool?
         // let workspaceEdit: WorkspaceEditClientCapabilities?
         // let didChangeConfiguration: DidChangeConfigurationClientCapabilities?
@@ -49,14 +49,14 @@ extension Lsp {
         // let configuration: Bool?
     }
 
-    public struct TextDocumentSyncClientCapabilities: Codable {
+    public struct TextDocumentSyncClientCapabilities: Codable, Sendable {
         let dynamicRegistration: Bool?
         let willSave: Bool?
         let willSaveWaitUntil: Bool?
         let didSave: Bool?
     }
 
-    public struct TextDocumentClientCapabilities: Codable {
+    public struct TextDocumentClientCapabilities: Codable, Sendable {
         let synchronization: TextDocumentSyncClientCapabilities?
         // let completion: CompletionClientCapabilities?
         // let hover: HoverClientCapabilities?
@@ -118,14 +118,14 @@ extension Lsp {
         // struct DiagnosticClientCapabilities: Codable {}
     }
 
-    public struct InitializeResult: Codable {
+    public struct InitializeResult: Codable, Sendable {
         let capabilities: ServerCapabilities
         let serverInfo: ServerInfo?
     }
 
-    public struct ServerCapabilities: Codable {
+    public struct ServerCapabilities: Codable, Sendable {
 
-        public enum TextDocumentSync: Int, Codable {
+        public enum TextDocumentSync: Int, Codable, Sendable {
             /// Documents are not synced
             case none = 0
             /// Documents are synced by always sending the full content
@@ -134,12 +134,12 @@ extension Lsp {
             case incremental = 2
         }
 
-        public struct CompletionProvider: Codable {
+        public struct CompletionProvider: Codable, Sendable {
             let triggerCharacters: [String]
             let resolveProvider: Bool
         }
 
-        public struct DiagnosticOptions: Codable {
+        public struct DiagnosticOptions: Codable, Sendable {
             let interFileDependencies: Bool
             let workspaceDiagnostics: Bool
         }
@@ -162,7 +162,7 @@ extension Lsp {
         }
     }
 
-    public struct ServerInfo: Codable {
+    public struct ServerInfo: Codable, Sendable {
         let name: String
         let version: String?
     }

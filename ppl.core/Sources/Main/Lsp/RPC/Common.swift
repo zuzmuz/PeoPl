@@ -71,7 +71,7 @@ extension Lsp {
     }
 
     // swiftlint:disable:next type_name
-    public enum Id: Codable {
+    public enum Id: Codable, Sendable {
         case int(Int)
         case string(String)
 
@@ -99,12 +99,12 @@ extension Lsp {
         }
     }
 
-    public struct RequestMessage: Codable {
+    public struct RequestMessage: Codable, Sendable {
         public let jsonrpc: String
         public let id: Id
         public let method: Method
 
-        public enum Method: Codable {
+        public enum Method: Codable, Sendable {
             case initialize(InitializeParams)
             case diagnostic(DocumentDiagnosticParams)
             // case completion(CompletionParams)
@@ -156,6 +156,11 @@ extension Lsp {
                         try container.decode(
                             InitializeParams.self,
                             forKey: .params))
+                case .diagnostic:
+                    self = .diagnostic(
+                        try container.decode(
+                            DocumentDiagnosticParams.self,
+                            forKey: .params))
                 case .shutdown:
                     self = .shutdown
                 }
@@ -166,6 +171,8 @@ extension Lsp {
                 try container.encode(self.name, forKey: .method)
                 switch self {
                 case let .initialize(params):
+                    try container.encode(params, forKey: .params)
+                case let .diagnostic(params):
                     try container.encode(params, forKey: .params)
                 case .shutdown:
                     break
@@ -301,7 +308,7 @@ extension Lsp {
         }
     }
 
-    public struct ResponseMessage: Codable {
+    public struct ResponseMessage: Codable, Sendable {
         let jsonrpc: String
         public let id: Id?
         public let result: Result<ResponseSuccess, ResponseError>?
@@ -333,7 +340,7 @@ extension Lsp {
             // {
             //     self.result = result
             // } else {
-                self.result = nil
+            self.result = nil
             // }
         }
 
@@ -358,9 +365,8 @@ extension Lsp {
         let method: String
     }
 
-    public enum ResponseSuccess: Codable {
+    public enum ResponseSuccess: Codable, Sendable {
         case initialize(InitializeResult)
-
 
         public func encode(to encoder: any Encoder) throws {
             switch self {

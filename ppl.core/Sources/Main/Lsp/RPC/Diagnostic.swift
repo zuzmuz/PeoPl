@@ -1,16 +1,16 @@
 extension Lsp {
-    public struct DocumentDiagnosticParams {
+    public struct DocumentDiagnosticParams: Codable, Sendable {
         let textDocument: TextDocumentIdentifier
         let identifier: String?
         let previousResultId: String?
     }
 
-    public enum DocumentDiagnosticReportKind: Codable {
+    public enum DocumentDiagnosticReportKind: Codable, Sendable {
         case full
         case unchanged
     }
 
-    public struct FullDocumentDiagnosticReport: Codable {
+    public struct FullDocumentDiagnosticReport: Codable, Sendable {
         let kind: DocumentDiagnosticReportKind = .full
         let resultId: String?
         let items: [Diagnostic]
@@ -24,8 +24,9 @@ extension Lsp {
     public struct RelatedFullDocumentDiagnosticReport: Codable {
         let full: FullDocumentDiagnosticReport
         let relatedDocuments: [String: FullDocumentDiagnosticReport]
+    }
 
-    public struct Diagnostic: Codable {
+    public struct Diagnostic: Codable, Sendable {
         // let range: Range
         // let severity: DiagnosticSeverity?
         // let code: String?
@@ -34,6 +35,6 @@ extension Lsp {
         // let relatedInformation: [DiagnosticRelatedInformation]?
     }
 
-    public struct DocumentDiagnosticReport {
+    public struct DocumentDiagnosticReport: Codable, Sendable {
     }
 }

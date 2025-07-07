@@ -3,13 +3,13 @@ import Foundation
 public enum Lsp {
 
     public protocol Handler {
-        func handle(request: RequestMessage) -> ResponseMessage
-        func handle(notification: NotificationMessage)
+        func handle(request: RequestMessage) async -> ResponseMessage
+        func handle(notification: NotificationMessage) async
     }
 
-    public protocol Transport: Actor {
-        func read() -> Data
-        func write(_ data: Data)
+    public protocol Transport {
+        func read() async -> Data
+        func write(_ data: Data) async
     }
 
     actor StandardTransport: Lsp.Transport {
@@ -41,7 +41,7 @@ public enum Lsp {
         public func run() async {
             var data = Data()
             while true {
-                data += await transport.read()
+                data += await self.transport.read()
 
                 logger?.log(
                     level: .verbose,
@@ -59,7 +59,9 @@ public enum Lsp {
                         level: .info,
                         message: "Notification \(notification.method)"
                     )
-                    handler.handle(notification: notification)
+                    // Task {
+                        await handler.handle(notification: notification)
+                    // }
                     if case .exit = notification.method {
                         logger?.log(level: .notice, message: "Exiting")
                         return
@@ -69,24 +71,28 @@ public enum Lsp {
                         level: .verbose,
                         message: "Request id(\(request.id)) \(request.method)")
 
-                    let response = handler.handle(request: request)
+                    // Task {
+                        let response = await handler.handle(request: request)
 
-                    logger?.log(
-                        level: .verbose,
-                        message: "Response id(\(String(describing: response.id))) \(String(describing: response.result))")
-                    if let encodedResponse = self.coder.encode(
-                        response: response)
-                    {
-
-                        logger?.log(level: .verbose, message: "Output")
-                        logger?.log(level: .verbose, message: encodedResponse)
-                        await self.transport.write(encodedResponse)
-                    } else {
                         logger?.log(
-                            level: .error, message: "Failed to encode response")
-                    }
+                            level: .verbose,
+                            message: "Response id(\(String(describing: response.id))) \(String(describing: response.result))")
+                        if let encodedResponse = self.coder.encode(
+                            response: response)
+                        {
+
+                            logger?.log(level: .verbose, message: "Output")
+                            logger?.log(
+                                level: .verbose, message: encodedResponse)
+                            await self.transport.write(encodedResponse)
+                        } else {
+                            logger?.log(
+                                level: .error,
+                                message: "Failed to encode response")
+                        }
+                    // }
                 case let .error(message):
-                    if message == "Unkown method exit" {
+                    if message == "Unknown method exit" {
                         logger?.log(
                             level: .error, message: "Exiting cause error")
                         return

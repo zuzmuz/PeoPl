@@ -1,36 +1,36 @@
 extension Lsp {
     public enum TextDocumentParams {
-        public struct DidOpen: Codable {
+        public struct DidOpen: Codable, Sendable {
             let textDocument: TextDocumentItem
         }
 
-        public struct DidChange: Codable {
+        public struct DidChange: Codable, Sendable {
             let textDocument: VersionedTextDocumentIdentifier
             let contentChanges: [TextDocumentContentChangeEvent]
         }
 
-        public struct DidSave: Codable {
+        public struct DidSave: Codable, Sendable {
             let textDocument: TextDocumentIdentifier
             let text: String?
         }
     }
-    public struct TextDocumentIdentifier: Codable {
+    public struct TextDocumentIdentifier: Codable, Sendable {
         let uri: String
     }
 
-    public struct TextDocumentItem: Codable {
+    public struct TextDocumentItem: Codable, Sendable {
         let uri: String
         let languageId: String
         let version: Int
         let text: String
     }
 
-    public struct VersionedTextDocumentIdentifier: Codable {
+    public struct VersionedTextDocumentIdentifier: Codable, Sendable {
         let uri: String
         let version: Int
     }
 
-    public enum TextDocumentContentChangeEvent: Codable {
+    public enum TextDocumentContentChangeEvent: Codable, Sendable {
         case full(text: String)
         case range(range: Range, text: String)
 
@@ -64,12 +64,12 @@ extension Lsp {
         }
     }
 
-    public struct Range: Codable {
+    public struct Range: Codable, Sendable {
         let start: Position
         let end: Position
     }
 
-    public struct Position: Codable {
+    public struct Position: Codable, Sendable {
         let line: Int
         let character: Int
     }

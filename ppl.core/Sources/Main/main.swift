@@ -80,6 +80,8 @@ class Handler: Lsp.Handler {
                     }
                 }
             self.project = Syntax.Project(modules: modules)
+            let result = self.project?.semanticCheck()
+
         }
     }
 
@@ -108,6 +110,8 @@ class Handler: Lsp.Handler {
                             serverInfo: .init(
                                 name: "peopls",
                                 version: "0.0.1.0")))))
+        case let .diagnostic(params):
+            return .init(id: request.id)
         case .shutdown:
             return .init(id: request.id)
         }
