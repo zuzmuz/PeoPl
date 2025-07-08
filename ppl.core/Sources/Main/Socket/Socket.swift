@@ -19,6 +19,7 @@ enum Socket {
         private var connection: NWConnection?
         private let queue: DispatchQueue
         private let logger: L
+        private var started: Bool = false
 
         public init(port: UInt16, logger: L) throws(Socket.Error) {
             self.logger = logger
@@ -39,16 +40,13 @@ enum Socket {
             self.queue = DispatchQueue(label: "TCPServerQueue", qos: .utility)
         }
 
-        private func resetConnection(
-            completion: @Sendable (Result<(), Socket.Error>) -> Void
-        ) {
+        private func cancelConnection() {
             self.connection?.cancel()
             self.connection = nil
             self.logger.log(
                 level: .info,
                 tag: "TCPServer",
                 message: "TCP connection reset")
-            completion(.failure(.connectionReset))
         }
 
         private func setConnection(
@@ -60,7 +58,6 @@ enum Socket {
                     level: .warning,
                     tag: "TCPServer",
                     message: "TCP connection already set")
-                completion(.failure(.connectionAlreadySet))
                 return
             }
 
@@ -72,14 +69,20 @@ enum Socket {
                         level: .info,
                         tag: "TCPServer",
                         message: "TCP connection ready")
-                    completion(.success(()))
+                    Task {
+                        await self?.connectionStarted()
+                        completion(.success(()))
+                    }
                 case let .failed(error):
                     self?.logger.log(
                         level: .error,
                         tag: "TCPServer",
                         message: "TCP connection failed with error: \(error)")
                     Task {
-                        await self?.resetConnection(completion: completion)
+                        await self?.cancelConnection()
+                        if await self?.started == false {
+                            completion(.failure(.connectionReset))
+                        }
                     }
                 case let .waiting(error):
                     self?.logger.log(
@@ -92,7 +95,7 @@ enum Socket {
                         tag: "TCPServer",
                         message: "TCP connection cancelled")
                     Task {
-                        await self?.resetConnection(completion: completion)
+                        await self?.cancelConnection()
                     }
                 case .setup:
                     self?.logger.log(
@@ -165,6 +168,14 @@ enum Socket {
             self.listener?.start(queue: self.queue)
         }
 
+        private func connectionStarted() {
+            self.started = true
+            self.logger.log(
+                level: .info,
+                tag: "TCPServer",
+                message: "TCP Server started on port \(self.port)")
+        }
+
         public func start() async throws(Socket.Error) {
             do {
                 try await withCheckedThrowingContinuation { continuation in
@@ -172,7 +183,10 @@ enum Socket {
                     self.setupServer { result in
                         switch result {
                         case .success:
-                            continuation.resume()
+                            Task {
+                                await self.connectionStarted()
+                                continuation.resume()
+                            }
                         case let .failure(error):
                             continuation.resume(throwing: error)
                         }
@@ -190,10 +204,23 @@ enum Socket {
                 throw Socket.Error.connectionNotSet
             }
             do {
-                return try await
-                    withCheckedThrowingContinuation { continuation in
+                return try await withCheckedThrowingContinuation {
+                    continuation in
 
-                    connection.receiveMessage { data, _, isComplete, error in
+                    self.logger.log(
+                        level: .debug,
+                        tag: "TCPServer",
+                        message: "TCP read data request received")
+
+                    connection.receive(
+                        minimumIncompleteLength: 1,
+                        maximumLength: 1024
+                    ) { data, _, isComplete, error in
+
+                        self.logger.log(
+                            level: .debug,
+                            tag: "TCPServer",
+                            message: "TCP read data received")
 
                         if let error = error {
                             self.logger.log(
@@ -206,18 +233,20 @@ enum Socket {
                             return
                         }
 
-                        guard isComplete, let data else {
+                        guard !isComplete, let data else {
                             self.logger.log(
                                 level: .error,
                                 tag: "TCPServer",
-                                message: "TCP read error data incomplete")
-                            continuation.resume(
-                                throwing: Socket.Error.readError(
-                                    "Data incomplete"))
+                                message: "TCP read error data complete")
+                            Task {
+                                await self.cancelConnection()
+                                continuation.resume(
+                                    throwing: Socket.Error.readError(
+                                        "Data Complete"))
+                            }
                             return
                         }
-
-                        continuation.resume(with: .success(data))
+                        continuation.resume(returning: data)
                     }
 
                 }
@@ -237,6 +266,7 @@ enum Socket {
         private let host: NWEndpoint.Host
         private let port: NWEndpoint.Port
         private var connection: NWConnection?
+        private let logger: L
 
         public init(
             port: UInt16,
@@ -249,6 +279,7 @@ enum Socket {
                 throw Socket.Error.invalidPort(port)
             }
             self.port = port
+            self.logger = logger
         }
 
         public func start() async throws(Socket.Error) {
@@ -264,22 +295,37 @@ enum Socket {
                         case .ready:
                             continuation.resume()
                         case let .failed(error):
-                            continuation.resume(throwing: Socket.Error.other(
-                                error.localizedDescription))
+                            continuation.resume(
+                                throwing: Socket.Error.other(
+                                    error.localizedDescription))
                         default:
                             break
                         }
                     }
 
                     self.connection?.start(
-                        queue: DispatchQueue(label: "TCPClientQueue",
-                        qos: .userInteractive))
+                        queue: DispatchQueue(
+                            label: "TCPClientQueue",
+                            qos: .userInteractive))
                 }
             } catch let error as Socket.Error {
                 throw error
             } catch {
                 throw Socket.Error.other(error.localizedDescription)
             }
+        }
+
+        public func send(data: Data) {
+            self.connection?.send(
+                content: data,
+                completion: .contentProcessed { error in
+                    self.logger.log(
+                        level: .debug,
+                        tag: "TCPClient",
+                        message:
+                            "Data sent to server with error \(String(describing: error))"
+                    )
+                })
         }
     }
 }

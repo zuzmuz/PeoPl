@@ -21,19 +21,19 @@ public enum Utils {
         var label: String {
             return switch self {
             case .verbose:
-                "VERBOSE "
+                "[VERBOSE] "
             case .debug:
-                "DEBUG   "
+                "[DEBUG]   "
             case .info:
-                "INFO    "
+                "[INFO]    "
             case .notice:
-                "NOTICE  "
+                "[NOTICE]  "
             case .warning:
-                "WARNING "
+                "[WARNING] "
             case .error:
-                "ERROR   "
+                "[ERROR]   "
             case .critical:
-                "CRITICAL"
+                "[CRITICAL]"
             }
         }
     }
@@ -81,7 +81,7 @@ public enum Utils {
         ) {
             if level.rawValue >= self.level.rawValue {
                 print(
-                    "\(self.dateFormatter.string(for: Date())!) \t[\(level.label)] \t\(tag): \t\(String(data: message, encoding: .utf8) ?? "")"
+                    "\(self.dateFormatter.string(for: Date())!) \(level.label) \t\(tag): \t\(String(data: message, encoding: .utf8) ?? "")"
                 )
             }
         }

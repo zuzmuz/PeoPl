@@ -195,6 +195,7 @@ func runLsp() async throws {
         level: .notice,
         tag: "LspServer",
         message: "Starting Server")
+
     let server = Lsp.Server(
         handler: Handler(logger: logger),
         transport: Lsp.StandardTransport(),
@@ -204,19 +205,74 @@ func runLsp() async throws {
 }
 
 func runLspProxy(port: UInt16) async throws {
+    let logger = Utils.ConsoleLogger(level: .verbose)
     let client = try Socket.TcpClient(
         port: port,
         host: "localhost",
-        logger: Utils.ConsoleLogger(level: .verbose))
+        logger: logger)
+
     try await client.start()
+
+    while true {
+        let data = FileHandle.standardInput.availableData
+        logger.log(
+            level: .debug,
+            tag: "LspProxy",
+            message: "Message received from stdin")
+
+        logger.log(
+            level: .debug,
+            tag: "LspProxy",
+            message: data)
+
+        await client.send(data: data)
+    }
 }
 
 func runLspSocket(port: UInt16) async throws {
+    let logger = Utils.ConsoleLogger(level: .verbose)
     let server = try Socket.TcpServer(
         port: port,
-        logger: Utils.ConsoleLogger(level: .verbose))
+        logger: logger)
 
+    logger.log(
+        level: .debug,
+        tag: "LspTcpServer",
+        message: "starting server on port \(port)")
     try await server.start()
+
+    logger.log(
+        level: .debug,
+        tag: "LspTcpServer",
+        message: "started server on port \(port)")
+
+    var data = Data()
+
+    var iteration = 0
+
+    while true {
+
+        logger.log(
+            level: .debug,
+            tag: "LspTcpServer",
+            message: "waiting for message nb: \(iteration)")
+
+        iteration += 1
+
+        data += try await server.read()
+
+        logger.log(
+            level: .debug,
+            tag: "LspTcpServer",
+            message: "message received")
+        logger.log(
+            level: .debug,
+            tag: "LspTcpServer",
+            message: data)
+
+        data = Data()
+
+    }
 }
 
 enum LspCommand: String {
