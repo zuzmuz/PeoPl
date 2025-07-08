@@ -70,13 +70,13 @@ actor Handler<L: Utils.Logger>: Lsp.Handler {
 
         for (moduleUri, result) in modulesResult {
             if moduleUri == uri, case let .failure(error) = result {
-                    diagnostics.append(
-                        .init(
-                            range: error.lspRange,
-                            severity: .error,
-                            message: error.localizedDescription))
-                }
+                diagnostics.append(
+                    .init(
+                        range: error.lspRange,
+                        severity: .error,
+                        message: error.localizedDescription))
             }
+        }
 
         let project = Syntax.Project.init(
             modules: modulesResult.compactMapValues { result in
@@ -100,7 +100,7 @@ actor Handler<L: Utils.Logger>: Lsp.Handler {
         //                 message: error.localizedDescription))
         //     }
         // case .success:
-        //     break 
+        //     break
         // }
 
         return diagnostics
@@ -175,7 +175,7 @@ actor Handler<L: Utils.Logger>: Lsp.Handler {
     }
 }
 
-func runLSP() async throws {
+func runLsp() async throws {
     let logger = try Utils.FileLogger(
         path: FileManager
             .default
@@ -191,4 +191,15 @@ func runLSP() async throws {
         logger: logger)
 
     try await server.run()
+}
+
+func runLspProxy(port: UInt16) async throws {
+}
+
+func runLspSocket(port: UInt16) async throws {
+}
+
+enum LspCommand: String {
+    case proxy
+    case socket
 }
