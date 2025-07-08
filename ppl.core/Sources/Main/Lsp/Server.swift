@@ -45,11 +45,18 @@ public enum Lsp {
 
                 logger.log(
                     level: .verbose,
+                    tag: "LspServer",
                     message: "Message received number: \(self.iteration)")
                 self.iteration += 1
 
-                logger.log(level: .verbose, message: "Input")
-                logger.log(level: .verbose, message: data)
+                logger.log(
+                    level: .verbose,
+                    tag: "LspServer",
+                    message: "Input")
+                logger.log(
+                    level: .verbose,
+                    tag: "LspServer",
+                    message: data)
 
                 let decodedMessage = self.coder.decode(data: data)
 
@@ -57,49 +64,71 @@ public enum Lsp {
                 case let .notification(notification):
                     logger.log(
                         level: .info,
+                        tag: "LspServer",
                         message: "Notification \(notification.method.name)"
                     )
                     // Task {
-                        await handler.handle(notification: notification)
+                    await handler.handle(notification: notification)
                     // }
                     if case .exit = notification.method {
-                        logger.log(level: .notice, message: "Exiting")
+                        logger.log(
+                            level: .notice,
+                            tag: "LspServer",
+                            message: "Exiting")
                         return
                     }
                 case let .request(request):
                     logger.log(
                         level: .info,
-                        message: "Request id(\(request.id)) \(request.method.name)")
+                        tag: "LspServer",
+                        message:
+                            "Request id(\(request.id)) \(request.method.name)")
 
                     // Task {
-                        let response = await handler.handle(request: request)
+                    let response = await handler.handle(request: request)
+
+                    logger.log(
+                        level: .info,
+                        tag: "LspServer",
+                        message:
+                            "Response id(\(String(describing: response.id))")
+                    if let encodedResponse = self.coder.encode(
+                        response: response)
+                    {
 
                         logger.log(
-                            level: .info,
-                            message: "Response id(\(String(describing: response.id))")
-                        if let encodedResponse = self.coder.encode(
-                            response: response)
-                        {
-
-                            logger.log(level: .verbose, message: "Output")
-                            logger.log(
-                                level: .verbose, message: encodedResponse)
-                            try await self.transport.write(encodedResponse)
-                        } else {
-                            logger.log(
-                                level: .error,
-                                message: "Failed to encode response")
-                        }
-                    // }
+                            level: .verbose,
+                            tag: "LspServer",
+                            message: "Output")
+                        logger.log(
+                            level: .verbose,
+                            tag: "LspServer",
+                            message: encodedResponse)
+                        try await self.transport.write(encodedResponse)
+                    } else {
+                        logger.log(
+                            level: .error,
+                            tag: "LspServer",
+                            message: "Failed to encode response")
+                    }
+                // }
                 case let .error(message):
                     if message == "Unknown method exit" {
                         logger.log(
-                            level: .error, message: "Exiting cause error")
+                            level: .error,
+                            tag: "LspServer",
+                            message: "Exiting cause error")
                         return
                     }
-                    logger.log(level: .error, message: message)
+                    logger.log(
+                        level: .error,
+                        tag: "LspServer",
+                        message: message)
                 case .incomplete:
-                    logger.log(level: .debug, message: "Incomplete message")
+                    logger.log(
+                        level: .debug,
+                        tag: "LspServer",
+                        message: "Incomplete message")
                 }
 
                 data = decodedMessage.rest ?? Data()

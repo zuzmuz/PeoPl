@@ -12,10 +12,12 @@ actor Handler<L: Utils.Logger>: Lsp.Handler {
         for folder in folders {
             self.logger.log(
                 level: .debug,
+                tag: "LspHandler",
                 message: "Scanning workspace folder: \(folder.uri)")
             guard let folderURL = URL(string: folder.uri) else {
                 self.logger.log(
                     level: .error,
+                    tag: "LspHandler",
                     message: "Invalid workspace folder URI: \(folder.uri)")
                 return
             }
@@ -28,6 +30,7 @@ actor Handler<L: Utils.Logger>: Lsp.Handler {
             else {
                 self.logger.log(
                     level: .error,
+                    tag: "LspHandler",
                     message:
                         "Failed to enumerate workspace folder: \(folder.uri)")
                 return
@@ -47,6 +50,7 @@ actor Handler<L: Utils.Logger>: Lsp.Handler {
 
             self.logger.log(
                 level: .debug,
+                tag: "LspHandler",
                 message: "modules content: \(self.modulesContent)")
         }
     }
@@ -111,6 +115,7 @@ actor Handler<L: Utils.Logger>: Lsp.Handler {
         case let .initialize(params):
             self.logger.log(
                 level: .info,
+                tag: "LspHandler",
                 message: "Initialize request with params: \(params)")
 
             if let workspaceFolders = params.workspaceFolders {
@@ -157,6 +162,7 @@ actor Handler<L: Utils.Logger>: Lsp.Handler {
                 params.textDocument.text
             self.logger.log(
                 level: .debug,
+                tag: "LspHandler",
                 message: "modules content: \(self.modulesContent)")
         case let .didChangeTextDocument(params):
             params.contentChanges.forEach { contentChange in
@@ -166,6 +172,7 @@ actor Handler<L: Utils.Logger>: Lsp.Handler {
             }
             self.logger.log(
                 level: .debug,
+                tag: "LspHandler",
                 message: "modules content: \(self.modulesContent)")
         case let .didSaveTextDocument(params):
             break
@@ -184,7 +191,10 @@ func runLsp() async throws {
         fileName: "lsp.log",
         level: .debug)
 
-    logger.log(level: .notice, message: "Starting Server")
+    logger.log(
+        level: .notice,
+        tag: "LspServer",
+        message: "Starting Server")
     let server = Lsp.Server(
         handler: Handler(logger: logger),
         transport: Lsp.StandardTransport(),
@@ -197,6 +207,11 @@ func runLspProxy(port: UInt16) async throws {
 }
 
 func runLspSocket(port: UInt16) async throws {
+    let server = try Socket.TCPServer(
+        port: port,
+        logger: Utils.ConsoleLogger(level: .verbose))
+
+    try await server.start()
 }
 
 enum LspCommand: String {

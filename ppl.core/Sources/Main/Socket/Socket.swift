@@ -13,7 +13,7 @@ enum Socket {
         case other(String)
     }
 
-    actor TCPServer<L: Utils.Logger>: Lsp.Transport {
+    actor TcpServer<L: Utils.Logger>: Lsp.Transport {
         private let port: NWEndpoint.Port
         private let listener: NWListener?
         private var connection: NWConnection?
@@ -45,7 +45,9 @@ enum Socket {
             self.connection?.cancel()
             self.connection = nil
             self.logger.log(
-                level: .info, message: "TCP connection reset")
+                level: .info,
+                tag: "TCPServer",
+                message: "TCP connection reset")
             completion(.failure(.connectionReset))
         }
 
@@ -55,7 +57,9 @@ enum Socket {
         ) {
             if self.connection != nil {
                 logger.log(
-                    level: .warning, message: "TCP connection already set")
+                    level: .warning,
+                    tag: "TCPServer",
+                    message: "TCP connection already set")
                 completion(.failure(.connectionAlreadySet))
                 return
             }
@@ -66,11 +70,13 @@ enum Socket {
                 case .ready:
                     self?.logger.log(
                         level: .info,
+                        tag: "TCPServer",
                         message: "TCP connection ready")
                     completion(.success(()))
                 case let .failed(error):
                     self?.logger.log(
                         level: .error,
+                        tag: "TCPServer",
                         message: "TCP connection failed with error: \(error)")
                     Task {
                         await self?.resetConnection(completion: completion)
@@ -78,19 +84,25 @@ enum Socket {
                 case let .waiting(error):
                     self?.logger.log(
                         level: .error,
+                        tag: "TCPServer",
                         message: "TCP connection waiting with error: \(error)")
                 case .cancelled:
                     self?.logger.log(
-                        level: .warning, message: "TCP connection cancelled")
+                        level: .warning,
+                        tag: "TCPServer",
+                        message: "TCP connection cancelled")
                     Task {
                         await self?.resetConnection(completion: completion)
                     }
                 case .setup:
                     self?.logger.log(
-                        level: .info, message: "TCP connection is setting up")
+                        level: .info,
+                        tag: "TCPServer",
+                        message: "TCP connection is setting up")
                 default:
                     self?.logger.log(
                         level: .warning,
+                        tag: "TCPServer",
                         message: "TCP connection unkhown state")
                 }
             }
@@ -117,27 +129,35 @@ enum Socket {
                 case .ready:
                     self.logger.log(
                         level: .info,
+                        tag: "TCPServer",
                         message: "TCP Server is ready on port \(self.port)"
                     )
                 case let .failed(error):
                     self.logger.log(
                         level: .error,
+                        tag: "TCPServer",
                         message: "TCP Server failed with error: \(error)")
                     completion(.failure(.listenerNotSet))
                 case let .waiting(error):
                     self.logger.log(
                         level: .error,
+                        tag: "TCPServer",
                         message: "TCP Server waiting with error: \(error)")
                 case .cancelled:
                     self.logger.log(
-                        level: .warning, message: "TCP server cancelled")
+                        level: .warning,
+                        tag: "TCPServer",
+                        message: "TCP server cancelled")
                     completion(.failure(.listenerNotSet))
                 case .setup:
                     self.logger.log(
-                        level: .info, message: "TCP Server is setting up")
+                        level: .info,
+                        tag: "TCPServer",
+                        message: "TCP Server is setting up")
                 default:
                     self.logger.log(
                         level: .warning,
+                        tag: "TCPServer",
                         message: "TCP Server unkhown state")
                 }
             }
@@ -178,6 +198,7 @@ enum Socket {
                         if let error = error {
                             self.logger.log(
                                 level: .error,
+                                tag: "TCPServer",
                                 message: "TCP read error: \(error)")
                             continuation.resume(
                                 throwing: Socket.Error.readError(
@@ -188,6 +209,7 @@ enum Socket {
                         guard isComplete, let data else {
                             self.logger.log(
                                 level: .error,
+                                tag: "TCPServer",
                                 message: "TCP read error data incomplete")
                             continuation.resume(
                                 throwing: Socket.Error.readError(
@@ -209,5 +231,8 @@ enum Socket {
         public func write(_ data: Data) async throws {
 
         }
+    }
+
+    actor TCPClient<L: Utils.Logger> {
     }
 }

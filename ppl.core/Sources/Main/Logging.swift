@@ -39,30 +39,59 @@ public enum Utils {
     }
 
     public protocol Logger: Sendable {
-        func log(level: LogLevel, message: String)
-        func log(level: LogLevel, message: Data)
+        func log(
+            level: LogLevel,
+            tag: String,
+            message: String
+        )
+        func log(
+            level: LogLevel,
+            tag: String,
+            message: Data
+        )
     }
 
     public final class NillLogger: Logger {
-        public func log(level: Utils.LogLevel, message: Data) {}
-        public func log(level: Utils.LogLevel, message: String) {}
+        public func log(
+            level: Utils.LogLevel,
+            tag: String,
+            message: Data
+        ) {}
+        public func log(
+            level: Utils.LogLevel,
+            tag: String,
+            message: String
+        ) {}
     }
 
     public final class ConsoleLogger: Logger {
         private let level: LogLevel
+        private let dateFormatter: DateFormatter
 
         public init(level: LogLevel = .info) {
             self.level = level
+            self.dateFormatter = DateFormatter()
+            self.dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
         }
 
-        public func log(level: LogLevel, message: Data) {
+        public func log(
+            level: LogLevel,
+            tag: String,
+            message: Data
+        ) {
             if level.rawValue >= self.level.rawValue {
-                print("\(level.label) \(String(data: message, encoding: .utf8) ?? "")")
+                print(
+                    "\(self.dateFormatter.string(for: Date())!) \t[\(level.label)] \t\(tag): \t\(String(data: message, encoding: .utf8) ?? "")"
+                )
             }
         }
 
-        public func log(level: LogLevel, message: String) {
-            log(level: level, message: message.data(using: .utf8)!)
+        public func log(
+            level: LogLevel,
+            tag: String,
+            message: String
+        ) {
+            log(level: level, tag: tag, message: message.data(using: .utf8)!)
         }
     }
 
@@ -95,23 +124,33 @@ public enum Utils {
             handle.closeFile()
         }
 
-        public func log(level: LogLevel, message: Data) {
+        public func log(
+            level: LogLevel,
+            tag: String,
+            message: Data
+        ) {
             queue.async {
                 if level.rawValue >= self.level.rawValue {
                     self.handle.seekToEndOfFile()
                     self.handle.write(
                         Data(
-                            "\(self.dateFormatter.string(for: Date())!) \t".utf8
+                            "\(self.dateFormatter.string(for: Date())!) \t -- "
+                                .utf8
                         ))
-                    self.handle.write(Data("\(level.label) \t".utf8))
+                    self.handle.write(Data("\(level.label) \t -- ".utf8))
+                    self.handle.write(Data("\(tag) \t -- ".utf8))
                     self.handle.write(message)
                     self.handle.write(Data("\n".utf8))
                 }
             }
         }
 
-        public func log(level: LogLevel, message: String) {
-            log(level: level, message: message.data(using: .utf8)!)
+        public func log(
+            level: LogLevel,
+            tag: String,
+            message: String
+        ) {
+            log(level: level, tag: tag, message: message.data(using: .utf8)!)
         }
     }
 }
