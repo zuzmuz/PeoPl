@@ -204,10 +204,15 @@ func runLsp() async throws {
 }
 
 func runLspProxy(port: UInt16) async throws {
+    let client = try Socket.TcpClient(
+        port: port,
+        host: "localhost",
+        logger: Utils.ConsoleLogger(level: .verbose))
+    try await client.start()
 }
 
 func runLspSocket(port: UInt16) async throws {
-    let server = try Socket.TCPServer(
+    let server = try Socket.TcpServer(
         port: port,
         logger: Utils.ConsoleLogger(level: .verbose))
 

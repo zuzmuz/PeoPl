@@ -103,7 +103,7 @@ enum Socket {
                     self?.logger.log(
                         level: .warning,
                         tag: "TCPServer",
-                        message: "TCP connection unkhown state")
+                        message: "TCP connection unknown state \(state)")
                 }
             }
             self.connection?.start(queue: self.queue)
@@ -158,7 +158,7 @@ enum Socket {
                     self.logger.log(
                         level: .warning,
                         tag: "TCPServer",
-                        message: "TCP Server unkhown state")
+                        message: "TCP Server unknown state \(state)")
                 }
             }
 
@@ -233,6 +233,53 @@ enum Socket {
         }
     }
 
-    actor TCPClient<L: Utils.Logger> {
+    actor TcpClient<L: Utils.Logger> {
+        private let host: NWEndpoint.Host
+        private let port: NWEndpoint.Port
+        private var connection: NWConnection?
+
+        public init(
+            port: UInt16,
+            host: String,
+            logger: L
+        ) throws(Socket.Error) {
+
+            self.host = NWEndpoint.Host(host)
+            guard let port = NWEndpoint.Port(rawValue: port) else {
+                throw Socket.Error.invalidPort(port)
+            }
+            self.port = port
+        }
+
+        public func start() async throws(Socket.Error) {
+            do {
+                try await withCheckedThrowingContinuation { continuation in
+                    self.connection = NWConnection(
+                        host: self.host,
+                        port: self.port,
+                        using: .tcp)
+
+                    self.connection?.stateUpdateHandler = { state in
+                        switch state {
+                        case .ready:
+                            continuation.resume()
+                        case let .failed(error):
+                            continuation.resume(throwing: Socket.Error.other(
+                                error.localizedDescription))
+                        default:
+                            break
+                        }
+                    }
+
+                    self.connection?.start(
+                        queue: DispatchQueue(label: "TCPClientQueue",
+                        qos: .userInteractive))
+                }
+            } catch let error as Socket.Error {
+                throw error
+            } catch {
+                throw Socket.Error.other(error.localizedDescription)
+            }
+        }
     }
 }

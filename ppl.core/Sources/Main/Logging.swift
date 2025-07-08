@@ -21,17 +21,17 @@ public enum Utils {
         var label: String {
             return switch self {
             case .verbose:
-                "VERBOSE"
+                "VERBOSE "
             case .debug:
-                "DEBUG"
+                "DEBUG   "
             case .info:
-                "INFO"
+                "INFO    "
             case .notice:
-                "NOTICE"
+                "NOTICE  "
             case .warning:
-                "WARNING"
+                "WARNING "
             case .error:
-                "ERROR"
+                "ERROR   "
             case .critical:
                 "CRITICAL"
             }
