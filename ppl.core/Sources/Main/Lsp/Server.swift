@@ -8,12 +8,12 @@ public enum Lsp {
     }
 
     public protocol Transport: Actor {
-        func read() async -> Data
-        func write(_ data: Data) async
+        func read() async throws -> Data
+        func write(_ data: Data) async throws
     }
 
-    actor StandardTransport: Lsp.Transport {
-        func read() -> Data {
+    actor StandardTransport: Transport {
+        func read() throws -> Data {
             return FileHandle.standardInput.availableData
         }
 
@@ -22,40 +22,40 @@ public enum Lsp {
         }
     }
 
-    public actor Server<H: Handler, T: Transport> {
+    public actor Server<H: Handler, T: Transport, L: Utils.Logger> {
 
         private let coder: RPCCoder
         private var iteration: Int = 0
 
         private let handler: H
         private let transport: T
-        private let logger: (any Logger)?
+        private let logger: L
 
-        public init(handler: H, transport: T, logger: (any Logger)? = nil) {
+        public init(handler: H, transport: T, logger: L) {
             self.handler = handler
             self.transport = transport
             self.logger = logger
             self.coder = RPCCoder()
         }
 
-        public func run() async {
+        public func run() async throws {
             var data = Data()
             while true {
-                data += await self.transport.read()
+                data += try await self.transport.read()
 
-                logger?.log(
+                logger.log(
                     level: .verbose,
                     message: "Message received number: \(self.iteration)")
                 self.iteration += 1
 
-                logger?.log(level: .verbose, message: "Input")
-                logger?.log(level: .verbose, message: data)
+                logger.log(level: .verbose, message: "Input")
+                logger.log(level: .verbose, message: data)
 
                 let decodedMessage = self.coder.decode(data: data)
 
                 switch decodedMessage.result {
                 case let .notification(notification):
-                    logger?.log(
+                    logger.log(
                         level: .info,
                         message: "Notification \(notification.method.name)"
                     )
@@ -63,43 +63,43 @@ public enum Lsp {
                         await handler.handle(notification: notification)
                     // }
                     if case .exit = notification.method {
-                        logger?.log(level: .notice, message: "Exiting")
+                        logger.log(level: .notice, message: "Exiting")
                         return
                     }
                 case let .request(request):
-                    logger?.log(
+                    logger.log(
                         level: .info,
                         message: "Request id(\(request.id)) \(request.method.name)")
 
                     // Task {
                         let response = await handler.handle(request: request)
 
-                        logger?.log(
+                        logger.log(
                             level: .info,
                             message: "Response id(\(String(describing: response.id))")
                         if let encodedResponse = self.coder.encode(
                             response: response)
                         {
 
-                            logger?.log(level: .verbose, message: "Output")
-                            logger?.log(
+                            logger.log(level: .verbose, message: "Output")
+                            logger.log(
                                 level: .verbose, message: encodedResponse)
-                            await self.transport.write(encodedResponse)
+                            try await self.transport.write(encodedResponse)
                         } else {
-                            logger?.log(
+                            logger.log(
                                 level: .error,
                                 message: "Failed to encode response")
                         }
                     // }
                 case let .error(message):
                     if message == "Unknown method exit" {
-                        logger?.log(
+                        logger.log(
                             level: .error, message: "Exiting cause error")
                         return
                     }
-                    logger?.log(level: .error, message: message)
+                    logger.log(level: .error, message: message)
                 case .incomplete:
-                    logger?.log(level: .debug, message: "Incomplete message")
+                    logger.log(level: .debug, message: "Incomplete message")
                 }
 
                 data = decodedMessage.rest ?? Data()

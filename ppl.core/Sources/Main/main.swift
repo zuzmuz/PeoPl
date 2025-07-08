@@ -1,47 +1,38 @@
 import Foundation
 
-func compileExample() {
-    do {
-        let module = try Syntax.Module(
-            source: """
-                factorial: [a: Int] -> Int {
-                    |1| 1
-                }
-                main: [] -> Int {
-                    facotrial(a: 5)
-                }
-                """,
-            path: "main")
-
-        let result = module.semanticCheck()
-
-        switch result {
-        case let .success(context):
-            print(context.display())
-
-            var llvm = LLVM.Builder(name: "name")
-
-            try context.llvmBuildStatement(llvm: &llvm)
-
-            print("llvm")
-            print(llvm.generate())
-
-        case let .failure(error):
-            print("Semantic check failed with errors: \(error.errors)")
-        }
-    } catch {
-        print("we catching \(error)")
-    }
+func printUsage() {
+    print("Usage: ppl <command>")
+    print("commands:")
+    print(
+        "- lsp               Run the language server protocol server using standard input and output as transport"
+    )  // swiftlint:disable:previous line_length
+    print(
+        "- lsp socket <port> Run the language server protocol server using a TCP socket as transport on selected port"
+    )  // swiftlint:disable:previous line_length
+    print(
+        "- lsp proxy <port>  Run the proxy language server protocol server using standard input and output as transport communicating with a socket server on selected port"
+    )  // swiftlint:disable:previous line_length
 }
 
-if CommandLine.arguments.count == 2 {
-    let argument = CommandLine.arguments[1]
-    switch argument {
-    case "--lsp":
-        try await runLSP()
+do {
+    switch CommandLine.arguments {
+
+    case let args where args.count == 2 && args[1] == "lsp":
+        try await runLsp()
+    case let args where args.count == 4:
+        switch (args[1], args[2], args[3]) {
+        case ("lsp", "proxy", let port):
+            break
+        case ("lsp", "socket", let port):
+            break
+        default:
+            print("Wrong arguments")
+            printUsage()
+        }
     default:
-        compileExample()
+        printUsage()
     }
-} else {
-    compileExample()
+} catch {
+    print("Error: \(error)")
+    printUsage()
 }

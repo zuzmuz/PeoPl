@@ -1,20 +1,20 @@
 import Foundation
 
-actor Handler: Lsp.Handler {
-    let logger: (any Lsp.Logger)?
+actor Handler<L: Utils.Logger>: Lsp.Handler {
+    let logger: L
     var modulesContent: [String: String] = [:]
 
-    init(logger: (any Lsp.Logger)? = nil) {
+    init(logger: L) {
         self.logger = logger
     }
 
     private func scanWorkspaceFolders(folders: [Lsp.WorkspaceFolder]) {
         for folder in folders {
-            self.logger?.log(
+            self.logger.log(
                 level: .debug,
                 message: "Scanning workspace folder: \(folder.uri)")
             guard let folderURL = URL(string: folder.uri) else {
-                self.logger?.log(
+                self.logger.log(
                     level: .error,
                     message: "Invalid workspace folder URI: \(folder.uri)")
                 return
@@ -26,7 +26,7 @@ actor Handler: Lsp.Handler {
                         .isRegularFileKey, .isDirectoryKey,
                     ])
             else {
-                self.logger?.log(
+                self.logger.log(
                     level: .error,
                     message:
                         "Failed to enumerate workspace folder: \(folder.uri)")
@@ -45,7 +45,7 @@ actor Handler: Lsp.Handler {
                     acc[file.absoluteString] = source
                 }
 
-            logger?.log(
+            self.logger.log(
                 level: .debug,
                 message: "modules content: \(self.modulesContent)")
         }
@@ -109,7 +109,7 @@ actor Handler: Lsp.Handler {
     func handle(request: Lsp.RequestMessage) -> Lsp.ResponseMessage {
         switch request.method {
         case let .initialize(params):
-            self.logger?.log(
+            self.logger.log(
                 level: .info,
                 message: "Initialize request with params: \(params)")
 
@@ -155,7 +155,7 @@ actor Handler: Lsp.Handler {
         case let .didOpenTextDocument(params):
             self.modulesContent[params.textDocument.uri] =
                 params.textDocument.text
-            logger?.log(
+            self.logger.log(
                 level: .debug,
                 message: "modules content: \(self.modulesContent)")
         case let .didChangeTextDocument(params):
@@ -164,7 +164,7 @@ actor Handler: Lsp.Handler {
                     self.modulesContent[params.textDocument.uri] = text
                 }
             }
-            logger?.log(
+            self.logger.log(
                 level: .debug,
                 message: "modules content: \(self.modulesContent)")
         case let .didSaveTextDocument(params):
@@ -176,7 +176,7 @@ actor Handler: Lsp.Handler {
 }
 
 func runLSP() async throws {
-    let logger = try Lsp.FileLogger(
+    let logger = try Utils.FileLogger(
         path: FileManager
             .default
             .homeDirectoryForCurrentUser
@@ -190,5 +190,5 @@ func runLSP() async throws {
         transport: Lsp.StandardTransport(),
         logger: logger)
 
-    await server.run()
+    try await server.run()
 }

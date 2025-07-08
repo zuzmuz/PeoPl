@@ -1,6 +1,6 @@
 import Foundation
 
-extension Lsp {
+public enum Utils {
 
     public enum LogLevel: Int, Sendable {
         /// Verbose log level (-1)
@@ -38,12 +38,35 @@ extension Lsp {
         }
     }
 
-    public protocol Logger {
+    public protocol Logger: Sendable {
         func log(level: LogLevel, message: String)
         func log(level: LogLevel, message: Data)
     }
 
-    public final class FileLogger: Logger, Sendable {
+    public final class NillLogger: Logger {
+        public func log(level: Utils.LogLevel, message: Data) {}
+        public func log(level: Utils.LogLevel, message: String) {}
+    }
+
+    public final class ConsoleLogger: Logger {
+        private let level: LogLevel
+
+        public init(level: LogLevel = .info) {
+            self.level = level
+        }
+
+        public func log(level: LogLevel, message: Data) {
+            if level.rawValue >= self.level.rawValue {
+                print("\(level.label) \(String(data: message, encoding: .utf8) ?? "")")
+            }
+        }
+
+        public func log(level: LogLevel, message: String) {
+            log(level: level, message: message.data(using: .utf8)!)
+        }
+    }
+
+    public final class FileLogger: Logger {
         private let handle: FileHandle
         private let dateFormatter: DateFormatter
         private let level: LogLevel
