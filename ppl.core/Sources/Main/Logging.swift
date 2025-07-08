@@ -2,6 +2,43 @@ import Foundation
 
 public enum Utils {
 
+    // ANSI color codes
+    enum TerminalColor: String {
+        case black = "\u{001B}[30m"
+        case red = "\u{001B}[31m"
+        case green = "\u{001B}[32m"
+        case yellow = "\u{001B}[33m"
+        case blue = "\u{001B}[34m"
+        case magenta = "\u{001B}[35m"
+        case cyan = "\u{001B}[36m"
+        case white = "\u{001B}[37m"
+
+        // Bright colors
+        case brightBlack = "\u{001B}[90m"
+        case brightRed = "\u{001B}[91m"
+        case brightGreen = "\u{001B}[92m"
+        case brightYellow = "\u{001B}[93m"
+        case brightBlue = "\u{001B}[94m"
+        case brightMagenta = "\u{001B}[95m"
+        case brightCyan = "\u{001B}[96m"
+        case brightWhite = "\u{001B}[97m"
+
+        // Reset
+        case reset = "\u{001B}[0m"
+
+        // Background colors
+        case bgRed = "\u{001B}[41m"
+        case bgGreen = "\u{001B}[42m"
+        case bgYellow = "\u{001B}[43m"
+        case bgBlue = "\u{001B}[44m"
+
+        // Text styles
+        case bold = "\u{001B}[1m"
+        case dim = "\u{001B}[2m"
+        case italic = "\u{001B}[3m"
+        case underline = "\u{001B}[4m"
+    }
+
     public enum LogLevel: Int, Sendable {
         /// Verbose log level (-1)
         case verbose = -1
@@ -34,6 +71,30 @@ public enum Utils {
                 "[ERROR]   "
             case .critical:
                 "[CRITICAL]"
+            }
+        }
+
+        var emoji: String {
+            switch self {
+            case .verbose: return "💬"
+            case .debug: return "🔍"
+            case .info: return "ℹ️"
+            case .notice: return "📢"
+            case .warning: return "⚠️"
+            case .error: return "❌"
+            case .critical: return "🚨"
+            }
+        }
+
+        var color: TerminalColor {
+            switch self {
+            case .verbose: return .brightBlack
+            case .debug: return .cyan
+            case .info: return .green
+            case .notice: return .blue
+            case .warning: return .yellow
+            case .error: return .red
+            case .critical: return .brightRed
             }
         }
     }
@@ -74,6 +135,9 @@ public enum Utils {
             self.dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
         }
 
+        private func colored(_ text: String, with colorCode: String) -> String {
+            return "\(colorCode)\(text)\(TerminalColor.reset.rawValue)"
+        }
         public func log(
             level: LogLevel,
             tag: String,
@@ -81,8 +145,9 @@ public enum Utils {
         ) {
             if level.rawValue >= self.level.rawValue {
                 print(
-                    "\(self.dateFormatter.string(for: Date())!) \(level.label) \t\(tag): \t\(String(data: message, encoding: .utf8) ?? "")"
-                )
+                    colored(
+                        "\(self.dateFormatter.string(for: Date())!) \(level.emoji) \(level.label) \t\(tag): \t\(String(data: message, encoding: .utf8) ?? "")",
+                        with: level.color.rawValue))
             }
         }
 
