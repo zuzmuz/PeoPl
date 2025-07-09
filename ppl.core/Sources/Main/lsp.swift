@@ -241,13 +241,13 @@ func runLspSocket(port: UInt16) async throws {
 
         var data = Data()
 
-        // do {
+        do {
             while true {
 
                 data += try await server.read()
 
                 logger.log(
-                    level: .debug,
+                    level: .verbose,
                     tag: "LspTcpServer",
                     message: "message received")
                 logger.log(
@@ -257,12 +257,12 @@ func runLspSocket(port: UInt16) async throws {
 
                 data = Data()
             }
-        // } catch {
-        //     logger.log(
-        //         level: .info,
-        //         tag: "LspTcpServer",
-        //         message: "Connection closed")
-        // }
+        } catch {
+            logger.log(
+                level: .info,
+                tag: "LspTcpServer",
+                message: "Connection closed")
+        }
     }
 }
 

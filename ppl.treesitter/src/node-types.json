@@ -556,6 +556,16 @@
     "type": "function",
     "named": true,
     "fields": {
+      "argument_list": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "repeated_argument_list",
+            "named": true
+          }
+        ]
+      },
       "arguments": {
         "multiple": false,
         "required": false,
@@ -1130,6 +1140,21 @@
     "fields": {},
     "children": {
       "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "type_field_list",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "repeated_argument_list",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
       "required": true,
       "types": [
         {

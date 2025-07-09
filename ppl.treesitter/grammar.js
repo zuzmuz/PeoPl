@@ -152,7 +152,6 @@ module.exports = grammar({
       ']'
     ),
 
-
     namespace: _ => "namespace",
 
     nothing_type: _ => choice('Nothing', '_'),
@@ -215,13 +214,23 @@ module.exports = grammar({
       optional(field('type_arguments', $.type_field_list)),
     ),
 
+    repeated_argument_list: $ => seq(
+      $.type_field_list,
+      repeat1($.type_field_list)
+    ),
+
+    _function_arguments: $ => choice(
+      field('arguments', $.type_field_list),
+      field('argument_list', $.repeated_argument_list)
+    ),
+
     function: $ => seq(
       choice(
         seq('(', field('input_type', $.type_field), ')'),
-        field('arguments', $.type_field_list),
+        $._function_arguments,
         seq(
           seq('(', field('input_type', $.type_field), ')'),
-          field('arguments', $.type_field_list),
+          $._function_arguments,
         ),
       ),
       '->',

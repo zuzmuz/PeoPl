@@ -72,6 +72,9 @@ enum Socket {
             _ connection: NWConnection,
             completion: @Sendable @escaping (Result<(), Socket.Error>) -> Void
         ) {
+            self.listener?.newConnectionHandler = nil
+            self.listener?.cancel()
+
             if self.connection != nil {
                 logger.log(
                     level: .warning,
@@ -131,7 +134,14 @@ enum Socket {
         ) {
 
             if self.listener != nil {
-                completion(.success(()))
+                self.listener?.newConnectionHandler =
+                    { [weak self] connection in
+                        Task {
+                            await self?.setConnection(
+                                connection,
+                                completion: completion)
+                        }
+                    }
                 return
             }
 
@@ -213,8 +223,10 @@ enum Socket {
                         switch result {
                         case .success:
                             Task {
-                                await self.connectionStarted()
-                                continuation.resume()
+                                if await !self.connected {
+                                    await self.connectionStarted()
+                                    continuation.resume()
+                                }
                             }
                         case let .failure(error):
                             Task {

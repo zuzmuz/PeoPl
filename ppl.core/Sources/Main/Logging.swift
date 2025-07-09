@@ -74,17 +74,17 @@ public enum Utils {
             }
         }
 
-        var emoji: String {
-            switch self {
-            case .verbose: return "💬"
-            case .debug: return "🔍"
-            case .info: return "ℹ️"
-            case .notice: return "📢"
-            case .warning: return "⚠️"
-            case .error: return "❌"
-            case .critical: return "🚨"
-            }
-        }
+        // var emoji: String {
+        //     switch self {
+        //     case .verbose: return "💬"
+        //     case .debug: return "🔍"
+        //     case .info: return "ℹ️"
+        //     case .notice: return "📢"
+        //     case .warning: return "⚠️"
+        //     case .error: return "❌"
+        //     case .critical: return "🚨"
+        //     }
+        // }
 
         var color: TerminalColor {
             switch self {
@@ -146,7 +146,7 @@ public enum Utils {
             if level.rawValue >= self.level.rawValue {
                 print(
                     colored(
-                        "\(self.dateFormatter.string(for: Date())!) \(level.emoji) \(level.label) \t\(tag): \t\(String(data: message, encoding: .utf8) ?? "")",
+                        "\(self.dateFormatter.string(for: Date())!) \(level.label) \t\(tag): \t\(String(data: message, encoding: .utf8) ?? "")",
                         with: level.color.rawValue))
             }
         }
