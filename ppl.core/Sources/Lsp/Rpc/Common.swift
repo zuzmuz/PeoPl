@@ -9,7 +9,7 @@ extension Lsp {
         case incomplete
     }
 
-    struct RPCCoder {
+    struct RpcCoder {
         func decode(data: Data) -> (result: DecodingResult, rest: Data?) {
             guard
                 let separatorRange = data.firstRange(

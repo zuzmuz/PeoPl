@@ -1,33 +1,33 @@
 extension Lsp {
     public enum TextDocumentParams {
         public struct DidOpen: Codable, Sendable {
-            let textDocument: TextDocumentItem
+            public let textDocument: TextDocumentItem
         }
 
         public struct DidChange: Codable, Sendable {
-            let textDocument: VersionedTextDocumentIdentifier
-            let contentChanges: [TextDocumentContentChangeEvent]
+            public let textDocument: VersionedTextDocumentIdentifier
+            public let contentChanges: [TextDocumentContentChangeEvent]
         }
 
         public struct DidSave: Codable, Sendable {
-            let textDocument: TextDocumentIdentifier
-            let text: String?
+            public let textDocument: TextDocumentIdentifier
+            public let text: String?
         }
     }
     public struct TextDocumentIdentifier: Codable, Sendable {
-        let uri: String
+        public let uri: String
     }
 
     public struct TextDocumentItem: Codable, Sendable {
-        let uri: String
-        let languageId: String
-        let version: Int
-        let text: String
+        public let uri: String
+        public let languageId: String
+        public let version: Int
+        public let text: String
     }
 
     public struct VersionedTextDocumentIdentifier: Codable, Sendable {
-        let uri: String
-        let version: Int
+        public let uri: String
+        public let version: Int
     }
 
     public enum TextDocumentContentChangeEvent: Codable, Sendable {
@@ -65,8 +65,8 @@ extension Lsp {
     }
 
     public struct Range: Codable, Sendable {
-        let start: Position
-        let end: Position
+        public let start: Position
+        public let end: Position
 
         public init(start: Position, end: Position) {
             self.start = start
@@ -75,8 +75,8 @@ extension Lsp {
     }
 
     public struct Position: Codable, Sendable {
-        let line: Int
-        let character: Int
+        public let line: Int
+        public let character: Int
 
         public init(line: Int, character: Int) {
             self.line = line

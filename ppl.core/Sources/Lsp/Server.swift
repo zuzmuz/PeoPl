@@ -1,4 +1,5 @@
 import Foundation
+import Utils
 
 public enum Lsp {
 
@@ -12,19 +13,21 @@ public enum Lsp {
         func write(_ data: Data) async throws
     }
 
-    actor StandardTransport: Transport {
-        func read() throws -> Data {
+    public actor StandardTransport: Transport {
+        public init() {}
+
+        public func read() throws -> Data {
             return FileHandle.standardInput.availableData
         }
 
-        func write(_ data: Data) {
+        public func write(_ data: Data) {
             FileHandle.standardOutput.write(data)
         }
     }
 
     public actor Server<H: Handler, T: Transport, L: Utils.Logger> {
 
-        private let coder: RPCCoder
+        private let coder: RpcCoder
         private var iteration: Int = 0
 
         private let handler: H
@@ -35,7 +38,7 @@ public enum Lsp {
             self.handler = handler
             self.transport = transport
             self.logger = logger
-            self.coder = RPCCoder()
+            self.coder = RpcCoder()
         }
 
         public func run() async throws {

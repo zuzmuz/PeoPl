@@ -1,9 +1,11 @@
 import Foundation
 import Network
+import Utils
+import Lsp
 
 extension Socket {
 
-    actor TcpClient<L: Utils.Logger> {
+    actor TcpClient<L: Utils.Logger>: Lsp.Transport {
         private let host: NWEndpoint.Host
         private let port: NWEndpoint.Port
         private var connection: NWConnection?
@@ -24,21 +26,19 @@ extension Socket {
             self.logger = logger
         }
 
-        private func clientConnected() {
-            self.connected = true
-            logger.log(
-                level: .info,
-                tag: Socket.clientTag,
-                message: "client connected to \(self.host):\(self.port)")
+        private func setConnected(_ value: Bool) {
+            self.connected = value
         }
 
         private func cancelConnection() {
-            self.connection?.cancel()
-            self.connection = nil
-            self.logger.log(
-                level: .info,
-                tag: Socket.clientTag,
-                message: "cancelling client connection")
+            if let connection = self.connection {
+                connection.cancel()
+                self.connection = nil
+                logger.log(
+                    level: .info,
+                    tag: Socket.clientTag,
+                    message: "cancelling client connection")
+            }
         }
 
         public func start() async throws(Socket.Error) {
@@ -50,64 +50,73 @@ extension Socket {
                         using: .tcp)
 
                     self.connection?.stateUpdateHandler = { [weak self] state in
+                        guard let self else {
+                            return
+                        }
                         switch state {
                         case .ready:
-                            self?.logger.log(
+                            self.logger.log(
                                 level: .info,
                                 tag: Socket.clientTag,
-                                message: "client connection ready")
+                                message: "connection ready")
                             Task {
-                                await self?.clientConnected()
-                                continuation.resume()
+                                if await !self.connected {
+                                    await self.setConnected(true)
+                                    continuation.resume()
+                                }
                             }
                         case .cancelled:
-                            self?.logger.log(
+                            self.logger.log(
                                 level: .warning,
                                 tag: Socket.clientTag,
-                                message: "client connection cancelled")
+                                message: "connection cancelled")
 
                             Task {
-                                await self?.cancelConnection()
-                                if await self?.connected == false {
+                                let wasConnected = await self.connected
+                                await self.setConnected(false)
+                                await self.cancelConnection()
+                                if !wasConnected {
                                     continuation.resume(
                                         throwing: Socket.Error
                                             .connectionCancelled)
                                 }
                             }
                         case let .failed(error):
-                            self?.logger.log(
+                            self.logger.log(
                                 level: .error,
                                 tag: Socket.clientTag,
                                 message:
-                                    "client connection failed with error: \(error)"
+                                    "connection failed with error: \(error)"
                             )
                             Task {
-                                await self?.cancelConnection()
-                                if await self?.connected == false {
+                                let wasConnected = await self.connected
+                                await self.setConnected(false)
+                                await self.cancelConnection()
+                                if !wasConnected {
                                     continuation.resume(
-                                        throwing: Socket.Error.other(
-                                            error.localizedDescription))
+                                        throwing: Socket.Error
+                                            .connectionCancelled)
                                 }
                             }
                         case .preparing:
-                            self?.logger.log(
-                                level: .info,
+                            self.logger.log(
+                                level: .verbose,
                                 tag: Socket.clientTag,
-                                message: "client connection preparing")
+                                message: "connection preparing")
                         case .setup:
-                            self?.logger.log(
-                                level: .info,
+                            self.logger.log(
+                                level: .verbose,
                                 tag: Socket.clientTag,
-                                message: "client connection setting up")
+                                message: "connection setting up")
                         case let .waiting(error):
-                            self?.logger.log(
-                                level: .error,
+                            self.logger.log(
+                                level: .warning,
                                 tag: Socket.clientTag,
                                 message:
                                     "client connection waiting with error: \(error)"
                             )
                         default:
-                            self?.logger.log(
+                            self.logger.log(
                                 level: .warning,
                                 tag: Socket.clientTag,
                                 message:
@@ -117,7 +126,7 @@ extension Socket {
 
                     self.connection?.start(
                         queue: DispatchQueue(
-                            label: "TCPClientQueue",
+                            label: "TcpClientQueue",
                             qos: .userInteractive))
                 }
             } catch let error as Socket.Error {
@@ -127,17 +136,108 @@ extension Socket {
             }
         }
 
-        public func send(data: Data) {
-            self.connection?.send(
-                content: data,
-                completion: .contentProcessed { error in
-                    self.logger.log(
-                        level: .debug,
-                        tag: "TCPClient",
-                        message:
-                            "Data sent to server with error \(String(describing: error))"
-                    )
-                })
+        public func write(_ data: Data) async throws(Socket.Error) {
+            self.logger.log(
+                level: .verbose,
+                tag: clientTag,
+                message: "sending data")
+            self.logger.log(
+                level: .verbose,
+                tag: clientTag,
+                message: data)
+
+            guard let connection = self.connection else {
+                throw .connectionNotSet
+            }
+            do {
+                return try await withCheckedThrowingContinuation {
+                    continuation in
+
+                    connection.send(
+                        content: data,
+                        completion: .contentProcessed { error in
+                            if let error {
+                                self.logger.log(
+                                    level: .verbose,
+                                    tag: clientTag,
+                                    message: "data sent")
+                                continuation.resume(
+                                    throwing: Socket.Error.readError(
+                                        error.localizedDescription))
+                                return
+                            }
+                            continuation.resume()
+                        })
+                }
+            } catch let error as Socket.Error {
+                throw error
+            } catch {
+                throw .other(error.localizedDescription)
+            }
+        }
+
+        public func read() async throws(Socket.Error) -> Data {
+            guard let connection = self.connection else {
+                throw Socket.Error.connectionNotSet
+            }
+
+            do {
+                return try await withCheckedThrowingContinuation {
+                    continuation in
+
+                    connection.receive(
+                        minimumIncompleteLength: 1,
+                        maximumLength: 1024
+                    ) { data, _, isComplete, error in
+
+                        self.logger.log(
+                            level: .verbose,
+                            tag: Socket.clientTag,
+                            message: "data received")
+
+                        if let error = error {
+                            self.logger.log(
+                                level: .error,
+                                tag: Socket.clientTag,
+                                message: "data received error: \(error)")
+                            continuation.resume(
+                                throwing: Socket.Error.readError(
+                                    error.localizedDescription))
+                            return
+                        }
+
+                        guard !isComplete, let data else {
+                            self.logger.log(
+                                level: .notice,
+                                tag: Socket.clientTag,
+                                message: "stream complete")
+                            Task {
+                                await self.cancelConnection()
+                                continuation.resume(
+                                    throwing: Socket.Error.readError(
+                                        "stream Complete"))
+                            }
+                            return
+                        }
+
+                        self.logger.log(
+                            level: .verbose,
+                            tag: Socket.clientTag,
+                            message: "data received size: \(data.count)")
+                        self.logger.log(
+                            level: .verbose,
+                            tag: Socket.clientTag,
+                            message: data)
+
+                        continuation.resume(returning: data)
+
+                    }
+                }
+            } catch let error as Socket.Error {
+                throw error
+            } catch {
+                throw .other(error.localizedDescription)
+            }
         }
     }
 }

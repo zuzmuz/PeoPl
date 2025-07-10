@@ -33,12 +33,13 @@ let package = Package(
         //         .product(name: "TreeSitterPeoPl", package: "ppl.treesitter"),
         //     ],
         // ),
-        // .target(
-        //     name: "Lsp",
-        //     dependencies: [
-        //         "Core"
-        //     ]
-        // ),
+        .target(
+            name: "Utils"
+        ),
+        .target(
+            name: "Lsp",
+            dependencies: ["Utils"]
+        ),
         .executableTarget(
             name: "Main",
             // dependencies: [
@@ -47,6 +48,7 @@ let package = Package(
             dependencies: [
                 "SwiftTreeSitter",
                 "cllvm",
+                "Lsp",
                 .product(name: "TreeSitterPeoPl", package: "ppl.treesitter"),
             ],
         ),

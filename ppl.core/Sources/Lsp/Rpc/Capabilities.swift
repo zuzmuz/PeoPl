@@ -7,39 +7,39 @@ extension Lsp {
     }
 
     public struct InitializeParams: Codable, Sendable {
-        let processId: Int
-        let capabilities: ClientCapabilities
-        let clientInfo: ClientInfo?
-        let workspaceFolders: [WorkspaceFolder]?
-        let locale: String?
+        public let processId: Int
+        public let capabilities: ClientCapabilities
+        public let clientInfo: ClientInfo?
+        public let workspaceFolders: [WorkspaceFolder]?
+        public let locale: String?
     }
 
     public struct WorkspaceFolder: Codable, Sendable {
-        let uri: String
-        let name: String
+        public let uri: String
+        public let name: String
     }
 
     public struct ClientCapabilities: Codable, Sendable {
-        let workspace: WorkspaceClientCapabilities?
-        let textDocument: TextDocumentClientCapabilities?
-        let general: GeneralClientCapabilities?
+        public let workspace: WorkspaceClientCapabilities?
+        public let textDocument: TextDocumentClientCapabilities?
+        public let general: GeneralClientCapabilities?
     }
 
     public struct ClientInfo: Codable, Sendable {
-        let name: String
-        let version: String
+        public let name: String
+        public let version: String
     }
 
     public struct ValueSetClientCapabilities<T: Codable>: Codable {
-        let valueSet: [T]?
+        public let valueSet: [T]?
     }
 
     public struct GeneralClientCapabilities: Codable, Sendable {
-        let positionEncodings: [PositionEncoding]?
+        public let positionEncodings: [PositionEncoding]?
     }
 
     public struct WorkspaceClientCapabilities: Codable, Sendable {
-        let applyEdit: Bool?
+        public let applyEdit: Bool?
         // let workspaceEdit: WorkspaceEditClientCapabilities?
         // let didChangeConfiguration: DidChangeConfigurationClientCapabilities?
         // let didChangeWatchedFiles: DidChangeWatchedFilesClientCapabilities?
@@ -50,14 +50,14 @@ extension Lsp {
     }
 
     public struct TextDocumentSyncClientCapabilities: Codable, Sendable {
-        let dynamicRegistration: Bool?
-        let willSave: Bool?
-        let willSaveWaitUntil: Bool?
-        let didSave: Bool?
+        public let dynamicRegistration: Bool?
+        public let willSave: Bool?
+        public let willSaveWaitUntil: Bool?
+        public let didSave: Bool?
     }
 
     public struct TextDocumentClientCapabilities: Codable, Sendable {
-        let synchronization: TextDocumentSyncClientCapabilities?
+        public let synchronization: TextDocumentSyncClientCapabilities?
         // let completion: CompletionClientCapabilities?
         // let hover: HoverClientCapabilities?
         // let signatureHelp: SignatureHelpClientCapabilities?
@@ -119,8 +119,16 @@ extension Lsp {
     }
 
     public struct InitializeResult: Codable, Sendable {
-        let capabilities: ServerCapabilities
-        let serverInfo: ServerInfo?
+        public let capabilities: ServerCapabilities
+        public let serverInfo: ServerInfo?
+
+        public init(
+            capabilities: ServerCapabilities,
+            serverInfo: ServerInfo?
+        ) {
+            self.capabilities = capabilities
+            self.serverInfo = serverInfo
+        }
     }
 
     public struct ServerCapabilities: Codable, Sendable {
@@ -140,8 +148,16 @@ extension Lsp {
         }
 
         public struct DiagnosticOptions: Codable, Sendable {
-            let interFileDependencies: Bool
-            let workspaceDiagnostics: Bool
+            public let interFileDependencies: Bool
+            public let workspaceDiagnostics: Bool
+
+            public init(
+                interFileDependencies: Bool,
+                workspaceDiagnostics: Bool
+            ) {
+                self.interFileDependencies = interFileDependencies
+                self.workspaceDiagnostics = workspaceDiagnostics
+            }
         }
 
         let positionEncoding: PositionEncoding?
@@ -151,7 +167,7 @@ extension Lsp {
         // let foldingRangeProvider: Bool?
         // let semanticTokensProvider: SemanticTokensOptions?
 
-        init(
+        public init(
             positionEncoding: PositionEncoding? = nil,
             textDocumentSync: TextDocumentSync? = nil,
             diagnosticProvider: DiagnosticOptions? = nil,
@@ -163,7 +179,12 @@ extension Lsp {
     }
 
     public struct ServerInfo: Codable, Sendable {
-        let name: String
-        let version: String?
+        public let name: String
+        public let version: String?
+
+        public init(name: String, version: String?) {
+            self.name = name
+            self.version = version
+        }
     }
 }

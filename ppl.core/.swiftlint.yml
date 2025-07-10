@@ -45,4 +45,5 @@ large_tuple:
 disabled_rules:
   - todo
   - trailing_comma
+  - closure_parameter_position
   

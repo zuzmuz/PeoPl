@@ -1,5 +1,7 @@
 import Foundation
 import Network
+import Utils
+import Lsp
 
 extension Socket {
 
@@ -22,6 +24,10 @@ extension Socket {
             self.queue = DispatchQueue(label: "TCPServerQueue", qos: .utility)
         }
 
+        private func setConnection(_ value: Bool) {
+            self.connected = value
+        }
+
         private func cancelConnection() {
             if let connection = self.connection {
                 connection.cancel()
@@ -37,7 +43,6 @@ extension Socket {
             _ connection: NWConnection,
             completion: @Sendable @escaping (Result<(), Socket.Error>) -> Void
         ) {
-
             if self.connection != nil {
                 connection.cancel()
                 logger.log(
@@ -96,7 +101,6 @@ extension Socket {
         private func setupServer(
             completion: @Sendable @escaping (Result<(), Error>) -> Void
         ) {
-
             if self.listener != nil {
                 self.listener?.newConnectionHandler =
                     { [weak self] connection in
@@ -169,10 +173,6 @@ extension Socket {
             }
 
             self.listener?.start(queue: self.queue)
-        }
-
-        private func setConnection(_ value: Bool) {
-            self.connected = value
         }
 
         public func start() async throws(Socket.Error) {
@@ -270,7 +270,7 @@ extension Socket {
             }
         }
 
-        public func write(_ data: Data) async throws {
+        public func write(_ data: Data) async throws(Socket.Error) {
 
         }
     }

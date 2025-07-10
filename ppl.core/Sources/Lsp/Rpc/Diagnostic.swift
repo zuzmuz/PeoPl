@@ -1,8 +1,8 @@
 extension Lsp {
     public struct DocumentDiagnosticParams: Codable, Sendable {
-        let textDocument: TextDocumentIdentifier
-        let identifier: String?
-        let previousResultId: String?
+        public let textDocument: TextDocumentIdentifier
+        public let identifier: String?
+        public let previousResultId: String?
     }
 
     public enum DocumentDiagnosticReport: Codable, Sendable {
@@ -75,14 +75,14 @@ extension Lsp {
     }
 
     public struct Diagnostic: Codable, Sendable {
-        let range: Range
-        let severity: DiagnosticSeverity?
-        let code: DiagnosticCode?
-        let codeDescription: DiagnosticCodeDescription?
-        let source: String?
-        let message: String
-        let tags: [DiagnosticTag]?
-        let relatedInformation: [DiagnosticRelatedInformation]?
+        public let range: Range
+        public let severity: DiagnosticSeverity?
+        public let code: DiagnosticCode?
+        public let codeDescription: DiagnosticCodeDescription?
+        public let source: String?
+        public let message: String
+        public let tags: [DiagnosticTag]?
+        public let relatedInformation: [DiagnosticRelatedInformation]?
 
         public init(
             range: Range,
@@ -136,31 +136,31 @@ extension Lsp {
     }
 
     public struct DiagnosticRelatedInformation: Codable, Sendable {
-        let location: Location
-        let message: String
+        public let location: Location
+        public let message: String
     }
 
     public struct Location: Codable, Sendable {
-        let uri: String
-        let range: Range
+        public let uri: String
+        public let range: Range
     }
 }
 
-extension Syntax.Error {
-    var lspRange: Lsp.Range {
-        switch self {
-        case .rangeNotInContent, .languageNotSupported, .sourceUnreadable:
-            return .init(
-                start: .init(line: 0, character: 0),
-                end: .init(line: 0, character: 0))
-        case .notImplemented(_, let location), .errorParsing(_, let location):
-            return .init(
-                start: .init(
-                    line: location.pointRange.lowerBound.line,
-                    character: location.pointRange.lowerBound.column / 2),
-                end: .init(
-                    line: location.pointRange.upperBound.line,
-                    character: location.pointRange.upperBound.column / 2))
-        }
-    }
-}
+// extension Syntax.Error {
+//     var lspRange: Lsp.Range {
+//         switch self {
+//         case .rangeNotInContent, .languageNotSupported, .sourceUnreadable:
+//             return .init(
+//                 start: .init(line: 0, character: 0),
+//                 end: .init(line: 0, character: 0))
+//         case .notImplemented(_, let location), .errorParsing(_, let location):
+//             return .init(
+//                 start: .init(
+//                     line: location.pointRange.lowerBound.line,
+//                     character: location.pointRange.lowerBound.column / 2),
+//                 end: .init(
+//                     line: location.pointRange.upperBound.line,
+//                     character: location.pointRange.upperBound.column / 2))
+//         }
+//     }
+// }

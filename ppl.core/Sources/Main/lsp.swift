@@ -1,4 +1,6 @@
 import Foundation
+import Lsp
+import Utils
 
 actor Handler<L: Utils.Logger>: Lsp.Handler {
     let logger: L
@@ -205,7 +207,14 @@ func runLsp() async throws {
 }
 
 func runLspProxy(port: UInt16) async throws {
-    let logger = Utils.ConsoleLogger(level: .verbose)
+    let logger = try Utils.FileLogger(
+        path: FileManager
+            .default
+            .homeDirectoryForCurrentUser
+            .appending(path: ".peopl/log/"),
+        fileName: "proxy.log",
+        level: .verbose)
+
     let client = try Socket.TcpClient(
         port: port,
         host: "localhost",
@@ -225,7 +234,7 @@ func runLspProxy(port: UInt16) async throws {
             tag: "LspProxy",
             message: data)
 
-        await client.send(data: data)
+        try await client.write(data)
     }
 }
 
@@ -265,4 +274,23 @@ func runLspSocket(port: UInt16) async throws {
 enum LspCommand: String {
     case proxy
     case socket
+}
+
+extension Syntax.Error {
+    var lspRange: Lsp.Range {
+        switch self {
+        case .rangeNotInContent, .languageNotSupported, .sourceUnreadable:
+            return .init(
+                start: .init(line: 0, character: 0),
+                end: .init(line: 0, character: 0))
+        case .notImplemented(_, let location), .errorParsing(_, let location):
+            return .init(
+                start: .init(
+                    line: location.pointRange.lowerBound.line,
+                    character: location.pointRange.lowerBound.column / 2),
+                end: .init(
+                    line: location.pointRange.upperBound.line,
+                    character: location.pointRange.upperBound.column / 2))
+        }
+    }
 }
