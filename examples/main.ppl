@@ -13,6 +13,10 @@ Input: [
 funcName: (Input) [b: C] -> Output {_}
 
 
+func: (Input) [first: Int] [second: String] -> _ {
+    + first - second
+}
+
 //List[T].map[T, U]: (T.transform: U) -> List[U] {_}
 //map[T, U]: List[T] -> (transform: U) -> List[U] {_}
 

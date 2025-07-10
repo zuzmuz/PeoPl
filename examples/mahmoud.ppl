@@ -1,0 +1,38 @@
+
+
+Person: [
+    name: String,
+    dateOfBirth: String,
+]
+
+Color: choice [
+    red, green, blue
+]
+
+
+
+multiply: [first: Int, second: Int] -> Int {
+    first * second
+}
+
+multiply: [first: Int] -> [second: Int] -> Int {
+    [second: Int] -> Int { first * second }
+}
+
+multiply: [first: Int] [second: Int] -> Int {
+     first * second
+}
+
+
+whatever: [value: Int, transformation: [Int] -> Int] -> Int {
+    transformation(value)
+}
+
+main: _ -> Int {
+    whatever(value: 7, transformation: multiply(first: 6))
+}
+
+// multiply(first: 6) == multiply: [second: Int] -> Int { 6 * second }
+
+
+consolelog: log(console)
