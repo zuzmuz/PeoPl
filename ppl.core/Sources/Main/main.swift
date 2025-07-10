@@ -39,16 +39,16 @@ do {
     case .lsp:
         switch args.count {
         case 2:
-            try await runLsp()
+            try await PpLsp.runLsp()
         case 3:
             throw CommandLineError.invalidArguments(
                 "port missing for lsp command")
         case 4:
             switch (LspCommand(rawValue: args[2]), UInt16(args[3])) {
             case (.socket, let .some(port)):
-                try await runLspSocket(port: port)
+                try await PpLsp.runLspSocket(port: port)
             case (.proxy, let .some(port)):
-                try await runLspProxy(port: port)
+                try await PpLsp.runLspProxy(port: port)
             case (.some, .none):
                 throw CommandLineError.invalidArguments(
                     "port <\(args[3])> is not a valid UInt16")
