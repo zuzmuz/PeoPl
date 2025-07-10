@@ -75,12 +75,12 @@ extension Socket {
                     completion(.failure(.connectionCancelled))
                 case .setup:
                     self?.logger.log(
-                        level: .info,
+                        level: .verbose,
                         tag: Socket.serverTag,
                         message: "connection is setting up")
                 case .preparing:
                     self?.logger.log(
-                        level: .info,
+                        level: .verbose,
                         tag: Socket.serverTag,
                         message: "connection preparing")
                 default:
@@ -146,7 +146,7 @@ extension Socket {
                     completion(.failure(.listenerNotSet))
                 case let .waiting(error):
                     self.logger.log(
-                        level: .error,
+                        level: .warning,
                         tag: Socket.serverTag,
                         message: "server waiting with error: \(error)")
                 case .cancelled:
@@ -157,7 +157,7 @@ extension Socket {
                     completion(.failure(.listenerNotSet))
                 case .setup:
                     self.logger.log(
-                        level: .info,
+                        level: .verbose,
                         tag: Socket.serverTag,
                         message: "server is setting up")
                 default:
@@ -221,15 +221,15 @@ extension Socket {
                     ) { data, _, isComplete, error in
 
                         self.logger.log(
-                            level: .debug,
+                            level: .verbose,
                             tag: Socket.serverTag,
-                            message: "TCP read data received")
+                            message: "data received")
 
                         if let error = error {
                             self.logger.log(
                                 level: .error,
                                 tag: Socket.serverTag,
-                                message: "TCP read error: \(error)")
+                                message: "data received error: \(error)")
                             continuation.resume(
                                 throwing: Socket.Error.readError(
                                     error.localizedDescription))
@@ -240,15 +240,25 @@ extension Socket {
                             self.logger.log(
                                 level: .notice,
                                 tag: Socket.serverTag,
-                                message: "TCP read data complete")
+                                message: "stream complete")
                             Task {
                                 await self.cancelConnection()
                                 continuation.resume(
                                     throwing: Socket.Error.readError(
-                                        "Data Complete"))
+                                        "stream Complete"))
                             }
                             return
                         }
+
+                        self.logger.log(
+                            level: .verbose,
+                            tag: Socket.serverTag,
+                            message: "data received size: \(data.count)")
+                        self.logger.log(
+                            level: .verbose,
+                            tag: Socket.serverTag,
+                            message: data)
+
                         continuation.resume(returning: data)
                     }
 

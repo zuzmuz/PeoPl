@@ -251,15 +251,6 @@ func runLspSocket(port: UInt16) async throws {
 
                 data += try await server.read()
 
-                logger.log(
-                    level: .verbose,
-                    tag: "LspTcpServer",
-                    message: "message received")
-                logger.log(
-                    level: .verbose,
-                    tag: "LspTcpServer",
-                    message: data)
-
                 data = Data()
             }
         } catch {
