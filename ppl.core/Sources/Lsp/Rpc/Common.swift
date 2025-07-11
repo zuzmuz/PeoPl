@@ -2,6 +2,8 @@ import Foundation
 
 extension Lsp {
 
+    public protocol RpcMessageItem: Codable, CustomDebugStringConvertible {}
+
     enum DecodingResult {
         case request(RequestMessage)
         case notification(NotificationMessage)
@@ -442,4 +444,18 @@ extension Lsp {
             try container.encode(object.message, forKey: .message)
         }
     }
+}
+
+extension Lsp.RpcMessageItem {
+    public var debugDescription: String {
+        let jsonEncoder = JSONEncoder()
+        jsonEncoder.outputFormatting = .prettyPrinted
+
+        guard let encoded = try? jsonEncoder.encode(self) else {
+            return "\(Self.self) not encodable"
+        }
+        return String(data: encoded, encoding: .utf8)
+            ?? "\(Self.self) not stringable"
+    }
+
 }

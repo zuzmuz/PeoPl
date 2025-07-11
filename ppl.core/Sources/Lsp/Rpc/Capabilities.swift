@@ -1,4 +1,8 @@
+import Foundation
+
+
 extension Lsp {
+
 
     public enum PositionEncoding: String, Codable, Sendable {
         case utf8 = "utf-8"
@@ -6,7 +10,7 @@ extension Lsp {
         case utf32 = "utf-32"
     }
 
-    public struct InitializeParams: Codable, Sendable {
+    public struct InitializeParams: RpcMessageItem, Sendable {
         public let processId: Int
         public let capabilities: ClientCapabilities
         public let clientInfo: ClientInfo?
