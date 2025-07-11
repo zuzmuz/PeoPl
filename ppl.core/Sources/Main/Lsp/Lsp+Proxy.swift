@@ -1,6 +1,6 @@
 import Foundation
-import Lsp
 import Utils
+import Lsp
 
 extension PpLsp {
     static func runLspProxy(port: UInt16) async throws {
@@ -12,26 +12,16 @@ extension PpLsp {
             fileName: "proxy.log",
             level: .verbose)
 
-        let client = try Socket.TcpClient(
-            port: port,
-            host: "localhost",
+        let server = Lsp.Server(
+            handler: try Lsp.ProxyHandler(
+                client: try .init(
+                    port: port,
+                    host: "localhost",
+                    logger: logger),
+                logger: logger),
+            transport: Lsp.standardTransport,
             logger: logger)
 
-        try await client.start()
-
-        while true {
-            let data = FileHandle.standardInput.availableData
-            logger.log(
-                level: .debug,
-                tag: "LspProxy",
-                message: "Message received from stdin")
-
-            logger.log(
-                level: .debug,
-                tag: "LspProxy",
-                message: data)
-
-            try await client.write(data)
-        }
+        try await server.run()
     }
 }

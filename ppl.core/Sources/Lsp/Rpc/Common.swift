@@ -71,7 +71,7 @@ extension Lsp {
     }
 
     // swiftlint:disable:next type_name
-    public enum Id: Codable, Sendable {
+    public enum Id: Codable, Sendable, Hashable {
         case int(Int)
         case string(String)
 

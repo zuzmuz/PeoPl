@@ -8,14 +8,68 @@ public enum Lsp {
         func handle(notification: NotificationMessage) async
     }
 
+    public actor ProxyHandler<
+        L1: Utils.Logger,
+        L2: Utils.Logger
+    >: Handler {
+        private let logger: L1
+        private let client: Socket.TcpClient<L2>
+        private let jsonDecoder = JSONDecoder()
+        private let jsonEncoder = JSONEncoder()
+
+        private var pendingRequests:
+            [Id: CheckedContinuation<ResponseMessage, Never>] = [:]
+
+        public init(
+            client: Socket.TcpClient<L2>,
+            logger: L1
+        ) throws(Socket.Error) {
+            self.logger = logger
+            self.client = client
+        }
+
+        func run() throws {
+            Task {
+                try await self.client.start()
+                var data = Data()
+                while true {
+                    data += try await client.read()
+                }
+            }
+        }
+
+        public func handle(request: RequestMessage) async -> ResponseMessage {
+
+            return await withCheckedContinuation { continuation in
+
+                pendingRequests[request.id] = continuation
+
+                Task {
+                    do {
+                        try await client.write(jsonEncoder.encode(request))
+                    } catch {
+                        logger.log(
+                            level: .error,
+                            tag: "LspProxyHandler",
+                            message:
+                                "Failed to write request to client: \(error.localizedDescription)"
+                        )
+                    }
+                }
+            }
+        }
+
+        public func handle(notification: Lsp.NotificationMessage) async {
+
+        }
+    }
+
     public protocol Transport: Actor {
         func read() async throws -> Data
         func write(_ data: Data) async throws
     }
 
     public actor StandardTransport: Transport {
-        public init() {}
-
         public func read() throws -> Data {
             return FileHandle.standardInput.availableData
         }
@@ -24,6 +78,8 @@ public enum Lsp {
             FileHandle.standardOutput.write(data)
         }
     }
+
+    public static let standardTransport = StandardTransport()
 
     public actor Server<H: Handler, T: Transport, L: Utils.Logger> {
 

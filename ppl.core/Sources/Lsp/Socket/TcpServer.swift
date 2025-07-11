@@ -1,11 +1,10 @@
 import Foundation
 import Network
 import Utils
-import Lsp
 
 extension Socket {
 
-    actor TcpServer<L: Utils.Logger>: Lsp.Transport {
+    public actor TcpServer<L: Utils.Logger>: Lsp.Transport {
         private let port: NWEndpoint.Port
         private var listener: NWListener?
         private var connection: NWConnection?

@@ -1,11 +1,11 @@
 import Foundation
 
-enum Socket {
+public enum Socket {
 
     static let serverTag = "TcpServer"
     static let clientTag = "TcpClient"
 
-    enum Error: LocalizedError {
+    public enum Error: LocalizedError {
         case invalidPort(UInt16)
         case listenerNotSet
         case connectionNotSet
@@ -15,7 +15,7 @@ enum Socket {
         case connectionFailed
         case other(String)
 
-        var errorDescription: String? {
+        public var errorDescription: String? {
             switch self {
             case .invalidPort(let port):
                 return "invalid port: \(port)"
