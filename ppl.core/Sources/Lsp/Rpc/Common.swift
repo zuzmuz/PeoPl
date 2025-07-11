@@ -5,6 +5,7 @@ extension Lsp {
     enum DecodingResult {
         case request(RequestMessage)
         case notification(NotificationMessage)
+        case response(ResponseMessage)
         case error(String)
         case incomplete
     }
@@ -51,6 +52,10 @@ extension Lsp {
                 NotificationMessage.self, from: body)
             {
                 return (.notification(notification), rest)
+            } else if let response = try? decoder.decode(
+                ResponseMessage.self, from: body)
+            {
+                return (.response(response), rest)
             } else if let unknown = try? decoder.decode(
                 UnknownMessage.self, from: body)
             {
@@ -60,9 +65,9 @@ extension Lsp {
             }
         }
 
-        func encode(response: ResponseMessage) -> Data? {
+        func encode(message: any Encodable) -> Data? {
             let encoder = JSONEncoder()
-            if let body = try? encoder.encode(response) {
+            if let body = try? encoder.encode(message) {
                 let header = Data("Content-Length: \(body.count)\r\n\r\n".utf8)
                 return header + body
             }
@@ -379,7 +384,7 @@ extension Lsp {
         }
     }
 
-    public enum ResponseError: Codable, Error {
+    public enum ResponseError: Codable, RpcError {
         case uriNotFound
 
         enum CodingKeys: String, CodingKey {
