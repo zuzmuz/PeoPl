@@ -384,7 +384,7 @@ extension Lsp {
         }
     }
 
-    public enum ResponseError: Codable, RpcError {
+    public enum ResponseError: Codable, Error {
         case uriNotFound
 
         enum CodingKeys: String, CodingKey {

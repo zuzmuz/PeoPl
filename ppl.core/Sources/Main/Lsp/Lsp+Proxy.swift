@@ -12,16 +12,21 @@ extension PpLsp {
             fileName: "proxy.log",
             level: .verbose)
 
-        let server = Lsp.Server(
-            handler: try Lsp.ProxyHandler(
-                client: try .init(
-                    port: port,
-                    host: "localhost",
-                    logger: logger),
+        let proxyHandler = try Lsp.ProxyHandler(
+            client: try .init(
+                port: port,
+                host: "localhost",
                 logger: logger),
+            logger: logger)
+
+        let server = Lsp.Server(
+            handler: proxyHandler,
             transport: Lsp.standardTransport,
             logger: logger)
 
+        // run the proxy handler before running the server
+        // to start the tcp client
+        try await proxyHandler.run()
         try await server.run()
     }
 }

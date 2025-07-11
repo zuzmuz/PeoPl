@@ -199,11 +199,11 @@ public enum Utils {
                     self.handle.seekToEndOfFile()
                     self.handle.write(
                         Data(
-                            "\(self.dateFormatter.string(for: Date())!) \t -- "
+                            "\(self.dateFormatter.string(for: Date())!) \t"
                                 .utf8
                         ))
-                    self.handle.write(Data("\(level.label) \t -- ".utf8))
-                    self.handle.write(Data("\(tag) \t -- ".utf8))
+                    self.handle.write(Data("\(level.label) \t".utf8))
+                    self.handle.write(Data("\(tag) \t".utf8))
                     self.handle.write(message)
                     self.handle.write(Data("\n".utf8))
                 }

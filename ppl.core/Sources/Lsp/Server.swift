@@ -44,11 +44,11 @@ public enum Lsp {
             self.client = client
         }
 
-        func run() throws {
+        public func run() async throws {
             Task {
-                try await self.client.start()
                 var data = Data()
                 while true {
+
                     data += try await client.read()
 
                     logger.log(
@@ -133,7 +133,7 @@ public enum Lsp {
                             level: .error,
                             tag: "LspProxyHandler",
                             message:
-                                "Failed to write request to client: \(error.localizedDescription)"
+                                "Failed to write request to tcp server: \(error.localizedDescription)"
                         )
                     }
                 }
@@ -187,8 +187,6 @@ public enum Lsp {
     public actor Server<H: Handler, T: Transport, L: Utils.Logger> {
 
         private let coder = RpcCoder()
-        private var iteration: Int = 0
-
         private let handler: H
         private let transport: T
         private let logger: L
@@ -202,18 +200,18 @@ public enum Lsp {
         public func run() async throws {
             var data = Data()
             while true {
+
+                logger.log(
+                    level: .debug,
+                    tag: "LspServer",
+                    message: "waiting to read from transport")
+
                 data += try await self.transport.read()
 
                 logger.log(
                     level: .verbose,
                     tag: "LspServer",
-                    message: "Message received number: \(self.iteration)")
-                self.iteration += 1
-
-                logger.log(
-                    level: .verbose,
-                    tag: "LspServer",
-                    message: "Input")
+                    message: "data received from transport")
                 logger.log(
                     level: .verbose,
                     tag: "LspServer",
@@ -257,7 +255,7 @@ public enum Lsp {
                         logger.log(
                             level: .verbose,
                             tag: "LspServer",
-                            message: "Output")
+                            message: "data sent to transport")
                         logger.log(
                             level: .verbose,
                             tag: "LspServer",

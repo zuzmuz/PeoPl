@@ -26,6 +26,10 @@ extension Socket {
         }
 
         private func setConnected(_ value: Bool) {
+            logger.log(
+                level: .verbose,
+                tag: Socket.clientTag,
+                message: "setting connected to \(value)")
             self.connected = value
         }
 
@@ -42,12 +46,12 @@ extension Socket {
 
         public func start() async throws(Socket.Error) {
             do {
-                try await withCheckedThrowingContinuation { continuation in
-                    self.connection = NWConnection(
-                        host: self.host,
-                        port: self.port,
-                        using: .tcp)
+                self.connection = NWConnection(
+                    host: self.host,
+                    port: self.port,
+                    using: .tcp)
 
+                try await withCheckedThrowingContinuation { continuation in
                     self.connection?.stateUpdateHandler = { [weak self] state in
                         guard let self else {
                             return
@@ -145,7 +149,16 @@ extension Socket {
                 tag: clientTag,
                 message: data)
 
+            self.logger.log(
+                level: .verbose,
+                tag: clientTag,
+                message: "connection state: \(String(describing: self.connection?.state))")
+
             guard let connection = self.connection else {
+                self.logger.log(
+                    level: .error,
+                    tag: clientTag,
+                    message: "why is the connection not set")
                 throw .connectionNotSet
             }
             do {
@@ -183,6 +196,11 @@ extension Socket {
             do {
                 return try await withCheckedThrowingContinuation {
                     continuation in
+
+                    logger.log(
+                        level: .warning,
+                        tag: Socket.clientTag,
+                        message: "waiting for data from server")
 
                     connection.receive(
                         minimumIncompleteLength: 1,
