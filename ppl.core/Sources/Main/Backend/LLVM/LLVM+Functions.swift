@@ -115,7 +115,7 @@ extension Semantic.Context: LLVM.StatementBuilder {
                     body: expression)
 
             case .value:
-                fatalError("code gen for value not supported")
+                throw .notImplemented("code gen for value not supported")
             }
         }
         for (signature, expression) in self.definitions.valueDefinitions {
@@ -127,7 +127,7 @@ extension Semantic.Context: LLVM.StatementBuilder {
                     body: expression)
 
             case .value:
-                fatalError("code gen for value not supported")
+                throw .notImplemented("code gen for value not supported")
             }
         }
     }

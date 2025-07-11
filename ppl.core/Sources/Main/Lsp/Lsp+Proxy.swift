@@ -10,7 +10,7 @@ extension PpLsp {
                 .homeDirectoryForCurrentUser
                 .appending(path: ".peopl/log/"),
             fileName: "proxy.log",
-            level: .verbose)
+            level: .warning)
 
         let proxyHandler = try Lsp.ProxyHandler(
             client: try .init(

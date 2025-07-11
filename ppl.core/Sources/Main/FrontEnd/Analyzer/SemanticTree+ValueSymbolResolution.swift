@@ -18,13 +18,13 @@ extension Syntax.Expression {
         switch self.expressionType {
         case let .function(signature, _):
             guard let signature else {
-                fatalError("do not support signatureless function")
+                throw .notImplemented("do not support signatureless function")
             }
             return .function(
                 try signature.getSignature(
                     identifier: identifier))
         default:
-            fatalError("do not support compile time expressions yet")
+            throw .notImplemented("we do not support compile time expressions yet")
         }
     }
 
@@ -32,12 +32,12 @@ extension Syntax.Expression {
         switch self.expressionType {
         case let .function(signature, _):
             guard let signature else {
-                fatalError("do not support signatureless function")
+                throw .notImplemented("do not support signatureless function")
             }
             // TODO: think about the type of the expression (shouldn't be a function
             return try signature.outputType.getSemanticType()
         default:
-            fatalError(
+            throw .notImplemented(
                 "\(self) do not support compile time expressions yet, should calculate expression at compile time"
             )
         }

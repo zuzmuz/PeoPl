@@ -94,7 +94,8 @@ extension [Syntax.TypeField] {
                     }
                     fieldCounter += value
                 case .identifier:
-                    fatalError("compile time values not supported yet")
+                    throw .notImplemented(
+                        "compile time values not supported yet")
                 }
             }
         }
@@ -144,7 +145,7 @@ extension Syntax.TypeSpecifier {
                 + function.arguments.flatMap { $0.getTypeIdentifiers() }
                 + function.outputType.getTypeIdentifiers()
         default:  // TODO: all other types
-            fatalError()
+            fatalError("getting type identifiers for \(self) is not implemented yet")
         }
     }
 
@@ -320,7 +321,7 @@ extension TypeDeclarationsChecker {
                     }
                 }
             default:
-                fatalError()
+                fatalError("checking cyclical dependencies for \(typeSpecifier) is not implemented yet")
             }
         }
 

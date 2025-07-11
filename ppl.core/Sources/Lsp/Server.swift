@@ -205,11 +205,6 @@ public enum Lsp {
             var data = Data()
             while true {
 
-                logger.log(
-                    level: .debug,
-                    tag: "LspServer",
-                    message: "waiting to read from transport")
-
                 data += try await self.transport.read()
 
                 logger.log(

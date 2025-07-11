@@ -65,7 +65,7 @@ extension LLVM {
     }
 
     public enum Error: LocalizedError {
-        case notImplemented
+        case notImplemented(String)
         case unreachable
     }
 

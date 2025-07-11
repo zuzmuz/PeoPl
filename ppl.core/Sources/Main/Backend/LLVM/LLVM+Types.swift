@@ -23,7 +23,7 @@ extension Semantic.TypeSpecifier: LLVM.TypeBuilder {
         default:
             // if let structType = LLVMGetTypeByName(llvm.module, typeName) {
             //     return structType
-            fatalError("Not implemented for type: \(self)")
+            throw .notImplemented("other types are not implemented yet")
         }
     }
 }

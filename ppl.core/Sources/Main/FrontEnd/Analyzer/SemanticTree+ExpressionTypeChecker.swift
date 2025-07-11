@@ -69,7 +69,7 @@ extension Syntax.Expression {
         case (.nothing, .floatLiteral(let value)):
             return .init(expressionType: .floatLiteral(value), type: .float)
         case (.nothing, .stringLiteral(let value)):
-            fatalError("String literal type checking is not implemented yet")
+            throw .notImplemented("String literal type checking is not implemented yet")
         // return .init(expression: .stringLiteral(value), type: .string)
         case (.nothing, .boolLiteral(let value)):
             return .init(expressionType: .boolLiteral(value), type: .bool)
@@ -178,7 +178,7 @@ extension Syntax.Expression {
 
         switch prefix.expressionType {
         case let .access(accessPrefix, field):
-            fatalError("Not ready for this yet")
+            throw .notImplemented("Not ready for this yet accessing field in function call")
         case let .field(identifier):
             let functionSignature: Semantic.FunctionSignature =
                 .init(
@@ -199,7 +199,7 @@ extension Syntax.Expression {
                 throw .undefinedCall(expression: prefix)
             }
         default:
-            fatalError("Not implemented")
+            throw .notImplemented("function call prefix \(prefix.expressionType) not implemented")
         }
     }
 
@@ -315,7 +315,7 @@ extension Syntax.Expression {
                 bindings: [:])
         // TODO: other complex pattern matching requires expression to be an initializer expression
         default:
-            fatalError("Advanced pattern matching is not implemented yet")
+            throw .notImplemented("Advanced pattern matching is not implemented yet")
         }
     }
 
@@ -397,7 +397,7 @@ extension Syntax.Expression {
             }
             throw .undefinedField(expression: self, field: fieldIdentifier)
         default:
-            fatalError("Accessing field type is not implemented for \(rawType)")
+            throw .notImplemented("Accessing field type is not implemented for \(rawType)")
 
         }
     }
@@ -445,7 +445,7 @@ extension Syntax.Expression {
                     expressionType: .fieldInScope(.named(field)),
                     type: fieldTypeInScope)
             }
-            fatalError("Field expression type checking is not implemented yet")
+            throw .notImplemented("Field expression type checking is not implemented yet")
         // NOTE: should bindings shadow definitions in scope or context
         case let (.nothing, .access(prefix, fieldIdentifier)):
             let prefixTyped = try prefix.checkType(
@@ -457,7 +457,7 @@ extension Syntax.Expression {
                 type: prefixTyped.type,
                 fieldIdentifier: fieldIdentifier,
                 context: context)
-            fatalError()
+            throw .notImplemented("access field expression type checking is not implemented yet")
         // return .init(
         //     expressionType:
         //         .access(prefix: prefixTyped, field: fieldIdentifier),
@@ -496,12 +496,13 @@ extension Syntax.Expression {
             throw .bindingNotAllowed(expression: self)
         case let (input, .function(signature, expression)):
             // NOTE: here I shoul infer signature if not present
-            fatalError(
+            throw .notImplemented(
                 "Function expression type checking is not implemented yet")
         default:
-            fatalError()
+            throw .notImplemented("abstract expression type checking is not implemented yet")
+
         }
-        throw .unsupportedYet("Expression type checking is not implemented yet")
+        throw .notImplemented("Expression type checking is not implemented yet")
     }
 
 }
