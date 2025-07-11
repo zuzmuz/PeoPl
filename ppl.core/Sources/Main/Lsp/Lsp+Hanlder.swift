@@ -8,11 +8,13 @@ enum LspCommand: String {
 }
 
 enum PpLsp {
-    actor Handler<L: Utils.Logger>: Lsp.Handler {
+    actor Handler<L: Utils.Logger, P: Syntax.ModuleParser>: Lsp.Handler {
         private let logger: L
+        private let moduleParser: P
         private var modulesContent: [String: String] = [:]
 
-        init(logger: L) {
+        init(moduleParser: P, logger: L) {
+            self.moduleParser = moduleParser
             self.logger = logger
         }
 
@@ -70,38 +72,36 @@ enum PpLsp {
             // let project = Syntax.Project.init(
             var diagnostics: [Lsp.Diagnostic] = []
 
-            let modulesResult: [String: Result<Syntax.Module, Syntax.Error>] =
-                self.modulesContent.reduce(into: [:]) { acc, file in
-                    do throws(Syntax.Error) {
-                        acc[file.key] = .success(
-                            try Syntax.Module.init(
-                                source: file.value, path: file.key))
-                    } catch {
-                        acc[file.key] = .failure(error)
-                    }
-                }
-
-            for (moduleUri, result) in modulesResult {
-                if moduleUri == uri, case let .failure(error) = result {
-                    diagnostics.append(
-                        .init(
-                            range: error.lspRange,
-                            severity: .error,
-                            message: error.localizedDescription))
-                }
+            let modules = self.modulesContent.reduce(
+                into: [:]
+            ) { acc, element in
+                acc[element.key] = moduleParser.parseModule(
+                    source: .init(content: element.value, name: element.key))
             }
 
-            let project = Syntax.Project.init(
-                modules: modulesResult.compactMapValues { result in
-                    switch result {
-                    case let .success(module):
-                        return module
-                    case .failure:
-                        return nil
-                    }
-                })
+            for (moduleUri, module) in modules {
+                if moduleUri == uri {
+                    diagnostics.append(
+                        contentsOf: module.syntaxErrors.map { error in
+                            .init(
+                                range: error.lspRange,
+                                severity: .error,
+                                message: error.localizedDescription)
+                        })
+                }
+            }
+            //
+            // let project = Syntax.Project.init(
+            //     modules: modulesResult.compactMapValues { result in
+            //         switch result {
+            //         case let .success(module):
+            //             return module
+            //         case .failure:
+            //             return nil
+            //         }
+            //     })
 
-            let context = project.semanticCheck()
+            // let context = project.semanticCheck()
 
             // switch context {
             // case let .failure(errorList):

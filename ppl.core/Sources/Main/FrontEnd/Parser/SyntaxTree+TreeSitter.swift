@@ -13,6 +13,92 @@ protocol TreeSitterNode {
     ) throws(Syntax.Error) -> Self
 }
 
+/// A ``Syntax.ModuleParser`` implementation using TreeSitter.
+struct TreeSitterModulParser: Syntax.ModuleParser {
+    private static func collectErrors(
+        from node: Node,
+        in source: borrowing Syntax.Source,
+        collectedErrors: inout [Syntax.Error]
+    ) {
+        guard node.hasError else {
+            return
+        }
+
+        if node.nodeType == "ERROR" {
+            collectedErrors.append(
+                .errorParsing(
+                    element: "ERROR",
+                    location: node.getLocation(in: source)))
+            return
+        }
+        if node.nodeType == "MISSING" {
+            collectedErrors.append(
+                .errorParsing(
+                    element: "MISSING",
+                    location: node.getLocation(in: source)))
+            return
+        }
+        if node.childCount == 0 {
+            collectedErrors.append(
+                .errorParsing(
+                    element: "MISSING \(node.nodeType ?? "unknown")",
+                    location: node.getLocation(in: source)))
+        }
+        node.enumerateChildren { childNode in
+            collectErrors(
+                from: childNode,
+                in: source,
+                collectedErrors: &collectedErrors)
+        }
+    }
+
+    func parseModule(source: Syntax.Source) -> Syntax.Module {
+
+        let language = Language(tree_sitter_peopl())
+        let parser = Parser()
+        do {
+            try parser.setLanguage(language)
+        } catch {
+            return .init(
+                sourceName: source.name,
+                definitions: [],
+                syntaxErrors: [.languageNotSupported])
+        }
+
+        let tree = parser.parse(source.content)
+        guard let rootNode = tree?.rootNode else {
+            return .init(
+                sourceName: source.name,
+                definitions: [],
+                syntaxErrors: [.sourceUnreadable])
+        }
+
+        var errors: [Syntax.Error] = []
+        Self.collectErrors(
+            from: rootNode,
+            in: source,
+            collectedErrors: &errors)
+
+        var definitions: [Syntax.Definition] = []
+
+        rootNode.enumerateChildren { node in
+            if node.nodeType == "type_definition"
+                || node.nodeType == "value_definition"
+            {
+                do throws(Syntax.Error) {
+                    definitions.append(try .from(node: node, in: source))
+                } catch {
+                    errors.append(error)
+                }
+            }
+        }
+        return .init(
+            sourceName: source.name,
+            definitions: definitions,
+            syntaxErrors: errors)
+    }
+}
+
 /// Parses an integer from a string, supporting hex, octal, and binary formats.
 private func parseInteger(from string: String) -> UInt64? {
     let cleanString = string.replacingOccurrences(of: "_", with: "")
@@ -83,101 +169,6 @@ extension Node {
 
 extension Syntax.Module {
 
-    private static func collectErrors(
-        from node: Node,
-        in source: borrowing Syntax.Source,
-        collectedErrors: inout [Syntax.Error]
-    ) {
-        guard node.hasError else {
-            return
-        }
-
-        if node.nodeType == "ERROR" {
-            collectedErrors.append(
-                .errorParsing(
-                    element: "ERROR",
-                    location: node.getLocation(in: source)))
-            return
-        }
-        if node.nodeType == "MISSING" {
-            collectedErrors.append(
-                .errorParsing(
-                    element: "MISSING",
-                    location: node.getLocation(in: source)))
-            return
-        }
-        if node.childCount == 0 {
-            collectedErrors.append(
-                .errorParsing(
-                    element: "MISSING \(node.nodeType ?? "unknown")",
-                    location: node.getLocation(in: source)))
-        }
-        for child in 0..<node.childCount {
-            guard let childNode = node.child(at: child) else { continue }
-            collectErrors(
-                from: childNode,
-                in: source,
-                collectedErrors: &collectedErrors)
-        }
-    }
-
-    public init(source: String, path: String) throws(Syntax.Error) {
-        // TODO: collect all syntax errors
-        let language = Language(tree_sitter_peopl())
-        let parser = Parser()
-        do {
-            try parser.setLanguage(language)
-        } catch {
-            throw .languageNotSupported
-        }
-
-        let tree = parser.parse(source)
-        guard let rootNode = tree?.rootNode else {
-            throw Syntax.Error.sourceUnreadable
-        }
-
-        let source = Syntax.Source(content: source, name: path)
-
-        var errors: [Syntax.Error] = []
-        Self.collectErrors(
-            from: rootNode,
-            in: source,
-            collectedErrors: &errors)
-
-        self.definitions =
-            try rootNode.compactMapChildren { node throws(Syntax.Error) in
-                if node.nodeType == "type_definition"
-                    || node.nodeType == "value_definition"
-                {
-                    return try .from(node: node, in: source)
-                } else {
-                    return nil
-                }
-            }
-        self.sourceName = path
-    }
-
-    public init(path: String) throws(Syntax.Error) {
-
-        let fileHandle = FileHandle(forReadingAtPath: path)
-
-        guard let outputData = try? fileHandle?.read(upToCount: Int.max),
-            let outputString = String(
-                data: outputData, encoding: .utf8)
-        else {
-            throw .sourceUnreadable
-        }
-        try self.init(source: outputString, path: path)
-    }
-
-    public init(url: URL) throws(Syntax.Error) {
-        guard let data = try? Data.init(contentsOf: url),
-            let source = String(data: data, encoding: .utf8)
-        else {
-            throw .sourceUnreadable
-        }
-        try self.init(source: source, path: url.path)
-    }
 }
 
 extension Syntax.Definition: TreeSitterNode {

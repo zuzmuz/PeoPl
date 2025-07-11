@@ -9,7 +9,9 @@ extension PpLsp {
         let tcpServer = try Socket.TcpServer(port: port, logger: logger)
 
         let server = Lsp.Server(
-            handler: Handler(logger: logger),
+            handler: Handler(
+                moduleParser: TreeSitterModulParser(),
+                logger: logger),
             transport: tcpServer,
             logger: logger)
 

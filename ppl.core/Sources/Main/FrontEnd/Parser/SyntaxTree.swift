@@ -81,7 +81,7 @@ public enum Syntax {
     // -----------------------------------
 
     /// Represents a source file with its content and identifier
-    struct Source {
+    public struct Source {
         /// source code text
         let content: String
         /// file name identifer
@@ -102,19 +102,27 @@ public enum Syntax {
         let modules: [String: Module]
     }
 
+    public protocol ModuleParser {
+        func parseModule(source: Source) -> Module
+    }
+
     /// A compilation unit containing a list of top-level definitions
     /// Modules are basically files
     public struct Module: Codable {
         let sourceName: String
         let definitions: [Definition]
+        let syntaxErrors: [Syntax.Error]
 
         init(
             sourceName: String,
-            definitions: [Definition]
+            definitions: [Definition],
+            syntaxErrors: [Syntax.Error] = []
         ) {
             self.sourceName = sourceName
             self.definitions = definitions
+            self.syntaxErrors = syntaxErrors
         }
+
     }
 
     /// Top-level definitions that can appear at module scope

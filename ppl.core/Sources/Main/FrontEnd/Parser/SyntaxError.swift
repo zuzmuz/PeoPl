@@ -1,7 +1,7 @@
 import Foundation
 
 extension Syntax {
-    public enum Error: LocalizedError {
+    public enum Error: LocalizedError, Codable {
         case languageNotSupported
         case sourceUnreadable
         case notImplemented(
