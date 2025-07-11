@@ -4,6 +4,9 @@ import Utils
 
 extension Socket {
 
+    /// An implementation of the ``Lsp.Transport`` which uses a tcp connection as the interface.
+    /// The TcpServer sets up a listener on a defined port and waits for a connection from a tcp client.
+    /// The server only supports one tcp connection and will cancel all subsequent connetion attempts
     public actor TcpServer<L: Utils.Logger>: Lsp.Transport {
         private let port: NWEndpoint.Port
         private var listener: NWListener?
@@ -12,6 +15,12 @@ extension Socket {
         private let logger: L
         private var connected: Bool = false
 
+        /// Creates a TcpServer
+        /// # Params
+        /// - port: the port to listen on
+        /// - logger: ``Utils.Logger`` a logger for debugging info
+        /// # Throws
+        /// A ``Socket.Error`` if selected port is not valid
         public init(port: UInt16, logger: L) throws(Socket.Error) {
             self.logger = logger
 
@@ -23,10 +32,12 @@ extension Socket {
             self.queue = DispatchQueue(label: "TCPServerQueue", qos: .utility)
         }
 
+        /// Sets the flag for the connection state, this flag is used to prevent multiple continuation calls in the ``setupServer()`` call
         private func setConnection(_ value: Bool) {
             self.connected = value
         }
 
+        /// Cancels the connection and sets it into nil
         private func cancelConnection() {
             if let connection = self.connection {
                 connection.cancel()
@@ -174,6 +185,13 @@ extension Socket {
             self.listener?.start(queue: self.queue)
         }
 
+        /// Starts the tcp server.
+        /// # Returns
+        /// When the listener is set and after a connection with a tcp client is established
+        /// # Throws
+        /// A ``Socket.Error``
+        /// - if the tcp port is in use and the listener could not be created
+        /// - if the connection fails or could not be created
         public func start() async throws(Socket.Error) {
             do {
                 try await withCheckedThrowingContinuation { continuation in

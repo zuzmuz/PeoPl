@@ -39,6 +39,7 @@ public enum Utils {
         case underline = "\u{001B}[4m"
     }
 
+    /// Log message severity levels.
     public enum LogLevel: Int, Sendable {
         /// Verbose log level (-1)
         case verbose = -1
@@ -74,18 +75,6 @@ public enum Utils {
             }
         }
 
-        // var emoji: String {
-        //     switch self {
-        //     case .verbose: return "💬"
-        //     case .debug: return "🔍"
-        //     case .info: return "ℹ️"
-        //     case .notice: return "📢"
-        //     case .warning: return "⚠️"
-        //     case .error: return "❌"
-        //     case .critical: return "🚨"
-        //     }
-        // }
-
         var color: TerminalColor {
             switch self {
             case .verbose: return .brightBlack
@@ -99,6 +88,7 @@ public enum Utils {
         }
     }
 
+    /// A protocol for logging messages with different severity levels
     public protocol Logger: Sendable {
         func log(
             level: LogLevel,
@@ -112,6 +102,7 @@ public enum Utils {
         )
     }
 
+    /// A logger that does nothing
     public final class NillLogger: Logger {
         public func log(
             level: Utils.LogLevel,
@@ -125,10 +116,12 @@ public enum Utils {
         ) {}
     }
 
+    /// Implements a simple console logger that prints log messages to stdout.
     public final class ConsoleLogger: Logger {
         private let level: LogLevel
         private let dateFormatter: DateFormatter
 
+        /// Creates a console logger that prints log messages to stdout with severity above defined level
         public init(level: LogLevel = .info) {
             self.level = level
             self.dateFormatter = DateFormatter()
@@ -138,6 +131,7 @@ public enum Utils {
         private func colored(_ text: String, with colorCode: String) -> String {
             return "\(colorCode)\(text)\(TerminalColor.reset.rawValue)"
         }
+
         public func log(
             level: LogLevel,
             tag: String,
@@ -160,6 +154,7 @@ public enum Utils {
         }
     }
 
+    /// Logger that logs into a file
     public final class FileLogger: Logger {
         private let handle: FileHandle
         private let dateFormatter: DateFormatter

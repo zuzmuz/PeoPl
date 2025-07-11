@@ -3,6 +3,8 @@ import Lsp
 import Utils
 
 extension PpLsp {
+
+    /// Runs local Lsp server with standard transport and logging.
     static func runLsp() async throws {
         let logger = try Utils.FileLogger(
             path: FileManager
@@ -11,11 +13,6 @@ extension PpLsp {
                 .appending(path: ".peopl/log/"),
             fileName: "lsp.log",
             level: .debug)
-
-        logger.log(
-            level: .notice,
-            tag: "LspServer",
-            message: "Starting Server")
 
         let server = Lsp.Server(
             handler: Handler(logger: logger),

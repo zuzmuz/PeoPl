@@ -146,6 +146,12 @@ enum PpLsp {
                                     name: "peopls",
                                     version: "0.0.1.0")))))
             case let .diagnostic(params):
+
+                self.logger.log(
+                    level: .info,
+                    tag: "LspHandler",
+                    message: "Diagnostic request with params: \(params)")
+
                 let resultId = params.previousResultId
 
                 return .init(

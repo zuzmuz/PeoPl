@@ -5,6 +5,7 @@ public enum Socket {
     static let serverTag = "TcpServer"
     static let clientTag = "TcpClient"
 
+    /// Tcp socket errors
     public enum Error: LocalizedError {
         case invalidPort(UInt16)
         case listenerNotSet

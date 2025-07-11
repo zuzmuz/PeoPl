@@ -1,5 +1,5 @@
 extension Lsp {
-    public struct DocumentDiagnosticParams: Codable, Sendable {
+    public struct DocumentDiagnosticParams: RpcMessageItem, Sendable {
         public let textDocument: TextDocumentIdentifier
         public let identifier: String?
         public let previousResultId: String?

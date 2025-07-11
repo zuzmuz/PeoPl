@@ -4,6 +4,8 @@ import Utils
 
 extension Socket {
 
+    /// An implementation of the ``Lsp.Transport`` which uses a tcp connection as the interface.
+    /// The TcpClient requires a ``TcpServer`` to be listening on the host and port defined otherwise it fails
     public actor TcpClient<L: Utils.Logger>: Lsp.Transport {
         private let host: NWEndpoint.Host
         private let port: NWEndpoint.Port
@@ -11,6 +13,13 @@ extension Socket {
         private let logger: L
         private var connected: Bool = false
 
+        /// Creates a Tcp Client
+        /// # Params
+        /// - port: the port to connect to
+        /// - host: the host to connect to
+        /// - logger: ``Utils.Logger`` a logger for debugging info
+        /// # Throws
+        /// A ``Socket.Error`` if selected port is not valid
         public init(
             port: UInt16,
             host: String,
@@ -25,10 +34,12 @@ extension Socket {
             self.logger = logger
         }
 
+        /// Sets the flag for the connection state, this flag is used to prevent multiple continuation calls in the ``start()`` call
         private func setConnected(_ value: Bool) {
             self.connected = value
         }
 
+        /// Cancels the connection and sets it into nil
         private func cancelConnection() {
             if let connection = self.connection {
                 connection.cancel()
@@ -40,6 +51,11 @@ extension Socket {
             }
         }
 
+        /// Starts the tcp client connection
+        /// # Returns
+        /// When the connection is ready
+        /// # Throws
+        /// When the connection could not be established
         public func start() async throws(Socket.Error) {
             do {
                 self.connection = NWConnection(
