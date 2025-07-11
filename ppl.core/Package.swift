@@ -53,7 +53,7 @@ let package = Package(
             ],
         ),
         .testTarget(
-            name: "CoreTests",
+            name: "MainTests",
             dependencies: ["Main"],
             resources: [
                 .process("Resources")

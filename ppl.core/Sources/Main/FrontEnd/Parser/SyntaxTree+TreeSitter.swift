@@ -82,7 +82,47 @@ extension Node {
 // -------------------------
 
 extension Syntax.Module {
+
+    private static func collectErrors(
+        from node: Node,
+        in source: borrowing Syntax.Source,
+        collectedErrors: inout [Syntax.Error]
+    ) {
+        guard node.hasError else {
+            return
+        }
+
+        if node.nodeType == "ERROR" {
+            collectedErrors.append(
+                .errorParsing(
+                    element: "ERROR",
+                    location: node.getLocation(in: source)))
+            return
+        }
+        if node.nodeType == "MISSING" {
+            collectedErrors.append(
+                .errorParsing(
+                    element: "MISSING",
+                    location: node.getLocation(in: source)))
+            return
+        }
+        if node.childCount == 0 {
+            collectedErrors.append(
+                .errorParsing(
+                    element: "MISSING \(node.nodeType ?? "unknown")",
+                    location: node.getLocation(in: source)))
+        }
+        for child in 0..<node.childCount {
+            guard let childNode = node.child(at: child) else { continue }
+            collectErrors(
+                from: childNode,
+                in: source,
+                collectedErrors: &collectedErrors)
+        }
+    }
+
     public init(source: String, path: String) throws(Syntax.Error) {
+        // TODO: collect all syntax errors
         let language = Language(tree_sitter_peopl())
         let parser = Parser()
         do {
@@ -97,6 +137,12 @@ extension Syntax.Module {
         }
 
         let source = Syntax.Source(content: source, name: path)
+
+        var errors: [Syntax.Error] = []
+        Self.collectErrors(
+            from: rootNode,
+            in: source,
+            collectedErrors: &errors)
 
         self.definitions =
             try rootNode.compactMapChildren { node throws(Syntax.Error) in
@@ -722,14 +768,10 @@ extension Syntax.Expression.ExpressionType: TreeSitterNode {
                 location: node.getLocation(in: source))
         }
 
-        guard let argumentListNode = node.child(byFieldName: "arguments") else {
-            throw .errorParsing(
-                element: "CallExpression",
-                location: node.getLocation(in: source))
-        }
+        let argumentListNode = node.child(byFieldName: "arguments")
 
         let arguments =
-            try argumentListNode
+            try argumentListNode?
             .compactMapChildren { child throws(Syntax.Error) in
                 if expressionNodeTypes.contains(child.nodeType ?? "") {
                     try Syntax.Expression.from(node: child, in: source)
@@ -738,9 +780,11 @@ extension Syntax.Expression.ExpressionType: TreeSitterNode {
                 }
             }
 
+        // TODO: trailling closures
+
         return .call(
             prefix: try .from(node: prefixNode, in: source),
-            arguments: arguments
+            arguments: arguments ?? []
         )
     }
 
