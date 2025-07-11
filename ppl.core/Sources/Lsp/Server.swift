@@ -45,6 +45,7 @@ public enum Lsp {
         }
 
         public func run() async throws {
+            try await self.client.start()
             Task {
                 var data = Data()
                 while true {
@@ -54,7 +55,11 @@ public enum Lsp {
                     logger.log(
                         level: .verbose,
                         tag: "LspProxyHandler",
-                        message: "Message received")
+                        message: "message received")
+                    logger.log(
+                        level: .verbose,
+                        tag: "LspProxyHandler",
+                        message: data)
 
                     let decodedMessage = self.coder.decode(data: data)
 
@@ -63,7 +68,7 @@ public enum Lsp {
                         logger.log(
                             level: .info,
                             tag: "LspProxyHandler",
-                            message: "Notification \(notification.method.name)"
+                            message: "notification \(notification.method.name)"
                         )
                     // TODO: the proxy needs to send the notification to the client
                     case let .request(request):
@@ -71,7 +76,7 @@ public enum Lsp {
                             level: .info,
                             tag: "LspProxyHandler",
                             message:
-                                "Request id(\(request.id)) \(request.method.name)"
+                                "request id(\(request.id)) \(request.method.name)"
                         )
                     // TODO: the proxy needs to send the request to the client
                     case let .response(response):
@@ -79,7 +84,7 @@ public enum Lsp {
                             level: .info,
                             tag: "LspProxyHandler",
                             message:
-                                "Response id(\(String(describing: response.id))"
+                                "response id(\(String(describing: response.id))"
                         )
                         if let id = response.id,
                             let continuation = self.pendingRequests.removeValue(
@@ -91,7 +96,7 @@ public enum Lsp {
                                 level: .warning,
                                 tag: "LspProxyHandler",
                                 message:
-                                    "No pending request for response id \(String(describing: response.id))"
+                                    "no pending request for response id \(String(describing: response.id))"
                             )
                         }
                     case let .error(error):
@@ -163,7 +168,6 @@ public enum Lsp {
                     continuation.resume()
                 }
             }
-
         }
     }
 

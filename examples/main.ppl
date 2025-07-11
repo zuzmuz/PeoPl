@@ -1,33 +1,7 @@
 main: [] -> Int {
-    42
+    43
 }
 
-
-Input: [
-    a: A,
-    b: C,
-    c: O
-]
-
-//Input.funcName: A -> B {_}
-funcName: (Input) [b: C] -> Output {_}
-
-
-func: (Input) [first: Int] [second: String] -> _ {
-    + (first - second)
+sdfsdf: [] -> String {
+    2
 }
-
-//List[T].map[T, U]: (T.transform: U) -> List[U] {_}
-//map[T, U]: List[T] -> (transform: U) -> List[U] {_}
-
-a: [A] -> [B] -> [C] { _ }
-
-map[T, U]: (List[T]) [transform: (T) -> [A] -> U] [A] -> List[U] {_}
-
-main: () -> Int {
-}
-
-Result: choice [
-    sucess: S,
-    error: E
-]

@@ -26,10 +26,6 @@ extension Socket {
         }
 
         private func setConnected(_ value: Bool) {
-            logger.log(
-                level: .verbose,
-                tag: Socket.clientTag,
-                message: "setting connected to \(value)")
             self.connected = value
         }
 
@@ -149,11 +145,6 @@ extension Socket {
                 tag: clientTag,
                 message: data)
 
-            self.logger.log(
-                level: .verbose,
-                tag: clientTag,
-                message: "connection state: \(String(describing: self.connection?.state))")
-
             guard let connection = self.connection else {
                 self.logger.log(
                     level: .error,
@@ -197,20 +188,10 @@ extension Socket {
                 return try await withCheckedThrowingContinuation {
                     continuation in
 
-                    logger.log(
-                        level: .warning,
-                        tag: Socket.clientTag,
-                        message: "waiting for data from server")
-
                     connection.receive(
                         minimumIncompleteLength: 1,
                         maximumLength: 1024
                     ) { data, _, isComplete, error in
-
-                        self.logger.log(
-                            level: .verbose,
-                            tag: Socket.clientTag,
-                            message: "data received")
 
                         if let error = error {
                             self.logger.log(
@@ -240,7 +221,7 @@ extension Socket {
                         self.logger.log(
                             level: .verbose,
                             tag: Socket.clientTag,
-                            message: "data received size: \(data.count)")
+                            message: "data received")
                         self.logger.log(
                             level: .verbose,
                             tag: Socket.clientTag,

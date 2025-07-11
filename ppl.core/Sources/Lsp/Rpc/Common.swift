@@ -16,7 +16,7 @@ extension Lsp {
                 let separatorRange = data.firstRange(
                     of: Data("\r\n\r\n".utf8))
             else {
-                return (.error("No separator found"), nil)
+                return (.error("no separator found"), nil)
             }
 
             let header = data.prefix(upTo: separatorRange.lowerBound)
@@ -27,7 +27,7 @@ extension Lsp {
                     encoding: .utf8),
                 let bodySize = Int(bodySizeString)
             else {
-                return (.error("Failed to parse content length"), nil)
+                return (.error("failed to parse content length"), nil)
             }
 
             let bodyRange =
@@ -59,9 +59,9 @@ extension Lsp {
             } else if let unknown = try? decoder.decode(
                 UnknownMessage.self, from: body)
             {
-                return (.error("Unkown method \(unknown.method)"), rest)
+                return (.error("unkown method \(unknown.method)"), rest)
             } else {
-                return (.error("Failed to decode message"), rest)
+                return (.error("failed to decode message"), rest)
             }
         }
 
@@ -340,13 +340,19 @@ extension Lsp {
             self.jsonrpc = try container.decode(String.self, forKey: .jsonrpc)
             self.id = try container.decodeIfPresent(Id.self, forKey: .id)
 
-            // if let result = try? container.decode(
-            //     ResponseResult.self, forKey: .result)
-            // {
-            //     self.result = result
-            // } else {
-            self.result = nil
-            // }
+            if let success = try container.decodeIfPresent(
+                ResponseSuccess.self,
+                forKey: .result)
+            {
+                self.result = .success(success)
+            } else if let failure = try container.decodeIfPresent(
+                ResponseError.self,
+                forKey: .error)
+            {
+                self.result = .failure(failure)
+            } else {
+                self.result = nil
+            }
         }
 
         public func encode(to encoder: any Encoder) throws {
@@ -373,6 +379,22 @@ extension Lsp {
     public enum ResponseSuccess: Codable, Sendable {
         case initialize(InitializeResult)
         case diagnostic(DocumentDiagnosticReport)
+
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.singleValueContainer()
+
+            if let result = try? container.decode(InitializeResult.self) {
+                self = .initialize(result)
+            } else if let result = try? container.decode(
+                DocumentDiagnosticReport.self)
+            {
+                self = .diagnostic(result)
+            } else {
+                throw DecodingError.dataCorruptedError(
+                    in: container,
+                    debugDescription: "Unknown response success type")
+            }
+        }
 
         public func encode(to encoder: any Encoder) throws {
             switch self {

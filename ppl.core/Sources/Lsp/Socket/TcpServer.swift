@@ -270,7 +270,47 @@ extension Socket {
         }
 
         public func write(_ data: Data) async throws(Socket.Error) {
+            self.logger.log(
+                level: .verbose,
+                tag: serverTag,
+                message: "sending data")
+            self.logger.log(
+                level: .verbose,
+                tag: serverTag,
+                message: data)
 
+            guard let connection = self.connection else {
+                self.logger.log(
+                    level: .error,
+                    tag: serverTag,
+                    message: "why is the connection not set")
+                throw .connectionNotSet
+            }
+            do {
+                return try await withCheckedThrowingContinuation {
+                    continuation in
+
+                    connection.send(
+                        content: data,
+                        completion: .contentProcessed { error in
+                            if let error {
+                                self.logger.log(
+                                    level: .verbose,
+                                    tag: serverTag,
+                                    message: "data sent")
+                                continuation.resume(
+                                    throwing: Socket.Error.readError(
+                                        error.localizedDescription))
+                                return
+                            }
+                            continuation.resume()
+                        })
+                }
+            } catch let error as Socket.Error {
+                throw error
+            } catch {
+                throw .other(error.localizedDescription)
+            }
         }
     }
 }
