@@ -2,7 +2,7 @@ import Foundation
 
 extension Semantic {
     public enum Error: LocalizedError {
-        case notImplemented(String)
+        case notImplemented(String, location: Syntax.NodeLocation)
         case typeRedeclaration(types: [Syntax.TypeDefinition])
         case typeNotInScope(type: Syntax.ScopedIdentifier)
         case homogeneousTypeProductInSum(
@@ -12,9 +12,7 @@ extension Semantic {
             cyclicType: Syntax.ScopedIdentifier)
         case duplicateFieldName(
             field: Syntax.TypeField)
-
         case valueRedeclaration(values: [Syntax.ValueDefinition])
-
         case inputMismatch(
             expression: Syntax.Expression,
             expected: Semantic.TypeSpecifier,
@@ -31,19 +29,14 @@ extension Semantic {
             identifier: Semantic.ScopedIdentifier)
         case undefinedCall(
             expression: Syntax.Expression)
-
         case duplicatedExpressionFieldName(
             expression: Syntax.Expression)
-
         case consecutiveUnary(
             expression: Syntax.Expression)
-
         case bindingNotAllowed(
             expression: Syntax.Expression)
-
         case bindingMismatch(
             expression: Syntax.Expression)
-
         case guardShouldReturnBool(
             expression: Syntax.Expression)
     }

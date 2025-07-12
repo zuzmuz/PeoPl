@@ -1,25 +1,17 @@
-#+TITLE: README
-#+AUTHOR: Zaher Hamadeh
+# Table Of Content :toc:
+1. [The Specs](#The-Specs)
 
-* Table Of Content :toc:
-- [[#the-language][The language]]
-- [[#why][Why]]
-- [[#what][What]]
-  - [[#the-basics][The basics]]
-  - [[#the-not-so-basics][The not so basics]]
-- [[#state][State]]
-  - [[#milestones][Milestones]]
 
-* [[file:docs/specification.org][The language]]
+# The Specs
 
-* Why
+# Why
 Just for fun.
 
 But also a thought experiment.
 An opinionated programming language that fits my programming style.
 
-* What
-** The basics
+# What
+## The basics
 PeoPl is a statically typed compiled functional programming language.
 An expression only language, which means no statements are allowed in blocks
 
@@ -48,14 +40,14 @@ This means OOP method style syntax is also supported.
 It doesn't use curly braces to delimit scope.
 It is not needed because there's no standalone statements like assignments and loops.
 
-** The not so basics
+## The not so basics
 Peopl is designed to have an expressive type system, using algebraic data types at its core.
 The type system plays well with the expression based syntax for function blocks.
 
 Peopl is also designed to have a powerful and expressive generics system.
 
 
-* State
+# State
 Ok nothing is ready, if you find this repo by mistake, just know that nothing is ready.
 
 Todo list:
@@ -91,42 +83,11 @@ Todo list:
     - [ ] Type checking with generics
 - [ ] Backend
   - [ ] LLVM
-
-** Milestones
-*** Version 0.0.1.0
-
-Will be released when a full horizontal implementation (frontend to backend) is acheived.
-Included features:
-- Working function calls with builtin types
-- Exhaustive branching
- 
-*** Version 0.0.10.0
-
-Working type system
-
-*** Version 0.0.20.0
-
-Manual memory management with Unsafe references
-At some point before 0.1 I need to figure out the memory management model
-
-*** Version 0.1.0.0
-
-Working lambdas
-
-*** Version 0.3.0.0
-
-Figure out namespacing
-
-*** Version 0.3.0.0
-
-Working generic system
-
-*** Version 1.0.0.0
-
-Version 1 might never come to life.
-But if it does, the goal is to have a set of usable working features,
-in addition to couple of stuff:
-- A rich core library
-- An http library
-- File streams
-- Strong concurency system
+- [-] Lsp
+  - [X] Sending syntax diagnostics
+  - [ ] Sending semantics diagnostics
+  - [ ] completion 
+  - [ ] go to definition 
+  - [ ] references 
+  - [ ] hover
+  - [ ] rename 
