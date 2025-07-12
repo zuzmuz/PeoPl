@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PeoPl - Pipeline Expression Oriented Programming Language</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.7;
+            color: #2c3e50;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem 0;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .header .subtitle {
+            font-size: 1.3rem;
+            font-weight: 400;
+            opacity: 0.8;
+            margin-bottom: 2rem;
+        }
+
+        .toc {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 2rem;
+            border-radius: 15px;
+            margin-bottom: 3rem;
+            border-left: 5px solid #667eea;
+        }
+
+        .toc h2 {
+            color: #495057;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .toc ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .toc li {
+            margin-bottom: 0.5rem;
+            padding-left: 1rem;
+            position: relative;
+        }
+
+        .toc li::before {
+            content: "▶";
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-size: 0.8rem;
+        }
+
+        .toc a {
+            color: #495057;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .toc a:hover {
+            color: #667eea;
+        }
+
+        .section {
+            margin-bottom: 3rem;
+            padding: 2rem 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .section:last-child {
+            border-bottom: none;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            color: #2c3e50;
+            position: relative;
+            padding-bottom: 0.5rem;
+        }
+
+        h1::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 60px;
+            height: 4px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border-radius: 2px;
+        }
+
+        h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #34495e;
+            margin-top: 2rem;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #5a6c7d;
+            margin-top: 1.5rem;
+        }
+
+        h4 {
+            font-size: 1.2rem;
+            margin-bottom: 0.8rem;
+            color: #6c757d;
+            margin-top: 1rem;
+        }
+
+        p {
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+
+        .code-block {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            position: relative;
+            overflow-x: auto;
+            font-family: 'Fira Code', 'Consolas', monospace;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            border: 1px solid #333;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .code-block::before {
+            content: 'PeoPl';
+            position: absolute;
+            top: 0.5rem;
+            right: 1rem;
+            font-size: 0.8rem;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .code-block pre {
+            margin: 0;
+            white-space: pre-wrap;
+        }
+
+        .highlight {
+            background: linear-gradient(120deg, #667eea20 0%, #764ba220 100%);
+            padding: 1.5rem;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            margin: 1.5rem 0;
+        }
+
+        .highlight h3 {
+            color: #667eea;
+            margin-top: 0;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid #f1f3f4;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+        }
+
+        .feature-card h4 {
+            color: #667eea;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+
+        .syntax-highlight {
+            color: #569cd6;
+        }
+
+        .comment {
+            color: #6a9955;
+            font-style: italic;
+        }
+
+        .string {
+            color: #ce9178;
+        }
+
+        .number {
+            color: #b5cea8;
+        }
+
+        .keyword {
+            color: #c586c0;
+        }
+
+        .type {
+            color: #4ec9b0;
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .nav-button {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .nav-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .pipeline-demo {
+            background: linear-gradient(135deg, #667eea10, #764ba210);
+            padding: 2rem;
+            border-radius: 15px;
+            margin: 2rem 0;
+            border: 2px dashed #667eea;
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .pipeline-demo .arrow {
+            color: #667eea;
+            font-size: 2rem;
+            margin: 0 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+                margin: 1rem;
+            }
+            
+            .header h1 {
+                font-size: 2.5rem;
+            }
+            
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>PeoPl</h1>
+            <div class="subtitle">Pipeline Expression Oriented Programming Language</div>
+        </div>
+
+        <div class="toc">
+            <h2>📚 Table of Contents</h2>
+            <ul>
+                <li><a href="#what-is-peopl">What is PeoPl</a></li>
+                <li><a href="#expression-oriented">Expression Oriented</a>
+                    <ul style="margin-left: 2rem;">
+                        <li><a href="#pipeline-centric">Pipeline Centric</a></li>
+                        <li><a href="#input-capturing">Input Capturing in Pipelines</a></li>
+                        <li><a href="#pattern-matching">Pattern Matching</a></li>
+                        <li><a href="#complex-data">Piping Complex Data Structures</a></li>
+                    </ul>
+                </li>
+                <li><a href="#functions">Functions</a></li>
+                <li><a href="#program-structure">Program Structure</a></li>
+                <li><a href="#type-system">Type System</a></li>
+            </ul>
+        </div>
+
+        <section class="section" id="what-is-peopl">
+            <h1>🚀 What is PeoPl</h1>
+            <div class="highlight">
+                <p><strong>PeoPl</strong> is a <em>Pipeline Expression Oriented Programming Language</em>.</p>
+                <p>Programs are constructed as pipelines of operations, where each operation receives data, transforms it, and passes it forward.</p>
+            </div>
+            
+            <div class="pipeline-demo">
+                Data <span class="arrow">→</span> Transform <span class="arrow">→</span> Transform <span class="arrow">→</span> Result
+            </div>
+        </section>
+
+        <section class="section" id="expression-oriented">
+            <h1>💫 Expression Oriented</h1>
+            <p>Everything is an expression that produces a value.</p>
+            
+            <div class="code-block">
+                <pre><span class="string">"hello"</span>                    <span class="comment">// A string literal expression returning "hello"</span>
+<span class="number">42</span>                         <span class="comment">// An integer literal expression returning 42</span>
+<span class="number">2</span> + <span class="number">3</span>                      <span class="comment">// A binary operation expression returning 5</span></pre>
+            </div>
+
+            <h2 id="pipeline-centric">🔄 Pipeline Centric</h2>
+            <p>Data flows through transformation nodes, similar to Unix pipes but with structured data and strong types.</p>
+            
+            <div class="code-block">
+                <pre><span class="comment">// Piping a string through functions</span>
+<span class="string">"hello world"</span> |> reverse                <span class="comment">// Returns "dlrow olleh"</span>
+
+<span class="comment">// Method-like syntax is also supported</span>
+<span class="string">"hello world"</span>.reverse                   <span class="comment">// Returns "dlrow olleh"</span>
+
+<span class="comment">// Multi-step pipelines are natural</span>
+<span class="number">42</span> |> toString |> reverse             <span class="comment">// Returns "24"</span>
+<span class="number">42</span>.toString.reverse                   <span class="comment">// Equivalent method syntax</span>
+
+<span class="comment">// Complex transformations become readable pipelines</span>
+<span class="string">"1,2,3,4,5"</span>
+|> split(separator: <span class="string">","</span>)
+|> map(transform: parseInt)
+|> filter {|$x| x > <span class="number">2</span>}
+|> sum                                <span class="comment">// Returns 12</span></pre>
+            </div>
+
+            <h2 id="input-capturing">🎯 Input Capturing in Pipelines</h2>
+            <p>Explicitly name and manipulate the pipeline input within transformation nodes using the input capture syntax with the vertical bar notation <code>|$name|</code>.</p>
+            
+            <div class="code-block">
+                <pre><span class="comment">// Input capturing using |$name| syntax</span>
+<span class="number">12321</span>
+|> toString
+|> |$value| value = value.reverse <span class="comment">// Returns true (palindrome check)</span></pre>
+            </div>
+
+            <h2 id="pattern-matching">🔍 Pattern Matching</h2>
+            <p>Input capturing is pattern matching. Pattern matching allows for both value binding and branching logic.</p>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>🔀 Branching</h4>
+                    <div class="code-block">
+                        <pre><span class="comment">// Basic pattern matching on values</span>
+value
+|>
+    |<span class="number">0</span>| <span class="string">"Zero"</span>,
+    |<span class="number">1</span>| <span class="string">"One"</span>,
+    |$n <span class="keyword">if</span> n < <span class="number">0</span>| <span class="string">"Negative"</span>,
+    |$n <span class="keyword">if</span> n % <span class="number">2</span> = <span class="number">0</span>| <span class="string">"Even"</span>,
+    |_| <span class="string">"Other"</span></pre>
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <h4>🧩 Destructuring</h4>
+                    <p>Pattern matching can be performed on tuples and tagged unions for complex data destructuring.</p>
+                </div>
+            </div>
+
+            <h2 id="complex-data">📦 Piping Complex Data Structures</h2>
+            <p>PeoPl uses product types (tuples, records) to pass complex data structures through pipelines.</p>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>📊 Tuples</h4>
+                    <div class="code-block">
+                        <pre><span class="comment">// Piping a tuple through a transformation</span>
+(<span class="number">10</span>, <span class="number">5</span>)
+|> |$dimensions| dimensions.<span class="number">0</span> * dimensions.<span class="number">1</span>  <span class="comment">// Returns 50</span></pre>
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <h4>🏷️ Records</h4>
+                    <div class="code-block">
+                        <pre><span class="comment">// Piping a record</span>
+(width: <span class="number">10</span>, height: <span class="number">5</span>)
+|> |$in| in.width * in.height  <span class="comment">// Returns 50</span>
+
+<span class="comment">// Anonymous capture</span>
+(width: <span class="number">10</span>, height: <span class="number">5</span>)
+|> |$| width * height  <span class="comment">// Returns 50</span></pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="functions">
+            <h1>⚡ Functions</h1>
+            <p>Functions are also expressions in PeoPl.</p>
+            
+            <div class="code-block">
+                <pre>thisReturns42: () -> <span class="type">Int</span> {
+  <span class="number">42</span>
+}</pre>
+            </div>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>📥 Functions with Inputs</h4>
+                    <div class="code-block">
+                        <pre>square: (<span class="type">Int</span>) -> <span class="type">Int</span> {
+  |$in| in*in
+}</pre>
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <h4>🔧 Function Arguments</h4>
+                    <div class="code-block">
+                        <pre>add: [a: <span class="type">Int</span>, b: <span class="type">Int</span>] -> <span class="type">Int</span> {
+  a + b
+}</pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="program-structure">
+            <h1>🏗️ Program Structure</h1>
+            <p>Expressions are not allowed at file top level. They need to be bound to a label.</p>
+            
+            <div class="code-block">
+                <pre>a: <span class="number">3</span> <span class="comment">// creating the constant a with the value 3</span>
+
+main: () -> <span class="type">Nothing</span> { <span class="comment">// main function</span>
+  _
+}</pre>
+            </div>
+
+            <div class="highlight">
+                <h3>📁 File Structure</h3>
+                <p>A file is a list of definitions. There are currently 2 supported definitions:</p>
+                <ul>
+                    <li><strong>Value Definitions:</strong> Compile-time expressions (constants and functions)</li>
+                    <li><strong>Type Definitions:</strong> Type aliases for structural types</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="section" id="type-system">
+            <h1>🔍 Type System</h1>
+            <p>PeoPl has first-class support for algebraic types, mainly product types and sum types.</p>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>📊 Tuples and Records</h4>
+                    <div class="code-block">
+                        <pre><span class="type">MyType</span>: [<span class="type">Int</span>, <span class="type">Float</span>, <span class="type">String</span>] <span class="comment">// tuple</span>
+<span class="type">Person</span>: [name: <span class="type">String</span>, age: <span class="type">Int</span>] <span class="comment">// record</span></pre>
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <h4>🏷️ Enums and Tagged Unions</h4>
+                    <div class="code-block">
+                        <pre><span class="type">Shape</span>: <span class="keyword">choice</span> [
+     rectangle: [width: <span class="type">Float</span>, height: <span class="type">Float</span>],
+     circle: [radius: <span class="type">Float</span>]
+]</pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="highlight">
+                <h3>∅ Nothing</h3>
+                <p><strong>Nothing</strong> is the empty tuple, the Unit type. It's equivalent to <code>void</code> in C or <code>None</code> in other languages.</p>
+                <div class="code-block">
+                    <pre><span class="type">Nothing</span>: []
+nothing: ()
+_: <span class="type">Nothing</span></pre>
+                </div>
+            </div>
+        </section>
+
+        <div class="nav-buttons">
+            <a href="#" class="nav-button">← Getting Started</a>
+            <a href="#" class="nav-button">Examples →</a>
+        </div>
+    </div>
+
+    <script>
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Add subtle animations on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.section, .feature-card').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+            el.style.transition = 'all 0.6s ease-out';
+            observer.observe(el);
+        });
+    </script>
+</body>
+</html>

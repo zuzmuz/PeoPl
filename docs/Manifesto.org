@@ -11,6 +11,32 @@ You then examine all apples, one by one, and only put back the ones that are goo
 In the same way, I tried to reevaluate every programming concept, syntax and idioms.
 Only keeping the ones I personally deem most useful, removing everything else.
 
+** From scratch
+My initial motivations were:
+- Compared to other fields of engineering, software developement is so young,
+  most of the paradigms some consider law can actually just be a current trend,
+  or a passing fade, or still not mature enough
+- Software is art. there's a lot of room for subjectivity, creativity,
+  things can technically work without being technically correct. It's even hard,
+  to define what is technically correct in a lot of areas of software development.
+- Software is messy. There's so many tools, so many technologies, inefeciencies,
+  legacy, technical debt, bad design. But software keeps moving forward
+- Software is vast. It would be delusional to consider all coding as equal.
+  Designing a web page with css is coding. Doing data science in jupyter notebooks is coding.
+  Developing high performance triple A games is coding. Developing rest api for crud applications is coding.
+  But, we can all agree that these are vastly different things
+- Software is beautiful
+  
+*** What is programming, for me, at least
+
+It is the art of communicating ideas to fellow engineers in order to define a set of instructions to machine that will produce useful tasks that users will benefit from.
+It is the science of building programs that automates tasks previoulsy considered the responsibility of the human mind.
+When doing so there are many considerations:
+1. Does it do the thing that it should do and does not the thing that it should not do? Reliability
+2. Does it do it efficiently enough so that people don't really care that it's not efficient enough? Performance
+3. Does it still do the thing that it should do and does not the thing that it should not do if bad actors try to actively break it? Robustness
+4. 
+  
 ** The Bad and the Ugly
 
 There's also some concepts that I consider either bad or useless.
@@ -21,7 +47,7 @@ I can go into more details about this later, but here is a list of examples.
     I have a strong opinion on the subject, I genuinely believe that inheritance does not have
     one single redeeming aspect.
 
-### A tangent on inheritance
+*** A tangent on inheritance
 
 Before justifying my dislike of inheritance, let's first try to define what it is.
 Before defining what inheritance is, let's first talk about types.

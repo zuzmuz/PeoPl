@@ -65,7 +65,7 @@ with additional arguments.
 
 PeoPl's expression-only design eliminates the statement/expression dichotomy found in many languages.
 
-We'll get into more details about [[#How Piping Works][piping]] later
+We'll get into more details about [piping](#How-Piping-Works) later
 
 ## Input Capturing in Pipelines
 
@@ -103,7 +103,7 @@ value
 
 ### Destructuring
 
-Pattern matching can be complex, it also can be performed on [[*Tuples][tuples]] and [[*Tagged unions][tagged unions]],
+Pattern matching can be complex, it also can be performed on [tuples](#Tuples) and [tagged unions](#Tagged-unions)
 which will be covered later.
 
 ## Piping Complex Data Structures
