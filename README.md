@@ -1,8 +1,11 @@
-# Table Of Content :toc:
-1. [The Specs](#The-Specs)
+# Table Of Content
+1. [The Features](#The-Specs)
+2. [Why](#why)
+3. [What](#what)
+4. [State](#state)
 
 
-# The Specs
+# [The Features](docs/features.md)
 
 # Why
 Just for fun.

@@ -1,48 +1,45 @@
-#+TITLE: PeoPl Language Specification
-#+AUTHOR: Zaher Hamadeh
-#+DATE: May 21, 2025
 
-* Table of content :toc:
-- [[#what-is-peopl][What is PeoPl]]
-- [[#expression-oriented][Expression Oriented]]
-  - [[#pipeline-centric][Pipeline Centric]]
-  - [[#input-capturing-in-pipelines][Input Capturing in Pipelines]]
-  - [[#pattern-matching][Pattern Matching]]
-  - [[#piping-complex-data-structures][Piping Complex Data Structures]]
-- [[#functions][Functions]]
-  - [[#functions-with-inputs][Functions with inputs]]
-  - [[#function-arguments][Function arguments]]
-  - [[#calling-functions][Calling functions]]
-- [[#program-structure][Program structure]]
-  - [[#file-structure][File structure]]
-- [[#type-system][Type System]]
-  - [[#tuples-and-records][Tuples and Records]]
-  - [[#enums-and-tagged-unions][Enums and Tagged Unions]]
-  - [[#nothing][Nothing]]
+# Table of content
+- [What is PeoPl](#what-is-peopl)
+- [Expression Oriented](#expression-oriented)
+  - [Pipeline Centric](#pipeline-centric)
+  - [Input Capturing in Pipelines](#input-capturing-in-pipelines)
+  - [Pattern Matching](#pattern-matching)
+  - [Piping Complex Data Structures](#piping-complex-data-structures)
+- [Functions](#functions)
+  - [Functions with inputs](#functions-with-inputs)
+  - [Function arguments](#function-arguments)
+  - [Calling functions](#calling-functions)
+- [Program structure](#program-structure)
+  - [File structure](#file-structure)
+- [Type System](#type-system)
+  - [Tuples and Records](#tuples-and-records)
+  - [Enums and Tagged Unions](#enums-and-tagged-unions)
+  - [Nothing](#nothing)
 
-* What is PeoPl
+# What is PeoPl
 
 PeoPl is *Pipeline Expression Oriented Programming Language*.
 
 Programs are constructed as pipelines of operations,
 where each operation receives data, transforms it, and passes it forward.
 
-* Expression Oriented
+# Expression Oriented
 
 Everything is an expression that produces a value.
 
-#+BEGIN_SRC peopl
+``` peopl
 "hello"                    // A string literal expression returning "hello"
 42                         // An integer literal expression returning 42
 2 + 3                      // A binary operation expression returning 5
-#+END_SRC
+```
 
-** Pipeline Centric
+## Pipeline Centric
 
 Data flows through transformation nodes,
 similar to Unix pipes but with structured data, and strong types.
 
-#+BEGIN_SRC peopl
+``` peopl
 // Piping a string through functions
 "hello world" |> reverse                // Returns "dlrow olleh"
 
@@ -59,7 +56,7 @@ similar to Unix pipes but with structured data, and strong types.
 |> map(transform: parseInt)
 |> filter {|$x| x > 2}
 |> sum                                // Returns 12
-#+END_SRC
+```
 
 Drawing inspiration from Unix pipes, functional programming's composition operators, and object methods,
 PeoPl makes data flow the central mechanism of the language.
@@ -70,30 +67,30 @@ PeoPl's expression-only design eliminates the statement/expression dichotomy fou
 
 We'll get into more details about [[#How Piping Works][piping]] later
 
-** Input Capturing in Pipelines
+## Input Capturing in Pipelines
 
 Explicitly name and manipulate the pipeline input within transformation nodes.
 This is done using the input capture syntax with the vertical bar notation `|$name|`.
 
-#+BEGIN_SRC peopl
+``` peopl
 // Input capturing using |$name| syntax
 12321
 |> toString
 |> |$value| value = value.reverse // Returns true (palindrome check)
-#+END_SRC
+```
 
-** Pattern Matching
+## Pattern Matching
 Input capturing is pattern matchin.
 In the previous example, the output of `toString()` is matched with the label value.
 The `$` sign is used to bind inputs to labels. Think of it like assignment, but backwards.
 
-*** Branching
+### Branching
 
 Pattern matching is not only for binding values.
 It also allows for branching.
 Input can be matched to exact values, or binded to labels but with guard expressions.
 
-#+BEGIN_SRC peopl
+``` peopl
 // Basic pattern matching on values
 value
 |>
@@ -102,34 +99,34 @@ value
     |$n if n < 0| "Negative",
     |$n if n % 2 = 0| "Even",
     |_| "Other"
-#+END_SRC
+```
 
-*** Destructuring
+### Destructuring
 
 Pattern matching can be complex, it also can be performed on [[*Tuples][tuples]] and [[*Tagged unions][tagged unions]],
 which will be covered later.
 
-** Piping Complex Data Structures
+## Piping Complex Data Structures
 
 PeoPl uses product types (tuples, records) to pass complex data structure
 
 Records (objects with named fields) can be passed through pipelines and accessed directly within transformation nodes
 
-*** Tuples
+### Tuples
 
 Tuples (ordered collections of values) can be processed efficiently:
 
-#+BEGIN_SRC peopl
+``` peopl
 // Piping a tuple through a transformation
 (10, 5)
 |> |$dimensions| dimensions.0 * dimensions.1  // Returns 50
-#+END_SRC
+```
 
-*** Records
+### Records
 
 Records are named tuples
 
-#+BEGIN_SRC peopl
+``` peopl
 // Piping a record
 (width: 10, height: 5)
 |> |$in| in.width * in.height  // Returns 50
@@ -138,13 +135,13 @@ Records are named tuples
 // Piping a record and anonymous capture
 (width: 10, height: 5)
 |> |$| width * height  // Returns 50
-#+END_SRC
+```
 
-*** Nested Structures
+### Nested Structures
 
 Pattern matching and bindings can be performed on nested structures, used for destructuring.
 
-#+BEGIN_SRC peopl
+``` peopl
 // Processing nested data
 (
   user: (name: "Abdulla", birthyear: 1934),
@@ -162,174 +159,175 @@ Pattern matching and bindings can be performed on nested structures, used for de
   role: "admin"
 )
 |> |(user: (name: "Hanine", birthyear: $year, role: $role)| "Hanin is born in $birthyear"
-#+END_SRC
+```
 
-* Functions
+# Functions
 
 Functions are also expressions
-#+BEGIN_SRC peopl
+``` peopl
 thisReturns42: () -> Int {
   42
 }
-#+END_SRC
+```
 
 This syntax creates a function that takes nothing as input and returns 42.
 Return statements do not exist because the are not necessary.
 
-** Functions with inputs
+## Functions with inputs
 Function inputs are different from regular function arguments.
 Similar to how shell commands take their input from stdin.
 They're analoguous to self or this in languages with object methods.
 Inputs are anonymous, which means they can be pipelined directly into other functions.
 However, if needed they can also be captured.
 
-#+BEGIN_SRC peopl
+``` peopl
 square: (Int) -> Int {
   |$in| in*in
 }
-#+END_SRC
+```
 
-** Function arguments
+## Function arguments
 In addition to function input, functions also take extra arguments.
 Extra arguments are always named.
 
 
-#+BEGIN_SRC peopl
+``` peopl
 add: [a: Int, b: Int] -> Int {
   a + b
 }
-#+END_SRC
+```
 
 if `()` are ommited, it means the functions takes nothing as input.
 By nothing, I mean the type nothing, analoguous to null or None.
 
-** Calling functions
+## Calling functions
 Functions with inputs need to be called on an object
 
-#+BEGIN_SRC peopl
+``` peopl
 5.square // returns 25
 // or
 5 |> square
-#+END_SRC
+```
 
 If a function does not define extra arguments with `[]` the function can be called without `()`
 
-#+BEGIN_SRC peopl
+``` peopl
 squareP: (Int)[] -> Int { // defined with empty `[]`
   |$in| in*in
 }
 
 5.square() // () are needed here
-#+END_SRC
+```
 
 Functions with nothing as input can't receive a value as input
 
-#+BEGIN_SRC peopl
+``` peopl
 5 |>
 add(a: 1, b: 2) // Error: add expects nothing as input
-#+END_SRC
+```
 
 Function with nothing as input can be considered as static functions.
 
-* Program structure
+# Program structure
 
 Expressions are not allowed at a file top level.
 The need to be binded to a label.
 
-#+BEGIN_SRC peopl
+``` peopl
 a: 3 // creating the constant a with the value 3
 
 main: () -> Nothing { // main function
   _
 }
-#+END_SRC
+```
 
 The main function is the entry point of the program.
 
-** File structure
-*** Definitions
+## File structure
+### Definitions
 A file is a list of definitions, definitions are like expressions known at compile time.
 There are currently 2 supported definions
-- [[#Type Definitions][Type Definitions]]
-- [[#Value Definitions][Value Definitions]]
+- [Type Definitions](#Type-Definitions)
+- [Value Definitions](#Value-Definitions)
 
-**** Value Definitions
+#### Value Definitions
 Value definitions defines compile time expressions. These are usually constants,
 and function definitions.
 
-Functions are values. Values have [[#Types][types]].
+Functions are values. Values have [types](#Types)
 
 Value identifiers always start with a lower case.
 
-**** Type Definitions
+#### Type Definitions
 Type definitions create type aliases. All types in PeoPl are actually structural types.
 Nominal types are just aliases to these structural types.
 
 Type identifiers always start  with Upper case.
 
-* Type System
+# Type System
 PeoPl has first class support for algebraic types, mainly product types and sum types.
 
-** Tuples and Records
+## Tuples and Records
 The basic building blocks for types are the tuples (untagged product types)
 and records (tagged product types), records are like structs in c.
 Defining tuples or records uses the same syntax.
-#+BEGIN_SRC peopl
+``` peopl
   MyType: [Int, Float, String] // tuple
   Person: [name: String, age: Int] // record
-#+END_SRC
+```
 
-As stated [[*Definitions][above]], type identifiers are always capitilized,
+As stated [above](#Definitions), type identifiers are always capitilized,
 while tags always start with a lower case.
 
 To create an instance of types use the `()`.
 `[]` to define the type, `()` to create the type
-#+BEGIN_SRC peopl
+``` peopl
  (1, 3.14, "hi")
  Person(name: "peopl", age: 14)
-#+END_SRC
-Tagged fields and untagged fields cannot be mixed
-#+BEGIN_SRC peopl
-  Illegal: [Int, what: Int] // error
-#+END_SRC
+```
+Tagged fields and untagged fields can be mixed
 
-** Enums and Tagged Unions
+``` peopl
+  Legal: [Int, what: Int]
+```
+
+## Enums and Tagged Unions
 Sum types are defined in the same way as tuples and records with an additional keyword.
-#+BEGIN_SRC peopl
+``` peopl
   
   Shape: choice [
        rectangle: [width: Float, height: Float],
        circle: [radius: Float]
   ]
-#+END_SRC
+```
 
 The `choice` keyword is an intersting keyword because it can define unions, tagged unions,
 enums as being the same concept, a choice between items.
 
-*** Untagged Unions
+##* Untagged Unions
 An untagged union is a union of types.
 Untagged unions aren't really useful, so actually untagged choices are actually implicitely tagged.
 However, it doesn't make sense to have a union of the same type, or overlapping types.
 So these are not allowed.
-#+BEGIN_SRC peopl
+``` peopl
 Number: choice [Int, Float] // Int has implicit tag 0, and Float has 1
 
 Redundant: choice [String, String] // not allowed, can't really assign tags
-#+END_SRC
+```
 
-*** Tagged Unions
+##* Tagged Unions
 Tagged unions are a very powerful feature in a language.
 This also covers traditional c enums, because enums are technically
 a tagged union of the [[#Nothing][nothing]] type.
 
-#+BEGIN_SRC peopl
+``` peopl
 
 Color: choice [red, green, blue]
 // equivalent to
 Color: choice [red: Nothing, green: Nothing, blue: Nothing]
-#+END_SRC
+```
 
-** Nothing
+## Nothing
 Oh I forgot about nothing. Nothing is basically the empty tuple,
 the Unit type, void.
 Actually it's not technically void.
@@ -337,11 +335,11 @@ If a function returns `nothing` it is equivalent to returning void in c.
 Though it is equivalent to None in other languages.
 Nothing, with capital N is the nothing type, while nothing with small n is the value.
 However, because Nothing is too verbose, an alias would be `_`
-#+BEGIN_SRC peopl
+``` peopl
 
 Nothing: []
 nothing: ()
 _: Nothing
 
-#+END_SRC
+```
 
