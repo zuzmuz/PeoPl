@@ -2,7 +2,7 @@ import Foundation
 
 extension Semantic {
     public enum Error: LocalizedError {
-        case notImplemented(String, location: Syntax.NodeLocation)
+        case notImplemented(String)
         case typeRedeclaration(types: [Syntax.TypeDefinition])
         case typeNotInScope(type: Syntax.ScopedIdentifier)
         case homogeneousTypeProductInSum(

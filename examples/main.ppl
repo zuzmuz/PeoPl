@@ -1,7 +1,7 @@
-main: [] -> Int {
-    42
-}
+A:: namespace
 
-sdfsdf: [] -> String {
-    2
-}
+
+
+Adf:: [a: Int, x: Int]
+
+s: Int:  3
