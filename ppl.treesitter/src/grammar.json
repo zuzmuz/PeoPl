@@ -17,37 +17,15 @@
     "comment": {
       "type": "TOKEN",
       "content": {
-        "type": "CHOICE",
+        "type": "SEQ",
         "members": [
           {
-            "type": "SEQ",
-            "members": [
-              {
-                "type": "STRING",
-                "value": "//"
-              },
-              {
-                "type": "PATTERN",
-                "value": "(\\\\+(.|\\r?\\n)|[^\\\\\\n])*"
-              }
-            ]
+            "type": "STRING",
+            "value": "//"
           },
           {
-            "type": "SEQ",
-            "members": [
-              {
-                "type": "STRING",
-                "value": "/*"
-              },
-              {
-                "type": "PATTERN",
-                "value": "[^*]*\\*+([^/*][^*]*\\*+)*"
-              },
-              {
-                "type": "STRING",
-                "value": "/"
-              }
-            ]
+            "type": "PATTERN",
+            "value": "(\\\\+(.|\\r?\\n)|[^\\\\\\n])*"
           }
         ]
       }
@@ -87,7 +65,7 @@
               },
               {
                 "type": "STRING",
-                "value": "::"
+                "value": "\\"
               },
               {
                 "type": "FIELD",
@@ -126,7 +104,7 @@
             },
             {
               "type": "STRING",
-              "value": "::"
+              "value": "\\"
             },
             {
               "type": "FIELD",
@@ -201,6 +179,10 @@
           "value": ":"
         },
         {
+          "type": "STRING",
+          "value": ":"
+        },
+        {
           "type": "FIELD",
           "name": "definition",
           "content": {
@@ -252,6 +234,26 @@
               "type": "BLANK"
             }
           ]
+        },
+        {
+          "type": "STRING",
+          "value": ":"
+        },
+        {
+          "type": "FIELD",
+          "name": "type_specifier",
+          "content": {
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "SYMBOL",
+                "name": "_type_specifier"
+              },
+              {
+                "type": "BLANK"
+              }
+            ]
+          }
         },
         {
           "type": "STRING",
@@ -358,10 +360,10 @@
           "members": [
             {
               "type": "FIELD",
-              "name": "access_modifier",
+              "name": "hidden",
               "content": {
                 "type": "STRING",
-                "value": "private"
+                "value": "_"
               }
             },
             {
@@ -392,19 +394,40 @@
       ]
     },
     "type_field": {
-      "type": "CHOICE",
+      "type": "SEQ",
       "members": [
         {
-          "type": "SYMBOL",
-          "name": "tagged_type_specifier"
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "FIELD",
+              "name": "access_modifier",
+              "content": {
+                "type": "STRING",
+                "value": "private"
+              }
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
         },
         {
-          "type": "SYMBOL",
-          "name": "_type_specifier"
-        },
-        {
-          "type": "SYMBOL",
-          "name": "homogeneous_product"
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "SYMBOL",
+              "name": "tagged_type_specifier"
+            },
+            {
+              "type": "SYMBOL",
+              "name": "_type_specifier"
+            },
+            {
+              "type": "SYMBOL",
+              "name": "homogeneous_product"
+            }
+          ]
         }
       ]
     },
@@ -874,6 +897,26 @@
         },
         {
           "type": "FIELD",
+          "name": "type_specifier",
+          "content": {
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "SYMBOL",
+                "name": "_type_specifier"
+              },
+              {
+                "type": "BLANK"
+              }
+            ]
+          }
+        },
+        {
+          "type": "STRING",
+          "value": ":"
+        },
+        {
+          "type": "FIELD",
           "name": "expression",
           "content": {
             "type": "SYMBOL",
@@ -961,143 +1004,95 @@
         }
       ]
     },
-    "call_expression": {
+    "trailing_closure_list": {
       "type": "PREC_RIGHT",
-      "value": 30,
+      "value": 0,
       "content": {
         "type": "SEQ",
         "members": [
           {
-            "type": "FIELD",
-            "name": "prefix",
-            "content": {
-              "type": "SYMBOL",
-              "name": "_simple_expression"
-            }
+            "type": "SYMBOL",
+            "name": "function_body"
           },
           {
-            "type": "CHOICE",
-            "members": [
-              {
-                "type": "FIELD",
-                "name": "type_arguments",
-                "content": {
-                  "type": "SYMBOL",
-                  "name": "type_field_list"
-                }
-              },
-              {
-                "type": "FIELD",
-                "name": "arguments",
-                "content": {
-                  "type": "SYMBOL",
-                  "name": "expression_list"
-                }
-              },
-              {
-                "type": "FIELD",
-                "name": "trailing_closure",
-                "content": {
+            "type": "REPEAT",
+            "content": {
+              "type": "SEQ",
+              "members": [
+                {
+                  "type": "FIELD",
+                  "name": "identifier",
+                  "content": {
+                    "type": "SYMBOL",
+                    "name": "small_identifier"
+                  }
+                },
+                {
+                  "type": "STRING",
+                  "value": ":"
+                },
+                {
                   "type": "SYMBOL",
                   "name": "function_body"
                 }
-              },
-              {
-                "type": "SEQ",
-                "members": [
-                  {
-                    "type": "FIELD",
-                    "name": "arguments",
-                    "content": {
-                      "type": "SYMBOL",
-                      "name": "expression_list"
-                    }
-                  },
-                  {
-                    "type": "FIELD",
-                    "name": "trailing_closure",
-                    "content": {
-                      "type": "SYMBOL",
-                      "name": "function_body"
-                    }
-                  }
-                ]
-              },
-              {
-                "type": "SEQ",
-                "members": [
-                  {
-                    "type": "FIELD",
-                    "name": "type_arguments",
-                    "content": {
-                      "type": "SYMBOL",
-                      "name": "type_field_list"
-                    }
-                  },
-                  {
-                    "type": "FIELD",
-                    "name": "arguments",
-                    "content": {
-                      "type": "SYMBOL",
-                      "name": "expression_list"
-                    }
-                  }
-                ]
-              },
-              {
-                "type": "SEQ",
-                "members": [
-                  {
-                    "type": "FIELD",
-                    "name": "type_arguments",
-                    "content": {
-                      "type": "SYMBOL",
-                      "name": "type_field_list"
-                    }
-                  },
-                  {
-                    "type": "FIELD",
-                    "name": "trailing_closure",
-                    "content": {
-                      "type": "SYMBOL",
-                      "name": "function_body"
-                    }
-                  }
-                ]
-              },
-              {
-                "type": "SEQ",
-                "members": [
-                  {
-                    "type": "FIELD",
-                    "name": "type_arguments",
-                    "content": {
-                      "type": "SYMBOL",
-                      "name": "type_field_list"
-                    }
-                  },
-                  {
-                    "type": "FIELD",
-                    "name": "arguments",
-                    "content": {
-                      "type": "SYMBOL",
-                      "name": "expression_list"
-                    }
-                  },
-                  {
-                    "type": "FIELD",
-                    "name": "trailing_closure",
-                    "content": {
-                      "type": "SYMBOL",
-                      "name": "function_body"
-                    }
-                  }
-                ]
-              }
-            ]
+              ]
+            }
           }
         ]
       }
+    },
+    "call_expression": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "FIELD",
+          "name": "prefix",
+          "content": {
+            "type": "SYMBOL",
+            "name": "_simple_expression"
+          }
+        },
+        {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "FIELD",
+              "name": "type_arguments",
+              "content": {
+                "type": "SYMBOL",
+                "name": "type_field_list"
+              }
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
+        },
+        {
+          "type": "FIELD",
+          "name": "arguments",
+          "content": {
+            "type": "SYMBOL",
+            "name": "expression_list"
+          }
+        },
+        {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "FIELD",
+              "name": "trailing_closure_list",
+              "content": {
+                "type": "SYMBOL",
+                "name": "trailing_closure_list"
+              }
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
+        }
+      ]
     },
     "initializer_expression": {
       "type": "SEQ",

@@ -52,6 +52,9 @@
 (tagged_type_specifier
   identifier: (small_identifier) @variable.member)
 
+(trailing_closure_list
+  identifier: (small_identifier) @variable.member)
+
 (int_literal) @number
 (bool_literal) @boolean
 (float_literal) @number.float
@@ -85,10 +88,14 @@
 [
  ":"
  "."
- "::"
+ "\\"
  ","
  "->"
 ] @punctuation.delimiter
+
+[
+ "_"
+] @constant.builtin
 
 (nothing_type) @constant.builtin
 (never_type) @constant.builtin

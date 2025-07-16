@@ -389,7 +389,7 @@
     "fields": {
       "arguments": {
         "multiple": false,
-        "required": false,
+        "required": true,
         "types": [
           {
             "type": "expression_list",
@@ -443,12 +443,12 @@
           }
         ]
       },
-      "trailing_closure": {
+      "trailing_closure_list": {
         "multiple": false,
         "required": false,
         "types": [
           {
-            "type": "function_body",
+            "type": "trailing_closure_list",
             "named": true
           }
         ]
@@ -1336,6 +1336,56 @@
             "named": true
           }
         ]
+      },
+      "type_specifier": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "any",
+            "named": true
+          },
+          {
+            "type": "function",
+            "named": true
+          },
+          {
+            "type": "in",
+            "named": true
+          },
+          {
+            "type": "namespace",
+            "named": true
+          },
+          {
+            "type": "never_type",
+            "named": true
+          },
+          {
+            "type": "nominal",
+            "named": true
+          },
+          {
+            "type": "nothing_type",
+            "named": true
+          },
+          {
+            "type": "product",
+            "named": true
+          },
+          {
+            "type": "some",
+            "named": true
+          },
+          {
+            "type": "sum",
+            "named": true
+          },
+          {
+            "type": "typeset",
+            "named": true
+          }
+        ]
       }
     }
   },
@@ -1343,12 +1393,12 @@
     "type": "tagged_type_specifier",
     "named": true,
     "fields": {
-      "access_modifier": {
+      "hidden": {
         "multiple": false,
         "required": false,
         "types": [
           {
-            "type": "private",
+            "type": "_",
             "named": false
           }
         ]
@@ -1413,6 +1463,32 @@
           }
         ]
       }
+    }
+  },
+  {
+    "type": "trailing_closure_list",
+    "named": true,
+    "fields": {
+      "identifier": {
+        "multiple": true,
+        "required": false,
+        "types": [
+          {
+            "type": "small_identifier",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "function_body",
+          "named": true
+        }
+      ]
     }
   },
   {
@@ -1504,7 +1580,18 @@
   {
     "type": "type_field",
     "named": true,
-    "fields": {},
+    "fields": {
+      "access_modifier": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "private",
+            "named": false
+          }
+        ]
+      }
+    },
     "children": {
       "multiple": false,
       "required": true,
@@ -1794,6 +1881,56 @@
             "named": true
           }
         ]
+      },
+      "type_specifier": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "any",
+            "named": true
+          },
+          {
+            "type": "function",
+            "named": true
+          },
+          {
+            "type": "in",
+            "named": true
+          },
+          {
+            "type": "namespace",
+            "named": true
+          },
+          {
+            "type": "never_type",
+            "named": true
+          },
+          {
+            "type": "nominal",
+            "named": true
+          },
+          {
+            "type": "nothing_type",
+            "named": true
+          },
+          {
+            "type": "product",
+            "named": true
+          },
+          {
+            "type": "some",
+            "named": true
+          },
+          {
+            "type": "sum",
+            "named": true
+          },
+          {
+            "type": "typeset",
+            "named": true
+          }
+        ]
       }
     }
   },
@@ -1850,10 +1987,6 @@
     "named": false
   },
   {
-    "type": "::",
-    "named": false
-  },
-  {
     "type": "<",
     "named": false
   },
@@ -1883,6 +2016,10 @@
   },
   {
     "type": "[",
+    "named": false
+  },
+  {
+    "type": "\\",
     "named": false
   },
   {

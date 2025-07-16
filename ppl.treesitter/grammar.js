@@ -39,14 +39,7 @@ module.exports = grammar({
     ),
 
     comment: _ => token(
-      choice(
         seq('//', /(\\+(.|\r?\n)|[^\\\n])*/),
-        seq(
-          '/*',
-          /[^*]*\*+([^/*][^*]*\*+)*/,
-          '/',
-        ),
-      ),
     ),
 
     // Identifiers
@@ -60,7 +53,7 @@ module.exports = grammar({
       prec.left(
         seq(
           field("scope", $.scoped_big_identifier),
-          '::',
+          '\\',
           field("identifier", $.big_identifier),
         )
       )
@@ -70,7 +63,7 @@ module.exports = grammar({
       field('identifier', $.small_identifier),
       seq(
         field('scope', $.scoped_big_identifier),
-        '::',
+        '\\',
         field('identifier', $.small_identifier),
       )
     ),
@@ -89,6 +82,8 @@ module.exports = grammar({
       field('identifier', $.scoped_big_identifier),
       optional(field('type_arguments', $.type_field_list)),
       ':',
+      // metatype
+      ':',
       field('definition', $._type_specifier)
     ),
 
@@ -96,6 +91,8 @@ module.exports = grammar({
       optional(field('access_modifier', 'private')),
       field("identifier", $.scoped_identifier),
       optional(field('type_arguments', $.type_field_list)),
+      ":",
+      field("type_specifier", optional($._type_specifier)),
       ":",
       field("expression", $._expression),
     ),
@@ -128,14 +125,19 @@ module.exports = grammar({
     ),
 
     tagged_type_specifier: $ => seq(
-      optional(field('access_modifier', 'private')),
+      optional(field('hidden', '_')),
       field("identifier", $.small_identifier),
       ":",
       field("type", $._type_specifier),
     ),
 
-    type_field: $ => choice(
-      $.tagged_type_specifier, $._type_specifier, $.homogeneous_product
+    type_field: $ => seq(
+      optional(field('access_modifier', 'private')),
+      choice(
+        $.tagged_type_specifier,
+        $._type_specifier,
+        $.homogeneous_product
+      )
     ),
 
     type_field_list: $ => seq(
@@ -243,6 +245,8 @@ module.exports = grammar({
     tagged_expression: $ => seq(
       field("identifier", $.small_identifier),
       ":",
+      field("type_specifier", optional($._type_specifier)),
+      ":",
       field("expression", $._simple_expression),
     ),
 
@@ -267,31 +271,23 @@ module.exports = grammar({
       $.piped_expression
     ),
 
-    call_expression: $ => prec.right(PREC.FUNCTION, seq(
-      field("prefix", $._simple_expression),
-      choice(
-        field('type_arguments', $.type_field_list),
-        field("arguments", $.expression_list),
-        field('trailing_closure', $.function_body),
+    trailing_closure_list: $ => prec.right(seq(
+      $.function_body,
+      repeat(
         seq(
-          field("arguments", $.expression_list),
-          field('trailing_closure', $.function_body),
-        ),
-        seq(
-          field('type_arguments', $.type_field_list),
-          field("arguments", $.expression_list),
-        ),
-        seq(
-          field('type_arguments', $.type_field_list),
-          field('trailing_closure', $.function_body),
-        ),
-        seq(
-          field('type_arguments', $.type_field_list),
-          field("arguments", $.expression_list),
-          field('trailing_closure', $.function_body),
-        ),
-      ),
+          field("identifier", $.small_identifier),
+          ":",
+          $.function_body,
+        )
+      )
     )),
+
+    call_expression: $ => seq(
+      field("prefix", $._simple_expression),
+      optional(field('type_arguments', $.type_field_list)),
+      field("arguments", $.expression_list),
+      optional(field('trailing_closure_list', $.trailing_closure_list)),
+    ),
 
     initializer_expression: $ => seq(
       field("prefix", optional($.nominal)),

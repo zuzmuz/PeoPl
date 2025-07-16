@@ -1,14 +1,14 @@
-Basic: [
+Basic:: [
     a: Int
 ]
 
-Multiple: [
+Multiple:: [
     a: Int,
     b: Float,
     c: String
 ]
 
-Nested: [
+Nested:: [
     a: Int,
     d: [
         b: Float,
@@ -18,59 +18,59 @@ Nested: [
     ]
 ]
 
-Scoped::Basic: [
+Scoped\Basic:: [
     a: Int
 ]
 
-Scoped::Multiple::Times: [
+Scoped\Multiple\Times:: [
     a: Int,
     e: Bool
 ]
 
-ScopedTypes: [
+ScopedTypes:: [
     x: CG::Float,
     y: CG::Vector
 ]
 
-TypeWithNothing: [
+TypeWithNothing:: [
     m: _,
     n: Nothing
 ]
 
-Numbered: [
+Numbered:: [
     _1: One,
     _2: Two,
     _3: Three
 ]
 
-Tuple: [Int, Float, String, Bool, Nested::Scope, Multiple::Nested::Scope]
+Tuple:: [Int, Float, String, Bool, Nested\Scope, Multiple\Nested\Scope]
 
-Mix: [
+Mix:: [
     Int,
     named: Int,
     Float,
     other: Float
 ]
 
-Choice: choice [
+Choice:: choice [
     first, second, third    
 ]
 
-Shape: choice [
+Shape:: choice [
     circle: [radius: Float],
     rectangle: [width: Float, height: Float],
     triangle: [base: Float, height: Float]
 ]
 
-Graphix::Color: choice [
+Graphix\Color:: choice [
     rgb: [red: Float, green: Float, blue: Float],
     named: Graphix::ColorName,
     hsv: [hue: Float, saturation: Float, value: Float]
 ]
 
-Union: choice [Int, Float, String]
+Union:: choice [Int, Float, String]
 
-Nested::Stuff: [
+Nested\Stuff:: [
     first: choice [A, B, C],
     second: choice [a, b, c],
     mix: choice [First, second: Second, third: choice [_1, _2, _3]]
