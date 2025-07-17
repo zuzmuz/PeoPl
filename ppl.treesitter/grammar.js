@@ -22,6 +22,9 @@ module.exports = grammar({
   conflicts: $ => [
     // [$.nothing_value, $.nothing_type],
     // [$.nominal, $._simple_expression]
+    // [$.type_field_list, $.square_expression_list],
+    // [$.nominal],
+    // [$.call_expression]
   ],
 
   rules: {
@@ -84,7 +87,7 @@ module.exports = grammar({
 
     nominal: $ => seq(
       field('identifier', $.qualified_identifier),
-      optional(field('type_arguments', $.type_field_list)),
+      optional(field('type_arguments', $.square_expression_list)),
     ),
 
     record_type: $ => seq(
@@ -100,17 +103,24 @@ module.exports = grammar({
     function_type: $ => seq(
       "'func",
       optional(seq('(', field('input_type', $.type_field), ')')),
-      $._function_arguments
+      field("arguments", $.function_arguments),
+      "->",
+      field("output_type", $._type_specifier)
     ),
 
-    repeated_argument_list: $ => seq(
+    repeated_argument_list: $ => prec.right(seq(
       $.type_field_list,
       repeat1($.type_field_list)
-    ),
+    )),
 
-    _function_arguments: $ => choice(
+    function_arguments: $ => choice(
       field('arguments', $.type_field_list),
-      field('argument_list', $.repeated_argument_list)
+      prec.left(
+        seq(
+          field("argument_list", $.function_arguments),
+          field("arguments", $.type_field_list),
+        )
+      )
     ),
 
     type_field_list: $ => seq(
@@ -127,19 +137,19 @@ module.exports = grammar({
       ']'
     ),
 
-    // homogeneous_product: $ => seq(
-    //   field('type_specifier', $._type_specifier),
-    //   '**',
-    //   field('exponent', choice(
-    //     $.int_literal,
-    //     $.scoped_identifier
-    //   ))
-    // ),
+    homogeneous_product: $ => seq(
+      field('type_specifier', $._type_specifier),
+      '**',
+      field('exponent', choice(
+        $.int_literal,
+        $.qualified_identifier
+      ))
+    ),
 
     tagged_type_specifier: $ => seq(
       optional(field('hidden', '_')),
       field("identifier", $.identifier),
-      field("type", $._type_specifier),
+      field("type_specifier", $._type_specifier),
     ),
 
     type_field: $ => seq(
@@ -147,13 +157,15 @@ module.exports = grammar({
       choice(
         $.tagged_type_specifier,
         $._type_specifier,
-        // $.homogeneous_product
+        $.homogeneous_product
       )
     ),
 
     _expression: $ => choice(
       $._simple_expression,
-      $.tagged_expression
+      $.tagged_expression,
+      $.branched_expression,
+      $.piped_expression
     ),
 
     tagged_expression: $ => seq(
@@ -170,11 +182,61 @@ module.exports = grammar({
       $._type_specifier,
       $.parenthisized_expression,
       $.binding,
-      $.function_value
+      $.function_value,
+      $.call_expression
     ),
+
+    expression_list: $ => seq(
+      '(',
+        optional(
+          seq(
+            $._expression,
+            repeat(
+              seq(',', $._expression)
+            ),
+            optional(','),
+          ),
+        ),
+      ')'
+    ),
+
+    square_expression_list: $ => seq(
+      '[',
+        optional(
+          seq(
+            $._expression,
+            repeat(
+              seq(',', $._expression)
+            ),
+            optional(','),
+          ),
+        ),
+      ']'
+    ),
+
+    call_expression: $ => seq(
+      field("prefix", choice('.', $._simple_expression)),
+      field("arguments", $.expression_list),
+      optional(field('trailing_closure_list', $.trailing_closure_list)),
+    ),
+
+    trailing_closure_list: $ => prec.right(seq(
+      $.function_body,
+      repeat(
+        seq(
+          field("identifier", $.identifier),
+          ":",
+          $.function_body,
+        )
+      )
+    )),
 
     function_value: $ => seq(
       optional(field("function_signature", $.function_type)),
+      field("body", $.function_body)
+    ),
+
+    function_body: $ => seq(
       "{",
       $._expression,
       "}"
@@ -188,6 +250,37 @@ module.exports = grammar({
     )),
 
     binding: $ => /\$[a-zA-Z_][a-zA-Z0-9_]*/,
+
+    branched_expression: $ => prec.left(seq(
+      repeat1($.branch),
+    )),
+
+    branch: $ => seq(
+      $._branch_capture_group,
+      field("body", choice($._simple_expression, $.tagged_expression))
+    ),
+
+    _branch_capture_group: $ => seq(
+      '|', 
+      choice(
+        field("match_expression", choice($._simple_expression, $.tagged_expression)),
+        seq('if', field("guard_expression", $._simple_expression)),
+        seq(
+          field("match_expression", choice($._simple_expression, $.tagged_expression)),
+          'if', field("guard_expression", $._simple_expression)
+        ),
+      ),
+      '|',
+    ),
+
+    piped_expression: $ => prec.left(PREC.PIPE, seq(
+        field("left", $._expression),
+        field("operator", choice($.pipe_operator, $.optional_pipe_operator)),
+        field("right", $._expression),
+    )),
+
+    pipe_operator: $ => '|>',
+    optional_pipe_operator: $ => seq('?', '|>'),
 
     // Literals
     // --------

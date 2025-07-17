@@ -1,9 +1,11 @@
-A\sdf\Ssdf: [t Type] => 'choice [
+A\sdf\Ssdf: [t Type\sdf] => 'choice [
     x A,
     x B,
 ]
 
 
-x: [t Tyo] => 'func (Int) [sd aa, sd as] [s] { s }
+x: [t Tyo] => 'func (Int) [sd aa, sd as] [s] -> sdf [d: sdf ] { 
+.(sd: sdf, sdf: sdf)
+}
 
 xc: nothing

@@ -6,6 +6,19 @@
  "'public"
 ] @keyword.type
 
+(tagged_type_specifier
+  identifier: (identifier) @variable.member)
+
+; (tagged_type_specifier
+;   type_specifier: (nominal
+;                     identifier: (qualified_identifier
+;                                   identifier: (identifier) @type.definition)))
+(tagged_expression
+  identifier: (identifier) @variable.member)
+
+(qualified_identifier
+  identifier: (identifier) @type.definition)
+
 
 (int_literal) @number
 (bool_literal) @boolean
