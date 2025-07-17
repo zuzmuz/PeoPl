@@ -92,29 +92,33 @@
           }
         },
         {
-          "type": "SEQ",
-          "members": [
-            {
-              "type": "FIELD",
-              "name": "scope",
-              "content": {
-                "type": "SYMBOL",
-                "name": "scoped_big_identifier"
+          "type": "PREC_LEFT",
+          "value": 0,
+          "content": {
+            "type": "SEQ",
+            "members": [
+              {
+                "type": "FIELD",
+                "name": "scope",
+                "content": {
+                  "type": "SYMBOL",
+                  "name": "scoped_big_identifier"
+                }
+              },
+              {
+                "type": "STRING",
+                "value": "\\"
+              },
+              {
+                "type": "FIELD",
+                "name": "identifier",
+                "content": {
+                  "type": "SYMBOL",
+                  "name": "small_identifier"
+                }
               }
-            },
-            {
-              "type": "STRING",
-              "value": "\\"
-            },
-            {
-              "type": "FIELD",
-              "name": "identifier",
-              "content": {
-                "type": "SYMBOL",
-                "name": "small_identifier"
-              }
-            }
-          ]
+            ]
+          }
         }
       ]
     },
@@ -179,10 +183,6 @@
           "value": ":"
         },
         {
-          "type": "STRING",
-          "value": ":"
-        },
-        {
           "type": "FIELD",
           "name": "definition",
           "content": {
@@ -234,10 +234,6 @@
               "type": "BLANK"
             }
           ]
-        },
-        {
-          "type": "STRING",
-          "value": ":"
         },
         {
           "type": "FIELD",
@@ -380,10 +376,6 @@
           }
         },
         {
-          "type": "STRING",
-          "value": ":"
-        },
-        {
           "type": "FIELD",
           "name": "type",
           "content": {
@@ -511,8 +503,17 @@
       "value": "Never"
     },
     "product": {
-      "type": "SYMBOL",
-      "name": "type_field_list"
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "STRING",
+          "value": "record"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "type_field_list"
+        }
+      ]
     },
     "sum": {
       "type": "SEQ",
@@ -767,41 +768,32 @@
       ]
     },
     "repeated_argument_list": {
-      "type": "SEQ",
-      "members": [
-        {
-          "type": "SYMBOL",
-          "name": "type_field_list"
-        },
-        {
-          "type": "REPEAT1",
-          "content": {
+      "type": "PREC_RIGHT",
+      "value": 0,
+      "content": {
+        "type": "SEQ",
+        "members": [
+          {
             "type": "SYMBOL",
             "name": "type_field_list"
+          },
+          {
+            "type": "REPEAT1",
+            "content": {
+              "type": "SYMBOL",
+              "name": "type_field_list"
+            }
           }
-        }
-      ]
+        ]
+      }
     },
     "_function_arguments": {
-      "type": "CHOICE",
-      "members": [
-        {
-          "type": "FIELD",
-          "name": "arguments",
-          "content": {
-            "type": "SYMBOL",
-            "name": "type_field_list"
-          }
-        },
-        {
-          "type": "FIELD",
-          "name": "argument_list",
-          "content": {
-            "type": "SYMBOL",
-            "name": "repeated_argument_list"
-          }
-        }
-      ]
+      "type": "FIELD",
+      "name": "arguments",
+      "content": {
+        "type": "SYMBOL",
+        "name": "type_field_list"
+      }
     },
     "function": {
       "type": "SEQ",
@@ -890,10 +882,6 @@
             "type": "SYMBOL",
             "name": "small_identifier"
           }
-        },
-        {
-          "type": "STRING",
-          "value": ":"
         },
         {
           "type": "FIELD",
@@ -1848,6 +1836,10 @@
     [
       "nothing_value",
       "nothing_type"
+    ],
+    [
+      "scoped_identifier",
+      "tagged_expression"
     ]
   ],
   "precedences": [],
