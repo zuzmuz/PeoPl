@@ -1,7 +1,9 @@
-A:: namespace
+A\sdf\Ssdf: [t Type] => 'choice [
+    x A,
+    x B,
+]
 
 
+x: [t Tyo] => 'func (Int) [sd aa, sd as] [s] { s }
 
-Adf:: [a: Int, x: Int]
-
-s: Int:  3
+xc: nothing
