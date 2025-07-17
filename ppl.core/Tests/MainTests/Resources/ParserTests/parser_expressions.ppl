@@ -32,7 +32,7 @@ gcd: 'func [a: Int, b: Int] -> Int {
     |if a > b| gcd(a: a - b, b: b)
 }
 
-allCaptures:: (Some\Object) -> Some\Other\Object {
+allCaptures: 'func (Some\Object)[] -> Some\Other\Object {
     |Default\value| Default\value
     |.(d: $a, c: $c, s: $s, t: $t, r: $r, c: $c, t: $t)| a + c + s + t + r + c + t
     |n: (s: (t: (d: $value)))| value
@@ -51,7 +51,7 @@ allExpressionTypes: 'func [] -> _ {
     |0| log.error("in is zero")
 }
 
-unaries:: (Int) -> Int {
+unaries: 'func (Int)[] -> Int {
     + 2 |>
     - 4 |>
     * 2 |>

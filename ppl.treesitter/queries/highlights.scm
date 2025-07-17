@@ -1,9 +1,9 @@
 [
  "'choice"
- "'record"
+ "'"
  "'func"
- "'local"
- "'public"
+ "local"
+ "public"
 ] @keyword.type
 
 (tagged_type_specifier
@@ -19,6 +19,11 @@
 (qualified_identifier
   identifier: (identifier) @type.definition)
 
+(access_expression
+  field: (identifier) @function.call)
+
+(trailing_closure_list
+  identifier: (identifier) @variable.member)
 
 (int_literal) @number
 (bool_literal) @boolean
@@ -31,8 +36,8 @@
 (not_operator) @operator
 (and_operator) @operator
 (or_operator) @operator
-; (pipe_operator) @operator
-; (optional_pipe_operator) @operator
+(pipe_operator) @operator
+(optional_pipe_operator) @operator
 
 ; [
 ;   ; "^"
@@ -41,13 +46,13 @@
 ; ] @keyword.operator
 
 [
-  ; "("
-  ; ")"
+  "("
+  ")"
   "["
   "]"
   "{"
   "}"
-  ; "|"
+  "|"
 ] @punctuation.bracket
 
 [
@@ -55,7 +60,7 @@
  ; "."
  "\\"
  ","
- ; "->"
+ "->"
  "=>"
 ] @punctuation.delimiter
 
@@ -65,10 +70,10 @@
 
 ; (nothing_type) @constant.builtin
 ; (never_type) @constant.builtin
-(nothing_value) @constant.builtin
+(nothing) @constant.builtin
 ; (never_value) @constant.builtin
 
 (binding) @function.call
-; "if" @keyword.control
+"if" @keyword.control
 
 (comment) @comment

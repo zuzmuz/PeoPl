@@ -1,4 +1,5 @@
 const PREC = {
+  ACCESS: 50,
   FUNCTION: 30,
   PARENTHESIS: 20,
   UNARY: 10,
@@ -20,11 +21,7 @@ module.exports = grammar({
   ],
 
   conflicts: $ => [
-    // [$.nothing_value, $.nothing_type],
-    // [$.nominal, $._simple_expression]
-    // [$.type_field_list, $.square_expression_list],
-    // [$.nominal],
-    // [$.call_expression]
+    [$._type_specifier, $.function_value]
   ],
 
   rules: {
@@ -59,8 +56,8 @@ module.exports = grammar({
     // -----------
     
     access_modifier: $ => choice(
-      "'local",
-      "'public"
+      "local",
+      "public"
     ),
 
     definition: $ => seq(
@@ -82,7 +79,8 @@ module.exports = grammar({
       $.record_type,
       $.choice_type,
       $.nominal,
-      $.function_type
+      $.function_type,
+      $.nothing,
     ),
 
     nominal: $ => seq(
@@ -91,7 +89,7 @@ module.exports = grammar({
     ),
 
     record_type: $ => seq(
-      "'record",
+      "'",
       $.type_field_list,
     ),
 
@@ -153,7 +151,7 @@ module.exports = grammar({
     ),
 
     type_field: $ => seq(
-      optional(field('access_modifier', 'private')),
+      optional(field('access_modifier', $.access_modifier)),
       choice(
         $.tagged_type_specifier,
         $._type_specifier,
@@ -183,8 +181,16 @@ module.exports = grammar({
       $.parenthisized_expression,
       $.binding,
       $.function_value,
-      $.call_expression
+      $.call_expression,
+      $.access_expression,
     ),
+
+    access_expression: $ => prec.right(PREC.ACCESS, seq(
+      field("prefix", $._simple_expression),
+      '.',
+      field("field", $.identifier),
+    )),
+
 
     expression_list: $ => seq(
       '(',
@@ -214,11 +220,17 @@ module.exports = grammar({
       ']'
     ),
 
-    call_expression: $ => seq(
+    call_expression: $ => prec.right(PREC.FUNCTION, seq(
       field("prefix", choice('.', $._simple_expression)),
-      field("arguments", $.expression_list),
-      optional(field('trailing_closure_list', $.trailing_closure_list)),
-    ),
+      choice(
+        field("arguments", $.expression_list),
+        field("trailing_closure_list", $.trailing_closure_list),
+        seq(
+          field("arguments", $.expression_list),
+          field("trailing_closure_list", $.trailing_closure_list),
+        )
+      )
+    )),
 
     trailing_closure_list: $ => prec.right(seq(
       $.function_body,
@@ -286,7 +298,6 @@ module.exports = grammar({
     // --------
 
     literal: $ => choice(
-      $.nothing_value,
       // $.never_value,
       $.int_literal,
       $.float_literal,
@@ -294,7 +305,7 @@ module.exports = grammar({
       $.bool_literal,
     ),
 
-    nothing_value: _ => choice("nothing", '_'),
+    nothing: _ => choice("nothing", '_'),
     // never_value: _ => "never",
 
     int_literal: $ => token(choice(

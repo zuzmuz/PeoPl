@@ -1,22 +1,26 @@
 [
   {
-    "type": "access_modifier",
-    "named": true,
-    "fields": {}
-  },
-  {
-    "type": "additive_operator",
-    "named": true,
-    "fields": {}
-  },
-  {
-    "type": "binary_expression",
+    "type": "access_expression",
     "named": true,
     "fields": {
-      "left": {
+      "field": {
         "multiple": false,
         "required": true,
         "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      },
+      "prefix": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "access_expression",
+            "named": true
+          },
           {
             "type": "binary_expression",
             "named": true
@@ -47,6 +51,84 @@
           },
           {
             "type": "nominal",
+            "named": true
+          },
+          {
+            "type": "nothing",
+            "named": true
+          },
+          {
+            "type": "parenthisized_expression",
+            "named": true
+          },
+          {
+            "type": "record_type",
+            "named": true
+          },
+          {
+            "type": "unary_expression",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "access_modifier",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "additive_operator",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "binary_expression",
+    "named": true,
+    "fields": {
+      "left": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "access_expression",
+            "named": true
+          },
+          {
+            "type": "binary_expression",
+            "named": true
+          },
+          {
+            "type": "binding",
+            "named": true
+          },
+          {
+            "type": "call_expression",
+            "named": true
+          },
+          {
+            "type": "choice_type",
+            "named": true
+          },
+          {
+            "type": "function_type",
+            "named": true
+          },
+          {
+            "type": "function_value",
+            "named": true
+          },
+          {
+            "type": "literal",
+            "named": true
+          },
+          {
+            "type": "nominal",
+            "named": true
+          },
+          {
+            "type": "nothing",
             "named": true
           },
           {
@@ -94,6 +176,10 @@
         "required": true,
         "types": [
           {
+            "type": "access_expression",
+            "named": true
+          },
+          {
             "type": "binary_expression",
             "named": true
           },
@@ -123,6 +209,10 @@
           },
           {
             "type": "nominal",
+            "named": true
+          },
+          {
+            "type": "nothing",
             "named": true
           },
           {
@@ -155,6 +245,10 @@
         "required": true,
         "types": [
           {
+            "type": "access_expression",
+            "named": true
+          },
+          {
             "type": "binary_expression",
             "named": true
           },
@@ -184,6 +278,10 @@
           },
           {
             "type": "nominal",
+            "named": true
+          },
+          {
+            "type": "nothing",
             "named": true
           },
           {
@@ -209,6 +307,10 @@
         "required": false,
         "types": [
           {
+            "type": "access_expression",
+            "named": true
+          },
+          {
             "type": "binary_expression",
             "named": true
           },
@@ -238,6 +340,10 @@
           },
           {
             "type": "nominal",
+            "named": true
+          },
+          {
+            "type": "nothing",
             "named": true
           },
           {
@@ -259,6 +365,10 @@
         "required": false,
         "types": [
           {
+            "type": "access_expression",
+            "named": true
+          },
+          {
             "type": "binary_expression",
             "named": true
           },
@@ -288,6 +398,10 @@
           },
           {
             "type": "nominal",
+            "named": true
+          },
+          {
+            "type": "nothing",
             "named": true
           },
           {
@@ -331,7 +445,7 @@
     "fields": {
       "arguments": {
         "multiple": false,
-        "required": true,
+        "required": false,
         "types": [
           {
             "type": "expression_list",
@@ -346,6 +460,10 @@
           {
             "type": ".",
             "named": false
+          },
+          {
+            "type": "access_expression",
+            "named": true
           },
           {
             "type": "binary_expression",
@@ -377,6 +495,10 @@
           },
           {
             "type": "nominal",
+            "named": true
+          },
+          {
+            "type": "nothing",
             "named": true
           },
           {
@@ -444,6 +566,10 @@
         "required": true,
         "types": [
           {
+            "type": "access_expression",
+            "named": true
+          },
+          {
             "type": "binary_expression",
             "named": true
           },
@@ -473,6 +599,10 @@
           },
           {
             "type": "nominal",
+            "named": true
+          },
+          {
+            "type": "nothing",
             "named": true
           },
           {
@@ -526,6 +656,10 @@
             "named": true
           },
           {
+            "type": "nothing",
+            "named": true
+          },
+          {
             "type": "record_type",
             "named": true
           }
@@ -541,6 +675,10 @@
       "multiple": true,
       "required": false,
       "types": [
+        {
+          "type": "access_expression",
+          "named": true
+        },
         {
           "type": "binary_expression",
           "named": true
@@ -575,6 +713,10 @@
         },
         {
           "type": "nominal",
+          "named": true
+        },
+        {
+          "type": "nothing",
           "named": true
         },
         {
@@ -635,6 +777,10 @@
       "required": true,
       "types": [
         {
+          "type": "access_expression",
+          "named": true
+        },
+        {
           "type": "binary_expression",
           "named": true
         },
@@ -668,6 +814,10 @@
         },
         {
           "type": "nominal",
+          "named": true
+        },
+        {
+          "type": "nothing",
           "named": true
         },
         {
@@ -731,6 +881,10 @@
           },
           {
             "type": "nominal",
+            "named": true
+          },
+          {
+            "type": "nothing",
             "named": true
           },
           {
@@ -802,6 +956,10 @@
             "named": true
           },
           {
+            "type": "nothing",
+            "named": true
+          },
+          {
             "type": "record_type",
             "named": true
           }
@@ -827,10 +985,6 @@
         },
         {
           "type": "int_literal",
-          "named": true
-        },
-        {
-          "type": "nothing_value",
           "named": true
         },
         {
@@ -872,7 +1026,7 @@
     }
   },
   {
-    "type": "nothing_value",
+    "type": "nothing",
     "named": true,
     "fields": {}
   },
@@ -889,6 +1043,10 @@
       "multiple": false,
       "required": true,
       "types": [
+        {
+          "type": "access_expression",
+          "named": true
+        },
         {
           "type": "binary_expression",
           "named": true
@@ -923,6 +1081,10 @@
         },
         {
           "type": "nominal",
+          "named": true
+        },
+        {
+          "type": "nothing",
           "named": true
         },
         {
@@ -962,6 +1124,10 @@
         "required": true,
         "types": [
           {
+            "type": "access_expression",
+            "named": true
+          },
+          {
             "type": "binary_expression",
             "named": true
           },
@@ -995,6 +1161,10 @@
           },
           {
             "type": "nominal",
+            "named": true
+          },
+          {
+            "type": "nothing",
             "named": true
           },
           {
@@ -1038,6 +1208,10 @@
         "required": true,
         "types": [
           {
+            "type": "access_expression",
+            "named": true
+          },
+          {
             "type": "binary_expression",
             "named": true
           },
@@ -1071,6 +1245,10 @@
           },
           {
             "type": "nominal",
+            "named": true
+          },
+          {
+            "type": "nothing",
             "named": true
           },
           {
@@ -1163,6 +1341,10 @@
       "required": false,
       "types": [
         {
+          "type": "access_expression",
+          "named": true
+        },
+        {
           "type": "binary_expression",
           "named": true
         },
@@ -1199,6 +1381,10 @@
           "named": true
         },
         {
+          "type": "nothing",
+          "named": true
+        },
+        {
           "type": "parenthisized_expression",
           "named": true
         },
@@ -1230,6 +1416,10 @@
         "required": true,
         "types": [
           {
+            "type": "access_expression",
+            "named": true
+          },
+          {
             "type": "binary_expression",
             "named": true
           },
@@ -1259,6 +1449,10 @@
           },
           {
             "type": "nominal",
+            "named": true
+          },
+          {
+            "type": "nothing",
             "named": true
           },
           {
@@ -1299,6 +1493,10 @@
           },
           {
             "type": "nominal",
+            "named": true
+          },
+          {
+            "type": "nothing",
             "named": true
           },
           {
@@ -1350,6 +1548,10 @@
             "named": true
           },
           {
+            "type": "nothing",
+            "named": true
+          },
+          {
             "type": "record_type",
             "named": true
           }
@@ -1392,8 +1594,8 @@
         "required": false,
         "types": [
           {
-            "type": "private",
-            "named": false
+            "type": "access_modifier",
+            "named": true
           }
         ]
       }
@@ -1416,6 +1618,10 @@
         },
         {
           "type": "nominal",
+          "named": true
+        },
+        {
+          "type": "nothing",
           "named": true
         },
         {
@@ -1453,6 +1659,10 @@
         "required": true,
         "types": [
           {
+            "type": "access_expression",
+            "named": true
+          },
+          {
             "type": "binary_expression",
             "named": true
           },
@@ -1482,6 +1692,10 @@
           },
           {
             "type": "nominal",
+            "named": true
+          },
+          {
+            "type": "nothing",
             "named": true
           },
           {
@@ -1539,23 +1753,15 @@
     "named": false
   },
   {
+    "type": "'",
+    "named": false
+  },
+  {
     "type": "'choice",
     "named": false
   },
   {
     "type": "'func",
-    "named": false
-  },
-  {
-    "type": "'local",
-    "named": false
-  },
-  {
-    "type": "'public",
-    "named": false
-  },
-  {
-    "type": "'record",
     "named": false
   },
   {
@@ -1679,6 +1885,10 @@
     "named": true
   },
   {
+    "type": "local",
+    "named": false
+  },
+  {
     "type": "not_operator",
     "named": true
   },
@@ -1691,7 +1901,7 @@
     "named": true
   },
   {
-    "type": "private",
+    "type": "public",
     "named": false
   },
   {

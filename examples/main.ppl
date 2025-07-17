@@ -4,8 +4,14 @@ A\sdf\Ssdf: [t Type\sdf] => 'choice [
 ]
 
 
-x: [t Tyo] => 'func (Int) [sd aa, sd as] [s] -> sdf [d: sdf ] { 
-.(sd: sdf, sdf: sdf)
+x: [t Tyo] => 'func (Int) [sd aa, sd as] [s] -> nothing { 
+    1 + 2 * 3 + 2 - x(3)()()() * 3().sdf()
+    |> sdf + ss - as { sdf } a: { _ }
 }
 
 xc: nothing
+
+Result: [S, E Error] => 'choice [
+    sucess S,
+    error E
+]
