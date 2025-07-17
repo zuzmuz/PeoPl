@@ -5,11 +5,15 @@
 * Table of content :toc:
 - [[#what-is-peopl][What is PeoPl]]
 - [[#a-peopl-file][A Peopl File]]
-- [[#functions-not-really][Functions (Not really)]]
+- [[#comments][Comments]]
+- [[#functions-intro][Functions (intro)]]
   - [[#expressions][Expressions]]
   - [[#pipes][Pipes]]
-  - [[#input-capturing-in-pipelines][Input Capturing in Pipelines]]
+- [[#values][Values]]
+  - [[#literals][Literals]]
+  - [[#primitives][Primitives]]
   - [[#operations-and-operators][Operations and operators]]
+  - [[#input-capturing-in-pipelines][Input Capturing in Pipelines]]
   - [[#pattern-matching][Pattern Matching]]
   - [[#piping-complex-data-structures][Piping Complex Data Structures]]
 - [[#functions][Functions]]
@@ -67,7 +71,24 @@ This is how functions are defined
 
 More on [[#functions][functions]] later.
 
-* Functions (Not really)
+* Comments
+Let's get this out of the way, start a comment by writing two forward slashes.
+Multiline comments are not supported. Because I didn't bother implementing them.
+The actual reason is a opinionated one. I don't use them, and I don't think anyone should.
+They introduce the problem of nesting multiline comment blocks. In C, this is not possible.
+A language designer might decide to support nested multiline comments, why bother.
+They're only useful when commenting a small region, a part of a line. Even if this case,
+thi doesn't justify their existence.
+
+
+#+BEGIN_SRC peopl
+  // this is a comment
+  main: 'func [] -> Int { // this is also a comment
+      0
+  }
+#+END_SRC
+
+* Functions (intro)
 It wasn't that later.
 
 Functions are blocks of expressions that most commonly run at runtime.
@@ -129,6 +150,69 @@ PeoPl's expression-only design eliminates the statement/expression dichotomy fou
 
 We'll get into more details about [[#How Piping Works][piping]] later
 
+* Values
+Before getting into expressions and pipelines, let's discuss values.
+Values are expressions, the elemental expressions.
+The take on input, and return themselves as output.
+** Literals
+First example of values are literals
+
+#+BEGIN_SRC peopl
+  2                       // integer literal
+  1_000_000               // _ is supported to separate long integer numbers
+  0xFF468A                // hex integer litera
+  0xABCD_1234_AFDE_0987   // hex also supports _
+  0b1010_1010_1110        // binary
+  0o1727432               // octal
+
+  0.234                   // floating point literal
+
+  "sdfsdfsdf"             // string literal, they are multiline by default (don't know if this is a good idea)
+
+  true                    // boolean literal
+  false                   // boolean literal
+
+  nothing                 // the nothing literal, value representing the unit type, the empty tuple
+  _                       // alias to the nothing literal
+#+END_SRC
+
+** Primitives
+PeoPl's primitives are intrinsic, part of the inner logic of the compiler.
+They are not exposed to the user of the language.
+Instead, wrapper nominal types are available, that can be used as regular types
+| Type | intrinsic  |
+|------+------------|
+| I8   | int8/byte  |
+| I16  | int16      |
+| I32  | int32      |
+| I64  | int64      |
+| U8   | uint8/char |
+| U16  | uint16     |
+| U32  | uint32     |
+| I64  | int64      |
+| F32  | float32    |
+| F64  | float64    |
+
+The idea behind hiding primitives away from users is that primitives are treated like every other type.
+The can be extended and used like every other type, thee difference lies in how the eventual compiled program behaves.
+
+** Operations and operators
+The second building blocks are operations.
+This is a list of all operators
+- multiplicative operators, `*, /, %`
+- additive operators, `+, -`
+- comparative operators, `=, >=, >, <=, <`
+- logic operators `and or not`
+
+  
+This is a list of legal operations in PeoPl
+- unary: `operator operand`, if the unary expression has a valid input, it will apply the operation
+- binary: `lhs operator rhs`
+
+PeoPl interestingly allows a unary expressions to be formed by any type of operator, not just the additive ones.
+For example `*3` is a valid expression and it represents an expression where its input should be an integer
+and it returns the result of the multiplication of the input and 3.
+  
 ** Input Capturing in Pipelines
 
 PeoPl doesn't support assignments. It's crazy right.
@@ -143,18 +227,6 @@ This is done using the input capture syntax with the vertical bar notation `|$na
 |> |$value| value = value.reverse() // Returns true (palindrome check)
 #+END_SRC
 
-** Operations and operators
-This is a list of all operators
-- multiplicative operators, `*, /, %`
-- additive operators, `+, -`
-- comparative operators, `=, >=, >, <=, <`
-- logic operators `and or not`
-
-  
-This is a list of legal operations in PeoPl
-- unary: `operator operand`, if the unary expression has a valid input, it will apply the operation
-- binary: `lhs operator rhs`
-  
 ** Pattern Matching
 Input capturing is pattern matching.
 In the previous example, the output of `toString()` is matched with the label value.
