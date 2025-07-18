@@ -2,7 +2,8 @@
 #+AUTHOR: Zaher Hamadeh
 
 * Table Of Content :toc:
-- [[#the-language][The language]]
+- [[#the-language-overview][The Language Overview]]
+- [[#the-manifesto][The Manifesto]]
 - [[#why][Why]]
 - [[#what][What]]
   - [[#the-basics][The basics]]
@@ -11,8 +12,8 @@
 
 * [[file:docs/overview.org][The Language Overview]]
 
-Coders of the world unite; 
-You have nothing to lose but years of working on legacy projects and suffering from technical debt
+* [[file:docs/TheMainfesto.org][The Manifesto]]
+Check the manifesto
 
 * Why
 Just for fun.
