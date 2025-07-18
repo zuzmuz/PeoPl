@@ -7,52 +7,52 @@ enum LspCommand: String {
     case socket
 }
 
-extension Syntax.Error {
-    var diagnosticMessage: String {
-        switch self {
-        case let .errorParsing(element, _):
-            element
-        case let .notImplemented(element, _):
-            "\(element) not implemented"
-        case .languageNotSupported:
-            "well something is terribly wrong here"
-        case .rangeNotInContent:
-            "oops range went out of bounds here, don't know how that happened"
-        case .sourceUnreadable:
-            "well something's wrong with you"
-        }
-    }
+// extension Syntax.Error {
+//     var diagnosticMessage: String {
+//         switch self {
+//         case let .errorParsing(element, _):
+//             element
+//         case let .notImplemented(element, _):
+//             "\(element) not implemented"
+//         case .languageNotSupported:
+//             "well something is terribly wrong here"
+//         case .rangeNotInContent:
+//             "oops range went out of bounds here, don't know how that happened"
+//         case .sourceUnreadable:
+//             "well something's wrong with you"
+//         }
+//     }
+//
+//     var lspRange: Lsp.Range {
+//         switch self {
+//         case .rangeNotInContent, .languageNotSupported, .sourceUnreadable:
+//             return .init(
+//                 start: .init(line: 0, character: 0),
+//                 end: .init(line: 0, character: 0))
+//         case .notImplemented(_, let location),
+//             .errorParsing(_, let location):
+//             return .init(
+//                 start: .init(
+//                     line: location.pointRange.lowerBound.line,
+//                     character: location.pointRange.lowerBound.column / 2),
+//                 end: .init(
+//                     line: location.pointRange.upperBound.line,
+//                     character: location.pointRange.upperBound.column / 2))
+//         }
+//     }
+// }
 
-    var lspRange: Lsp.Range {
-        switch self {
-        case .rangeNotInContent, .languageNotSupported, .sourceUnreadable:
-            return .init(
-                start: .init(line: 0, character: 0),
-                end: .init(line: 0, character: 0))
-        case .notImplemented(_, let location),
-            .errorParsing(_, let location):
-            return .init(
-                start: .init(
-                    line: location.pointRange.lowerBound.line,
-                    character: location.pointRange.lowerBound.column / 2),
-                end: .init(
-                    line: location.pointRange.upperBound.line,
-                    character: location.pointRange.upperBound.column / 2))
-        }
-    }
-}
-
-extension Semantic.Error {
-    var diagnosticMessage: String {
-        "what"
-    }
-
-    var lspRange: Lsp.Range {
-        return .init(
-            start: .init(line: 0, character: 0),
-            end: .init(line: 0, character: 0))
-    }
-}
+// extension Semantic.Error {
+//     var diagnosticMessage: String {
+//         "what"
+//     }
+//
+//     var lspRange: Lsp.Range {
+//         return .init(
+//             start: .init(line: 0, character: 0),
+//             end: .init(line: 0, character: 0))
+//     }
+// }
 
 enum PpLsp {
     actor Handler<L: Utils.Logger, P: Syntax.ModuleParser>: Lsp.Handler {
@@ -128,13 +128,13 @@ enum PpLsp {
 
             for (moduleUri, module) in modules {
                 if moduleUri == uri {
-                    diagnostics.append(
-                        contentsOf: module.syntaxErrors.map { error in
-                            .init(
-                                range: error.lspRange,
-                                severity: .error,
-                                message: error.localizedDescription)
-                        })
+                    // diagnostics.append(
+                    //     contentsOf: module.syntaxErrors.map { error in
+                    //         .init(
+                    //             range: error.lspRange,
+                    //             severity: .error,
+                    //             message: error.localizedDescription)
+                    //     })
                 }
             }
             //
