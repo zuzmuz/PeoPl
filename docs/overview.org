@@ -44,6 +44,7 @@ Programs are constructed as pipelines of operations,
 where each operation receives data, transforms it, and passes it forward.
 
 Check [[file:../examples/main.ppl][this file]] for a comprehensive list of a PeoPl features.
+
 * A Peopl File
 
 A PeoPl source file ends with the file extension `ppl`.
