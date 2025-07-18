@@ -12,7 +12,7 @@
 
 * [[file:docs/overview.org][The Language Overview]]
 
-* [[file:docs/TheMainfesto.org][The Manifesto]]
+* [[file:docs/TheManifesto.org][The Manifesto]]
 Check the manifesto
 
 * Why

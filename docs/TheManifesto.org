@@ -59,10 +59,10 @@ Safety must be achieved through good design, not by making the language difficul
 
 *** /Never/ sacrifice /safety/ for performance
 
-Programs must be safe by default
-No undefined behavior
-No easy foot guns
-Correct behavior takes precedence over raw speed
+- Programs must be safe by default
+- No undefined behavior
+- No easy foot guns
+- Correct behavior takes precedence over raw speed
 
 *** /Never/ sacrifice /performance/ for ergonomics
 
@@ -75,9 +75,9 @@ These 3 rules provide checks and balances between the 3 branches of PeoPl's core
 ** Accessibility Priorities
 For developer adoption and experience:
 
-Accessible - Easy to learn and approach
-Discoverable - Features and capabilities are findable
-Available - Tooling and resources are readily accessible
+- Accessible - Easy to learn and approach
+- Discoverable - Features and capabilities are findable
+- Available - Tooling and resources are readily accessible
 
 
 * III. Technical Decisions
@@ -85,16 +85,16 @@ Available - Tooling and resources are readily accessible
 ** The Compiler as Ally
 The compiler serves the programmer. Error messages are helpful, diagnostics are actionable, and the toolchain guides rather than obstructs development.
 
-The grammar should stay simple with orthogonal concepts
-The semantics can be progressively complex as long as the syntax is simple
-This reduces cognitive load and parsing ambiguity
+- The grammar should stay simple with orthogonal concepts.
+- The semantics can be progressively complex as long as the syntax is simple
+- This reduces cognitive load and parsing ambiguity
 
 ** Be Opinionated
 The language makes principled decisions rather than trying to accommodate every possible approach. We choose:
 
-Clarity over universality
-Coherence over compatibility
-Consistent design over backward compatibility
+- Clarity over universality
+- Coherence over compatibility
+- Consistent design over backward compatibility
 
 ** Things That are Different Should Look Different
 Different concepts should look different to avoid ambiguity.
