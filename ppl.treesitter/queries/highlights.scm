@@ -1,7 +1,6 @@
 [
- "'choice"
- "'"
- "'func"
+ "choice"
+ "func"
  "local"
  "public"
 ] @keyword.type

@@ -458,7 +458,7 @@
         "required": true,
         "types": [
           {
-            "type": ".",
+            "type": "'",
             "named": false
           },
           {
@@ -1757,14 +1757,6 @@
     "named": false
   },
   {
-    "type": "'choice",
-    "named": false
-  },
-  {
-    "type": "'func",
-    "named": false
-  },
-  {
     "type": "(",
     "named": false
   },
@@ -1861,6 +1853,10 @@
     "named": true
   },
   {
+    "type": "choice",
+    "named": false
+  },
+  {
     "type": "comment",
     "named": true
   },
@@ -1871,6 +1867,10 @@
   {
     "type": "float_literal",
     "named": true
+  },
+  {
+    "type": "func",
+    "named": false
   },
   {
     "type": "identifier",

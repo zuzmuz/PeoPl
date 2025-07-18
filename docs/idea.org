@@ -1,3 +1,0 @@
-
-* Potentials
-- a using syntax block for namespacing and scoping

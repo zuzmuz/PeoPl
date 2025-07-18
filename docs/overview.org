@@ -6,13 +6,16 @@
 - [[#what-is-peopl][What is PeoPl]]
 - [[#a-peopl-file][A Peopl File]]
 - [[#comments][Comments]]
-- [[#functions-intro][Functions (intro)]]
-  - [[#expressions][Expressions]]
+- [[#expressions-intro][Expressions (intro)]]
   - [[#pipes][Pipes]]
 - [[#values][Values]]
   - [[#literals][Literals]]
   - [[#primitives][Primitives]]
+- [[#operations][Operations]]
   - [[#operations-and-operators][Operations and operators]]
+- [[#how-piping-works][How Piping Works]]
+  - [[#data-flow][Data flow]]
+  - [[#piping][Piping]]
   - [[#input-capturing-in-pipelines][Input Capturing in Pipelines]]
   - [[#pattern-matching][Pattern Matching]]
   - [[#piping-complex-data-structures][Piping Complex Data Structures]]
@@ -20,8 +23,7 @@
   - [[#functions-with-inputs][Functions with inputs]]
   - [[#function-arguments][Function arguments]]
   - [[#calling-functions][Calling functions]]
-- [[#program-structure][Program structure]]
-  - [[#definitions][Definitions]]
+- [[#definitions][Definitions]]
   - [[#types][Types]]
   - [[#records-tuples][Records, Tuples]]
   - [[#choices-enums-tagged-unions][Choices, Enums, Tagged Unions]]
@@ -41,6 +43,7 @@ Here are the features highlights:
 Programs are constructed as pipelines of operations,
 where each operation receives data, transforms it, and passes it forward.
 
+Check [[file:../examples/main.ppl][this file]] for a comprehensive list of a PeoPl features.
 * A Peopl File
 
 A PeoPl source file ends with the file extension `ppl`.
@@ -88,16 +91,8 @@ thi doesn't justify their existence.
   }
 #+END_SRC
 
-* Functions (intro)
-It wasn't that later.
+* Expressions (intro)
 
-Functions are blocks of expressions that most commonly run at runtime.
-Similar to bash programs, each function has an input, extra arguments, and returns an output.
-In bash, the input and output are usually text, coming from stdin and going to stdout.
-However in PeoPl, inputs and outputs are structured types.
-More on [[#types][types]] later.
-
-** Expressions
 Before dealing with functions we need to cover expressions.
 A function body is comprised of and only expressions.
 Expressions are like functions, in a sense that they can take an input, and always return an output.
@@ -148,7 +143,7 @@ In code piping is performed using the pipe operator known in functional programm
 
 PeoPl's expression-only design eliminates the statement/expression dichotomy found in many languages.
 
-We'll get into more details about [[#How Piping Works][piping]] later
+We'll get into more details about [[#how-piping-works][piping]] later
 
 * Values
 Before getting into expressions and pipelines, let's discuss values.
@@ -176,6 +171,7 @@ First example of values are literals
   _                       // alias to the nothing literal
 #+END_SRC
 
+*** TODO String literals are not covered yet cause I haven't figured out how to implement them yet.
 ** Primitives
 PeoPl's primitives are intrinsic, part of the inner logic of the compiler.
 They are not exposed to the user of the language.
@@ -196,6 +192,7 @@ Instead, wrapper nominal types are available, that can be used as regular types
 The idea behind hiding primitives away from users is that primitives are treated like every other type.
 The can be extended and used like every other type, thee difference lies in how the eventual compiled program behaves.
 
+* Operations
 ** Operations and operators
 The second building blocks are operations.
 This is a list of all operators
@@ -212,7 +209,22 @@ This is a list of legal operations in PeoPl
 PeoPl interestingly allows a unary expressions to be formed by any type of operator, not just the additive ones.
 For example `*3` is a valid expression and it represents an expression where its input should be an integer
 and it returns the result of the multiplication of the input and 3.
-  
+
+* How Piping Works
+** Data flow
+Data flows through nodes, PeoPl is designed to have a powerful piping system.
+It utilizes simple and friendly syntax to enable powerful features
+- piping
+- pattern matching
+- destructuring
+- branching
+
+** Piping
+Piping is first class in PeoPl and behaves a litle bit like extension methods (in GO, Kotlin, Swift, Rust),
+or regular functions in functional programming languages.
+The distinction between functions in PeoPl and other functional programming languages is that,
+a function input is treated in a special way over other function arguments.
+
 ** Input Capturing in Pipelines
 
 PeoPl doesn't support assignments. It's crazy right.
@@ -311,7 +323,13 @@ Pattern matching and bindings can be performed on nested structures, used for de
 
 * Functions
 
-Functions are also expressions
+Functions are blocks of expressions that most commonly run at runtime.
+Similar to bash programs, each function has an input, extra arguments, and returns an output.
+In bash, the input and output are usually text, coming from stdin and going to stdout.
+However in PeoPl, inputs and outputs are structured types.
+More on [[#types][types]] later.
+
+
 #+BEGIN_SRC peopl
 thisReturns42: 'func [] -> Int {
   42
@@ -366,7 +384,7 @@ add(a: 1, b: 2) // Error: add expects nothing as input
 
 Function with nothing as input can be considered as static functions.
 
-* Program structure
+* Definitions
 
 Expressions are not allowed at a file top level.
 The need to be binded to a label.
@@ -382,7 +400,6 @@ main: 'func [] -> nothing { // main function
 The main function is the entry point of the program.
 Other definitions can exist alongside it.
 
-** Definitions
 Define a value using this syntax
 
 #+BEGIN_SRC peopl

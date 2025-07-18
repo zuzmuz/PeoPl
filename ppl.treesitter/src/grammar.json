@@ -224,6 +224,10 @@
       "type": "SEQ",
       "members": [
         {
+          "type": "STRING",
+          "value": "'"
+        },
+        {
           "type": "SYMBOL",
           "name": "type_field_list"
         }
@@ -234,7 +238,7 @@
       "members": [
         {
           "type": "STRING",
-          "value": "'choice"
+          "value": "choice"
         },
         {
           "type": "SYMBOL",
@@ -247,7 +251,7 @@
       "members": [
         {
           "type": "STRING",
-          "value": "'func"
+          "value": "func"
         },
         {
           "type": "CHOICE",
@@ -787,7 +791,7 @@
               "members": [
                 {
                   "type": "STRING",
-                  "value": "."
+                  "value": "'"
                 },
                 {
                   "type": "SYMBOL",

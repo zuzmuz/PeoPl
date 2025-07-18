@@ -1,17 +1,136 @@
-A\sdf\Ssdf: [t Type\sdf] => 'choice [
-    x A,
-    x B,
-]
 
+// Here's a basic definition
+// Definitions are constant, everything is
+basic: 42 // basic is an Int with the value 42
 
-x: [t Tyo] => 'func (Int) [sd aa, sd as] [s] -> nothing { 
-    1 + 2 * 3 + 2 - x(3)()()() * 3().sdf()
-    |> sdf + ss - as { sdf } a: { _ }
+mathExpression: 11 * 4 - 2
+
+Math\pi: 3.14 // a qualified floating point value
+
+name: "zuzmuz" // a string value
+
+trueValue: true // a boolean value
+falseValue: false // another boolean value
+
+nothingValue: nothing // a nothing value, used to indicate absence of value
+nothingValue2: _ // alias for nothing
+
+// main a function that takes no input and returns an integer
+main: func [] -> Int {
+    0
 }
 
-xc: nothing
+// functions can take parameters
+Math\multiply: func [a: Int, b: Int] -> Int {
+    a * b
+}
 
-Result: [S, E Error] => 'choice [
+// calling a function with arguments
+multuply2and4: Math\multiply(a: 2, b: 4) // functin arguments are named by default
+// multiplyResult is a compile time Int with the value 8
+
+// function with inputs
+Math\square: func (Int)[] -> Int {
+    *2
+}
+
+// calling a function with an input
+// object method syntax is possible, the identifier's scope is not needed
+squareOf5: 5.square() // squareOf5 is a compile time Int with the value 25
+// piping is also possible
+squareOf6: 6 |> Math\square() // squareOf6 is a compile time Int with the value 36
+
+fullFunction: func (InputType) [arg1: ArgType1, arg2: ArgType2] -> OutputType {
+    // function body
+    // can use arg1, arg2, and InputType
+    // return OutputType
+    output
+}
+
+// All allowed operations
+Math\operations: '(
+    plus: 2 + 4,       // addition (overflows)
+    minus: 3 - 1,      // substruction (underflows)
+    times: 7 * 3,      // multiplication (overflows)
+    by: 4 / 3,         // division
+    remainder: 10 % 3, // remainder
+)
+
+Comparison\operations: '(
+    equal: 2 = 2,          // equality
+    greater: 2 > 1,        // greater than
+    greaterOrEqual: 2 >= 2, // greater than or equal
+    less: 1 < 2,          // less than
+    lessOrEqual: 2 <= 2, // less than or equal
+)
+
+Logic\operations: '(
+    intersect: 2 = 2 and 3 > 1, // logical and
+    union: 2 = 2 or 3 < 1,      // logical or
+    inverse: not (2 = 2),       // logical not
+)
+
+// All operators can be used as binary and unary operators
+// beside not (which is only a unary operator)
+
+thisIsLegal: (
+    3
+    |> + 2
+    |> - 3
+    |> * 5
+    |> / 6
+    |> % 2
+    |> = 1
+    |> or (
+        3
+        |> > 5
+        |> and (
+            not (2 = 2)
+        )
+    )
+)
+
+// this is a stupid example
+
+
+// Types
+
+// tuples
+Geometry\Point: '[Float, Float]
+
+// records
+Geometry\Circle: '[
+    center: Geometry\Point,
+    radius: Float,
+]
+
+// enums
+Media\FileType: choice [
+    png _, jpg _
+]
+
+// unions
+Number: choice [
+    Int,
+    Float,
+]
+
+// tagged unions
+Geometry\Shape: choice [
+    circle Geometry\Circle,
+    triangle '[Geometry\Point, Geometry\Point, Geometry\Point],
+    rectangle '[
+        center Geometry\Point,
+        width Float, height Float,
+        orientation Float
+    ],
+]
+
+// generic types
+Result: [S, E Error] => choice [
     sucess S,
     error E
 ]
+Optional: [T] => choice [T, _]
+
+

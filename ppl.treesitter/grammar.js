@@ -94,12 +94,12 @@ module.exports = grammar({
     ),
 
     choice_type: $ => seq(
-      "'choice",
+      "choice",
       $.type_field_list,
     ),
 
     function_type: $ => seq(
-      "'func",
+      "func",
       optional(seq('(', field('input_type', $.type_field), ')')),
       field("arguments", $.function_arguments),
       "->",
@@ -221,7 +221,7 @@ module.exports = grammar({
     ),
 
     call_expression: $ => prec.right(PREC.FUNCTION, seq(
-      field("prefix", choice('.', $._simple_expression)),
+      field("prefix", choice("'", $._simple_expression)),
       choice(
         field("arguments", $.expression_list),
         field("trailing_closure_list", $.trailing_closure_list),

@@ -9,7 +9,7 @@
   - [[#the-not-so-basics][The not so basics]]
 - [[#state][State]]
 
-* [[file:docs/features.org][The language]]
+* [[file:docs/overview.org][The Language Overview]]
 
 Coders of the world unite; 
 You have nothing to lose but years of working on legacy projects and suffering from technical debt
