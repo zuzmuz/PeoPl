@@ -47,9 +47,9 @@ Powerful capabilities shall not be withheld from programmers. The language provi
 ** The Primary Hierarchy
 When design decisions conflict, prioritize in strict order:
 
-Expressiveness - The ability to clearly communicate programmer intent
-Safety - Prevention of undefined behavior and runtime errors
-Efficiency - Optimal resource utilization and performance
+- Expressiveness - The ability to clearly communicate programmer intent
+- Safety - Prevention of undefined behavior and runtime errors
+- Efficiency - Optimal resource utilization and performance
 
 ** Prohibited Trade-offs
 The following compromises are rejected:
