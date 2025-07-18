@@ -5,15 +5,16 @@
 - [[#the-language-overview][The Language Overview]]
 - [[#the-manifesto][The Manifesto]]
 - [[#why][Why]]
-- [[#what][What]]
-  - [[#the-basics][The basics]]
-  - [[#the-not-so-basics][The not so basics]]
+- [[#installation][Installation]]
+  - [[#build-it][Build it]]
+- [[#whats-available][What's available]]
 - [[#state][State]]
 
-* [[file:docs/overview.org][The Language Overview]]
+* The Language Overview
+The language [[file:docs/overview.org][overview]] is not complete
 
-* [[file:docs/TheManifesto.org][The Manifesto]]
-Check the manifesto
+* The Manifesto
+Check the  [[file:docs/TheManifesto.org][the manifesto]] , AI helped me write it
 
 * Why
 Just for fun.
@@ -21,45 +22,20 @@ Just for fun.
 But also a thought experiment.
 An opinionated programming language that fits my programming style.
 
-* What
-** The basics
-PeoPl is a statically typed compiled functional programming language.
-An expression only language, which means no statements are allowed in blocks
+* Installation
+You can't install it right now
 
-Functions behave like pipelines, a pipeline of nodes,
-nodes are expressions that can be evaluated to a value.
-Expressions are:
-- literals
-  - integers, decimals, booleans, strings
-- arithmetic expressions
-- function calls
-- branching expressions
-- identifiers
+** Build it
+Make sure you have swift installed. Compile it with spm.
 
-Expressions behave like functions.
-Functions take an input, with extra arguments, and return an output.
-
-Expressions like literals behave like functions that evaluates to themselves,
-they take nothing as input.
-
-Expressions are chained using the pipe operator `|>`.
-
-A function input behave like a regular function argument. But has a priviledged syntax.
-It is analoguous to *this* or *self* in object methods.
-This means OOP method style syntax is also supported.
-
-It doesn't use curly braces to delimit scope.
-It is not needed because there's no standalone statements like assignments and loops.
-
-** The not so basics
-Peopl is designed to have an expressive type system, using algebraic data types at its core.
-The type system plays well with the expression based syntax for function blocks.
-
-Peopl is also designed to have a powerful and expressive generics system.
-
+* What's available
+- A tree sitter grammar for syntax highlighting in your editor (needs manual configuration)
+- An lsp (that doesn't work)
+- Compiler with LLVM as backend (still WIP)
 
 * State
 Ok nothing is ready, if you find this repo by mistake, just know that nothing is ready.
+And by the way I'm not even following this todo list
 
 Todo list:
 - [-] Treesitter grammar version 0.1.0.0
