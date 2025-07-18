@@ -17,7 +17,7 @@ nothingValue2: _ // alias for nothing
 
 // main a function that takes no input and returns an integer
 main: func [] -> Int {
-    0
+    sdf[a]
 }
 
 // functions can take parameters

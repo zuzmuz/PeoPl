@@ -126,18 +126,30 @@ public enum Syntax {
     }
 
     /// Top-level definitions that can appear at module scope
-    /// The language supports two kinds of top-level definitions: types and values
-    enum Definition: SyntaxNode, Codable {
-        case typeDefinition(TypeDefinition)
-        case valueDefinition(ValueDefinition)
+    /// # Attributes:
+    /// - identifier: The name of the definition, can be qualified
+    /// - typeSpecifier: Optional type specification for the definition, the type can be infered from the expression and is optional
+    /// - typeArguments: Optional type arguments for generic definitions
+    /// - definition: The expression that defines the value or type
+    public struct Definition: SyntaxNode, Sendable {
+        let identifier: QualifiedIdentifier
+        let typeSpecifier: TypeSpecifier?
+        let typeArguments: [TypeField]
+        let definition: Expression
+        public let location: NodeLocation
 
-        var location: NodeLocation {
-            return switch self {
-            case let .typeDefinition(typeDefinition):
-                typeDefinition.location
-            case let .valueDefinition(valueDefinition):
-                valueDefinition.location
-            }
+        init(
+            identifier: QualifiedIdentifier,
+            typeSpecifier: TypeSpecifier? = nil,
+            typeArguments: [TypeField] = [],
+            definition: Expression,
+            location: NodeLocation = .nowhere
+        ) {
+            self.identifier = identifier
+            self.typeSpecifier = typeSpecifier
+            self.typeArguments = typeArguments
+            self.definition = definition
+            self.location = location
         }
     }
 
@@ -145,9 +157,9 @@ public enum Syntax {
     /// Used for referencing definitions across module boundaries
     /// Examples:
     /// - Simple identifier: ["foo"] represents `foo`
-    /// - Qualified identifier: ["Module", "foo"] represents `Module::foo`
-    /// - Deeply nested: ["A", "B", "C", "foo"] represents `A::B::C::foo`
-    public struct ScopedIdentifier: SyntaxNode, Sendable {
+    /// - Qualified identifier: ["Module", "foo"] represents `Module\foo`
+    /// - Deeply nested: ["A", "B", "C", "foo"] represents `A\B\C\foo`
+    public struct QualifiedIdentifier: SyntaxNode, Sendable {
         let chain: [String]
         public let location: NodeLocation
 
@@ -156,47 +168,6 @@ public enum Syntax {
             location: NodeLocation = .nowhere
         ) {
             self.chain = chain
-            self.location = location
-        }
-    }
-
-    /// Defines a new type with an optional parameter list
-    /// Can define type aliases, algebraic data types, or constrained types
-    public struct TypeDefinition: SyntaxNode, Sendable {
-        let identifier: ScopedIdentifier
-        let arguments: [TypeField]
-        let typeSpecifier: TypeSpecifier
-        public let location: NodeLocation
-
-        init(
-            identifier: ScopedIdentifier,
-            arguments: [TypeField] = [],
-            typeSpecifier: TypeSpecifier,
-            location: NodeLocation = .nowhere
-        ) {
-            self.identifier = identifier
-            self.arguments = arguments
-            self.typeSpecifier = typeSpecifier
-            self.location = location
-        }
-    }
-
-    /// Defines a value (function, constant, or computed expression)
-    public struct ValueDefinition: SyntaxNode, Sendable {
-        let identifier: ScopedIdentifier
-        let arguments: [TypeField]
-        let expression: Expression
-        public let location: NodeLocation
-
-        init(
-            identifier: ScopedIdentifier,
-            arguments: [TypeField] = [],
-            expression: Expression,
-            location: NodeLocation = .nowhere
-        ) {
-            self.identifier = identifier
-            self.arguments = arguments
-            self.expression = expression
             self.location = location
         }
     }
@@ -212,32 +183,20 @@ public enum Syntax {
         /// Unreachable type
         case never(location: NodeLocation)
         /// Tuples/Records
-        case product(Product)
+        case recordType(RecordType)
         /// Tagged unions
-        case sum(Sum)
-        /// Type constraints, e.g., contracts, protocols, interfaces, traits, concepts
-        case subset(Subset)
-        // ∃ types (existential quantification), opaque type known at compile time
-        case existential(Existential)
-        // ∀ types (universal quantification), erased type unknown at compile time
-        case universal(Universal)
-        // ∈ types, constrained generic types
-        case belonging(Belonging)
-        // Named types with type arguments
+        case choiceType(ChoiceType)
+        /// Named types with type arguments
         case nominal(Nominal)
-        // Function types
-        indirect case function(Function)
+        /// Function types
+        indirect case function(FunctionType)
 
         public var location: NodeLocation {
             return switch self {
             case let .nothing(location): location
             case let .never(location): location
-            case let .product(product): product.location
-            case let .sum(sum): sum.location
-            case let .subset(subset): subset.location
-            case let .existential(existential): existential.location
-            case let .universal(universal): universal.location
-            case let .belonging(belonging): belonging.location
+            case let .recordType(product): product.location
+            case let .choiceType(sum): sum.location
             case let .nominal(nominal): nominal.location
             case let .function(function): function.location
             }
@@ -268,7 +227,7 @@ public enum Syntax {
         /// The size/count can be either a literal number or a type-level identifier
         enum Exponent: Codable {
             case literal(UInt64)
-            case identifier(ScopedIdentifier)
+            case identifier(QualifiedIdentifier)
         }
 
         let typeSpecifier: TypeSpecifier
@@ -310,7 +269,7 @@ public enum Syntax {
     // ----------------------------
 
     /// Represents tuples, records, and struct-like types
-    public struct Product: SyntaxNode, Sendable {
+    public struct RecordType: SyntaxNode, Sendable {
         let typeFields: [TypeField]
         public let location: NodeLocation
 
@@ -324,7 +283,7 @@ public enum Syntax {
     }
 
     /// Represents tagged unions
-    public struct Sum: SyntaxNode, Sendable {
+    public struct ChoiceType: SyntaxNode, Sendable {
         let typeFields: [TypeField]
         public let location: NodeLocation
 
@@ -333,75 +292,6 @@ public enum Syntax {
             location: NodeLocation = .nowhere
         ) {
             self.typeFields = typeFields
-            self.location = location
-        }
-    }
-
-    /// Represents type constraints,
-    /// A subset is a colletion of types that constitute a subset of all types.
-    /// The subset conforms to certain constraints,
-    /// therefore can behave as an unbounded union of all types belonging to the subset
-    /// or a generic constraint for generic types
-    public struct Subset: SyntaxNode, Sendable {
-        let typeFields: [TypeField]
-        public let location: NodeLocation
-
-        init(
-            typeFields: [TypeField] = [],
-            location: NodeLocation = .nowhere
-        ) {
-            self.typeFields = typeFields
-            self.location = location
-        }
-    }
-
-    /// Represents existential types,
-    /// An opaque type belonging to a subset, statically discoverable at compile time
-    public struct Existential: SyntaxNode, Sendable {
-        let type: ScopedIdentifier
-        let alias: String?
-        public let location: NodeLocation
-
-        init(
-            type: ScopedIdentifier,
-            alias: String? = nil,
-            location: NodeLocation = .nowhere
-        ) {
-            self.type = type
-            self.alias = alias
-            self.location = location
-        }
-    }
-
-    /// Represents universal types,
-    /// An erased type that can be used to represent any type belonging to a subset
-    public struct Universal: SyntaxNode, Sendable {
-        let type: ScopedIdentifier
-        public let location: NodeLocation
-
-        init(
-            type: ScopedIdentifier,
-            location: NodeLocation = .nowhere
-        ) {
-            self.type = type
-            self.location = location
-        }
-    }
-
-    /// Represents constrained generic types,
-    /// Used to bind generic types to a subset of types
-    public struct Belonging: SyntaxNode, Sendable {
-        let alias: String
-        let subset: ScopedIdentifier
-        public let location: NodeLocation
-
-        init(
-            alias: String,
-            subset: ScopedIdentifier,
-            location: NodeLocation = .nowhere
-        ) {
-            self.alias = alias
-            self.subset = subset
             self.location = location
         }
     }
@@ -409,13 +299,13 @@ public enum Syntax {
     /// Nominal type: a named type with optional type arguments
     /// References user-defined types, built-in types, or generic instantiations
     public struct Nominal: SyntaxNode, Sendable {
-        let identifier: ScopedIdentifier
-        let typeArguments: [TypeSpecifier]
+        let identifier: QualifiedIdentifier
+        let typeArguments: [Expression]
         public let location: NodeLocation
 
         init(
-            identifier: ScopedIdentifier,
-            typeArguments: [TypeSpecifier] = [],
+            identifier: QualifiedIdentifier,
+            typeArguments: [Expression] = [],
             location: NodeLocation = .nowhere
         ) {
             self.identifier = identifier
@@ -424,12 +314,13 @@ public enum Syntax {
         }
     }
 
-    /// Function type: represents the type of functions and procedures
+    /// Function type: represents the type of functions
     /// Supports both traditional and dependently-typed function signatures
-    /// - inputType: Optional input type for the function, can be nil for procedures
-    public struct Function: SyntaxNode, Sendable {
+    /// - inputType: Optional input type for the function
+    public struct FunctionType: SyntaxNode, Sendable {
         let inputType: TypeField?
         let arguments: [TypeField]
+        // TODO: consider multiple argument groups for partial application
         let outputType: TypeSpecifier
         public let location: NodeLocation
 
@@ -450,10 +341,10 @@ public enum Syntax {
     // -------------------
 
     /// An expression with a label/tag for pattern matching and named parameters
-    struct TaggedExpression: SyntaxNode {
+    public struct TaggedExpression: SyntaxNode, Sendable {
         let tag: String
         let expression: Expression
-        let location: NodeLocation
+        public let location: NodeLocation
 
         init(
             identifier: String,
@@ -467,20 +358,24 @@ public enum Syntax {
     }
 
     /// Core expression node representing all computations and values in the language
-    public struct Expression: SyntaxNode, Sendable {
-        let expressionType: ExpressionType
-        public let location: NodeLocation
+    indirect public enum Expression: Codable, Sendable {
+        case literal(Literal)
+        case unary(Unary)
+        case binary(Binary)
+        case nominal(Nominal)
+        case recordType(RecordType)
+        case choiceType(ChoiceType)
+        case function(Function)
+        case call(Call)
+        case access(Access)
+        case binding(Binding)
+        case taggedExpression(TaggedExpression)
+        case branched(Branched)
+        case piped(Pipe)
+    }
 
-        init(
-            expressionType: ExpressionType,
-            location: NodeLocation = .nowhere
-        ) {
-            self.expressionType = expressionType
-            self.location = location
-        }
-
-        /// Literal values that can appear directly in source code
-        enum Literal: Equatable, Codable {
+    public struct Literal: SyntaxNode, Sendable {
+        public enum Value: Equatable, Codable, Sendable {
             case nothing
             case never
             case intLiteral(UInt64)
@@ -489,72 +384,159 @@ public enum Syntax {
             case boolLiteral(Bool)
         }
 
-        indirect enum ExpressionType: Sendable, Codable {
-            case literal(Literal)
+        let value: Value
+        public let location: NodeLocation
 
-            /// Prefix operators expression
-            case unary(Operator, expression: Expression)
-            /// Infix operators expression
-            case binary(Operator, left: Expression, right: Expression)
+        init(value: Value, location: NodeLocation = .nowhere) {
+            self.value = value
+            self.location = location
+        }
+    }
 
-            /// Function expression,
-            /// Contains optional signature that defines the function type
-            case function(signature: Function?, expression: Expression)
+    public struct Unary: SyntaxNode, Sendable {
+        let op: Operator
+        let expression: Expression
+        public let location: NodeLocation
 
-            /// Function calls
-            case call(prefix: Expression, arguments: [Expression])
-            /// Instance initialization
-            case initializer(prefix: Nominal?, arguments: [Expression])
-            /// Object fields
-            case access(prefix: Expression, field: String)
-            /// A qualified field access
-            case field(ScopedIdentifier)
-            /// Local bindings
-            case binding(String)
+        init(
+            op: Operator,
+            expression: Expression,
+            location: NodeLocation = .nowhere
+        ) {
+            self.op = op
+            self.expression = expression
+            self.location = location
+        }
+    }
 
-            case taggedExpression(TaggedExpression)
+    public struct Binary: SyntaxNode, Sendable {
+        let op: Operator
+        let left: Expression
+        let right: Expression
+        public let location: NodeLocation
 
-            /// Pattern matching with guards
-            case branched(Branched)
-            /// Piped expressions
-            case piped(left: Expression, right: Expression)
+        init(
+            op: Operator,
+            left: Expression,
+            right: Expression,
+            location: NodeLocation = .nowhere
+        ) {
+            self.op = op
+            self.left = left
+            self.right = right
+            self.location = location
+        }
+    }
+
+    public struct Function: SyntaxNode, Sendable {
+        let signature: FunctionType?
+        let body: Expression
+        public let location: NodeLocation
+
+        init(
+            signature: FunctionType? = nil,
+            body: Expression,
+            location: NodeLocation = .nowhere
+        ) {
+            self.signature = signature
+            self.body = body
+            self.location = location
+        }
+    }
+
+    public struct Call: SyntaxNode, Sendable {
+        let prefix: Expression
+        let arguments: [Expression]
+        public let location: NodeLocation
+
+        init(
+            prefix: Expression,
+            arguments: [Expression] = [],
+            location: NodeLocation = .nowhere
+        ) {
+            self.prefix = prefix
+            self.arguments = arguments
+            self.location = location
+        }
+    }
+
+    public struct Access: SyntaxNode, Sendable {
+        let prefix: Expression
+        let field: String
+        public let location: NodeLocation
+
+        init(
+            prefix: Expression,
+            field: String,
+            location: NodeLocation = .nowhere
+        ) {
+            self.prefix = prefix
+            self.field = field
+            self.location = location
+        }
+    }
+
+    public struct Binding: SyntaxNode, Sendable {
+        let identifier: String
+        public let location: NodeLocation
+
+        init(
+            identifier: String,
+            location: NodeLocation = .nowhere
+        ) {
+            self.identifier = identifier
+            self.location = location
+        }
+    }
+
+    public struct Branched: SyntaxNode, Sendable {
+        let branches: [Branch]
+        public let location: NodeLocation
+
+        init(
+            branches: [Branch],
+            location: NodeLocation = .nowhere
+        ) {
+            self.branches = branches
+            self.location = location
         }
 
-        /// Pattern matching construct with optional guards
-        /// Provides the primary control flow mechanism in the language
-        struct Branched: SyntaxNode {
-            let branches: [Branch]
+        /// A single branch in a pattern match expression
+        struct Branch: SyntaxNode, Sendable {
+            /// Pattern to match against, if no match expression, nothing is the match expression
+            let matchExpression: Expression
+            /// Optional guard condition
+            let guardExpression: Expression?
+            let body: Expression
             let location: NodeLocation
 
             init(
-                branches: [Branch],
+                matchExpression: Expression,
+                guardExpression: Expression? = nil,
+                body: Expression,
                 location: NodeLocation = .nowhere
             ) {
-                self.branches = branches
+                self.matchExpression = matchExpression
+                self.guardExpression = guardExpression
+                self.body = body
                 self.location = location
             }
+        }
+    }
 
-            /// A single branch in a pattern match expression
-            struct Branch: SyntaxNode {
-                /// Pattern to match against, if no match expression, nothing is the match expression
-                let matchExpression: Expression
-                /// Optional guard condition
-                let guardExpression: Expression?
-                let body: Expression
-                let location: NodeLocation
+    public struct Pipe: SyntaxNode, Sendable {
+        let left: Expression
+        let right: Expression
+        public let location: NodeLocation
 
-                init(
-                    matchExpression: Expression,
-                    guardExpression: Expression? = nil,
-                    body: Expression,
-                    location: NodeLocation = .nowhere
-                ) {
-                    self.matchExpression = matchExpression
-                    self.guardExpression = guardExpression
-                    self.body = body
-                    self.location = location
-                }
-            }
+        init(
+            left: Expression,
+            right: Expression,
+            location: NodeLocation = .nowhere
+        ) {
+            self.left = left
+            self.right = right
+            self.location = location
         }
     }
 }

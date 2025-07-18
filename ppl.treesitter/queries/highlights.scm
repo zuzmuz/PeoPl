@@ -21,8 +21,8 @@
 (access_expression
   field: (identifier) @function.call)
 
-(trailing_closure_list
-  identifier: (identifier) @variable.member)
+; (trailing_closure_list
+;   identifier: (identifier) @variable.member)
 
 (int_literal) @number
 (bool_literal) @boolean
@@ -70,6 +70,7 @@
 ; (nothing_type) @constant.builtin
 ; (never_type) @constant.builtin
 (nothing) @constant.builtin
+(never) @constant.builtin
 ; (never_value) @constant.builtin
 
 (binding) @function.call

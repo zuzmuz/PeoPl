@@ -21,7 +21,6 @@ module.exports = grammar({
   ],
 
   conflicts: $ => [
-    [$._type_specifier, $.function_value]
   ],
 
   rules: {
@@ -81,6 +80,7 @@ module.exports = grammar({
       $.nominal,
       $.function_type,
       $.nothing,
+      $.never
     ),
 
     nominal: $ => seq(
@@ -90,12 +90,12 @@ module.exports = grammar({
 
     record_type: $ => seq(
       "'",
-      $.type_field_list,
+      field("type_field_list", $.type_field_list),
     ),
 
     choice_type: $ => seq(
       "choice",
-      $.type_field_list,
+      field("type_field_list", $.type_field_list),
     ),
 
     function_type: $ => seq(
@@ -105,11 +105,6 @@ module.exports = grammar({
       "->",
       field("output_type", $._type_specifier)
     ),
-
-    repeated_argument_list: $ => prec.right(seq(
-      $.type_field_list,
-      repeat1($.type_field_list)
-    )),
 
     function_arguments: $ => choice(
       field('arguments', $.type_field_list),
@@ -220,17 +215,12 @@ module.exports = grammar({
       ']'
     ),
 
-    call_expression: $ => prec.right(PREC.FUNCTION, seq(
+    call_expression: $ => seq(
       field("prefix", choice("'", $._simple_expression)),
-      choice(
-        field("arguments", $.expression_list),
-        field("trailing_closure_list", $.trailing_closure_list),
-        seq(
-          field("arguments", $.expression_list),
-          field("trailing_closure_list", $.trailing_closure_list),
-        )
-      )
-    )),
+      field("arguments", $.expression_list),
+    ),
+
+    // TODO: call expression with trailing closures need more constraints
 
     trailing_closure_list: $ => prec.right(seq(
       $.function_body,
@@ -243,10 +233,10 @@ module.exports = grammar({
       )
     )),
 
-    function_value: $ => seq(
-      optional(field("function_signature", $.function_type)),
+    function_value: $ => prec.left(seq(
+      optional(field("signature", $.function_type)),
       field("body", $.function_body)
-    ),
+    )),
 
     function_body: $ => seq(
       "{",
@@ -306,7 +296,7 @@ module.exports = grammar({
     ),
 
     nothing: _ => choice("nothing", '_'),
-    // never_value: _ => "never",
+    never: _ => "Never",
 
     int_literal: $ => token(choice(
         /[0-9][0-9_]*/,
