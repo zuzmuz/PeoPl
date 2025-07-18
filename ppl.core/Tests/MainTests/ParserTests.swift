@@ -20,38 +20,28 @@ extension Syntax.Definition: Testable {
     func assertEqual(
         with: Self
     ) {
-        switch (self, with) {
-        case let (.typeDefinition(lhs), .typeDefinition(rhs)):
-            lhs.assertEqual(with: rhs)
-        case let (.valueDefinition(lhs), .valueDefinition(rhs)):
-            lhs.assertEqual(with: rhs)
-        default:
-            XCTFail("Definitions do not match")
-        }
-    }
-}
-
-extension Syntax.TypeDefinition: Testable {
-    func assertEqual(
-        with: Self
-    ) {
         XCTAssertEqual(
             self.identifier,
             with.identifier,
             "Type definition identifier \(self.identifier) does not match \(with.identifier)"
         )
-        self.typeSpecifier.assertEqual(with: with.typeSpecifier)
-    }
-}
 
-extension Syntax.ValueDefinition: Testable {
-    func assertEqual(with: Syntax.ValueDefinition) {
+        if let withTypeSpecifier = with.typeSpecifier {
+            XCTAssertNotNil(self.typeSpecifier)
+            if let typeSpecifier = self.typeSpecifier {
+                typeSpecifier.assertEqual(with: withTypeSpecifier)
+            }
+        }
+
         XCTAssertEqual(
-            self.identifier,
-            with.identifier,
-            "Value specifier identifier \(self.identifier) does not match \(with.identifier)"
-        )
-        self.expression.assertEqual(with: with.expression)
+            self.typeArguments.count,
+            with.typeArguments.count,
+            "Type Arguments \(self.location) counts do not match")
+        zip(self.typeArguments, with.typeArguments).forEach {
+            $0.assertEqual(with: $1)
+        }
+
+        self.definition.assertEqual(with: with.definition)
     }
 }
 
@@ -63,11 +53,13 @@ extension Syntax.TypeSpecifier: Testable {
         case (.nothing, .nothing), (.never, .never):
             // pass
             break
-        case let (.product(lhs), .product(rhs)):
+        case let (.recordType(lhs), .recordType(rhs)):
             lhs.assertEqual(with: rhs)
-        case let (.sum(lhs), .sum(rhs)):
+        case let (.choiceType(lhs), .choiceType(rhs)):
             lhs.assertEqual(with: rhs)
         case let (.nominal(lhs), .nominal(rhs)):
+            lhs.assertEqual(with: rhs)
+        case let (.function(lhs), .function(rhs)):
             lhs.assertEqual(with: rhs)
         default:
             XCTFail("Type specifiers do not match \(self) vs \(with)")
@@ -75,10 +67,8 @@ extension Syntax.TypeSpecifier: Testable {
     }
 }
 
-extension Syntax.Product: Testable {
-    func assertEqual(
-        with: Self
-    ) {
+extension Syntax.RecordType: Testable {
+    func assertEqual(with: Self) {
         XCTAssertEqual(
             self.typeFields.count,
             with.typeFields.count,
@@ -89,8 +79,8 @@ extension Syntax.Product: Testable {
     }
 }
 
-extension Syntax.Sum: Testable {
-    func assertEqual(with: Syntax.Sum) {
+extension Syntax.ChoiceType: Testable {
+    func assertEqual(with: Self) {
         XCTAssertEqual(
             self.typeFields.count,
             with.typeFields.count,
@@ -166,7 +156,7 @@ extension Syntax.Expression: Testable {
     func assertEqual(
         with: Self
     ) {
-        switch (self.expressionType, with.expressionType) {
+        switch (self, with) {
         case (.literal(let lhs), .literal(let rhs)):
             XCTAssertEqual(lhs, rhs)
         case (.binary(let lhsOp, let lhsLeft, let lhsRight),
@@ -182,7 +172,7 @@ extension Syntax.Expression: Testable {
 
 extension Syntax.Definition {
     static func type(
-        identifier: Syntax.ScopedIdentifier,
+        identifier: Syntax.QualifiedIdentifier,
         typeSpecifier: Syntax.TypeSpecifier
     ) -> Syntax.Definition {
         return .typeDefinition(
@@ -190,7 +180,7 @@ extension Syntax.Definition {
     }
 
     static func value(
-        identifier: Syntax.ScopedIdentifier,
+        identifier: Syntax.QualifiedIdentifier,
         expression: Syntax.Expression
     ) -> Syntax.Definition {
         return .valueDefinition(
@@ -198,10 +188,10 @@ extension Syntax.Definition {
     }
 }
 
-extension Syntax.ScopedIdentifier {
+extension Syntax.QualifiedIdentifier {
     static func chain(
         _ components: [String]
-    ) -> Syntax.ScopedIdentifier {
+    ) -> Syntax.QualifiedIdentifier {
         return .init(chain: components)
     }
 }
@@ -222,7 +212,7 @@ extension Syntax.TypeSpecifier {
     }
 
     static func nominalType(
-        identifier: Syntax.ScopedIdentifier
+        identifier: Syntax.QualifiedIdentifier
     ) -> Syntax.TypeSpecifier {
         return .nominal(.init(identifier: identifier))
     }
