@@ -17,11 +17,11 @@ nothingValue2: _ // alias for nothing
 
 // main a function that takes no input and returns an integer
 main: func [] -> Int {
-    sdf[a]
+    0
 }
 
 // functions can take parameters
-Math\multiply: func [a: Int, b: Int] -> Int {
+Math\multiply: func [a' Int, b' Int] -> Int {
     a * b
 }
 
@@ -40,7 +40,7 @@ squareOf5: 5.square() // squareOf5 is a compile time Int with the value 25
 // piping is also possible
 squareOf6: 6 |> Math\square() // squareOf6 is a compile time Int with the value 36
 
-fullFunction: func (InputType) [arg1: ArgType1, arg2: ArgType2] -> OutputType {
+fullFunction: func (InputType) [arg1' ArgType1, arg2' ArgType2] -> OutputType {
     // function body
     // can use arg1, arg2, and InputType
     // return OutputType
@@ -48,7 +48,7 @@ fullFunction: func (InputType) [arg1: ArgType1, arg2: ArgType2] -> OutputType {
 }
 
 // All allowed operations
-Math\operations: '(
+Math\operations: (
     plus: 2 + 4,       // addition (overflows)
     minus: 3 - 1,      // substruction (underflows)
     times: 7 * 3,      // multiplication (overflows)
@@ -56,7 +56,7 @@ Math\operations: '(
     remainder: 10 % 3, // remainder
 )
 
-Comparison\operations: '(
+Comparison\operations: (
     equal: 2 = 2,          // equality
     greater: 2 > 1,        // greater than
     greaterOrEqual: 2 >= 2, // greater than or equal
@@ -64,7 +64,7 @@ Comparison\operations: '(
     lessOrEqual: 2 <= 2, // less than or equal
 )
 
-Logic\operations: '(
+Logic\operations: (
     intersect: 2 = 2 and 3 > 1, // logical and
     union: 2 = 2 or 3 < 1,      // logical or
     inverse: not (2 = 2),       // logical not
@@ -96,17 +96,17 @@ thisIsLegal: (
 // Types
 
 // tuples
-Geometry\Point: '[Float, Float]
+Geometry\Point: [Float, Float]
 
 // records
-Geometry\Circle: '[
-    center: Geometry\Point,
-    radius: Float,
+Geometry\Circle: [
+    center' Geometry\Point,
+    radius' Float,
 ]
 
 // enums
 Media\FileType: choice [
-    png _, jpg _
+    png', jpg'
 ]
 
 // unions
@@ -117,20 +117,21 @@ Number: choice [
 
 // tagged unions
 Geometry\Shape: choice [
-    circle Geometry\Circle,
-    triangle '[Geometry\Point, Geometry\Point, Geometry\Point],
-    rectangle '[
-        center Geometry\Point,
-        width Float, height Float,
-        orientation Float
+    circle' Geometry\Circle,
+    triangle' [Geometry\Point, Geometry\Point, Geometry\Point],
+    rectangle' [
+        center' Geometry\Point,
+        width' Float, height' Float,
+        orientation' Float
     ],
 ]
 
 // generic types
-Result: [S, E Error] => choice [
-    sucess S,
-    error E
+Result: [S', E' Error] => choice [
+    sucess' S,
+    error' E
 ]
-Optional: [T] => choice [T, _]
+
+Optional: [T'] => choice [T, _]
 
 

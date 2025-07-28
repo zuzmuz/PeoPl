@@ -89,7 +89,6 @@ module.exports = grammar({
     ),
 
     record_type: $ => seq(
-      "'",
       field("type_field_list", $.type_field_list),
     ),
 
@@ -101,7 +100,7 @@ module.exports = grammar({
     function_type: $ => seq(
       "func",
       optional(seq('(', field('input_type', $.type_field), ')')),
-      field("arguments", $.function_arguments),
+      field("arguments", $.type_field_list),
       "->",
       field("output_type", $._type_specifier)
     ),
@@ -142,7 +141,8 @@ module.exports = grammar({
     tagged_type_specifier: $ => seq(
       optional(field('hidden', '_')),
       field("identifier", $.identifier),
-      field("type_specifier", $._type_specifier),
+      "'",
+      optional(field("type_specifier", $._type_specifier)),
     ),
 
     type_field: $ => seq(
@@ -163,7 +163,11 @@ module.exports = grammar({
 
     tagged_expression: $ => seq(
       field("identifier", $.identifier),
-      optional(field("type_specifier", $._type_specifier)),
+      optional(
+        seq(
+          "'",
+          field("type_specifier", $._type_specifier)),
+      ),
       ":",
       field("expression", $._simple_expression)
     ),
@@ -216,7 +220,7 @@ module.exports = grammar({
     ),
 
     call_expression: $ => seq(
-      field("prefix", choice("'", $._simple_expression)),
+      optional(field("prefix", $._simple_expression)),
       field("arguments", $.expression_list),
     ),
 

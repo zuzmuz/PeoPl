@@ -228,10 +228,6 @@
       "type": "SEQ",
       "members": [
         {
-          "type": "STRING",
-          "value": "'"
-        },
-        {
           "type": "FIELD",
           "name": "type_field_list",
           "content": {
@@ -299,7 +295,7 @@
           "name": "arguments",
           "content": {
             "type": "SYMBOL",
-            "name": "function_arguments"
+            "name": "type_field_list"
           }
         },
         {
@@ -474,12 +470,24 @@
           }
         },
         {
-          "type": "FIELD",
-          "name": "type_specifier",
-          "content": {
-            "type": "SYMBOL",
-            "name": "_type_specifier"
-          }
+          "type": "STRING",
+          "value": "'"
+        },
+        {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "FIELD",
+              "name": "type_specifier",
+              "content": {
+                "type": "SYMBOL",
+                "name": "_type_specifier"
+              }
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
         }
       ]
     },
@@ -557,12 +565,21 @@
           "type": "CHOICE",
           "members": [
             {
-              "type": "FIELD",
-              "name": "type_specifier",
-              "content": {
-                "type": "SYMBOL",
-                "name": "_type_specifier"
-              }
+              "type": "SEQ",
+              "members": [
+                {
+                  "type": "STRING",
+                  "value": "'"
+                },
+                {
+                  "type": "FIELD",
+                  "name": "type_specifier",
+                  "content": {
+                    "type": "SYMBOL",
+                    "name": "_type_specifier"
+                  }
+                }
+              ]
             },
             {
               "type": "BLANK"
@@ -773,21 +790,20 @@
       "type": "SEQ",
       "members": [
         {
-          "type": "FIELD",
-          "name": "prefix",
-          "content": {
-            "type": "CHOICE",
-            "members": [
-              {
-                "type": "STRING",
-                "value": "'"
-              },
-              {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "FIELD",
+              "name": "prefix",
+              "content": {
                 "type": "SYMBOL",
                 "name": "_simple_expression"
               }
-            ]
-          }
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
         },
         {
           "type": "FIELD",

@@ -479,12 +479,8 @@
       },
       "prefix": {
         "multiple": false,
-        "required": true,
+        "required": false,
         "types": [
-          {
-            "type": "'",
-            "named": false
-          },
           {
             "type": "access_expression",
             "named": true
@@ -774,32 +770,6 @@
     }
   },
   {
-    "type": "function_arguments",
-    "named": true,
-    "fields": {
-      "argument_list": {
-        "multiple": false,
-        "required": false,
-        "types": [
-          {
-            "type": "function_arguments",
-            "named": true
-          }
-        ]
-      },
-      "arguments": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "type_field_list",
-            "named": true
-          }
-        ]
-      }
-    }
-  },
-  {
     "type": "function_body",
     "named": true,
     "fields": {},
@@ -887,7 +857,7 @@
         "required": true,
         "types": [
           {
-            "type": "function_arguments",
+            "type": "type_field_list",
             "named": true
           }
         ]
@@ -1601,7 +1571,7 @@
       },
       "type_specifier": {
         "multiple": false,
-        "required": true,
+        "required": false,
         "types": [
           {
             "type": "choice_type",
