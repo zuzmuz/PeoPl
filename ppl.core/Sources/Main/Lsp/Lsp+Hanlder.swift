@@ -58,7 +58,7 @@ enum PpLsp {
     actor Handler<L: Utils.Logger, P: Syntax.ModuleParser>: Lsp.Handler {
         private let logger: L
         private let moduleParser: P
-        private var modulesContent: [String: String] = [:]
+        private var modulesContent: [String: Syntax.Source] = [:]
 
         init(moduleParser: P, logger: L) {
             self.moduleParser = moduleParser
@@ -98,10 +98,8 @@ enum PpLsp {
                     urls.reduce(into: [:]) { acc, file in
                         guard let file = file as? URL,
                             file.isFileURL,
-                            file.pathExtension == "ppl"
-                        else { return }
-                        guard let data = try? Data.init(contentsOf: file),
-                            let source = String(data: data, encoding: .utf8)
+                            file.pathExtension == "ppl",
+                            let source = try? Syntax.Source(url: file)
                         else { return }
                         acc[file.absoluteString] = source
                     }
@@ -123,7 +121,7 @@ enum PpLsp {
                 into: [:]
             ) { acc, element in
                 acc[element.key] = moduleParser.parseModule(
-                    source: .init(content: element.value, name: element.key))
+                    source: element.value)
             }
 
             for (moduleUri, module) in modules {
@@ -196,7 +194,7 @@ enum PpLsp {
 
                 self.logger.log(
                     level: .info,
-                    tag: "LspHandler",
+                    tag: "LspHanler",
                     message: "Diagnostic request with params: \(params)")
 
                 let resultId = params.previousResultId
@@ -221,7 +219,9 @@ enum PpLsp {
                 break
             case let .didOpenTextDocument(params):
                 self.modulesContent[params.textDocument.uri] =
-                    params.textDocument.text
+                    .init(
+                        content: params.textDocument.text,
+                        name: params.textDocument.uri)
                 self.logger.log(
                     level: .debug,
                     tag: "LspHandler",
@@ -229,7 +229,10 @@ enum PpLsp {
             case let .didChangeTextDocument(params):
                 params.contentChanges.forEach { contentChange in
                     if case let .full(text) = contentChange {
-                        self.modulesContent[params.textDocument.uri] = text
+                        self.modulesContent[params.textDocument.uri] =
+                            .init(
+                                content: text,
+                                name: params.textDocument.uri)
                     }
                 }
                 self.logger.log(

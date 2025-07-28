@@ -1,6 +1,6 @@
 #+TITLE: PeoPl Design Principles
 #+SUBTITLE: Foundational principles governing the design and evolution of the /Pipeline Expression Oriented Programming Language/
-#+AUTHOR: Zaher Hamade
+#+AUTHOR: Zaher Hamadeh
 #+DATE: 2025
 
 * Table Of Content :toc:
@@ -21,6 +21,10 @@
 - [[#iv-️-the-critique-of-existing-systems][IV. ⚔️ The Critique of Existing Systems]]
   - [[#-the-inheritance-bourgeoisie][👑 The Inheritance Bourgeoisie]]
   - [[#️-the-garbage-collection-oligarchy][🗑️ The Garbage Collection Oligarchy]]
+- [[#v--goals][V. 🥅 Goals]]
+  - [[#️-separation-of-data-and-processing][🗡️ Separation of Data and Processing]]
+  - [[#-structure-program-behavior][🛕 Structure program behavior]]
+  - [[#️-lightweight-type-system][🕊️ Lightweight Type system]]
 - [[#-call-to-action][📢 Call to Action]]
   - [[#status][Status]]
 
@@ -35,6 +39,7 @@ Programming languages have long struggled with the tension between abstraction a
 #+BEGIN_QUOTE
 Programmers of all languages, unite! You have nothing to lose but your technical debt. 🚩
 #+END_QUOTE
+
 
 * I. 💪 Programmer Empowerment
 
@@ -119,6 +124,17 @@ Inheritance is the opium of the programmer! It promises easy code reuse but deli
 The memory management elite have convinced the masses that automatic collection is liberation, when in truth it is the most insidious form of control. It leaves us powerless to predict when our systems will stumble under their invisible hand.
 
 **Automatic memory management is prohibited.** Memory allocation and deallocation remain under explicit programmer control through deterministic, predictable mechanisms.
+
+* V. 🥅 Goals
+** 🗡️ Separation of Data and Processing
+Provide a healty and clear divide between what represents data and what represents behavior.
+
+** 🛕 Structure program behavior
+Programs are designed as a structured pipeline of nodes, where data flow is clear and predictable.
+Complex systems with concurency and reactivity becomes simpler to design and understand.
+
+** 🕊️ Lightweight Type system
+Expressing a domain model should be light weight and simple, extensible and modifiable
 
 * 📢 Call to Action
 

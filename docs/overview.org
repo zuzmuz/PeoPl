@@ -8,23 +8,31 @@
 - [[#comments][Comments]]
 - [[#expressions-intro][Expressions (intro)]]
   - [[#pipes][Pipes]]
-- [[#values][Values]]
-  - [[#literals][Literals]]
-  - [[#primitives][Primitives]]
 - [[#operations][Operations]]
   - [[#operations-and-operators][Operations and operators]]
+- [[#expressions][Expressions]]
+  - [[#primitives][Primitives]]
+  - [[#literals][Literals]]
+  - [[#unary-expressions][Unary Expressions]]
+  - [[#binary-expressions][Binary Expressions]]
+  - [[#parenthesized-expressions][Parenthesized Expressions]]
+  - [[#call-expressions][Call Expressions]]
 - [[#how-piping-works][How Piping Works]]
   - [[#data-flow][Data flow]]
   - [[#piping][Piping]]
   - [[#input-capturing-in-pipelines][Input Capturing in Pipelines]]
   - [[#pattern-matching][Pattern Matching]]
   - [[#piping-complex-data-structures][Piping Complex Data Structures]]
+  - [[#tuples][Tuples]]
+  - [[#records][Records]]
+  - [[#nested-structures][Nested Structures]]
 - [[#functions][Functions]]
   - [[#functions-with-inputs][Functions with inputs]]
   - [[#function-arguments][Function arguments]]
   - [[#calling-functions][Calling functions]]
 - [[#definitions][Definitions]]
-  - [[#types][Types]]
+- [[#values][Values]]
+- [[#types][Types]]
   - [[#records-tuples][Records, Tuples]]
   - [[#choices-enums-tagged-unions][Choices, Enums, Tagged Unions]]
   - [[#functions-1][Functions]]
@@ -68,7 +76,7 @@ which is 0.
 This is how functions are defined
 
 #+BEGIN_SRC peopl
-  main: 'func [] -> Int {
+  main: func [] -> Int {
       0
   }
 #+END_SRC
@@ -87,7 +95,7 @@ thi doesn't justify their existence.
 
 #+BEGIN_SRC peopl
   // this is a comment
-  main: 'func [] -> Int { // this is also a comment
+  main: func [] -> Int { // this is also a comment
       0
   }
 #+END_SRC
@@ -146,33 +154,25 @@ PeoPl's expression-only design eliminates the statement/expression dichotomy fou
 
 We'll get into more details about [[#how-piping-works][piping]] later
 
-* Values
-Before getting into expressions and pipelines, let's discuss values.
-Values are expressions, the elemental expressions.
-The take on input, and return themselves as output.
-** Literals
-First example of values are literals
+* Operations
+** Operations and operators
+The second building blocks are operations.
+This is a list of all operators
+- multiplicative operators, `*, /, %`
+- additive operators, `+, -`
+- comparative operators, `=, >=, >, <=, <`
+- logic operators `and or not`
+  
+This is a list of legal operations in PeoPl
+- unary: `operator operand`, if the unary expression has a valid input, it will apply the operation
+- binary: `lhs operator rhs`
 
-#+BEGIN_SRC peopl
-  2                       // integer literal
-  1_000_000               // _ is supported to separate long integer numbers
-  0xFF468A                // hex integer litera
-  0xABCD_1234_AFDE_0987   // hex also supports _
-  0b1010_1010_1110        // binary
-  0o1727432               // octal
+PeoPl interestingly allows a unary expressions to be formed by any type of operator, not just the additive ones.
+For example `*3` is a valid expression and it represents an expression where its input should be an integer
+and it returns the result of the multiplication of the input and 3.
 
-  0.234                   // floating point literal
-
-  "sdfsdfsdf"             // string literal, they are multiline by default (don't know if this is a good idea)
-
-  true                    // boolean literal
-  false                   // boolean literal
-
-  nothing                 // the nothing literal, value representing the unit type, the empty tuple
-  _                       // alias to the nothing literal
-#+END_SRC
-
-*** TODO String literals are not covered yet cause I haven't figured out how to implement them yet.
+* Expressions
+Before getting into expressions and pipelines, let's discuss expressions and values.
 ** Primitives
 PeoPl's primitives are intrinsic, part of the inner logic of the compiler.
 They are not exposed to the user of the language.
@@ -191,25 +191,77 @@ Instead, wrapper nominal types are available, that can be used as regular types
 | F64  | float64    |
 
 The idea behind hiding primitives away from users is that primitives are treated like every other type.
-The can be extended and used like every other type, thee difference lies in how the eventual compiled program behaves.
+They can be extended and used like every other type, the difference lies in how the eventual compiled program behaves.
+** Literals
+First example of values are literals.
+Literals are expressions that take no input (their input should be `nothing`) and return themselves as output.
 
-* Operations
-** Operations and operators
-The second building blocks are operations.
-This is a list of all operators
-- multiplicative operators, `*, /, %`
-- additive operators, `+, -`
-- comparative operators, `=, >=, >, <=, <`
-- logic operators `and or not`
+*** Nothing
+the empty tuple, representing the unit type
+#+BEGIN_SRC peopl
+  nothing
+  _
+#+END_SRC
+*** Boolean literals
+#+BEGIN_SRC peopl
+  true
+  false
+#+END_SRC
+*** Number literals
+#+BEGIN_SRC peopl
+  // integers
+  42
+  690
+  0xFF468A                // hex integer litera
+  0xABCD_1234_AFDE_0987   // hex also supports _
+  0b1010_1010_1110        // binary
+  0o1727432               // octal
+  0o777_123_123           // all integer number format supports _
 
-  
-This is a list of legal operations in PeoPl
-- unary: `operator operand`, if the unary expression has a valid input, it will apply the operation
-- binary: `lhs operator rhs`
+  // floats
+  3.1415
+#+END_SRC
+*** String literals
+Multiline string literals are not supported
+#+BEGIN_SRC peopl
+  "hi"
+#+END_SRC
+**** TODO String literals are not covered yet cause I haven't figured out how to implement them yet.
+By that I mean that strings can either be a c string, (a poiter to a null terminated bytearray), or a struct of a pointer to a bytearray and a size,
+also encoding should be taken into consideration.
+** Unary Expressions
+A expression with an operator prefix.
+Due to PeoPl's pipeline aproach, all [[#operations-and-operators][operators]] can  be used a prefix operator.
+#+BEGIN_SRC peopl
+  +42
+  -3.14
+  *2
+  > x
+  <= y
+  not true
+#+END_SRC
+A unary expression can work on an input.
+** Binary Expressions
+Two expressions with an infix operator
+All operators excluding the `not` operator are infix operators.
+#+BEGIN_SRC peopl
+  690+42
+  2.8-3.14
+  5*2
+  3 > 1
+#+END_SRC
+** Parenthesized Expressions
+It's just an expression inside parenthesis
+** Call Expressions
+Function call is a value, depending on the context, a function call can run at compile time or runtime.
+Any expression can be a callable, if it is defined as a callable.
+A call expression is defined by a prefix (which can be an expression) follow by `()`.
+A call expression can get extra arguments inside the `()`.
+More on call expressions [[#functions][here]]
+#+BEGIN_SRC peopl
+  whatever() // calling whatever
+#+END_SRC
 
-PeoPl interestingly allows a unary expressions to be formed by any type of operator, not just the additive ones.
-For example `*3` is a valid expression and it represents an expression where its input should be an integer
-and it returns the result of the multiplication of the input and 3.
 
 * How Piping Works
 ** Data flow
@@ -273,7 +325,7 @@ PeoPl uses product types (tuples, records) to pass complex data structure
 
 Records (objects with named fields) can be passed through pipelines and accessed directly within transformation nodes
 
-*** Tuples
+** Tuples
 
 Tuples (ordered collections of values) can be processed efficiently:
 
@@ -283,7 +335,7 @@ Tuples (ordered collections of values) can be processed efficiently:
 |> |$dimensions| dimensions._0 * dimensions._1  // Returns 50
 #+END_SRC
 
-*** Records
+** Records
 
 Records are tuples with named members
 
@@ -298,7 +350,7 @@ Records are tuples with named members
 |> |$| width * height  // Returns 50
 #+END_SRC
 
-*** Nested Structures
+** Nested Structures
 
 Pattern matching and bindings can be performed on nested structures, used for destructuring.
 
@@ -323,7 +375,6 @@ Pattern matching and bindings can be performed on nested structures, used for de
 #+END_SRC
 
 * Functions
-
 Functions are blocks of expressions that most commonly run at runtime.
 Similar to bash programs, each function has an input, extra arguments, and returns an output.
 In bash, the input and output are usually text, coming from stdin and going to stdout.
@@ -332,7 +383,7 @@ More on [[#types][types]] later.
 
 
 #+BEGIN_SRC peopl
-thisReturns42: 'func [] -> Int {
+thisReturns42: func [] -> Int {
   42
 }
 #+END_SRC
@@ -348,7 +399,7 @@ Inputs are usually anonymous, which means they can be pipelined directly into ot
 However, if needed they can also be captured.
 
 #+BEGIN_SRC peopl
-square: 'func (Int)[] -> Int {
+square: func (Int)[] -> Int {
   |$in| in*in
 }
 #+END_SRC
@@ -359,7 +410,7 @@ Extra arguments are always named.
 
 
 #+BEGIN_SRC peopl
-add: 'func [a Int, b Int] -> Int {
+add: func [a Int, b Int] -> Int {
   a + b
 }
 #+END_SRC
@@ -414,9 +465,14 @@ Expressions are can be 2 things
 
 Those are 3.
 
-** Types
+* Values
+The basic expression is a computed values, in addition to basic [[#basic-values][values]], these are the more advance type of values
+
+
+
+* Types
 PeoPl has an expressive and powerful type system.
-The goal of PeoPl type system is to grant simplicity to the activity of defining domain models.
+The goal of PeoPl's type system is to grant simplicity to the activity of defining domain models.
 Reduce boilerplate for defining constructs, and use consistant syntax for definitions everywhere
 
 ** Records, Tuples
@@ -427,7 +483,7 @@ The simplest type is the record/struct/tuple whatever you want to call it. It is
 Person: '[name String, age Int]
 Point: '[Float, Float]
 Circle: '[center Point, radius Float]
-Rectangle: '[x Point, y Point, width Float, height Float]
+Rectangle: '[a Point, b Point, width Float, height Float]
 #+END_SRC
 
 ** Choices, Enums, Tagged Unions
@@ -435,15 +491,16 @@ A useful construct for defining choices or options enumerations.
 They are sum types. Similar to rust enums, but with a nicer syntax, I garantee.
 
 #+BEGIN_SRC peopl
-Color: 'choice [red _, blue _, green _, yellow _] // basic enums
-ShapeUnion: 'choice [Circle, Rectangle] // unions (they are secretly tagged)
-ShapeTaggedChoice: 'choice [circle Circle, rectangle Rectangle] // enums with associated values, or tagged unions
-ShapeTaggedChoiceAlt: 'choice [
-    circle '[center Point, radius Float],
-    rectangle '[x Point, y Point, width Float, height Float]
+Color: choice [red _, blue _, green _, yellow _] // basic enums
+ShapeUnion: choice [Circle, Rectangle] // unions (they are secretly tagged)
+ShapeTaggedChoice: choice [circle Circle, rectangle Rectangle] // enums with associated values, or tagged unions
+ShapeTaggedChoiceAlt: choice [
+    circle [center Point, radius Float],
+    rectangle [a Point, b Point, width Float, height Float]
 ]
 // Definitions can be nested preventing the proliferations of small types that are only used in one place
 #+END_SRC
 
 ** Functions
-Functions are also types, this is why defining a function also starts with a ticked keywords `'func`
+Functions are also types
+
