@@ -4,6 +4,7 @@
 
 * Table of content :toc:
 - [[#what-is-this][What is this]]
+- [[#what-is-peopl][What is PeoPl]]
 - [[#a-peopl-file][A PeoPl File]]
 - [[#main][Main]]
 - [[#definitions][Definitions]]
@@ -11,19 +12,41 @@
 - [[#expressions][Expressions]]
   - [[#literals][Literals]]
   - [[#unary-and-binary-expressions][Unary and Binary Expressions]]
-  - [[#function-definitions][Function Definitions]]
+  - [[#pipeline-expressions][Pipeline Expressions]]
+  - [[#input-capturing-and-pattern-matching][Input Capturing and Pattern Matching]]
+- [[#function-definitions][Function Definitions]]
+  - [[#why-func][Why =func=]]
+  - [[#input][Input]]
+  - [[#function-examples][Function Examples]]
+  - [[#function-overloading][Function Overloading]]
+- [[#type-definitions][Type Definitions]]
+  - [[#records-and-tuples][Records and Tuples]]
+  - [[#choices-enums-tagged-unions][Choices, Enums, Tagged Unions]]
+  - [[#type-aliases][Type Aliases]]
+- [[#call-expressions][Call Expressions]]
+- [[#comments][Comments]]
+- [[#complex-data-processing][Complex Data Processing]]
 
 * What is this
 This is a small introduction to PeoPl.
 Knowledge of programming languages and concepts is assumed.
+To get a more in-depth tour over PeoPl's features and specifications, read the [[file:overview.org][comprehensive overview]].
 
-To get a more in depth tour over PeoPl's features and specifications, read [[file:overview.org][this]].
+* What is PeoPl
+*PeoPl* is a /Pipeline Expression Oriented Programming Language/.
+
+It is a general-purpose, compiled, statically typed programming language with:
+- Expressive pipeline-oriented programming style 
+- Powerful type system for domain modeling
+- Low-level control
+- Expressive generics system
+
+Programs are constructed as pipelines of operations, where each operation receives data, transforms it, and passes it forward.
 
 * A PeoPl File
-
 A PeoPl source file ends with the file extension =.ppl=.
 It contains top-level definitions.
-Definitions define compile-time constructs, like values, expressions, types, and functions.
+Definitions define compile-time constructs: values, expressions, types, and functions.
 
 * Main
 If running in single-file mode, one definition must exist in the file, and it is the main function.
@@ -34,8 +57,7 @@ main: 0
 
 This is the simplest PeoPl file.
 Here =main= is defined as the value 0.
-Running this file will call =main=, and the program will then terminate with the value of =main=,
-which is 0.
+Running this file will call =main=, and the program will then terminate with the value of =main=, which is 0.
 
 =main= should be, or should return, an 8-bit integer.
 
@@ -49,41 +71,49 @@ main: func [] -> Int {
 #+END_SRC
 
 * Definitions
-A PeoPl file is basically a list of definitions, we covered the main definition, here's the format of custom definitions.
+A PeoPl file is basically a list of definitions. We covered the main definition; here's the format of custom definitions:
+
 #+BEGIN_SRC peopl
-qualifiedIdentifier' OptionalType: expression
+qualifiedIdentifier OptionalType: expression
 #+END_SRC
+
+Note: There's no apostrophe after the identifier.
 
 * Qualified Identifiers
-A qualified identifier is a scoped identifier. Scoping an identifier with a namespace or prefix is performed using the =\= symbol
+A qualified identifier is a scoped identifier. Scoping an identifier with a namespace or prefix is performed using the =\= symbol:
+
 #+BEGIN_SRC peopl
-aBasicIentifier
-AScoped\Identifier
+aBasicIdentifier
+A\Scoped\Identifier
 #+END_SRC
 
-This is used for namespacing
+This is used for namespacing.
 
 * Expressions
+Everything in PeoPl is an expression that produces a value.
+
 Expressions can be:
-- Constants Literals
+- Constant literals
 - Arithmetic expressions (unary or binary operations)
 - Call expressions (function calls)
 - Function definitions
 - Type specifiers (type definitions)
-- Generic definitions
+- Pipeline expressions
+- Pattern matching expressions
 
 ** Literals
+
 #+BEGIN_SRC peopl
-// the empty tuple, the unit type
+// The empty tuple, the unit type
 nothing
 _
 
-// boolean literals
+// Boolean literals
 true
 false
 
-// number literals
-// integers
+// Number literals
+// Integers
 42
 690
 0xFF468A                // hex integer literal
@@ -92,40 +122,204 @@ false
 0o1727432               // octal
 0o777_123_123           // all integer number formats support _
 
-// floats
+// Floats
 3.1415
 
-// string literal
+// String literal
 "hi"
 #+END_SRC
-  
+
 ** Unary and Binary Expressions
 This is a list of all operators:
-- Multiplicative operators: =*=, =/=, =%= (they overflow)
+- Multiplicative operators: =*=, =/=, =%=  (they overflow)
 - Additive operators: =+=, =-= (they also overflow)
-- Comparative operators: ==​=, =>=, =>=​=, =<=, =<=​=
+- Comparative operators: ===, =>=, =>=, =<=, =<=
 - Logic operators: =and=, =or=, =not=
-  
+
 This is a list of legal operations in PeoPl:
 - Unary: =operator operand= — if the unary expression has a valid input, it will apply the operation
 - Binary: =lhs operator rhs=
 
-** Function Definitions
-Functions in PeoPl are pure.
-To define a function:
+PeoPl allows any operator to be used as a unary operator. For example, =*3= represents an expression that multiplies its input by 3.
+
+** Pipeline Expressions
+The core feature of PeoPl is pipeline-oriented programming using the =|>= operator:
+
 #+BEGIN_SRC peopl
-qualifiedIdentifier: func (OptionalInputType)[arg1: ArgType1, arg2: ArgType2] -> OutputType {
+// Basic piping
+"hello world" |> reverse()  // Returns "dlrow olleh"
+
+// Method-like syntax is also supported
+"hello world".reverse()     // Equivalent
+
+// Multi-step pipelines
+42 |> toString() |> reverse()  // Returns "24"
+
+// Complex transformations
+"1,2,3,4,5"
+|> split(separator: ",")
+|> map(transform: parseInt)
+|> filter {|$x| x > 2}
+|> sum()                      // Returns 12
+#+END_SRC
+
+** Input Capturing and Pattern Matching
+Capture pipeline inputs using the vertical bar notation =|$name|=:
+
+#+BEGIN_SRC peopl
+// Input capturing
+12321
+|> toString()
+|> |$value| value = value.reverse()  // Returns true (palindrome check)
+
+// Pattern matching with branching
+value
+|>
+    |0| "Zero",
+    |1| "One",
+    |$n if n < 0| "Negative",
+    |$n if n % 2 = 0| "Even",
+    |_| "Other"
+#+END_SRC
+
+* Function Definitions
+Functions in PeoPl are pure expressions.
+
+To define a function:
+
+#+BEGIN_SRC peopl
+qualifiedIdentifier: func (OptionalInputType)[arg1' ArgType1, arg2' ArgType2] -> OutputType {
   // function body
 }
 #+END_SRC
 
-*** Why =func=
-=function= is too long, =fn= is too short of an abbreviation, =def= isn't specific enough,
-=fun= is too silly, =defun= just why??
-*** Input
-PeoPl doesn't have classes, but you can emulate methods using functions with extension function with inputs.
-The input is a special argument, that is passed implicitly to the function body like =self= or =this= in other programming languages.
-A function doesn't need to have an input. This means that the function is top level, or static.
-*** Argument List
+** Why =func=
+=function= is too long, =fn= is too short of an abbreviation, =def= isn't specific enough, =fun= is too silly, =defun= is... just why??
 
+** Input
+PeoPl doesn't have classes, but you can emulate methods using functions with inputs.
+The input is a special argument, passed implicitly to the function body like =self= or =this= in other programming languages.
+A function doesn't need to have an input. This means the function is top-level or static.
 
+** Function Examples
+
+#+BEGIN_SRC peopl
+// Function with no input (static function)
+thisReturns42: func [] -> Int {
+  42
+}
+
+// Function with input
+square: func (Int)[] -> Int {
+  |$in| in * in
+}
+
+// Function with arguments
+add: func [a' Int, b' Int] -> Int {
+  a + b
+}
+
+// Calling functions
+5.square()      // returns 25
+5 |> square()   // equivalent
+add(a: 2, b: 3) // returns 5
+#+END_SRC
+
+** Function Overloading
+Function overloading is supported on the name of the arguments, (not the types).
+The argument list are part of the signature of the function.
+Dissallowing overloading on types simplifies type inference.
+
+* Type Definitions
+
+** Records and Tuples
+Product types for structured data:
+
+#+BEGIN_SRC peopl
+// Tuples (positional access)
+Point: [Float, Float]
+coordinates: Point(3.14, 2.71)
+x: coordinates._0  // 3.14
+
+// Records (named access)
+Person: [name' String, age' Int]
+person: Person(name: "Alice", age: 30)
+name: person.name  // "Alice"
+#+END_SRC
+
+** Choices, Enums, Tagged Unions
+Sum types for representing alternatives:
+
+#+BEGIN_SRC peopl
+// Basic enums
+Color: choice [red', green', blue', yellow']
+
+// Tagged unions with associated values
+Shape: choice [
+    circle' [radius' Float],
+    rectangle' [width' Float, height' Float]
+]
+
+// Pattern matching on choice types
+processShape: func (Shape)[] -> Float {
+  |circle: [radius: $r]| PI * r * r,
+  |rectangle: [width: $w, height: $h]| w * h
+}
+#+END_SRC
+
+** Type Aliases
+Create meaningful names for existing types:
+
+#+BEGIN_SRC peopl
+UserId: Int
+Email: String
+Point2D: [x' Float, y' Float]
+#+END_SRC
+
+TypeAliases are distinct, and =Int= can be used as a =UserId= but a =UserId= can not be used as an =Int=
+
+* Call Expressions
+Function calls are expressions that can run at compile time or runtime:
+
+#+BEGIN_SRC peopl
+// Simple function call
+myFunction()
+
+// Function call with arguments
+add(a: 10, b: 5)
+
+// Pipelined function calls
+value |> transform() |> process()
+
+// Method-style calls
+"hello".reverse().toUpperCase()
+#+END_SRC
+
+* Comments
+Start a comment with two forward slashes. Multiline comments are not supported:
+
+#+BEGIN_SRC peopl
+// This is a comment
+main: func [] -> Int { // This is also a comment
+    0
+}
+#+END_SRC
+
+* Complex Data Processing
+
+#+BEGIN_SRC peopl
+// Processing nested structures
+user_data: (
+  user: (name: "Alice", age: 30),
+  permissions: ("read", "write")
+)
+
+result: (
+    user_data
+    |>
+    |$data| (
+        name: data.user.name,
+        can_edit: data.permissions.contains("write")
+    )
+)
+#+END_SRC

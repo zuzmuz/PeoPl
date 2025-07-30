@@ -8,8 +8,8 @@ const PREC = {
   COMP: 5,
   AND: 4,
   OR: 3,
-  SUBPIPE: 2,
   PIPE: 1,
+  TAGGED: 0,
 };
 
 
@@ -161,7 +161,7 @@ module.exports = grammar({
       $.piped_expression
     ),
 
-    tagged_expression: $ => seq(
+    tagged_expression: $ => prec.right(PREC.TAGGED, seq(
       field("identifier", $.identifier),
       optional(
         seq(
@@ -170,7 +170,7 @@ module.exports = grammar({
       ),
       ":",
       field("expression", $._simple_expression)
-    ),
+    )),
 
     _simple_expression: $ => choice(
       $.literal,
