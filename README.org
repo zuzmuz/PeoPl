@@ -11,7 +11,7 @@
 - [[#state][State]]
 
 * The Language Overview
-The language [[file:docs/overview.org][overview]] is not complete
+This is a [[file:docs/small_overview.org][small overview]], a more [[file:docs/overview.org][comprehensive overview]] is not complete
 
 * The Manifesto
 Check the  [[file:docs/TheManifesto.org][the manifesto]] , AI helped me write it
