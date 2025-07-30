@@ -17,6 +17,8 @@
   - [[#binary-expressions][Binary Expressions]]
   - [[#parenthesized-expressions][Parenthesized Expressions]]
   - [[#call-expressions][Call Expressions]]
+  - [[#tagged-expression][Tagged Expression]]
+- [[#symbols][Symbols]]
 - [[#how-piping-works][How Piping Works]]
   - [[#data-flow][Data Flow]]
   - [[#piping][Piping]]
@@ -37,7 +39,6 @@
   - [[#generic-types][Generic Types]]
   - [[#type-inference][Type Inference]]
 - [[#error-handling][Error Handling]]
-  - [[#error-propagation][Error Propagation]]
 - [[#memory-management][Memory Management]]
 - [[#modules-and-imports][Modules and Imports]]
 - [[#advanced-features][Advanced Features]]
@@ -162,14 +163,12 @@ PeoPl's expression-only design eliminates the statement/expression dichotomy fou
 We'll get into more details about [[#how-piping-works][piping]] later.
 
 * Operations
-
 ** Operations and Operators
-
 The second building blocks are operations.
 This is a list of all operators:
 - Multiplicative operators: =*=, =/=, =%=
 - Additive operators: =+=, =-=
-- Comparative operators: ===, =>=, =>==, =<=, =<=
+- Comparative operators: ==​=, =>=, =>=​=, =<=, =<=​=
 - Logic operators: =and=, =or=, =not=
   
 This is a list of legal operations in PeoPl:
@@ -185,7 +184,6 @@ and it returns the result of the multiplication of the input and 3.
 Before getting into expressions and pipelines, let's discuss expressions and values.
 
 ** Primitives
-
 PeoPl's primitives are intrinsic, part of the inner logic of the compiler.
 They are not exposed to the user of the language.
 Instead, wrapper nominal types are available that can be used as regular types:
@@ -207,7 +205,6 @@ The idea behind hiding primitives away from users is that primitives are treated
 They can be extended and used like every other type; the difference lies in how the eventual compiled program behaves.
 
 ** Literals
-
 The first example of values are literals.
 Literals are expressions that take no input (their input should be =nothing=) and return themselves as output.
 
@@ -301,6 +298,64 @@ More on call expressions [[#functions][here]].
 whatever() // calling whatever
 #+END_SRC
 
+** Tagged Expression
+
+A tagged expression is basically just an expression with a label.
+I admit it's a convoluted way of explainging the concept of *assignment*,
+but there is a technical difference: a tagged expression is a value with a label,
+it is in itself an expression. They look like top level definitions, in a way they are,
+but they are supposed to be local, and they cannot be generic.
+
+The cool thing about tagged expressions as a concept is that they can be applied in a lot of different context,
+with an expected behavior.
+
+For example, calling a function with named arguments is like passing tagged expressions to the function body.
+
+
+#+BEGIN_SRC peopl
+label: expression // this a tagged expression
+#+END_SRC
+
+Usually the type of an expression is infered, but a tagged expression can be type annotated.
+
+
+#+BEGIN_SRC peopl
+label' ExpressionType: expression // this a tagged expression with a type
+#+END_SRC
+
+This syntax is integral to defining expressions and values in PeoPl and it appears in a lot of places.
+Whenever defining the type of a label is necessary, the label is suffixed by a ='=.
+To define the value of a label, the label is suffixed by a =:=.
+The label's value always comes after the type.
+
+* Symbols
+Each symbol in PeoPl has generaly one and only one purpose, this makes reading and understanding PeoPl code easy and predictable.
+If you see a symbol you've never seen before, it's possibly a special feature.
+If you see a symbol you've seen before, it will most probaby behave in a very predictable way.
+There should not be special cases.
+
+*** The sqare brackets =[]=
+Used to define compile time constructs, most comonly types.
+*** The round brackets =()=
+Used to define runtime initializations. Like function arguments, literal tuples.
+They are also used as regular parenthesis for grouping expressions.
+*** The curly brackets ={}=
+Used to define function blocks.
+*** The colon =:=
+Used in tagged expressions. Generaly after a label or a qualified identifier
+#+BEGIN_SRC peopl
+qualified_identifier: expression
+#+END_SRC
+The colon will behave predictably inside argument list of function calls and tuple literal definitions.
+*** The apostorphe ='=
+Used to define identifiers types. Most comonly in type definitions, or in tagged expressions to disambiguate types.
+*** The vertical line =|=
+Used to define capture expressions with match and guard expressions.
+*** The dollar sign =$=
+Used for bindings. An identifier prefixed by a =$= is usually used inside match expressions to bind input to a certain identifier.
+*** Quotation mark ="=
+For string literals
+
 * How Piping Works
 
 ** Data Flow
@@ -383,11 +438,11 @@ Records are tuples with named members:
 
 #+BEGIN_SRC peopl
 // Piping a record
-.(width: 10, height: 5)
+(width: 10, height: 5)
 |> |$in| in.width * in.height  // Returns 50
 
 // Piping a record with anonymous capture
-.(width: 10, height: 5)
+(width: 10, height: 5)
 |> |$| width * height  // Returns 50
 #+END_SRC
 
@@ -553,10 +608,10 @@ reduce boilerplate for defining constructs, and use consistent syntax for defini
 The simplest type is the record/struct/tuple, whatever you want to call it. It is the product type.
 
 #+BEGIN_SRC peopl
-Person: '[name String, age Int]
-Point: '[Float, Float]
-Circle: '[center Point, radius Float]
-Rectangle: '[a Point, b Point, width Float, height Float]
+Person: [name' String, age' Int]
+Point: [Float, Float]
+Circle: [center' Point, radius' Float]
+Rectangle: [a' Point, b' Point, width' Float, height' Float]
 #+END_SRC
 
 *** Anonymous vs Named Fields
@@ -565,12 +620,12 @@ Tuples use positional access (=._0=, =._1=), while records use named access (=.n
 
 #+BEGIN_SRC peopl
 // Tuple access
-coordinates: .(3.14, 2.71)
+coordinates: (3.14, 2.71)
 x: coordinates._0  // 3.14
 y: coordinates._1  // 2.71
 
 // Record access
-person: .(name: "Alice", age: 30)
+person: (name: "Alice", age: 30)
 name: person.name  // "Alice"
 age: person.age    // 30
 #+END_SRC
@@ -581,7 +636,7 @@ A useful construct for defining choices or option enumerations.
 They are sum types. Similar to Rust enums, but with nicer syntax, I guarantee.
 
 #+BEGIN_SRC peopl
-Color: choice [red _, blue _, green _, yellow _] // basic enums
+Color: choice [red', blue', green', yellow'] // basic enums
 
 ShapeUnion: choice [Circle, Rectangle] // unions (they are secretly tagged)
 
@@ -600,8 +655,8 @@ Choice types work seamlessly with pattern matching:
 
 #+BEGIN_SRC peopl
 processShape: func (Shape) -> Float {
-  |circle: .(center: _, radius: $r)| PI * r * r,
-  |rectangle: .(a: _, b: _, width: $w, height: $h)| w * h
+  |circle: (center: _, radius: $r)| PI * r * r,
+  |rectangle: (a: _, b: _, width: $w, height: $h)| w * h
 }
 #+END_SRC
 
@@ -627,18 +682,15 @@ PeoPl supports generic types for writing reusable code:
 
 #+BEGIN_SRC peopl
 // Generic container
-Container[T]: [value T, timestamp Int]
+Container: [T'] => [value T, timestamp Int]
 
 // Generic function
-map[T, U]: func (List[T])[transform func(T) -> U] -> List[U] {
+map: [T', U'] => func (List[T])[transform func(T) -> U] -> List[U] {
   // implementation
 }
-
-// Usage
-numbers: List(.(1, 2, 3, 4, 5))
-strings: numbers |> map(transform: toString)
 #+END_SRC
 
+Generic
 ** Type Inference
 
 PeoPl has strong type inference, reducing the need for explicit type annotations:
@@ -655,49 +707,9 @@ result: ("hello world"
   // Type inferred as String
 #+END_SRC
 
-* Error Handling
+* TODO Error Handling
 
-PeoPl uses choice types for error handling, similar to Rust's =Result= type:
-
-#+BEGIN_SRC peopl
-Result[T, E]: choice [
-  success T,
-  error E
-]
-
-// Function that might fail
-parseInt: func (String)[] -> Result[Int, String] {
-  |$str|
-  // implementation that returns sucess: (value) or error: (message)
-}
-
-// Using results with pattern matching
-processNumber: func (String)[] -> String {
-  |$input|
-  input 
-  |> parseInt()
-  |> 
-    |ok: $value| "Number: " + toString(value),
-    |error: $msg| "Error: " + msg
-}
-#+END_SRC
-
-** Error Propagation
-One very useful feature in error handling is error propagation.
-PeoPl's approach is also similar to rust's.
-Use the optional pipe operator =? |>=.
-Because PeoPl's uses piping exclusively, errors can be handled intuitively:
-at each step of the pipe the error can either be handled in place, propagated directly, or wrapped to add context.
-
-#+BEGIN_SRC peopl
-  handle: func (Request)[] -> Result[Response, ErrorResponse] {
-      authenticate() ?
-      |> authorize() ?
-      |> 
-  }
-#+END_SRC
 * TODO Memory Management
-
 
 * TODO Modules and Imports
 

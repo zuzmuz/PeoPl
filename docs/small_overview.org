@@ -1,0 +1,131 @@
+#+TITLE: PeoPl Language Overview
+#+AUTHOR: Zaher Hamadeh
+#+DATE: May 21, 2025
+
+* Table of content :toc:
+- [[#what-is-this][What is this]]
+- [[#a-peopl-file][A PeoPl File]]
+- [[#main][Main]]
+- [[#definitions][Definitions]]
+- [[#qualified-identifiers][Qualified Identifiers]]
+- [[#expressions][Expressions]]
+  - [[#literals][Literals]]
+  - [[#unary-and-binary-expressions][Unary and Binary Expressions]]
+  - [[#function-definitions][Function Definitions]]
+
+* What is this
+This is a small introduction to PeoPl.
+Knowledge of programming languages and concepts is assumed.
+
+To get a more in depth tour over PeoPl's features and specifications, read [[file:overview.org][this]].
+
+* A PeoPl File
+
+A PeoPl source file ends with the file extension =.ppl=.
+It contains top-level definitions.
+Definitions define compile-time constructs, like values, expressions, types, and functions.
+
+* Main
+If running in single-file mode, one definition must exist in the file, and it is the main function.
+
+#+BEGIN_SRC peopl
+main: 0
+#+END_SRC
+
+This is the simplest PeoPl file.
+Here =main= is defined as the value 0.
+Running this file will call =main=, and the program will then terminate with the value of =main=,
+which is 0.
+
+=main= should be, or should return, an 8-bit integer.
+
+=main= can be a function that runs at runtime and calculates its output value.
+This is how functions are defined:
+
+#+BEGIN_SRC peopl
+main: func [] -> Int {
+    0
+}
+#+END_SRC
+
+* Definitions
+A PeoPl file is basically a list of definitions, we covered the main definition, here's the format of custom definitions.
+#+BEGIN_SRC peopl
+qualifiedIdentifier' OptionalType: expression
+#+END_SRC
+
+* Qualified Identifiers
+A qualified identifier is a scoped identifier. Scoping an identifier with a namespace or prefix is performed using the =\= symbol
+#+BEGIN_SRC peopl
+aBasicIentifier
+AScoped\Identifier
+#+END_SRC
+
+This is used for namespacing
+
+* Expressions
+Expressions can be:
+- Constants Literals
+- Arithmetic expressions (unary or binary operations)
+- Call expressions (function calls)
+- Function definitions
+- Type specifiers (type definitions)
+- Generic definitions
+
+** Literals
+#+BEGIN_SRC peopl
+// the empty tuple, the unit type
+nothing
+_
+
+// boolean literals
+true
+false
+
+// number literals
+// integers
+42
+690
+0xFF468A                // hex integer literal
+0xABCD_1234_AFDE_0987   // hex also supports _
+0b1010_1010_1110        // binary
+0o1727432               // octal
+0o777_123_123           // all integer number formats support _
+
+// floats
+3.1415
+
+// string literal
+"hi"
+#+END_SRC
+  
+** Unary and Binary Expressions
+This is a list of all operators:
+- Multiplicative operators: =*=, =/=, =%= (they overflow)
+- Additive operators: =+=, =-= (they also overflow)
+- Comparative operators: ==​=, =>=, =>=​=, =<=, =<=​=
+- Logic operators: =and=, =or=, =not=
+  
+This is a list of legal operations in PeoPl:
+- Unary: =operator operand= — if the unary expression has a valid input, it will apply the operation
+- Binary: =lhs operator rhs=
+
+** Function Definitions
+Functions in PeoPl are pure.
+To define a function:
+#+BEGIN_SRC peopl
+qualifiedIdentifier: func (OptionalInputType)[arg1: ArgType1, arg2: ArgType2] -> OutputType {
+  // function body
+}
+#+END_SRC
+
+*** Why =func=
+=function= is too long, =fn= is too short of an abbreviation, =def= isn't specific enough,
+=fun= is too silly, =defun= just why??
+*** Input
+PeoPl doesn't have classes, but you can emulate methods using functions with extension function with inputs.
+The input is a special argument, that is passed implicitly to the function body like =self= or =this= in other programming languages.
+A function doesn't need to have an input. This means that the function is top level, or static.
+*** Argument List
+
+
