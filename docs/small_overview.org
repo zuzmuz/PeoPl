@@ -262,8 +262,8 @@ Shape: choice [
 
 // Pattern matching on choice types
 processShape: func (Shape)[] -> Float {
-  |circle: [radius: $r]| PI * r * r,
-  |rectangle: [width: $w, height: $h]| w * h
+  |circle: (radius: $r)| PI * r * r,
+  |rectangle: (width: $w, height: $h)| w * h
 }
 #+END_SRC
 
