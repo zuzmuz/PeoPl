@@ -103,7 +103,7 @@ public enum Syntax {
     }
 
     public protocol ModuleParser {
-        func parseModule(source: Source) -> Module
+        static func parseModule(source: Source) -> Module
     }
 
     /// A compilation unit containing a list of top-level definitions

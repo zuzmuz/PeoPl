@@ -2,6 +2,9 @@ import XCTest
 
 @testable import Main
 
+
+// MARK: - Testable Protocol
+
 extension Syntax.Module: Testable {
     func assertEqual(
         with: Self
@@ -216,7 +219,7 @@ extension Syntax.Binary: Testable {
     }
 }
 
-extension Syntax.Function {
+extension Syntax.Function: Testable {
     func assertEqual(
         with: Self
     ) {
@@ -232,7 +235,7 @@ extension Syntax.Function {
     }
 }
 
-extension Syntax.FunctionType {
+extension Syntax.FunctionType: Testable {
     func assertEqual(
         with: Self
     ) {
@@ -334,6 +337,9 @@ extension Syntax.Pipe: Testable {
     }
 }
 
+
+// MARK: - Syntax Util Extensions
+
 extension Syntax.QualifiedIdentifier {
     static func chain(
         _ components: [String]
@@ -382,6 +388,13 @@ extension Syntax.TypeField {
 
 extension Syntax.Expression {
     static let nothing: Syntax.Expression = .literal(.init(value: .nothing))
+    static func intLiteral(_ value: UInt64) -> Syntax.Expression {
+        return .literal(.init(value: .intLiteral(value)))
+    }
+    static func floatLiteral(_ value: Double) -> Syntax.Expression {
+        return .literal(.init(value: .floatLiteral(value)))
+    }
+
     static func binary(
         _ lhs: Syntax.Expression,
         _ op: Operator,
@@ -831,22 +844,22 @@ final class ParserTests: XCTestCase {
         //         ),
         //     ]
         // ),
-        // "simpleexpressions": .init(
-        //     sourceName: "expressions",
-        //     definitions: [
-        //         .value(identifier: .chain(["well"]), expression: .nothing),
-        //         .value(
-        //             identifier: .chain(["arithmetics"]),
-        //             expression: .binary(
-        //                 .intLiteral(1),
-        //                 .minus,
-        //                 .intLiteral(10)
-        //             )
-        //         ),
-        //     ]
-        // ),
-        "errors": .init(
-            sourceName: "errors", definitions: [])
+        "simpleexpressions": .init(
+            sourceName: "expressions",
+            definitions: [
+                .init(identifier: .chain(["well"]), definition: .nothing),
+                .init(
+                    identifier: .chain(["arithmetics"]),
+                    definition: .binary(
+                        .intLiteral(1),
+                        .minus,
+                        .intLiteral(10)
+                    )
+                ),
+            ]
+        ),
+        // "errors": .init(
+        //     sourceName: "errors", definitions: [])
     ]
 
     func testFiles() throws {
@@ -857,7 +870,7 @@ final class ParserTests: XCTestCase {
                 forResource: "parser_\(name)",
                 withExtension: "ppl")!
             let source = try Syntax.Source(url: sourceUrl)
-            let module = TreeSitterModulParser().parseModule(source: source)
+            let module = TreeSitterModulParser.parseModule(source: source)
             module.assertEqual(with: reference)
         }
     }

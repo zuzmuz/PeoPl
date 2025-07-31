@@ -16,7 +16,7 @@ extension PpLsp {
 
         let server = Lsp.Server(
             handler: Handler(
-                moduleParser: TreeSitterModulParser(),
+                moduleParser: TreeSitterModulParser.self,
                 logger: logger),
             transport: Lsp.standardTransport,
             logger: logger)

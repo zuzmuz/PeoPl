@@ -52,7 +52,7 @@ struct TreeSitterModulParser: Syntax.ModuleParser {
         }
     }
 
-    func parseModule(source: Syntax.Source) -> Syntax.Module {
+    static func parseModule(source: Syntax.Source) -> Syntax.Module {
 
         let language = Language(tree_sitter_peopl())
         let parser = Parser()
@@ -82,9 +82,7 @@ struct TreeSitterModulParser: Syntax.ModuleParser {
         var definitions: [Syntax.Definition] = []
 
         rootNode.enumerateChildren { node in
-            if node.nodeType == "type_definition"
-                || node.nodeType == "value_definition"
-            {
+            if node.nodeType == "definition" {
                 do throws(Syntax.Error) {
                     definitions.append(try .from(node: node, in: source))
                 } catch {

@@ -57,10 +57,10 @@ enum LspCommand: String {
 enum PpLsp {
     actor Handler<L: Utils.Logger, P: Syntax.ModuleParser>: Lsp.Handler {
         private let logger: L
-        private let moduleParser: P
+        private let moduleParser: P.Type
         private var modulesContent: [String: Syntax.Source] = [:]
 
-        init(moduleParser: P, logger: L) {
+        init(moduleParser: P.Type, logger: L) {
             self.moduleParser = moduleParser
             self.logger = logger
         }

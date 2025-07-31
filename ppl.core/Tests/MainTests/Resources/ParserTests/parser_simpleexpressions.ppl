@@ -1,5 +1,5 @@
-well:: _
-arithmetics:: 1 - 10
+well: _
+arithmetics: 1 - 10
 //
 //hi: () -> Int {
 //    1 |>
