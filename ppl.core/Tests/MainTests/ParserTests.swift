@@ -60,9 +60,7 @@ extension Syntax.TypeSpecifier: Testable {
         case let (.nominal(lhs), .nominal(rhs)):
             lhs.assertEqual(with: rhs)
         case let (.function(lhs), .function(rhs)):
-            break
-            // FIX: 
-            // lhs.assertEqual(with: rhs)
+            lhs.assertEqual(with: rhs)
         default:
             XCTFail("Type specifiers do not match \(self) vs \(with)")
         }
@@ -160,15 +158,179 @@ extension Syntax.Expression: Testable {
     ) {
         switch (self, with) {
         case (.literal(let lhs), .literal(let rhs)):
-            XCTAssertEqual(lhs, rhs)
-        case (.binary(let lhsOp, let lhsLeft, let lhsRight),
-              .binary(let rhsOp, let rhsLeft, let rhsRight)):
-            XCTAssertEqual(lhsOp, rhsOp)
-            lhsLeft.assertEqual(with: rhsLeft)
-            lhsRight.assertEqual(with: rhsRight)
+            lhs.assertEqual(with: rhs)
+        case (.unary(let lhs), .unary(let rhs)):
+            lhs.assertEqual(with: rhs)
+        case (.binary(let lhs), .binary(let rhs)):
+            lhs.assertEqual(with: rhs)
+        case (.nominal(let lhs), .nominal(let rhs)):
+            lhs.assertEqual(with: rhs)
+        case (.recordType(let lhs), .recordType(let rhs)):
+            lhs.assertEqual(with: rhs)
+        case (.choiceType(let lhs), .choiceType(let rhs)):
+            lhs.assertEqual(with: rhs)
+        case (.function(let lhs), .function(let rhs)):
+            lhs.assertEqual(with: rhs)
+        case (.call(let lhs), .call(let rhs)):
+            lhs.assertEqual(with: rhs)
+        case (.access(let lhs), .access(let rhs)):
+            lhs.assertEqual(with: rhs)
+        case (.binding(let lhs), .binding(let rhs)):
+            lhs.assertEqual(with: rhs)
+        case (.taggedExpression(let lhs), .taggedExpression(let rhs)):
+            lhs.assertEqual(with: rhs)
+        case (.branched(let lhs), .branched(let rhs)):
+            lhs.assertEqual(with: rhs)
+        case (.piped(let lhs), .piped(let rhs)):
+            lhs.assertEqual(with: rhs)
         default:
             XCTFail("Expressions do not match")
         }
+    }
+}
+
+extension Syntax.Literal: Testable {
+    func assertEqual(
+        with: Self
+    ) {
+        XCTAssertEqual(self.value, with.value)
+    }
+}
+
+extension Syntax.Unary: Testable {
+    func assertEqual(
+        with: Self
+    ) {
+        XCTAssertEqual(self.op, with.op)
+        self.expression.assertEqual(with: with.expression)
+    }
+}
+
+extension Syntax.Binary: Testable {
+    func assertEqual(
+        with: Self
+    ) {
+        XCTAssertEqual(self.op, with.op)
+        self.left.assertEqual(with: with.left)
+        self.right.assertEqual(with: with.right)
+    }
+}
+
+extension Syntax.Function {
+    func assertEqual(
+        with: Self
+    ) {
+        if let withSignature = with.signature {
+            XCTAssertNotNil(self.signature)
+            if let signature = self.signature {
+                signature.assertEqual(with: withSignature)
+            }
+        } else {
+            XCTAssertNil(self.signature)
+        }
+        self.body.assertEqual(with: with.body)
+    }
+}
+
+extension Syntax.FunctionType {
+    func assertEqual(
+        with: Self
+    ) {
+        if let withInputType = with.inputType {
+            XCTAssertNotNil(self.inputType)
+            if let inputType = self.inputType {
+                inputType.assertEqual(with: withInputType)
+            }
+        } else {
+            XCTAssertNil(self.inputType)
+        }
+
+        XCTAssertEqual(self.arguments.count, with.arguments.count)
+
+        zip(self.arguments, with.arguments).forEach {
+            $0.assertEqual(with: $1)
+        }
+
+        self.outputType.assertEqual(with: with.outputType)
+    }
+}
+
+extension Syntax.Call: Testable {
+    func assertEqual(
+        with: Self
+    ) {
+        self.prefix.assertEqual(with: with.prefix)
+
+        XCTAssertEqual(self.arguments.count, with.arguments.count)
+
+        zip(self.arguments, with.arguments).forEach {
+            $0.assertEqual(with: $1)
+        }
+    }
+}
+
+extension Syntax.Access: Testable {
+    func assertEqual(
+        with: Self
+    ) {
+        self.prefix.assertEqual(with: with.prefix)
+        XCTAssertEqual(self.field, with.field)
+    }
+}
+
+extension Syntax.Binding: Testable {
+    func assertEqual(
+        with: Self
+    ) {
+        XCTAssertEqual(self.identifier, with.identifier)
+    }
+}
+
+extension Syntax.TaggedExpression: Testable {
+    func assertEqual(
+        with: Self
+    ) {
+        XCTAssertEqual(self.tag, with.tag)
+        self.expression.assertEqual(with: with.expression)
+    }
+}
+
+extension Syntax.Branched: Testable {
+    func assertEqual(
+        with: Self
+    ) {
+        XCTAssertEqual(self.branches.count, with.branches.count)
+        zip(self.branches, with.branches).forEach {
+            $0.assertEqual(with: $1)
+        }
+    }
+}
+
+extension Syntax.Branched.Branch: Testable {
+    func assertEqual(
+        with: Self
+    ) {
+        self.matchExpression.assertEqual(with: with.matchExpression)
+
+        if let withGuardExpression = with.guardExpression {
+            XCTAssertNotNil(self.guardExpression)
+            if let guardExpression = self.guardExpression {
+                guardExpression.assertEqual(with: withGuardExpression)
+            }
+        } else {
+            XCTAssertNil(self.guardExpression)
+        }
+
+        self.body.assertEqual(with: with.body)
+    }
+}
+
+extension Syntax.Pipe: Testable {
+    func assertEqual(
+        with: Self
+    ) {
+        self.left.assertEqual(with: with.left)
+        self.right.assertEqual(with: with.right)
     }
 }
 
@@ -225,14 +387,9 @@ extension Syntax.Expression {
         _ op: Operator,
         _ rhs: Syntax.Expression
     ) -> Syntax.Expression {
-        return .init(
-            expressionType: .binary(op, left: lhs, right: rhs),
-            location: .nowhere)
-    }
-    static func intLiteral(_ value: UInt64) -> Syntax.Expression {
-        return .init(
-            expressionType: .literal(.intLiteral(value)),
-            location: .nowhere)
+        return .binary(
+            .init(op: op, left: lhs, right: rhs)
+        )
     }
 }
 

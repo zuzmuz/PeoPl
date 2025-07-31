@@ -320,7 +320,6 @@ public enum Syntax {
     public struct FunctionType: SyntaxNode, Sendable {
         let inputType: TypeField?
         let arguments: [TypeField]
-        // TODO: consider multiple argument groups for partial application
         let outputType: TypeSpecifier
         public let location: NodeLocation
 
