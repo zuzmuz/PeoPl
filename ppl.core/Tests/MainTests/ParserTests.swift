@@ -2,7 +2,6 @@ import XCTest
 
 @testable import Main
 
-
 // MARK: - Testable Protocol
 
 extension Syntax.Module: Testable {
@@ -337,7 +336,6 @@ extension Syntax.Pipe: Testable {
     }
 }
 
-
 // MARK: - Syntax Util Extensions
 
 extension Syntax.QualifiedIdentifier {
@@ -404,446 +402,454 @@ extension Syntax.Expression {
             .init(op: op, left: lhs, right: rhs)
         )
     }
+
+    static func record(
+        _ typeFields: [Syntax.TypeField]
+    ) -> Syntax.Expression {
+        return .recordType(
+            .init(typeFields: typeFields))
+    }
+
+    static func choice(
+        _ typeFields: [Syntax.TypeField]
+    ) -> Syntax.Expression {
+        return .choiceType(
+            .init(typeFields: typeFields))
+    }
+
+    static func nominalType(
+        _ identifier: Syntax.QualifiedIdentifier
+    ) -> Syntax.Expression {
+        return .nominal(.init(identifier: identifier))
+    }
 }
 
 final class ParserTests: XCTestCase {
     let fileNames: [String: Syntax.Module] = [
-        // "types": .init(
-        //     sourceName: "types",
-        //     definitions: [
-        //         .type(
-        //             identifier: .chain(["Basic"]),
-        //             typeSpecifier: .productType(
-        //                 typeFields: [
-        //                     .tagged(
-        //                         tag: "a",
-        //                         typeSpecifier: .nominalType(
-        //                             identifier: .chain(["Int"])
-        //                         )
-        //                     )
-        //                 ]
-        //             )
-        //         ),
-        //         .type(
-        //             identifier: .chain(["Multiple"]),
-        //             typeSpecifier: .productType(
-        //                 typeFields: [
-        //                     .tagged(
-        //                         tag: "a",
-        //                         typeSpecifier: .nominalType(
-        //                             identifier: .chain(["Int"])
-        //                         )
-        //                     ),
-        //                     .tagged(
-        //                         tag: "b",
-        //                         typeSpecifier: .nominalType(
-        //                             identifier: .chain(["Float"])
-        //                         )
-        //                     ),
-        //                     .tagged(
-        //                         tag: "c",
-        //                         typeSpecifier: .nominalType(
-        //                             identifier: .chain(["String"])
-        //                         )
-        //                     ),
-        //                 ]
-        //             )
-        //         ),
-        //         .type(
-        //             identifier: .chain(["Nested"]),
-        //             typeSpecifier: .productType(
-        //                 typeFields: [
-        //                     .tagged(
-        //                         tag: "a",
-        //                         typeSpecifier: .nominalType(
-        //                             identifier: .chain(["Int"])
-        //                         )
-        //                     ),
-        //                     .tagged(
-        //                         tag: "d",
-        //                         typeSpecifier: .productType(
-        //                             typeFields: [
-        //                                 .tagged(
-        //                                     tag: "b",
-        //                                     typeSpecifier: .nominalType(
-        //                                         identifier: .chain(["Float"])
-        //                                     )
-        //                                 ),
-        //                                 .tagged(
-        //                                     tag: "e",
-        //                                     typeSpecifier: .productType(
-        //                                         typeFields: [
-        //                                             .tagged(
-        //                                                 tag: "c",
-        //                                                 typeSpecifier:
-        //                                                     .nominalType(
-        //                                                         identifier:
-        //                                                             .chain([
-        //                                                                 "String"
-        //                                                             ]
-        //                                                             )
-        //                                                     )
-        //                                             )
-        //                                         ]
-        //                                     )
-        //                                 ),
-        //                             ]
-        //                         )
-        //                     ),
-        //                 ]
-        //             )
-        //         ),
-        //         .type(
-        //             identifier: .chain(["Scoped", "Basic"]),
-        //             typeSpecifier: .productType(
-        //                 typeFields: [
-        //                     .tagged(
-        //                         tag: "a",
-        //                         typeSpecifier: .nominalType(
-        //                             identifier: .chain(["Int"])
-        //                         )
-        //                     )
-        //                 ]
-        //             )
-        //         ),
-        //         .type(
-        //             identifier: .chain(["Scoped", "Multiple", "Times"]),
-        //             typeSpecifier: .productType(
-        //                 typeFields: [
-        //                     .tagged(
-        //                         tag: "a",
-        //                         typeSpecifier: .nominalType(
-        //                             identifier: .chain(["Int"])
-        //                         )
-        //                     ),
-        //                     .tagged(
-        //                         tag: "e",
-        //                         typeSpecifier: .nominalType(
-        //                             identifier: .chain(["Bool"])
-        //                         )
-        //                     ),
-        //                 ]
-        //             )
-        //         ),
-        //         .type(
-        //             identifier: .chain(["ScopedTypes"]),
-        //             typeSpecifier: .productType(
-        //                 typeFields: [
-        //                     .tagged(
-        //                         tag: "x",
-        //                         typeSpecifier: .nominalType(
-        //                             identifier: .chain(["CG", "Float"])
-        //                         )
-        //                     ),
-        //                     .tagged(
-        //                         tag: "y",
-        //                         typeSpecifier: .nominalType(
-        //                             identifier: .chain(["CG", "Vector"])
-        //                         )
-        //                     ),
-        //                 ]
-        //             )
-        //         ),
-        //         .type(
-        //             identifier: .chain(["TypeWithNothing"]),
-        //             typeSpecifier: .productType(
-        //                 typeFields: [
-        //                     .tagged(
-        //                         tag: "m",
-        //                         typeSpecifier: .nothing(location: .nowhere)
-        //                     ),
-        //                     .tagged(
-        //                         tag: "n",
-        //                         typeSpecifier: .nothing(location: .nowhere)
-        //                     ),
-        //                 ]
-        //             )
-        //         ),
-        //         .type(
-        //             identifier: .chain(["Numbered"]),
-        //             typeSpecifier: .productType(
-        //                 typeFields: [
-        //                     .tagged(
-        //                         tag: "_1",
-        //                         typeSpecifier: .nominalType(
-        //                             identifier: .chain(["One"])
-        //                         )
-        //                     ),
-        //                     .tagged(
-        //                         tag: "_2",
-        //                         typeSpecifier: .nominalType(
-        //                             identifier: .chain(["Two"])
-        //                         )
-        //                     ),
-        //                     .tagged(
-        //                         tag: "_3",
-        //                         typeSpecifier: .nominalType(
-        //                             identifier: .chain(["Three"])
-        //                         )
-        //                     ),
-        //                 ]
-        //             )
-        //         ),
-        //         .type(
-        //             identifier: .chain(["Tuple"]),
-        //             typeSpecifier: .productType(
-        //                 typeFields: [
-        //                     .untagged(
-        //                         typeSpecifier: .nominalType(
-        //                             identifier: .chain(["Int"])
-        //                         )
-        //                     ),
-        //                     .untagged(
-        //                         typeSpecifier: .nominalType(
-        //                             identifier: .chain(["Float"])
-        //                         )
-        //                     ),
-        //                     .untagged(
-        //                         typeSpecifier: .nominalType(
-        //                             identifier: .chain(["String"])
-        //                         )
-        //                     ),
-        //                     .untagged(
-        //                         typeSpecifier: .nominalType(
-        //                             identifier: .chain(["Bool"])
-        //                         )
-        //                     ),
-        //                     .untagged(
-        //                         typeSpecifier: .nominalType(
-        //                             identifier: .chain(["Nested", "Scope"])
-        //                         )
-        //                     ),
-        //                     .untagged(
-        //                         typeSpecifier: .nominalType(
-        //                             identifier: .chain([
-        //                                 "Multiple",
-        //                                 "Nested",
-        //                                 "Scope",
-        //                             ])
-        //                         )
-        //                     ),
-        //                 ]
-        //             )
-        //         ),
-        //         .type(
-        //             identifier: .chain(["Mix"]),
-        //             typeSpecifier: .productType(typeFields: [
-        //                 .untagged(
-        //                     typeSpecifier: .nominalType(
-        //                         identifier: .chain(["Int"])
-        //                     )
-        //                 ),
-        //                 .tagged(
-        //                     tag: "named",
-        //                     typeSpecifier: .nominalType(
-        //                         identifier: .chain(["Int"])
-        //                     )
-        //                 ),
-        //                 .untagged(
-        //                     typeSpecifier: .nominalType(
-        //                         identifier: .chain(["Float"])
-        //                     )
-        //                 ),
-        //                 .tagged(
-        //                     tag: "other",
-        //                     typeSpecifier: .nominalType(
-        //                         identifier: .chain(["Float"])
-        //                     )
-        //                 ),
-        //
-        //             ])
-        //         ),
-        //         .type(
-        //             identifier: .chain(["Choice"]),
-        //             typeSpecifier: .sumType(typeFields: [
-        //                 .tagged(
-        //                     tag: "first",
-        //                     typeSpecifier: .nothing(location: .nowhere)),
-        //                 .tagged(
-        //                     tag: "second",
-        //                     typeSpecifier: .nothing(location: .nowhere)),
-        //                 .tagged(
-        //                     tag: "third",
-        //                     typeSpecifier: .nothing(location: .nowhere)),
-        //             ])
-        //         ),
-        //         .type(
-        //             identifier: .chain(["Shape"]),
-        //             typeSpecifier: .sumType(typeFields: [
-        //                 .tagged(
-        //                     tag: "circle",
-        //                     typeSpecifier: .productType(typeFields: [
-        //                         .tagged(
-        //                             tag: "radius",
-        //                             typeSpecifier: .nominalType(
-        //                                 identifier: .chain(["Float"])))
-        //                     ])),
-        //                 .tagged(
-        //                     tag: "rectangle",
-        //                     typeSpecifier: .productType(typeFields: [
-        //                         .tagged(
-        //                             tag: "width",
-        //                             typeSpecifier: .nominalType(
-        //                                 identifier: .chain(["Float"]))),
-        //                         .tagged(
-        //                             tag: "height",
-        //                             typeSpecifier: .nominalType(
-        //                                 identifier: .chain(["Float"]))),
-        //                     ])),
-        //                 .tagged(
-        //                     tag: "triangle",
-        //                     typeSpecifier: .productType(typeFields: [
-        //                         .tagged(
-        //                             tag: "base",
-        //                             typeSpecifier: .nominalType(
-        //                                 identifier: .chain(["Float"]))),
-        //                         .tagged(
-        //                             tag: "height",
-        //                             typeSpecifier: .nominalType(
-        //                                 identifier: .chain(["Float"]))),
-        //                     ])),
-        //             ])
-        //         ),
-        //         .type(
-        //             identifier: .chain(["Graphix", "Color"]),
-        //             typeSpecifier: .sumType(typeFields: [
-        //                 .tagged(
-        //                     tag: "rgb",
-        //                     typeSpecifier: .productType(typeFields: [
-        //                         .tagged(
-        //                             tag: "red",
-        //                             typeSpecifier: .nominalType(
-        //                                 identifier: .chain(["Float"]))),
-        //                         .tagged(
-        //                             tag: "green",
-        //                             typeSpecifier: .nominalType(
-        //                                 identifier: .chain(["Float"]))),
-        //                         .tagged(
-        //                             tag: "blue",
-        //                             typeSpecifier: .nominalType(
-        //                                 identifier: .chain(["Float"]))),
-        //                     ])),
-        //                 .tagged(
-        //                     tag: "named",
-        //                     typeSpecifier: .nominalType(
-        //                         identifier: .chain(["Graphix", "ColorName"]))
-        //                 ),
-        //                 .tagged(
-        //                     tag: "hsv",
-        //                     typeSpecifier: .productType(typeFields: [
-        //                         .tagged(
-        //                             tag: "hue",
-        //                             typeSpecifier: .nominalType(
-        //                                 identifier: .chain(["Float"]))),
-        //                         .tagged(
-        //                             tag: "saturation",
-        //                             typeSpecifier: .nominalType(
-        //                                 identifier: .chain(["Float"]))),
-        //                         .tagged(
-        //                             tag: "value",
-        //                             typeSpecifier: .nominalType(
-        //                                 identifier: .chain(["Float"]))),
-        //                     ])),
-        //             ])
-        //         ),
-        //         .type(
-        //             identifier: .chain(["Union"]),
-        //             typeSpecifier: .sumType(typeFields: [
-        //                 .untagged(
-        //                     typeSpecifier: .nominalType(
-        //                         identifier: .chain(["Int"])
-        //                     )
-        //                 ),
-        //                 .untagged(
-        //                     typeSpecifier: .nominalType(
-        //                         identifier: .chain(["Float"])
-        //                     )
-        //                 ),
-        //                 .untagged(
-        //                     typeSpecifier: .nominalType(
-        //                         identifier: .chain(["String"])
-        //                     )
-        //                 ),
-        //             ])
-        //         ),
-        //         .type(
-        //             identifier: .chain(["Nested", "Stuff"]),
-        //             typeSpecifier: .productType(
-        //                 typeFields: [
-        //                     .tagged(
-        //                         tag: "first",
-        //                         typeSpecifier: .sumType(
-        //                             typeFields: [
-        //                                 .untagged(
-        //                                     typeSpecifier: .nominalType(
-        //                                         identifier: .chain(["A"]))),
-        //                                 .untagged(
-        //                                     typeSpecifier: .nominalType(
-        //                                         identifier: .chain(["B"]))),
-        //                                 .untagged(
-        //                                     typeSpecifier: .nominalType(
-        //                                         identifier: .chain(["C"]))),
-        //                             ]
-        //                         )
-        //                     ),
-        //                     .tagged(
-        //                         tag: "second",
-        //                         typeSpecifier: .sumType(
-        //                             typeFields: [
-        //                                 .tagged(
-        //                                     tag: "a",
-        //                                     typeSpecifier: .nothing(
-        //                                         location: .nowhere)),
-        //                                 .tagged(
-        //                                     tag: "b",
-        //                                     typeSpecifier: .nothing(
-        //                                         location: .nowhere)),
-        //                                 .tagged(
-        //                                     tag: "c",
-        //                                     typeSpecifier: .nothing(
-        //                                         location: .nowhere)),
-        //                             ]
-        //                         )
-        //                     ),
-        //                     .tagged(
-        //                         tag: "mix",
-        //                         typeSpecifier: .sumType(
-        //                             typeFields: [
-        //                                 .untagged(
-        //                                     typeSpecifier: .nominalType(
-        //                                         identifier: .chain(["First"]))),
-        //                                 .tagged(
-        //                                     tag: "second",
-        //                                     typeSpecifier: .nominalType(
-        //                                         identifier: .chain(["Second"]))),
-        //                                 .tagged(
-        //                                     tag: "third",
-        //                                     typeSpecifier: .sumType(
-        //                                         typeFields: [
-        //                                             .tagged(
-        //                                                 tag: "_1",
-        //                                                 typeSpecifier: .nothing(
-        //                                                     location: .nowhere)),
-        //                                             .tagged(
-        //                                                 tag: "_2",
-        //                                                 typeSpecifier: .nothing(
-        //                                                     location: .nowhere)),
-        //                                             .tagged(
-        //                                                 tag: "_3",
-        //                                                 typeSpecifier: .nothing(
-        //                                                     location: .nowhere)),
-        //
-        //                                         ]
-        //                                     )
-        //                                 ),
-        //                             ]
-        //                         )
-        //                     ),
-        //                 ]
-        //             )
-        //         ),
-        //     ]
-        // ),
+        "types": .init(
+            sourceName: "types",
+            definitions: [
+                .init(
+                    identifier: .chain(["Basic"]),
+                    definition: .record(
+                        [
+                            .tagged(
+                                tag: "a",
+                                typeSpecifier: .nominalType(
+                                    .chain(["Int"])
+                                )
+                            )
+                        ]
+                    )
+                ),
+                .init(
+                    identifier: .chain(["Multiple"]),
+                    definition: .record(
+                        [
+                            .tagged(
+                                tag: "a",
+                                typeSpecifier: .nominalType(
+                                    .chain(["Int"])
+                                )
+                            ),
+                            .tagged(
+                                tag: "b",
+                                typeSpecifier: .nominalType(
+                                    .chain(["Float"])
+                                )
+                            ),
+                            .tagged(
+                                tag: "c",
+                                typeSpecifier: .nominalType(
+                                    .chain(["String"])
+                                )
+                            ),
+                        ]
+                    )
+                ),
+                .init(
+                    identifier: .chain(["Nested"]),
+                    definition: .record(
+                        [
+                            .tagged(
+                                tag: "a",
+                                typeSpecifier: .nominalType(
+                                    .chain(["Int"])
+                                )
+                            ),
+                            .tagged(
+                                tag: "d",
+                                typeSpecifier: .record(
+                                    [
+                                        .tagged(
+                                            tag: "b",
+                                            typeSpecifier: .nominalType(
+                                                .chain(["Float"])
+                                            )
+                                        ),
+                                        .tagged(
+                                            tag: "e",
+                                            typeSpecifier: .record(
+                                                [
+                                                    .tagged(
+                                                        tag: "c",
+                                                        typeSpecifier:
+                                                            .nominalType(
+                                                                .chain([
+                                                                    "String"
+                                                                ]
+                                                                )
+                                                            )
+                                                    )
+                                                ]
+                                            )
+                                        ),
+                                    ]
+                                )
+                            ),
+                        ]
+                    )
+                ),
+                .init(
+                    identifier: .chain(["Scoped", "Basic"]),
+                    definition: .record(
+                        [
+                            .tagged(
+                                tag: "a",
+                                typeSpecifier: .nominalType(
+                                    .chain(["Int"])
+                                )
+                            )
+                        ]
+                    )
+                ),
+                .init(
+                    identifier: .chain(["Scoped", "Multiple", "Times"]),
+                    definition: .record(
+                        [
+                            .tagged(
+                                tag: "a",
+                                typeSpecifier: .nominalType(
+                                    .chain(["Int"])
+                                )
+                            ),
+                            .tagged(
+                                tag: "e",
+                                typeSpecifier: .nominalType(
+                                    .chain(["Bool"])
+                                )
+                            ),
+                        ]
+                    )
+                ),
+                .init(
+                    identifier: .chain(["ScopedTypes"]),
+                    definition: .record(
+                        [
+                            .tagged(
+                                tag: "x",
+                                typeSpecifier: .nominalType(
+                                    .chain(["CG", "Float"])
+                                )
+                            ),
+                            .tagged(
+                                tag: "y",
+                                typeSpecifier: .nominalType(
+                                    .chain(["CG", "Vector"])
+                                )
+                            ),
+                        ]
+                    )
+                ),
+                .init(
+                    identifier: .chain(["TypeWithNothing"]),
+                    definition: .record(
+                        [
+                            .tagged(
+                                tag: "m",
+                                typeSpecifier: .nothing(location: .nowhere)
+                            ),
+                            .tagged(
+                                tag: "n",
+                                typeSpecifier: .nothing(location: .nowhere)
+                            ),
+                        ]
+                    )
+                ),
+                .init(
+                    identifier: .chain(["Numbered"]),
+                    definition: .record(
+                        [
+                            .tagged(
+                                tag: "_1",
+                                typeSpecifier: .nominalType(
+                                    .chain(["One"])
+                                )
+                            ),
+                            .tagged(
+                                tag: "_2",
+                                typeSpecifier: .nominalType(
+                                    .chain(["Two"])
+                                )
+                            ),
+                            .tagged(
+                                tag: "_3",
+                                typeSpecifier: .nominalType(
+                                    .chain(["Three"])
+                                )
+                            ),
+                        ]
+                    )
+                ),
+                .init(
+                    identifier: .chain(["Tuple"]),
+                    definition: .record(
+                        [
+                            .untagged(
+                                typeSpecifier: .nominalType(
+                                    .chain(["Int"])
+                                )
+                            ),
+                            .untagged(
+                                typeSpecifier: .nominalType(
+                                    .chain(["Float"])
+                                )
+                            ),
+                            .untagged(
+                                typeSpecifier: .nominalType(
+                                    .chain(["String"])
+                                )
+                            ),
+                            .untagged(
+                                typeSpecifier: .nominalType(
+                                    .chain(["Bool"])
+                                )
+                            ),
+                            .untagged(
+                                typeSpecifier: .nominalType(
+                                    .chain(["Nested", "Scope"])
+                                )
+                            ),
+                            .untagged(
+                                typeSpecifier: .nominalType(
+                                    .chain([
+                                        "Multiple",
+                                        "Nested",
+                                        "Scope",
+                                    ])
+                                )
+                            ),
+                        ]
+                    )
+                ),
+                .init(
+                    identifier: .chain(["Mix"]),
+                    definition: .record([
+                        .untagged(
+                            typeSpecifier: .nominalType(
+                                .chain(["Int"])
+                            )
+                        ),
+                        .tagged(
+                            tag: "named",
+                            typeSpecifier: .nominalType(
+                                .chain(["Int"])
+                            )
+                        ),
+                        .untagged(
+                            typeSpecifier: .nominalType(
+                                .chain(["Float"])
+                            )
+                        ),
+                        .tagged(
+                            tag: "other",
+                            typeSpecifier: .nominalType(
+                                .chain(["Float"])
+                            )
+                        ),
+                    ])
+                ),
+                .init(
+                    identifier: .chain(["Choice"]),
+                    definition: .choice([
+                        .tagged(
+                            tag: "first",
+                            typeSpecifier: .nothing(location: .nowhere)),
+                        .tagged(
+                            tag: "second",
+                            typeSpecifier: .nothing(location: .nowhere)),
+                        .tagged(
+                            tag: "third",
+                            typeSpecifier: .nothing(location: .nowhere)),
+                    ])
+                ),
+                .init(
+                    identifier: .chain(["Shape"]),
+                    definition: .choice([
+                        .tagged(
+                            tag: "circle",
+                            typeSpecifier: .record([
+                                .tagged(
+                                    tag: "radius",
+                                    typeSpecifier: .nominalType(
+                                        .chain(["Float"])))
+                            ])),
+                        .tagged(
+                            tag: "rectangle",
+                            typeSpecifier: .record([
+                                .tagged(
+                                    tag: "width",
+                                    typeSpecifier: .nominalType(
+                                        .chain(["Float"]))),
+                                .tagged(
+                                    tag: "height",
+                                    typeSpecifier: .nominalType(
+                                        .chain(["Float"]))),
+                            ])),
+                        .tagged(
+                            tag: "triangle",
+                            typeSpecifier: .record([
+                                .tagged(
+                                    tag: "base",
+                                    typeSpecifier: .nominalType(
+                                        .chain(["Float"]))),
+                                .tagged(
+                                    tag: "height",
+                                    typeSpecifier: .nominalType(
+                                        .chain(["Float"]))),
+                            ])),
+                    ])
+                ),
+                .init(
+                    identifier: .chain(["Graphix", "Color"]),
+                    definition: .choice([
+                        .tagged(
+                            tag: "rgb",
+                            typeSpecifier: .record([
+                                .tagged(
+                                    tag: "red",
+                                    typeSpecifier: .nominalType(
+                                        .chain(["Float"]))),
+                                .tagged(
+                                    tag: "green",
+                                    typeSpecifier: .nominalType(
+                                        .chain(["Float"]))),
+                                .tagged(
+                                    tag: "blue",
+                                    typeSpecifier: .nominalType(
+                                        .chain(["Float"]))),
+                            ])),
+                        .tagged(
+                            tag: "named",
+                            typeSpecifier: .nominalType(
+                                .chain(["Graphix", "ColorName"]))
+                        ),
+                        .tagged(
+                            tag: "hsv",
+                            typeSpecifier: .record([
+                                .tagged(
+                                    tag: "hue",
+                                    typeSpecifier: .nominalType(
+                                        .chain(["Float"]))),
+                                .tagged(
+                                    tag: "saturation",
+                                    typeSpecifier: .nominalType(
+                                        .chain(["Float"]))),
+                                .tagged(
+                                    tag: "value",
+                                    typeSpecifier: .nominalType(
+                                        .chain(["Float"]))),
+                            ])),
+                    ])
+                ),
+                .init(
+                    identifier: .chain(["Union"]),
+                    definition: .choice([
+                        .untagged(
+                            typeSpecifier: .nominalType(
+                                .chain(["Int"])
+                            )
+                        ),
+                        .untagged(
+                            typeSpecifier: .nominalType(
+                                .chain(["Float"])
+                            )
+                        ),
+                        .untagged(
+                            typeSpecifier: .nominalType(
+                                .chain(["String"])
+                            )
+                        ),
+                    ])
+                ),
+                .init(
+                    identifier: .chain(["Nested", "Stuff"]),
+                    definition: .record([
+                        .tagged(
+                            tag: "first",
+                            typeSpecifier: .choice([
+                                .untagged(
+                                    typeSpecifier: .nominalType(
+                                        .chain(["A"]))),
+                                .untagged(
+                                    typeSpecifier: .nominalType(
+                                        .chain(["B"]))),
+                                .untagged(
+                                    typeSpecifier: .nominalType(
+                                        .chain(["C"]))),
+                            ])
+                        ),
+                        .tagged(
+                            tag: "second",
+                            typeSpecifier: .choice([
+                                .tagged(
+                                    tag: "a",
+                                    typeSpecifier: .nothing(
+                                        location: .nowhere)),
+                                .tagged(
+                                    tag: "b",
+                                    typeSpecifier: .nothing(
+                                        location: .nowhere)),
+                                .tagged(
+                                    tag: "c",
+                                    typeSpecifier: .nothing(
+                                        location: .nowhere)),
+                            ])
+                        ),
+                        .tagged(
+                            tag: "mix",
+                            typeSpecifier: .choice([
+                                .untagged(
+                                    typeSpecifier: .nominalType(
+                                        .chain(["First"]))),
+                                .tagged(
+                                    tag: "second",
+                                    typeSpecifier: .nominalType(
+                                        .chain(["Second"]))),
+                                .tagged(
+                                    tag: "third",
+                                    typeSpecifier: .choice([
+                                        .tagged(
+                                            tag: "_1",
+                                            typeSpecifier: .nothing(
+                                                location: .nowhere)),
+                                        .tagged(
+                                            tag: "_2",
+                                            typeSpecifier: .nothing(
+                                                location: .nowhere)),
+                                        .tagged(
+                                            tag: "_3",
+                                            typeSpecifier: .nothing(
+                                                location: .nowhere)),
+
+                                    ])
+                                ),
+                            ])
+                        ),
+                    ])
+                ),
+            ]
+        ),
         "simpleexpressions": .init(
             sourceName: "expressions",
             definitions: [
