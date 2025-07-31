@@ -70,7 +70,7 @@ module.exports = grammar({
           "=>",
         )
       ),
-      field("definition", $._simple_expression)
+      field("definition", $._expression)
     ),
 
 
@@ -169,7 +169,7 @@ module.exports = grammar({
           field("type_specifier", $._type_specifier)),
       ),
       ":",
-      field("expression", $._simple_expression)
+      field("expression", $._expression)
     )),
 
     _simple_expression: $ => choice(
@@ -292,7 +292,6 @@ module.exports = grammar({
     // --------
 
     literal: $ => choice(
-      // $.never_value,
       $.int_literal,
       $.float_literal,
       $.string_literal,
@@ -310,7 +309,7 @@ module.exports = grammar({
     )),
 
     float_literal: $ => /\d+\.\d+/,
-    string_literal: $ => /"[^"]*"/,
+    string_literal: $ => /"([^"\\\r\n]|\\.)*"/,
     bool_literal: $ => choice("true", "false"),
 
     // Operators

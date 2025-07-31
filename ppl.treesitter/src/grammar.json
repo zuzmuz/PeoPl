@@ -161,7 +161,7 @@
           "name": "definition",
           "content": {
             "type": "SYMBOL",
-            "name": "_simple_expression"
+            "name": "_expression"
           }
         }
       ]
@@ -598,7 +598,7 @@
             "name": "expression",
             "content": {
               "type": "SYMBOL",
-              "name": "_simple_expression"
+              "name": "_expression"
             }
           }
         ]
@@ -1186,7 +1186,7 @@
     },
     "string_literal": {
       "type": "PATTERN",
-      "value": "\"[^\"]*\""
+      "value": "\"([^\"\\\\\\r\\n]|\\\\.)*\""
     },
     "bool_literal": {
       "type": "CHOICE",

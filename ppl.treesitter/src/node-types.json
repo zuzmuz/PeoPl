@@ -593,6 +593,10 @@
             "named": true
           },
           {
+            "type": "branched_expression",
+            "named": true
+          },
+          {
             "type": "call_expression",
             "named": true
           },
@@ -629,7 +633,15 @@
             "named": true
           },
           {
+            "type": "piped_expression",
+            "named": true
+          },
+          {
             "type": "record_type",
+            "named": true
+          },
+          {
+            "type": "tagged_expression",
             "named": true
           },
           {
@@ -1458,6 +1470,10 @@
             "named": true
           },
           {
+            "type": "branched_expression",
+            "named": true
+          },
+          {
             "type": "call_expression",
             "named": true
           },
@@ -1494,7 +1510,15 @@
             "named": true
           },
           {
+            "type": "piped_expression",
+            "named": true
+          },
+          {
             "type": "record_type",
+            "named": true
+          },
+          {
+            "type": "tagged_expression",
             "named": true
           },
           {

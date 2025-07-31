@@ -25,7 +25,6 @@
   - [[#type-aliases][Type Aliases]]
 - [[#call-expressions][Call Expressions]]
 - [[#comments][Comments]]
-- [[#complex-data-processing][Complex Data Processing]]
 
 * What is this
 This is a small introduction to PeoPl.
@@ -175,10 +174,10 @@ Capture pipeline inputs using the vertical bar notation =|$name|=:
 // Pattern matching with branching
 value
 |>
-    |0| "Zero",
-    |1| "One",
-    |$n if n < 0| "Negative",
-    |$n if n % 2 = 0| "Even",
+    |0| "Zero"
+    |1| "One"
+    |$n if n < 0| "Negative"
+    |$n if n % 2 = 0| "Even"
     |_| "Other"
 #+END_SRC
 
@@ -262,7 +261,7 @@ Shape: choice [
 
 // Pattern matching on choice types
 processShape: func (Shape)[] -> Float {
-  |circle: (radius: $r)| PI * r * r,
+  |circle: (radius: $r)| PI * r * r
   |rectangle: (width: $w, height: $h)| w * h
 }
 #+END_SRC
@@ -303,23 +302,4 @@ Start a comment with two forward slashes. Multiline comments are not supported:
 main: func [] -> Int { // This is also a comment
     0
 }
-#+END_SRC
-
-* Complex Data Processing
-
-#+BEGIN_SRC peopl
-// Processing nested structures
-user_data: (
-  user: (name: "Alice", age: 30),
-  permissions: ("read", "write")
-)
-
-result: (
-    user_data
-    |>
-    |$data| (
-        name: data.user.name,
-        can_edit: data.permissions.contains("write")
-    )
-)
 #+END_SRC
