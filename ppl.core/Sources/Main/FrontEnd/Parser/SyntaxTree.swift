@@ -206,12 +206,12 @@ public enum Syntax {
     /// A type field with a label/tag for record types and function parameters
     public struct TaggedTypeSpecifier: SyntaxNode, Sendable {
         let tag: String
-        let typeSpecifier: TypeSpecifier
+        let typeSpecifier: TypeSpecifier?
         public let location: NodeLocation
 
         init(
             tag: String,
-            typeSpecifier: TypeSpecifier,
+            typeSpecifier: TypeSpecifier?,
             location: NodeLocation = .nowhere
         ) {
             self.tag = tag

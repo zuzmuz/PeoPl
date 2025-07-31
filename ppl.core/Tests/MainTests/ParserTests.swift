@@ -115,7 +115,14 @@ extension Syntax.TaggedTypeSpecifier: Testable {
         with: Self
     ) {
         XCTAssertEqual(self.tag, with.tag)
-        self.typeSpecifier.assertEqual(with: with.typeSpecifier)
+        if let withTypeSpecifier = with.typeSpecifier {
+            XCTAssertNotNil(self.typeSpecifier)
+            if let selfTypeSpecifier = self.typeSpecifier {
+                selfTypeSpecifier.assertEqual(with: withTypeSpecifier)
+            }
+        } else {
+            XCTAssertNil(self.typeSpecifier)
+        }
     }
 }
 
@@ -371,7 +378,7 @@ extension Syntax.TypeSpecifier {
 extension Syntax.TypeField {
     static func tagged(
         tag: String,
-        typeSpecifier: Syntax.TypeSpecifier
+        typeSpecifier: Syntax.TypeSpecifier?
     ) -> Syntax.TypeField {
         return .taggedTypeSpecifier(
             .init(tag: tag, typeSpecifier: typeSpecifier))
@@ -674,13 +681,13 @@ final class ParserTests: XCTestCase {
                     definition: .choice([
                         .tagged(
                             tag: "first",
-                            typeSpecifier: .nothing(location: .nowhere)),
+                            typeSpecifier: nil),
                         .tagged(
                             tag: "second",
-                            typeSpecifier: .nothing(location: .nowhere)),
+                            typeSpecifier: nil),
                         .tagged(
                             tag: "third",
-                            typeSpecifier: .nothing(location: .nowhere)),
+                            typeSpecifier: nil),
                     ])
                 ),
                 .init(
@@ -804,16 +811,16 @@ final class ParserTests: XCTestCase {
                             typeSpecifier: .choice([
                                 .tagged(
                                     tag: "a",
-                                    typeSpecifier: .nothing(
-                                        location: .nowhere)),
+                                    typeSpecifier: nil,
+                                ),
                                 .tagged(
                                     tag: "b",
-                                    typeSpecifier: .nothing(
-                                        location: .nowhere)),
+                                    typeSpecifier: nil,
+                                ),
                                 .tagged(
                                     tag: "c",
-                                    typeSpecifier: .nothing(
-                                        location: .nowhere)),
+                                    typeSpecifier: nil,
+                                )
                             ])
                         ),
                         .tagged(
@@ -831,16 +838,13 @@ final class ParserTests: XCTestCase {
                                     typeSpecifier: .choice([
                                         .tagged(
                                             tag: "_1",
-                                            typeSpecifier: .nothing(
-                                                location: .nowhere)),
+                                            typeSpecifier: nil),
                                         .tagged(
                                             tag: "_2",
-                                            typeSpecifier: .nothing(
-                                                location: .nowhere)),
+                                            typeSpecifier: nil),
                                         .tagged(
                                             tag: "_3",
-                                            typeSpecifier: .nothing(
-                                                location: .nowhere)),
+                                            typeSpecifier: nil),
 
                                     ])
                                 ),

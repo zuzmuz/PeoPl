@@ -284,17 +284,23 @@ extension Syntax.TaggedTypeSpecifier: TreeSitterNode {
         node: Node,
         in source: Syntax.Source
     ) throws(Syntax.Error) -> Self {
-        guard let identifierNode = node.child(byFieldName: "identifier"),
-            let definitionNode = node.child(byFieldName: "type")
+        guard let identifierNode = node.child(byFieldName: "identifier")
         else {
             throw .errorParsing(
                 element: "TaggedTypeSpecifier",
                 location: node.getLocation(in: source))
         }
 
+        let definitionNode = node.child(byFieldName: "type_specifier")
+        let typeSpecifier: Syntax.TypeSpecifier?
+        if let definitionNode {
+            typeSpecifier = try .from(node: definitionNode, in: source)
+        } else {
+            typeSpecifier = nil
+        }
         return .init(
             tag: try identifierNode.getString(in: source),
-            typeSpecifier: try .from(node: definitionNode, in: source),
+            typeSpecifier: typeSpecifier,
             location: node.getLocation(in: source)
         )
     }
