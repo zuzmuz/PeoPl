@@ -434,13 +434,24 @@ extension Syntax.Expression {
             .init(typeFields: typeFields))
     }
 
-    static func nominalType(
+    static func nominal(
         _ identifier: Syntax.QualifiedIdentifier
     ) -> Syntax.Expression {
         return .nominal(.init(identifier: identifier))
     }
+
+    static func call(
+        _ identifier: Syntax.QualifiedIdentifier,
+        _ arguments: [Syntax.Expression] = []
+    ) -> Syntax.Expression {
+        return .call(
+            .init(
+                prefix: .nominal(identifier),
+                arguments: arguments))
+    }
 }
 
+// swiftlint:disable:next type_body_length
 final class ParserTests: XCTestCase {
     let fileNames: [String: Syntax.Module] = [
         "types": .init(
@@ -964,6 +975,53 @@ final class ParserTests: XCTestCase {
                                 .intLiteral(5)
                             )
                         )
+                    )
+                ),
+                .init(
+                    identifier: .chain(["conditions"]),
+                    definition: .binary(
+                        .binary(
+                            .nominal(.chain(["you"])),
+                            .and,
+                            .nominal(.chain(["me"])),
+                        ),
+                        .or,
+                        .nothing
+                    )
+                ),
+                .init(
+                    identifier: .chain(["complex", "Conditions"]),
+                    definition: .binary(
+                        .binary(
+                            .binary(
+                                .binary(
+                                    .intLiteral(1),
+                                    .plus,
+                                    .intLiteral(3),
+                                ),
+                                .times,
+                                .intLiteral(3),
+                            ),
+                            .greaterThan,
+                            .intLiteral(42),
+                        ),
+                        .or,
+                        .binary(
+                            .nominal(.chain(["something"])),
+                            .and,
+                            .binary(
+                                .binary(
+                                    .stringLiteral("this"),
+                                    .equal,
+                                    .stringLiteral("that"),
+                                ),
+                                .or,
+                                .unary(
+                                    .not,
+                                    .call(.chain(["theSame"]))
+                                )
+                            )
+                        ),
                     )
                 )
             ]
