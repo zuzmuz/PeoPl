@@ -1,186 +1,195 @@
 // MARK: - Symbol Resolution For Types
 // ===================================
 
-// /// Protocol for resolving type symbols
-// public protocol TypeDeclarationsChecker {
-//     /// Return all type declarations defined in module
-//     func getTypeDeclarations() -> [Syntax.TypeDefinition]
-//
-//     /// Return resolved type definitions
-//     /// Maps scoped identifiers to semantic raw type specifiers
-//     /// Returns list of errors if found
-//     func resolveTypeSymbols(
-//         contextTypeDeclarations: borrowing Semantic.TypeDeclarationsMap
-//     ) -> (
-//         typeDeclarations: Semantic.TypeDeclarationsMap,
-//         typeLookup: [Semantic.ScopedIdentifier: Syntax.TypeDefinition],
-//         errors: [Semantic.Error]
-//     )
-// }
-//
-// extension Syntax.QualifiedIdentifier {
-//     /// Create a semantic scoped identifier from self
-//     func getSemanticIdentifier() -> Semantic.ScopedIdentifier {
-//         return .init(chain: self.chain)
-//     }
-// }
-//
-// extension Syntax.TypeField {
-//
-//     /// Retrieve all scoped identifier defined in this type field
-//     /// It represents the names of types used to define the type specifier of this type field
-//     func getTypeIdentifiers( /* namespace */
-//     ) -> [Syntax.QualifiedIdentifier] {
-//         switch self {
-//         case let .typeSpecifier(typeSpecifier):
-//             return typeSpecifier.getTypeIdentifiers()
-//         case let .taggedTypeSpecifier(taggedTypeSpecifier):
-//             return taggedTypeSpecifier.typeSpecifier.getTypeIdentifiers()
-//         case let .homogeneousTypeProduct(homogeneousTypeProduct):
-//             return homogeneousTypeProduct.typeSpecifier.getTypeIdentifiers()
-//         }
-//     }
-//
-//     /// Return all scoped identifiers from the type specifier
-//     /// that do not belong in current type definitions
-//     /// nor in the context provided
-//     func undefinedTypes(
-//         types: borrowing Set<Semantic.ScopedIdentifier>,
-//     ) -> [Syntax.QualifiedIdentifier] {
-//         self.getTypeIdentifiers().filter { typeIdentifier in
-//             let semanticIdentifier = typeIdentifier.getSemanticIdentifier()
-//             return !types.contains(semanticIdentifier)
-//         }
-//     }
-// }
-//
-// extension [Syntax.TypeField] {
-//     func getProductSemanticTypes(
-//     ) throws(Semantic.Error) -> [Semantic.Tag: Semantic.TypeSpecifier] {
-//         var recordFields: [Semantic.Tag: Semantic.TypeSpecifier] = [:]
-//         var fieldCounter = UInt64(0)
-//         for typeField in self {
-//             switch typeField {
-//             case let .typeSpecifier(typeSpecifier):
-//                 let fieldTag = Semantic.Tag.unnamed(fieldCounter)
-//                 if recordFields[fieldTag] != nil {
-//                     throw .duplicateFieldName(field: typeField)
-//                 }
-//                 recordFields[fieldTag] =
-//                     try typeSpecifier.getSemanticType()
-//                 fieldCounter += 1
-//             case let .taggedTypeSpecifier(taggedTypeSpecifier):
-//                 let fieldTag = Semantic.Tag.named(
-//                     taggedTypeSpecifier.tag)
-//                 if recordFields[fieldTag] != nil {
-//                     throw .duplicateFieldName(field: typeField)
-//                 }
-//                 recordFields[fieldTag] =
-//                     try taggedTypeSpecifier.typeSpecifier.getSemanticType()
-//                 fieldCounter += 1
-//             case let .homogeneousTypeProduct(homogeneousTypeProduct):
-//                 let semanticType = try homogeneousTypeProduct.typeSpecifier
-//                     .getSemanticType()
-//                 switch homogeneousTypeProduct.count {
-//                 case let .literal(value):
-//                     for index in (0..<value) {
-//                         let fieldTag = Semantic.Tag.unnamed(
-//                             fieldCounter + index)
-//                         if recordFields[fieldTag] != nil {
-//                             throw .duplicateFieldName(field: typeField)
-//                         }
-//                         recordFields[fieldTag] =
-//                             semanticType
-//                     }
-//                     fieldCounter += value
-//                 case .identifier:
-//                     throw .notImplemented(
-//                         "compile time values not supported yet")
-//                 }
-//             }
-//         }
-//         return recordFields
-//     }
-//
-//     func getSumSemanticTypes(
-//     ) throws(Semantic.Error) -> [Semantic.Tag: Semantic.TypeSpecifier] {
-//         var recordFields: [Semantic.Tag: Semantic.TypeSpecifier] = [:]
-//         var fieldCounter = UInt64(0)
-//         for typeField in self {
-//             switch typeField {
-//             case let .typeSpecifier(typeSpecifier):
-//                 recordFields[.unnamed(fieldCounter)] =
-//                     try typeSpecifier.getSemanticType()
-//                 fieldCounter += 1
-//             case let .taggedTypeSpecifier(taggedTypeSpecifier):
-//                 recordFields[.named(taggedTypeSpecifier.tag)] =
-//                     try taggedTypeSpecifier.typeSpecifier.getSemanticType()
-//                 fieldCounter += 1
-//             case .homogeneousTypeProduct:
-//                 throw .homogeneousTypeProductInSum(
-//                     field: typeField)
-//             }
-//         }
-//         return recordFields
-//     }
-// }
-//
-// extension Syntax.TypeSpecifier {
-//
-//     /// Retrieve all scoped identifier defined in this type
-//     /// It represents the names of types used to define the type specifier
-//     func getTypeIdentifiers( /* TODO: handle namespacing */
-//     ) -> [Syntax.QualifiedIdentifier] {
-//         switch self {
-//         case .nothing, .never:
-//             return []
-//         case let .nominal(nominal):
-//             return [nominal.identifier]
-//         case let .product(product):
-//             return product.typeFields.flatMap { $0.getTypeIdentifiers() }
-//         case let .sum(sum):
-//             return sum.typeFields.flatMap { $0.getTypeIdentifiers() }
-//         case let .function(function):
-//             return (function.inputType?.getTypeIdentifiers() ?? [])
-//                 + function.arguments.flatMap { $0.getTypeIdentifiers() }
-//                 + function.outputType.getTypeIdentifiers()
-//         default:  // TODO: all other types
-//             fatalError("getting type identifiers for \(self) is not implemented yet")
-//         }
-//     }
-//
-//     /// Return all scoped identifiers from the type specifier
-//     /// that do not belong in current type definitions
-//     /// nor in the context provided
-//     func undefinedTypes(
-//         types: borrowing Set<Semantic.ScopedIdentifier>,
-//     ) -> [Syntax.QualifiedIdentifier] {
-//         self.getTypeIdentifiers().filter { typeIdentifier in
-//             let semanticIdentifier = typeIdentifier.getSemanticIdentifier()
-//             return !types.contains(semanticIdentifier)
-//         }
-//     }
-//
-//     /// Create a semantic type specifier from self
-//     func getSemanticType() throws(Semantic.Error) -> Semantic.TypeSpecifier {
-//         switch self {
-//         case .nothing:
-//             return .nothing
-//         case .never:
-//             return .never
-//         case let .product(product):
-//             return .raw(
-//                 .record(try product.typeFields.getProductSemanticTypes()))
-//         case let .sum(sum):
-//             return .raw(.choice(try sum.typeFields.getSumSemanticTypes()))
-//         case let .nominal(nominal):
-//             return .nominal(nominal.identifier.getSemanticIdentifier())
-//         default:
-//             fatalError("Other types are not implemented yet")
-//         }
-//     }
-// }
-//
+/// Protocol for resolving type symbols
+public protocol TypeDeclarationsChecker {
+    /// Return all type declarations defined in module
+    func getTypeDeclarations() -> [Syntax.Definition]
+
+    /// Return resolved type definitions
+    /// Maps scoped identifiers to semantic raw type specifiers
+    /// Returns list of errors if found
+    func resolveTypeSymbols(
+        contextTypeDeclarations: borrowing Semantic.TypeDeclarationsMap
+    ) -> (
+        typeDeclarations: Semantic.TypeDeclarationsMap,
+        typeLookup: [Semantic.ScopedIdentifier: Syntax.Definition],
+        errors: [Semantic.Error]
+    )
+}
+
+extension Syntax.QualifiedIdentifier {
+    /// Create a semantic scoped identifier from self
+    func getSemanticIdentifier() -> Semantic.ScopedIdentifier {
+        return .init(chain: self.chain)
+    }
+}
+
+extension Syntax.TypeField {
+
+    /// Retrieve all scoped identifier defined in this type field
+    /// It represents the names of types used to define the type specifier of this type field
+    func getTypeIdentifiers( /* namespace */
+    ) -> [Syntax.QualifiedIdentifier] {
+        switch self {
+        case let .typeSpecifier(typeSpecifier):
+            return typeSpecifier.getTypeIdentifiers()
+        case let .taggedTypeSpecifier(taggedTypeSpecifier):
+            // TODO: the type specifier can be null,
+            // in the context of choice types, type specifier is nothing
+            // in the context of generic types type specifier is Type (the type set containing all types)
+            return taggedTypeSpecifier.typeSpecifier?.getTypeIdentifiers() ?? []
+        case let .homogeneousTypeProduct(homogeneousTypeProduct):
+            return homogeneousTypeProduct.typeSpecifier.getTypeIdentifiers()
+        }
+    }
+
+    /// Return all scoped identifiers from the type specifier
+    /// that do not belong in current type definitions
+    /// nor in the context provided
+    func undefinedTypes(
+        types: borrowing Set<Semantic.ScopedIdentifier>,
+    ) -> [Syntax.QualifiedIdentifier] {
+        self.getTypeIdentifiers().filter { typeIdentifier in
+            let semanticIdentifier = typeIdentifier.getSemanticIdentifier()
+            return !types.contains(semanticIdentifier)
+        }
+    }
+}
+
+extension [Syntax.TypeField] {
+    func getProductSemanticTypes(
+    ) throws(Semantic.Error) -> [Semantic.Tag: Semantic.TypeSpecifier] {
+        var recordFields: [Semantic.Tag: Semantic.TypeSpecifier] = [:]
+        var fieldCounter = UInt64(0)
+        for typeField in self {
+            switch typeField {
+            case let .typeSpecifier(typeSpecifier):
+                let fieldTag = Semantic.Tag.unnamed(fieldCounter)
+                if recordFields[fieldTag] != nil {
+                    throw .duplicateFieldName(field: typeField)
+                }
+                recordFields[fieldTag] =
+                    try typeSpecifier.getSemanticType()
+                fieldCounter += 1
+            case let .taggedTypeSpecifier(taggedTypeSpecifier):
+                let fieldTag = Semantic.Tag.named(
+                    taggedTypeSpecifier.tag)
+                if recordFields[fieldTag] != nil {
+                    throw .duplicateFieldName(field: typeField)
+                }
+                guard let typeSpecifier =
+                    taggedTypeSpecifier.typeSpecifier else {
+                        throw .taggedTypeSpecifierRequired
+                    }
+                recordFields[fieldTag] =
+                    try typeSpecifier.getSemanticType()
+                fieldCounter += 1
+            case let .homogeneousTypeProduct(homogeneousTypeProduct):
+                let semanticType = try homogeneousTypeProduct.typeSpecifier
+                    .getSemanticType()
+                switch homogeneousTypeProduct.count {
+                case let .literal(value):
+                    for index in (0..<value) {
+                        let fieldTag = Semantic.Tag.unnamed(
+                            fieldCounter + index)
+                        if recordFields[fieldTag] != nil {
+                            throw .duplicateFieldName(field: typeField)
+                        }
+                        recordFields[fieldTag] =
+                            semanticType
+                    }
+                    fieldCounter += value
+                case .identifier:
+                    throw .notImplemented(
+                        "compile time values not supported yet",
+                        location: typeField.location)
+                }
+            }
+        }
+        return recordFields
+    }
+
+    func getSumSemanticTypes(
+    ) throws(Semantic.Error) -> [Semantic.Tag: Semantic.TypeSpecifier] {
+        var recordFields: [Semantic.Tag: Semantic.TypeSpecifier] = [:]
+        var fieldCounter = UInt64(0)
+        for typeField in self {
+            switch typeField {
+            case let .typeSpecifier(typeSpecifier):
+                recordFields[.unnamed(fieldCounter)] =
+                    try typeSpecifier.getSemanticType()
+                fieldCounter += 1
+            case let .taggedTypeSpecifier(taggedTypeSpecifier):
+                recordFields[.named(taggedTypeSpecifier.tag)] =
+                    try taggedTypeSpecifier.typeSpecifier?.getSemanticType()
+                    ?? .nothing
+                fieldCounter += 1
+            case .homogeneousTypeProduct:
+                throw .homogeneousTypeProductInSum(
+                    field: typeField)
+            }
+        }
+        return recordFields
+    }
+}
+
+extension Syntax.TypeSpecifier {
+
+    /// Retrieve all scoped identifier defined in this type
+    /// It represents the names of types used to define the type specifier
+    func getTypeIdentifiers( /* TODO: handle namespacing */
+    ) -> [Syntax.QualifiedIdentifier] {
+        switch self {
+        case .nothing, .never:
+            return []
+        case let .nominal(nominal):
+            return [nominal.identifier]
+        case let .recordType(record):
+            return record.typeFields.flatMap { $0.getTypeIdentifiers() }
+        case let .choiceType(choice):
+            return choice.typeFields.flatMap { $0.getTypeIdentifiers() }
+        case let .function(function):
+            return (function.inputType?.getTypeIdentifiers() ?? [])
+                + function.arguments.flatMap { $0.getTypeIdentifiers() }
+                + function.outputType.getTypeIdentifiers()
+        default:  // TODO: all other types
+            fatalError("getting type identifiers for \(self) is not implemented yet")
+        }
+    }
+
+    /// Return all scoped identifiers from the type specifier
+    /// that do not belong in current type definitions
+    /// nor in the context provided
+    func undefinedTypes(
+        types: borrowing Set<Semantic.ScopedIdentifier>,
+    ) -> [Syntax.QualifiedIdentifier] {
+        self.getTypeIdentifiers().filter { typeIdentifier in
+            let semanticIdentifier = typeIdentifier.getSemanticIdentifier()
+            return !types.contains(semanticIdentifier)
+        }
+    }
+
+    /// Create a semantic type specifier from self
+    func getSemanticType() throws(Semantic.Error) -> Semantic.TypeSpecifier {
+        switch self {
+        case .nothing:
+            return .nothing
+        case .never:
+            return .never
+        case let .recordType(record):
+            return .raw(
+                .record(try record.typeFields.getProductSemanticTypes()))
+        case let .choiceType(choice):
+            return .raw(.choice(try choice.typeFields.getSumSemanticTypes()))
+        case let .nominal(nominal):
+            return .nominal(nominal.identifier.getSemanticIdentifier())
+        default:
+            fatalError("Other types are not implemented yet")
+        }
+    }
+}
+
 // extension Semantic.TypeSpecifier {
 //     /// Get the semantic type definition from a type sepcifier.
 //     /// This will return the raw definition of nominal types from the type definition table lookup

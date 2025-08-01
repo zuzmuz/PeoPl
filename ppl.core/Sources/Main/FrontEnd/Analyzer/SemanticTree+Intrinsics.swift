@@ -1,14 +1,13 @@
-// extension Semantic.TypeSpecifier {
-//     static let uint = Semantic.TypeSpecifier.nominal(.init(chain: ["UInt"]))
-//     static let int = Semantic.TypeSpecifier.nominal(.init(chain: ["Int"]))
-//     static let float = Semantic.TypeSpecifier.nominal(.init(chain: ["Float"]))
-//     // static let string = Semantic.TypeSpecifier.(.intrinsic(Semantic.IntrinsicType))
-//     static let bool = Semantic.TypeSpecifier.nominal(.init(chain: ["Bool"]))
-//
-//     // FIX: Not like that
-//     static let nothing = Semantic.TypeSpecifier.raw(.record([:]))
-//     static let never = Semantic.TypeSpecifier.nominal(.init(chain: ["Never"]))
-// }
+extension Semantic.TypeSpecifier {
+    static let uint = Semantic.TypeSpecifier.nominal(.init(chain: ["UInt"]))
+    static let int = Semantic.TypeSpecifier.nominal(.init(chain: ["Int"]))
+    static let float = Semantic.TypeSpecifier.nominal(.init(chain: ["Float"]))
+    // static let string = Semantic.TypeSpecifier.(.intrinsic(Semantic.IntrinsicType))
+    static let bool = Semantic.TypeSpecifier.nominal(.init(chain: ["Bool"]))
+
+    static let nothing = Semantic.TypeSpecifier.raw(.record([:]))
+    static let never = Semantic.TypeSpecifier.nominal(.init(chain: ["Never"]))
+}
 //
 // func getIntrinsicDeclarations() -> Semantic.DeclarationsContext {
 //     return .init(

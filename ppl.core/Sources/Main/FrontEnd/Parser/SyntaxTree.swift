@@ -357,7 +357,7 @@ public enum Syntax {
     }
 
     /// Core expression node representing all computations and values in the language
-    indirect public enum Expression: Codable, Sendable {
+    public indirect enum Expression: Codable, Sendable {
         case literal(Literal)
         case unary(Unary)
         case binary(Binary)
