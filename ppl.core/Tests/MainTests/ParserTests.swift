@@ -449,6 +449,62 @@ extension Syntax.Expression {
                 prefix: .nominal(identifier),
                 arguments: arguments))
     }
+
+    static func call(
+        _ prefix: Syntax.Expression,
+        _ arguments: [Syntax.Expression] = []
+    ) -> Syntax.Expression {
+        return .call(
+            .init(prefix: prefix, arguments: arguments)
+        )
+    }
+
+    static func access(
+        _ identifier: Syntax.QualifiedIdentifier,
+        _ field: String
+    ) -> Syntax.Expression {
+        return .access(
+            .init(prefix: .nominal(identifier), field: field)
+        )
+    }
+
+    static func access(
+        _ prefix: Syntax.Expression,
+        _ field: String
+    ) -> Syntax.Expression {
+        return .access(
+            .init(prefix: prefix, field: field)
+        )
+    }
+
+    static func pipe(
+        _ left: Syntax.Expression,
+        _ right: Syntax.Expression,
+    ) -> Syntax.Expression {
+        return .piped(
+            .init(
+                left: left,
+                right: right
+            )
+        )
+    }
+
+    static func branched(
+        _ branches: [Syntax.Branched.Branch]
+    ) -> Syntax.Expression {
+        return .branched(
+            .init(branches: branches)
+        )
+    }
+
+    static func tagged(
+        _ tag: String,
+        _ expression: Syntax.Expression
+    ) -> Syntax.Expression {
+        return .taggedExpression(
+            .init(identifier: tag, expression: expression)
+        )
+    }
 }
 
 // swiftlint:disable:next type_body_length
@@ -841,7 +897,7 @@ final class ParserTests: XCTestCase {
                                 .tagged(
                                     tag: "c",
                                     typeSpecifier: nil,
-                                )
+                                ),
                             ])
                         ),
                         .tagged(
@@ -941,7 +997,7 @@ final class ParserTests: XCTestCase {
                 ),
                 .init(
                     identifier: .chain(["big_numbers"]),
-                    definition: .intLiteral(1000000000),
+                    definition: .intLiteral(1_000_000_000),
                 ),
                 .init(
                     identifier: .chain(["floating"]),
@@ -1023,7 +1079,95 @@ final class ParserTests: XCTestCase {
                             )
                         ),
                     )
-                )
+                ),
+                .init(
+                    identifier: .chain(["What", "are", "the", "Odds"]),
+                    definition: .pipe(
+                        .pipe(
+                            .call(
+                                .chain(["Object"]),
+                                [
+                                    .tagged("a", .intLiteral(1)),
+                                    .tagged("b", .intLiteral(2)),
+                                    .tagged("c", .intLiteral(3)),
+                                ],
+                            ),
+                            .call(
+                                .chain(["a", "b", "c"]),
+                                [
+                                    .binary(
+                                        .intLiteral(1),
+                                        .plus,
+                                        .intLiteral(1)
+                                    ),
+                                    .binary(
+                                        .intLiteral(2),
+                                        .times,
+                                        .intLiteral(2)
+                                    ),
+                                    .binary(
+                                        .nominal(.chain(["b"])),
+                                        .or,
+                                        .call(
+                                            .chain(["x"])
+                                        )
+                                    ),
+                                ]
+                            )
+                        ),
+                        .branched([
+                            .init(
+                                matchExpression: .nominal(.chain(["a"])),
+                                body: .binary(
+                                    .binary(
+                                        .access(.chain(["a"]), "a"),
+                                        .plus,
+                                        .access(.chain(["a"]), "b")),
+                                    .plus,
+                                    .access(.chain(["a"]), "c")
+                                )
+                            ),
+                            .init(
+                                matchExpression: .nominal(.chain(["z", "z"])),
+                                body: .access(
+                                    .access(.access(.chain(["z"]), "z"), "z"),
+                                    "z"
+                                )
+                            ),
+                            .init(
+                                matchExpression: .binding(
+                                    .init(identifier: "call")),
+                                body: .call(
+                                    .chain(["call"]),
+                                    [
+                                        .pipe(
+                                            .nominal(.chain(["a"])),
+                                            .nominal(.chain(["b"]))),
+                                        .tagged(
+                                            "x",
+                                            .pipe(
+                                                .nominal(.chain(["a"])),
+                                                .nominal(.chain(["b"]))),
+                                        ),
+                                        .tagged(
+                                            "y",
+                                            .pipe(
+                                                .access(
+                                                    .chain(["a"]),
+                                                    "b"
+                                                ),
+                                                .access(
+                                                    .chain(["q", "a"]),
+                                                    "b"
+                                                )
+                                            )
+                                        )
+                                    ]
+                                )
+                            )
+                        ])
+                    )
+                ),
             ]
         ),
         // "errors": .init(
