@@ -399,6 +399,9 @@ extension Syntax.Expression {
     static func floatLiteral(_ value: Double) -> Syntax.Expression {
         return .literal(.init(value: .floatLiteral(value)))
     }
+    static func stringLiteral(_ value: String) -> Syntax.Expression {
+        return .literal(.init(value: .stringLiteral(value)))
+    }
 
     static func binary(
         _ lhs: Syntax.Expression,
@@ -854,18 +857,74 @@ final class ParserTests: XCTestCase {
                 ),
             ]
         ),
-        "simpleexpressions": .init(
+        "expressions": .init(
             sourceName: "expressions",
             definitions: [
                 .init(identifier: .chain(["well"]), definition: .nothing),
                 .init(
+                    identifier: .chain(["hello"]),
+                    definition: .stringLiteral("Hello, World!"),
+                ),
+                .init(
                     identifier: .chain(["arithmetics"]),
                     definition: .binary(
-                        .intLiteral(1),
+                        .binary(
+                            .binary(
+                                .binary(
+                                    .intLiteral(1),
+                                    .plus,
+                                    .binary(
+                                        .intLiteral(20),
+                                        .times,
+                                        .binary(
+                                            .intLiteral(5),
+                                            .minus,
+                                            .intLiteral(2),
+                                        )
+                                    )
+                                ),
+                                .minus,
+                                .binary(
+                                    .binary(
+                                        .intLiteral(3),
+                                        .by,
+                                        .intLiteral(1)
+                                    ),
+                                    .times,
+                                    .intLiteral(3)
+                                )
+                            ),
+                            .plus,
+                            .binary(
+                                .intLiteral(10),
+                                .modulo,
+                                .intLiteral(3)
+                            )
+                        ),
                         .minus,
                         .intLiteral(10)
                     )
                 ),
+                .init(
+                    identifier: .chain(["hexOctBin"]),
+                    definition: .binary(
+                        .binary(
+                            .intLiteral(255),
+                            .plus,
+                            .binary(
+                                .intLiteral(240),
+                                .times,
+                                .intLiteral(7)
+                            )
+                        ),
+                        .minus,
+                        .intLiteral(56400)
+                    )
+                ),
+                .init(
+                    identifier: .chain(["big_numbers"]),
+                    definition: .intLiteral(1000000000),
+                )
             ]
         ),
         // "errors": .init(
