@@ -219,10 +219,10 @@ module.exports = grammar({
       ']'
     ),
 
-    call_expression: $ => seq(
+    call_expression: $ => prec.right(PREC.FUNCTION, seq(
       optional(field("prefix", $._simple_expression)),
       field("arguments", $.expression_list),
-    ),
+    )),
 
     // TODO: call expression with trailing closures need more constraints
 

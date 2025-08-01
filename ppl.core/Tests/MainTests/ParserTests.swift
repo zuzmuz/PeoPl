@@ -403,6 +403,13 @@ extension Syntax.Expression {
         return .literal(.init(value: .stringLiteral(value)))
     }
 
+    static func unary(
+        _ op: Operator,
+        _ expression: Syntax.Expression
+    ) -> Syntax.Expression {
+        return .unary(.init(op: op, expression: expression))
+    }
+
     static func binary(
         _ lhs: Syntax.Expression,
         _ op: Operator,
@@ -924,6 +931,40 @@ final class ParserTests: XCTestCase {
                 .init(
                     identifier: .chain(["big_numbers"]),
                     definition: .intLiteral(1000000000),
+                ),
+                .init(
+                    identifier: .chain(["floating"]),
+                    definition: .binary(
+                        .floatLiteral(1.0),
+                        .plus,
+                        .binary(
+                            .binary(
+                                .floatLiteral(2.5),
+                                .times,
+                                .binary(
+                                    .floatLiteral(3.14),
+                                    .minus,
+                                    .floatLiteral(1.0)
+                                )
+                            ),
+                            .by,
+                            .floatLiteral(2.0)
+                        )
+                    )
+                ),
+                .init(
+                    identifier: .chain(["prefix"]),
+                    definition: .binary(
+                        .intLiteral(1),
+                        .minus,
+                        .unary(
+                            .plus,
+                            .unary(
+                                .minus,
+                                .intLiteral(5)
+                            )
+                        )
+                    )
                 )
             ]
         ),
