@@ -153,8 +153,6 @@ extension Syntax.TypeSpecifier {
             return (function.inputType?.getTypeIdentifiers() ?? [])
                 + function.arguments.flatMap { $0.getTypeIdentifiers() }
                 + function.outputType.getTypeIdentifiers()
-        default:  // TODO: all other types
-            fatalError("getting type identifiers for \(self) is not implemented yet")
         }
     }
 
@@ -190,192 +188,195 @@ extension Syntax.TypeSpecifier {
     }
 }
 
-// extension Semantic.TypeSpecifier {
-//     /// Get the semantic type definition from a type sepcifier.
-//     /// This will return the raw definition of nominal types from the type definition table lookup
-//     func getRawType(
-//         typeDeclarations: borrowing [Semantic.ScopedIdentifier:
-//             Semantic.TypeSpecifier]
-//     ) -> Semantic.RawTypeSpecifier {
-//         switch self {
-//         case let .nominal(indentifier):
-//             return typeDeclarations[indentifier]!.getRawType(
-//                 typeDeclarations: typeDeclarations)
-//         case let .raw(rawTypeSpecifier):
-//             return rawTypeSpecifier
-//         }
-//     }
-// }
-//
-// private enum NodeState {
-//     case visiting
-//     case visited
-// }
-//
-// extension TypeDeclarationsChecker {
-//     public func resolveTypeSymbols(
-//         contextTypeDeclarations: borrowing Semantic.TypeDeclarationsMap
-//     ) -> (
-//         typeDeclarations: Semantic.TypeDeclarationsMap,
-//         typeLookup: Semantic.TypeLookupMap,
-//         errors: [Semantic.Error]
-//     ) {
-//         let declarations = self.getTypeDeclarations()
-//
-//         let typesLocations:
-//             [Semantic.ScopedIdentifier: [Syntax.TypeDefinition]] =
-//                 declarations.reduce(into: [:]) { acc, type in
-//                     let semanticIdentifer =
-//                         type.identifier.getSemanticIdentifier()
-//                     acc[semanticIdentifer] =
-//                         (acc[semanticIdentifer] ?? []) + [type]
-//                 }
-//
-//         // detecting redeclarations
-//         let redeclarations = typesLocations.compactMap { _, typeLocations in
-//             if typeLocations.count > 1 {
-//                 return Semantic.Error.typeRedeclaration(types: typeLocations)
-//             } else {
-//                 return nil
-//             }
-//         }
-//
-//         let typeLookup = typesLocations.compactMapValues { types in
-//             return types.first
-//         }
-//
-//         // TODO: detecting shadowings
-//
-//         let allTypes = Set(Array(typeLookup.keys)).union(
-//             Set(Array(contextTypeDeclarations.keys)))
-//
-//         // detecting invalid members types
-//         let typesNotInScope = typeLookup.flatMap { _, type in
-//             return type.typeSpecifier.undefinedTypes(types: allTypes)
-//         }.map { Semantic.Error.typeNotInScope(type: $0) }
-//
-//         // detecting cyclical dependencies
-//         let cyclicalDependencies = checkCyclicalDependencies(
-//             typeLookup: typeLookup)
-//
-//         // get semantic type specifier from syntax type specifier
-//         var localTypeDeclarations:
-//             [Semantic.ScopedIdentifier: Semantic.TypeSpecifier] = [:]
-//         var typeSepcifierErrors: [Semantic.Error] = []
-//
-//         for (indentifier, typeDefinition) in typeLookup {
-//             do {
-//                 localTypeDeclarations[indentifier] =
-//                     try typeDefinition.typeSpecifier.getSemanticType()
-//             } catch {
-//                 typeSepcifierErrors.append(error)
-//             }
-//         }
-//
-//         return (
-//             typeDeclarations: localTypeDeclarations,
-//             typeLookup: typeLookup,
-//             errors: redeclarations
-//                 + typesNotInScope
-//                 + cyclicalDependencies
-//                 + typeSepcifierErrors
-//         )
-//     }
-//
-//     private func checkCyclicalDependencies(
-//         typeLookup: borrowing Semantic.TypeLookupMap
-//     ) -> [Semantic.Error] {
-//
-//         var nodeStates: [Syntax.QualifiedIdentifier: NodeState] = [:]
-//         var errors: [Semantic.Error] = []
-//
-//         func checkCyclicalDependencies(typeSpecifier: Syntax.TypeSpecifier) {
-//             switch typeSpecifier {
-//             case .nothing, .never:
-//                 break
-//             case let .nominal(nominal):
-//                 // NOTE: intrinsics don't have definition
-//                 if let typeDefinition = typeLookup[
-//                     nominal.identifier.getSemanticIdentifier()]
-//                 {
-//                     checkCyclicalDependencies(typeDefinition: typeDefinition)
-//                 }
-//             case let .product(product):
-//                 product.typeFields.forEach { field in
-//                     switch field {
-//                     case let .typeSpecifier(typeSpecifier):
-//                         checkCyclicalDependencies(
-//                             typeSpecifier: typeSpecifier)
-//                     case let .taggedTypeSpecifier(taggedTypeSpecifier):
-//                         checkCyclicalDependencies(
-//                             typeSpecifier: taggedTypeSpecifier.typeSpecifier)
-//                     case let .homogeneousTypeProduct(homogeneousTypeProduct):
-//                         checkCyclicalDependencies(
-//                             typeSpecifier: homogeneousTypeProduct.typeSpecifier)
-//                     }
-//                 }
-//             case let .sum(sum):
-//                 sum.typeFields.forEach { field in
-//                     switch field {
-//                     case let .typeSpecifier(typeSpecifier):
-//                         checkCyclicalDependencies(
-//                             typeSpecifier: typeSpecifier)
-//                     case let .taggedTypeSpecifier(taggedTypeSpecifier):
-//                         checkCyclicalDependencies(
-//                             typeSpecifier: taggedTypeSpecifier.typeSpecifier)
-//                     case .homogeneousTypeProduct:
-//                         errors.append(
-//                             // TODO: consider cleaning up where this check is done
-//                             .homogeneousTypeProductInSum(field: field))
-//                     }
-//                 }
-//             default:
-//                 fatalError("checking cyclical dependencies for \(typeSpecifier) is not implemented yet")
-//             }
-//         }
-//
-//         func checkCyclicalDependencies(typeDefinition: Syntax.TypeDefinition) {
-//             let typeIdentifier = typeDefinition.identifier
-//             if nodeStates[typeIdentifier] == .visited {
-//                 return
-//             }
-//             if nodeStates[typeIdentifier] == .visiting {
-//                 errors.append(
-//                     .cyclicType(
-//                         type: typeDefinition, cyclicType: typeIdentifier))
-//                 return
-//             }
-//             nodeStates[typeIdentifier] = .visiting
-//
-//             checkCyclicalDependencies(
-//                 typeSpecifier: typeDefinition.typeSpecifier)
-//
-//         }
-//
-//         typeLookup.forEach { _, typeDefinition in
-//             checkCyclicalDependencies(typeDefinition: typeDefinition)
-//         }
-//
-//         return errors
-//     }
-// }
-//
-// extension Syntax.Module: TypeDeclarationsChecker {
-//     public func getTypeDeclarations() -> [Syntax.TypeDefinition] {
-//         return self.definitions.compactMap { statement in
-//             if case let .typeDefinition(typeDefinition) = statement {
-//                 return typeDefinition
-//             } else {
-//                 return nil
-//             }
-//         }
-//     }
-// }
-//
-// extension Syntax.Project: TypeDeclarationsChecker {
-//     public func getTypeDeclarations() -> [Syntax.TypeDefinition] {
-//         return self.modules.values.flatMap { module in
-//             module.getTypeDeclarations()
-//         }
-//     }
-// }
+extension Semantic.TypeSpecifier {
+    /// Get the semantic type definition from a type sepcifier.
+    /// This will return the raw definition of nominal types from the type definition table lookup
+    func getRawType(
+        typeDeclarations: borrowing [Semantic.ScopedIdentifier:
+            Semantic.TypeSpecifier]
+    ) -> Semantic.RawTypeSpecifier {
+        switch self {
+        case let .nominal(indentifier):
+            return typeDeclarations[indentifier]!.getRawType(
+                typeDeclarations: typeDeclarations)
+        case let .raw(rawTypeSpecifier):
+            return rawTypeSpecifier
+        }
+    }
+}
+
+private enum NodeState {
+    case visiting
+    case visited
+}
+
+extension TypeDeclarationsChecker {
+    public func resolveTypeSymbols(
+        contextTypeDeclarations: borrowing Semantic.TypeDeclarationsMap
+    ) -> (
+        typeDeclarations: Semantic.TypeDeclarationsMap,
+        typeLookup: Semantic.TypeLookupMap,
+        errors: [Semantic.Error]
+    ) {
+        let declarations = self.getTypeDeclarations()
+
+        let typesLocations:
+        // FIX: Types are now expressions, but should be handled as such
+            [Semantic.ScopedIdentifier: [Syntax.Definition]] =
+                declarations.reduce(into: [:]) { acc, type in
+                    let semanticIdentifer =
+                        type.identifier.getSemanticIdentifier()
+                    acc[semanticIdentifer] =
+                        (acc[semanticIdentifer] ?? []) + [type]
+                }
+
+        // detecting redeclarations
+        let redeclarations = typesLocations.compactMap { _, typeLocations in
+            if typeLocations.count > 1 {
+                return Semantic.Error.typeRedeclaration(types: typeLocations)
+            } else {
+                return nil
+            }
+        }
+
+        let typeLookup = typesLocations.compactMapValues { types in
+            return types.first
+        }
+
+        // TODO: detecting shadowings
+
+        let allTypes = Set(Array(typeLookup.keys)).union(
+            Set(Array(contextTypeDeclarations.keys)))
+
+        // detecting invalid members types
+        let typesNotInScope = typeLookup.flatMap { _, type in
+            return type.typeSpecifier.undefinedTypes(types: allTypes)
+        }.map { Semantic.Error.typeNotInScope(type: $0) }
+
+        // detecting cyclical dependencies
+        let cyclicalDependencies = checkCyclicalDependencies(
+            typeLookup: typeLookup)
+
+        // get semantic type specifier from syntax type specifier
+        var localTypeDeclarations:
+            [Semantic.ScopedIdentifier: Semantic.TypeSpecifier] = [:]
+        var typeSepcifierErrors: [Semantic.Error] = []
+
+        for (indentifier, typeDefinition) in typeLookup {
+            do {
+                localTypeDeclarations[indentifier] =
+                    try typeDefinition.typeSpecifier.getSemanticType()
+            } catch {
+                typeSepcifierErrors.append(error)
+            }
+        }
+
+        return (
+            typeDeclarations: localTypeDeclarations,
+            typeLookup: typeLookup,
+            errors: redeclarations
+                + typesNotInScope
+                + cyclicalDependencies
+                + typeSepcifierErrors
+        )
+    }
+
+    private func checkCyclicalDependencies(
+        typeLookup: borrowing Semantic.TypeLookupMap
+    ) -> [Semantic.Error] {
+
+        var nodeStates: [Syntax.QualifiedIdentifier: NodeState] = [:]
+        var errors: [Semantic.Error] = []
+
+        func checkCyclicalDependencies(typeSpecifier: Syntax.TypeSpecifier) {
+            switch typeSpecifier {
+            case .nothing, .never:
+                break
+            case let .nominal(nominal):
+                // NOTE: intrinsics don't have definition
+                if let typeDefinition = typeLookup[
+                    nominal.identifier.getSemanticIdentifier()]
+                {
+                    checkCyclicalDependencies(typeDefinition: typeDefinition)
+                }
+            case let .product(product):
+                product.typeFields.forEach { field in
+                    switch field {
+                    case let .typeSpecifier(typeSpecifier):
+                        checkCyclicalDependencies(
+                            typeSpecifier: typeSpecifier)
+                    case let .taggedTypeSpecifier(taggedTypeSpecifier):
+                        checkCyclicalDependencies(
+                            typeSpecifier: taggedTypeSpecifier.typeSpecifier)
+                    case let .homogeneousTypeProduct(homogeneousTypeProduct):
+                        checkCyclicalDependencies(
+                            typeSpecifier: homogeneousTypeProduct.typeSpecifier)
+                    }
+                }
+            case let .sum(sum):
+                sum.typeFields.forEach { field in
+                    switch field {
+                    case let .typeSpecifier(typeSpecifier):
+                        checkCyclicalDependencies(
+                            typeSpecifier: typeSpecifier)
+                    case let .taggedTypeSpecifier(taggedTypeSpecifier):
+                        checkCyclicalDependencies(
+                            typeSpecifier: taggedTypeSpecifier.typeSpecifier)
+                    case .homogeneousTypeProduct:
+                        errors.append(
+                            // TODO: consider cleaning up where this check is done
+                            .homogeneousTypeProductInSum(field: field))
+                    }
+                }
+            default:
+                fatalError("checking cyclical dependencies for \(typeSpecifier) is not implemented yet")
+            }
+        }
+
+        func checkCyclicalDependencies(typeDefinition: Syntax.TypeDefinition) {
+            let typeIdentifier = typeDefinition.identifier
+            if nodeStates[typeIdentifier] == .visited {
+                return
+            }
+            if nodeStates[typeIdentifier] == .visiting {
+                errors.append(
+                    .cyclicType(
+                        type: typeDefinition, cyclicType: typeIdentifier))
+                return
+            }
+            nodeStates[typeIdentifier] = .visiting
+
+            checkCyclicalDependencies(
+                typeSpecifier: typeDefinition.typeSpecifier)
+
+        }
+
+        typeLookup.forEach { _, typeDefinition in
+            checkCyclicalDependencies(typeDefinition: typeDefinition)
+        }
+
+        return errors
+    }
+}
+
+extension Syntax.Module: TypeDeclarationsChecker {
+    public func getTypeDeclarations() -> [Syntax.Definition] {
+        return self.definitions.filter { definition in
+            switch definition.definition {
+            case .choiceType, .recordType, .functionType:
+                return true
+            default:
+                // TODO: if definition is nominal, it is an alias, either to a value or a type, it should be included if it is type alias (relevant for generics)
+                return false
+            }
+        }
+    }
+}
+
+extension Syntax.Project: TypeDeclarationsChecker {
+    public func getTypeDeclarations() -> [Syntax.Definition] {
+        return self.modules.values.flatMap { module in
+            module.getTypeDeclarations()
+        }
+    }
+}

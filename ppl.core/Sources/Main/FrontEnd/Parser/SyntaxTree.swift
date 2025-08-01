@@ -364,6 +364,7 @@ public enum Syntax {
         case nominal(Nominal)
         case recordType(RecordType)
         case choiceType(ChoiceType)
+        case functionType(FunctionType)
         case function(Function)
         case call(Call)
         case access(Access)
