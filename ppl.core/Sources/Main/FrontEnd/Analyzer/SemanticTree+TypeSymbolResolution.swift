@@ -263,7 +263,7 @@ extension TypeDeclarationsChecker {
 
         // detecting cyclical dependencies
         let cyclicalDependencies = checkCyclicalDependencies(
-            typeLookup: typeLookup)
+            localTypeLookup: typeLookup)
 
         // get semantic type specifier from syntax type specifier
         var localTypeDeclarations:
@@ -294,7 +294,7 @@ extension TypeDeclarationsChecker {
     }
 
     private func checkCyclicalDependencies(
-        typeLookup: borrowing Semantic.TypeLookupMap
+        localTypeLookup: borrowing Semantic.TypeLookupMap
     ) -> [Semantic.Error] {
 
         var nodeStates: [Syntax.QualifiedIdentifier: NodeState] = [:]
@@ -306,7 +306,7 @@ extension TypeDeclarationsChecker {
                 break
             case let .nominal(nominal):
                 // NOTE: intrinsics don't have definition
-                if let typeDefinition = typeLookup[
+                if let typeDefinition = localTypeLookup[
                     nominal.identifier.getSemanticIdentifier()]
                 {
                     checkCyclicalDependencies(typeDefinition: typeDefinition)
@@ -375,10 +375,11 @@ extension TypeDeclarationsChecker {
                 typeDefinition.definition
             {
                 checkCyclicalDependencies(typeSpecifier: typeSpecifier)
+                nodeStates[typeIdentifier] = .visited
             }
         }
 
-        typeLookup.forEach { _, typeDefinition in
+        localTypeLookup.forEach { _, typeDefinition in
             checkCyclicalDependencies(typeDefinition: typeDefinition)
         }
 
