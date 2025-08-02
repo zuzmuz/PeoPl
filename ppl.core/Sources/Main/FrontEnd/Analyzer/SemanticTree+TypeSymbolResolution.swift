@@ -300,7 +300,10 @@ extension TypeDeclarationsChecker {
         var nodeStates: [Syntax.QualifiedIdentifier: NodeState] = [:]
         var errors: [Semantic.Error] = []
 
-        func checkCyclicalDependencies(typeSpecifier: Syntax.TypeSpecifier) {
+        func checkCyclicalDependencies(
+            typeSpecifier: Syntax.TypeSpecifier,
+            stack: [Syntax.Definition]
+        ) {
             switch typeSpecifier {
             case .nothing, .never:
                 break
@@ -309,27 +312,32 @@ extension TypeDeclarationsChecker {
                 if let typeDefinition = localTypeLookup[
                     nominal.identifier.getSemanticIdentifier()]
                 {
-                    checkCyclicalDependencies(typeDefinition: typeDefinition)
+                    checkCyclicalDependencies(
+                        typeDefinition: typeDefinition,
+                        stack: stack)
                 }
             case let .recordType(record):
                 record.typeFields.forEach { field in
                     switch field {
                     case let .typeSpecifier(typeSpecifier):
                         checkCyclicalDependencies(
-                            typeSpecifier: typeSpecifier)
+                            typeSpecifier: typeSpecifier,
+                            stack: stack)
                     case let .taggedTypeSpecifier(taggedTypeSpecifier):
                         if let typeSpecifier =
                             taggedTypeSpecifier.typeSpecifier
                         {
                             checkCyclicalDependencies(
-                                typeSpecifier: typeSpecifier)
+                                typeSpecifier: typeSpecifier,
+                                stack: stack)
                         } else {
                             // NOTE: nil typeSpecifiers are not allowed in record types
                             errors.append(.taggedTypeSpecifierRequired)
                         }
                     case let .homogeneousTypeProduct(homogeneousTypeProduct):
                         checkCyclicalDependencies(
-                            typeSpecifier: homogeneousTypeProduct.typeSpecifier)
+                            typeSpecifier: homogeneousTypeProduct.typeSpecifier,
+                            stack: stack)
                     }
                 }
             case let .choiceType(choice):
@@ -337,13 +345,15 @@ extension TypeDeclarationsChecker {
                     switch field {
                     case let .typeSpecifier(typeSpecifier):
                         checkCyclicalDependencies(
-                            typeSpecifier: typeSpecifier)
+                            typeSpecifier: typeSpecifier,
+                            stack: stack)
                     case let .taggedTypeSpecifier(taggedTypeSpecifier):
                         if let typeSpecifier =
                             taggedTypeSpecifier.typeSpecifier
                         {
                             checkCyclicalDependencies(
-                                typeSpecifier: typeSpecifier)
+                                typeSpecifier: typeSpecifier,
+                                stack: stack)
                         }
                     case .homogeneousTypeProduct:
                         errors.append(
@@ -358,29 +368,42 @@ extension TypeDeclarationsChecker {
             }
         }
 
-        func checkCyclicalDependencies(typeDefinition: Syntax.Definition) {
+        func checkCyclicalDependencies(
+            typeDefinition: Syntax.Definition,
+            stack: [Syntax.Definition]
+        ) {
             let typeIdentifier = typeDefinition.identifier
+            print("typeIdentifier: \(typeIdentifier)")
             if nodeStates[typeIdentifier] == .visited {
+                print("already visited \(typeIdentifier)")
                 return
             }
             if nodeStates[typeIdentifier] == .visiting {
+                print("cyclic type detected \(typeIdentifier)")
                 errors.append(
                     .cyclicType(
-                        type: typeDefinition, cyclicType: typeIdentifier))
+                        stack: stack))
                 return
             }
             nodeStates[typeIdentifier] = .visiting
+            print("visiting \(typeIdentifier)")
 
             if case let .typeSpecifier(typeSpecifier) =
                 typeDefinition.definition
             {
-                checkCyclicalDependencies(typeSpecifier: typeSpecifier)
+                checkCyclicalDependencies(
+                    typeSpecifier: typeSpecifier,
+                    stack: stack + [typeDefinition]
+                )
                 nodeStates[typeIdentifier] = .visited
+                print("visited \(typeIdentifier)")
             }
         }
 
         localTypeLookup.forEach { _, typeDefinition in
-            checkCyclicalDependencies(typeDefinition: typeDefinition)
+            checkCyclicalDependencies(
+                typeDefinition: typeDefinition,
+                stack: [])
         }
 
         return errors

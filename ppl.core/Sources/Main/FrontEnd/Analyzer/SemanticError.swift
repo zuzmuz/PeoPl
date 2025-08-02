@@ -7,9 +7,7 @@ extension Semantic {
         case typeNotInScope(type: Syntax.QualifiedIdentifier)
         case homogeneousTypeProductInSum(
             field: Syntax.TypeField)
-        case cyclicType(
-            type: Syntax.Definition,  // TODO: consider detecting cycle
-            cyclicType: Syntax.QualifiedIdentifier)
+        case cyclicType(stack: [Syntax.Definition])
         case duplicateFieldName(
             field: Syntax.TypeField)
         case valueRedeclaration(values: [Syntax.Definition])

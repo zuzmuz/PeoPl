@@ -119,6 +119,12 @@ final class TypeResoltionTests: XCTestCase {
                         )
                     ])
                 ]
+            ),
+            "cyclical_types": (
+                [:],
+                [
+                    // .cyclicType(type: , cyclicType: )
+                ]
             )
         ]
 

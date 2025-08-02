@@ -2,7 +2,6 @@ import XCTest
 
 @testable import Main
 
-
 final class FunctionResolutionTests: XCTestCase {
     let fileNames:
         [String: (
@@ -28,7 +27,7 @@ final class FunctionResolutionTests: XCTestCase {
                         identifier: .chain(["overload"]),
                         inputType: (.input, .nothing),
                         arguments: [
-                            .named("a"): .nominal(.chain(["Int"])),
+                            .named("a"): .nominal(.chain(["Int"]))
                         ]
                     ): .nominal(.chain(["Int"])),
                     .init(
