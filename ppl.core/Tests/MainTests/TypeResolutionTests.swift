@@ -91,7 +91,33 @@ final class TypeResoltionTests: XCTestCase {
                     ]))
                 ],
                 [
-                    .typeRedeclaration(types: [])
+                    .typeRedeclaration(types: [
+                        .init(
+                            identifier: .chain(["redeclared"]),
+                            definition: .record([
+                                .typeSpecifier(.nominalType(.chain(["Int"]))),
+                                .typeSpecifier(.nominalType(.chain(["Float"]))),
+                                .typeSpecifier(.nominalType(.chain(["Bool"]))),
+                            ])
+                        ),
+                        .init(
+                            identifier: .chain(["redeclared"]),
+                            definition: .record([
+                                .tagged(
+                                    tag: "a",
+                                    typeSpecifier: .nominalType(
+                                        .chain(["Int"]))),
+                                .tagged(
+                                    tag: "b",
+                                    typeSpecifier: .nominalType(
+                                        .chain(["Int"]))),
+                                .tagged(
+                                    tag: "c",
+                                    typeSpecifier: .nominalType(
+                                        .chain(["Int"]))),
+                            ])
+                        )
+                    ])
                 ]
             )
         ]
