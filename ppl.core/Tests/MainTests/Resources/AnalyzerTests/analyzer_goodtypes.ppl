@@ -1,0 +1,24 @@
+simple: [
+    a' Int,
+    b' Float
+]
+
+enum: choice [
+    first', second', third'
+]
+
+Shape: choice [
+    circle' [radius' Float],
+    rectangle' [width' Float, height' Float],
+    triangle' [base' Float, height' Float]
+]
+Point: [x' Float, y' Float]
+Circle: [center' Point, radius' Float]
+Rectangle: [topLeft' Point, width' Float, height' Float]
+Triangle: [pointA' Point, pointB' Point, pointC' Point]
+
+Geometry\Shape: choice [
+    circle' Circle,
+    rectange' Rectangle,
+    triangle' Triangle
+]

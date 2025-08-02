@@ -600,13 +600,16 @@ extension Syntax.Expression: TreeSitterNode {
         // types:
 
         case "record_type":
-            return .recordType(try .from(node: node, in: source))
+            return .typeSpecifier(
+                .recordType(try .from(node: node, in: source)))
         case "choice_type":
-            return .choiceType(try .from(node: node, in: source))
+            return .typeSpecifier(
+                .choiceType(try .from(node: node, in: source)))
         case "nominal":
             return .nominal(try .from(node: node, in: source))
         case "function_type":
-            return .nominal(try .from(node: node, in: source))
+            return .typeSpecifier(
+                .function(try .from(node: node, in: source)))
         case "nothing":
             return .literal(
                 .init(

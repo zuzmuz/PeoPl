@@ -174,9 +174,7 @@ extension Syntax.Expression: Testable {
             lhs.assertEqual(with: rhs)
         case (.nominal(let lhs), .nominal(let rhs)):
             lhs.assertEqual(with: rhs)
-        case (.recordType(let lhs), .recordType(let rhs)):
-            lhs.assertEqual(with: rhs)
-        case (.choiceType(let lhs), .choiceType(let rhs)):
+        case (.typeSpecifier(let lhs), .typeSpecifier(let rhs)):
             lhs.assertEqual(with: rhs)
         case (.function(let lhs), .function(let rhs)):
             lhs.assertEqual(with: rhs)
@@ -423,15 +421,15 @@ extension Syntax.Expression {
     static func record(
         _ typeFields: [Syntax.TypeField]
     ) -> Syntax.Expression {
-        return .recordType(
-            .init(typeFields: typeFields))
+        return .typeSpecifier(.recordType(
+            .init(typeFields: typeFields)))
     }
 
     static func choice(
         _ typeFields: [Syntax.TypeField]
     ) -> Syntax.Expression {
-        return .choiceType(
-            .init(typeFields: typeFields))
+        return .typeSpecifier(.choiceType(
+            .init(typeFields: typeFields)))
     }
 
     static func nominal(

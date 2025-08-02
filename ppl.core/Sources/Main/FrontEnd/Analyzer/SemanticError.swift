@@ -27,7 +27,7 @@ extension Semantic {
             field: String)
         case undefinedType(
             expression: Syntax.Expression,
-            identifier: Semantic.ScopedIdentifier)
+            identifier: Semantic.QualifiedIdentifier)
         case undefinedCall(
             expression: Syntax.Expression)
         case duplicatedExpressionFieldName(

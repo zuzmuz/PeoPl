@@ -13,14 +13,14 @@ public protocol TypeDeclarationsChecker {
         contextTypeDeclarations: borrowing Semantic.TypeDeclarationsMap
     ) -> (
         typeDeclarations: Semantic.TypeDeclarationsMap,
-        typeLookup: [Semantic.ScopedIdentifier: Syntax.Definition],
+        typeLookup: [Semantic.QualifiedIdentifier: Syntax.Definition],
         errors: [Semantic.Error]
     )
 }
 
 extension Syntax.QualifiedIdentifier {
     /// Create a semantic scoped identifier from self
-    func getSemanticIdentifier() -> Semantic.ScopedIdentifier {
+    func getSemanticIdentifier() -> Semantic.QualifiedIdentifier {
         return .init(chain: self.chain)
     }
 }
@@ -48,7 +48,7 @@ extension Syntax.TypeField {
     /// that do not belong in current type definitions
     /// nor in the context provided
     func undefinedTypes(
-        types: borrowing Set<Semantic.ScopedIdentifier>,
+        types: borrowing Set<Semantic.QualifiedIdentifier>,
     ) -> [Syntax.QualifiedIdentifier] {
         self.getTypeIdentifiers().filter { typeIdentifier in
             let semanticIdentifier = typeIdentifier.getSemanticIdentifier()
@@ -58,8 +58,9 @@ extension Syntax.TypeField {
 }
 
 extension [Syntax.TypeField] {
-    func getProductSemanticTypes(
-    ) throws(Semantic.Error) -> [Semantic.Tag: Semantic.TypeSpecifier] {
+    func getProductSemanticTypes() throws(Semantic.Error) -> [Semantic.Tag:
+        Semantic.TypeSpecifier]
+    {
         var recordFields: [Semantic.Tag: Semantic.TypeSpecifier] = [:]
         var fieldCounter = UInt64(0)
         for typeField in self {
@@ -78,10 +79,12 @@ extension [Syntax.TypeField] {
                 if recordFields[fieldTag] != nil {
                     throw .duplicateFieldName(field: typeField)
                 }
-                guard let typeSpecifier =
-                    taggedTypeSpecifier.typeSpecifier else {
-                        throw .taggedTypeSpecifierRequired
-                    }
+                guard
+                    let typeSpecifier =
+                        taggedTypeSpecifier.typeSpecifier
+                else {
+                    throw .taggedTypeSpecifierRequired
+                }
                 recordFields[fieldTag] =
                     try typeSpecifier.getSemanticType()
                 fieldCounter += 1
@@ -110,8 +113,9 @@ extension [Syntax.TypeField] {
         return recordFields
     }
 
-    func getSumSemanticTypes(
-    ) throws(Semantic.Error) -> [Semantic.Tag: Semantic.TypeSpecifier] {
+    func getSumSemanticTypes() throws(Semantic.Error) -> [Semantic.Tag: Semantic
+        .TypeSpecifier]
+    {
         var recordFields: [Semantic.Tag: Semantic.TypeSpecifier] = [:]
         var fieldCounter = UInt64(0)
         for typeField in self {
@@ -160,7 +164,7 @@ extension Syntax.TypeSpecifier {
     /// that do not belong in current type definitions
     /// nor in the context provided
     func undefinedTypes(
-        types: borrowing Set<Semantic.ScopedIdentifier>,
+        types: borrowing Set<Semantic.QualifiedIdentifier>,
     ) -> [Syntax.QualifiedIdentifier] {
         self.getTypeIdentifiers().filter { typeIdentifier in
             let semanticIdentifier = typeIdentifier.getSemanticIdentifier()
@@ -192,7 +196,7 @@ extension Semantic.TypeSpecifier {
     /// Get the semantic type definition from a type sepcifier.
     /// This will return the raw definition of nominal types from the type definition table lookup
     func getRawType(
-        typeDeclarations: borrowing [Semantic.ScopedIdentifier:
+        typeDeclarations: borrowing [Semantic.QualifiedIdentifier:
             Semantic.TypeSpecifier]
     ) -> Semantic.RawTypeSpecifier {
         switch self {
@@ -221,8 +225,7 @@ extension TypeDeclarationsChecker {
         let declarations = self.getTypeDeclarations()
 
         let typesLocations:
-        // FIX: Types are now expressions, but should be handled as such
-            [Semantic.ScopedIdentifier: [Syntax.Definition]] =
+            [Semantic.QualifiedIdentifier: [Syntax.Definition]] =
                 declarations.reduce(into: [:]) { acc, type in
                     let semanticIdentifer =
                         type.identifier.getSemanticIdentifier()
@@ -249,8 +252,13 @@ extension TypeDeclarationsChecker {
             Set(Array(contextTypeDeclarations.keys)))
 
         // detecting invalid members types
-        let typesNotInScope = typeLookup.flatMap { _, type in
-            return type.typeSpecifier.undefinedTypes(types: allTypes)
+        let typesNotInScope = typeLookup.flatMap { _, definition in
+            switch definition.definition {
+            case let .typeSpecifier(typeSpecifier):
+                return typeSpecifier.undefinedTypes(types: allTypes)
+            default:
+                return []
+            }
         }.map { Semantic.Error.typeNotInScope(type: $0) }
 
         // detecting cyclical dependencies
@@ -259,13 +267,17 @@ extension TypeDeclarationsChecker {
 
         // get semantic type specifier from syntax type specifier
         var localTypeDeclarations:
-            [Semantic.ScopedIdentifier: Semantic.TypeSpecifier] = [:]
+            [Semantic.QualifiedIdentifier: Semantic.TypeSpecifier] = [:]
         var typeSepcifierErrors: [Semantic.Error] = []
 
         for (indentifier, typeDefinition) in typeLookup {
             do {
-                localTypeDeclarations[indentifier] =
-                    try typeDefinition.typeSpecifier.getSemanticType()
+                if case let .typeSpecifier(typeSpecifier) =
+                    typeDefinition.definition
+                {
+                    localTypeDeclarations[indentifier] =
+                        try typeSpecifier.getSemanticType()
+                }
             } catch {
                 typeSepcifierErrors.append(error)
             }
@@ -299,29 +311,40 @@ extension TypeDeclarationsChecker {
                 {
                     checkCyclicalDependencies(typeDefinition: typeDefinition)
                 }
-            case let .product(product):
-                product.typeFields.forEach { field in
+            case let .recordType(record):
+                record.typeFields.forEach { field in
                     switch field {
                     case let .typeSpecifier(typeSpecifier):
                         checkCyclicalDependencies(
                             typeSpecifier: typeSpecifier)
                     case let .taggedTypeSpecifier(taggedTypeSpecifier):
-                        checkCyclicalDependencies(
-                            typeSpecifier: taggedTypeSpecifier.typeSpecifier)
+                        if let typeSpecifier =
+                            taggedTypeSpecifier.typeSpecifier
+                        {
+                            checkCyclicalDependencies(
+                                typeSpecifier: typeSpecifier)
+                        } else {
+                            // NOTE: nil typeSpecifiers are not allowed in record types
+                            errors.append(.taggedTypeSpecifierRequired)
+                        }
                     case let .homogeneousTypeProduct(homogeneousTypeProduct):
                         checkCyclicalDependencies(
                             typeSpecifier: homogeneousTypeProduct.typeSpecifier)
                     }
                 }
-            case let .sum(sum):
-                sum.typeFields.forEach { field in
+            case let .choiceType(choice):
+                choice.typeFields.forEach { field in
                     switch field {
                     case let .typeSpecifier(typeSpecifier):
                         checkCyclicalDependencies(
                             typeSpecifier: typeSpecifier)
                     case let .taggedTypeSpecifier(taggedTypeSpecifier):
-                        checkCyclicalDependencies(
-                            typeSpecifier: taggedTypeSpecifier.typeSpecifier)
+                        if let typeSpecifier =
+                            taggedTypeSpecifier.typeSpecifier
+                        {
+                            checkCyclicalDependencies(
+                                typeSpecifier: typeSpecifier)
+                        }
                     case .homogeneousTypeProduct:
                         errors.append(
                             // TODO: consider cleaning up where this check is done
@@ -329,11 +352,13 @@ extension TypeDeclarationsChecker {
                     }
                 }
             default:
-                fatalError("checking cyclical dependencies for \(typeSpecifier) is not implemented yet")
+                fatalError(
+                    "checking cyclical dependencies for \(typeSpecifier) is not implemented yet"
+                )
             }
         }
 
-        func checkCyclicalDependencies(typeDefinition: Syntax.TypeDefinition) {
+        func checkCyclicalDependencies(typeDefinition: Syntax.Definition) {
             let typeIdentifier = typeDefinition.identifier
             if nodeStates[typeIdentifier] == .visited {
                 return
@@ -346,9 +371,11 @@ extension TypeDeclarationsChecker {
             }
             nodeStates[typeIdentifier] = .visiting
 
-            checkCyclicalDependencies(
-                typeSpecifier: typeDefinition.typeSpecifier)
-
+            if case let .typeSpecifier(typeSpecifier) =
+                typeDefinition.definition
+            {
+                checkCyclicalDependencies(typeSpecifier: typeSpecifier)
+            }
         }
 
         typeLookup.forEach { _, typeDefinition in
@@ -363,7 +390,7 @@ extension Syntax.Module: TypeDeclarationsChecker {
     public func getTypeDeclarations() -> [Syntax.Definition] {
         return self.definitions.filter { definition in
             switch definition.definition {
-            case .choiceType, .recordType, .functionType:
+            case .typeSpecifier:
                 return true
             default:
                 // TODO: if definition is nominal, it is an alias, either to a value or a type, it should be included if it is type alias (relevant for generics)

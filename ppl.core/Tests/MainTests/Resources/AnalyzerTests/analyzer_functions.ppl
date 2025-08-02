@@ -1,10 +1,10 @@
 
-add:: [a: Int, b: Int] -> Int {
+add: [a' Int, b' Int] -> Int {
     a + b -- c - * 3
 }
 
-main:: () -> Int {
-    add(a:: 1, b:: 2)
+main: [] -> Int {
+    add(a: 1, b: 2)
     |> sdfsdf
     |> dssd
 }

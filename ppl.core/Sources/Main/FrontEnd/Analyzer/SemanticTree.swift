@@ -34,7 +34,7 @@ public enum Semantic {
         }
     }
 
-    public struct ScopedIdentifier: Hashable, Sendable {
+    public struct QualifiedIdentifier: Hashable, Sendable {
         let chain: [String]
     }
 
@@ -44,8 +44,9 @@ public enum Semantic {
         let op: Operator
     }
 
-    public typealias TypeLookupMap = [ScopedIdentifier: Syntax.Definition]
-    public typealias TypeDeclarationsMap = [ScopedIdentifier: TypeSpecifier]
+    public typealias TypeLookupMap =
+        [QualifiedIdentifier: Syntax.Definition]
+    public typealias TypeDeclarationsMap = [QualifiedIdentifier: TypeSpecifier]
     public typealias ValueLookupMap =
         [ExpressionSignature: Syntax.Definition]
     public typealias ValueDeclarationsMap = [ExpressionSignature: TypeSpecifier]
@@ -53,11 +54,11 @@ public enum Semantic {
 
     public enum ExpressionSignature: Hashable {
         case function(FunctionSignature)
-        case value(ScopedIdentifier)
+        case value(QualifiedIdentifier)
     }
 
     public struct FunctionSignature: Hashable, Sendable {
-        let identifier: ScopedIdentifier
+        let identifier: QualifiedIdentifier
         let inputType: (tag: Tag, type: TypeSpecifier)
         let arguments: [Tag: TypeSpecifier]
 
@@ -111,7 +112,7 @@ public enum Semantic {
 
     public enum TypeSpecifier: Hashable, Sendable {
         case raw(RawTypeSpecifier)
-        case nominal(ScopedIdentifier)
+        case nominal(QualifiedIdentifier)
     }
 
     public struct Function: Hashable, Sendable {
