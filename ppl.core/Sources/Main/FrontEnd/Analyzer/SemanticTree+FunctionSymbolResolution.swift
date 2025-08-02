@@ -1,14 +1,26 @@
 public protocol FunctionDefinitionChecker {
-    func getValueDeclarations() -> [Syntax.Definition]
-    func resolveValueSymbols(
+    func getFunctionDeclarations() -> [Syntax.Definition]
+    func resolveFunctionSymbols(
         typeDeclarations: borrowing Semantic.TypeDeclarationsMap,
-        contextValueDeclarations: borrowing Semantic.ValueDeclarationsMap
+        contextFunctionDeclarations: borrowing Semantic.FunctionDeclarationsMap
     ) -> (
-        functionDeclarations: Semantic.ValueDeclarationsMap,
-        functionLookup: Semantic.ValueLookupMap,
-        functionExpressions: [Semantic.FunctionSignature: Syntax.Expression],
+        functionDeclarations: Semantic.FunctionDeclarationsMap,
+        functionLookup: Semantic.FunctionLookupMap,
         errors: [Semantic.Error]
     )
+}
+
+extension Syntax.Function {
+    func getSignature(
+        identifier: Semantic.QualifiedIdentifier
+    ) throws(Semantic.Error) -> Semantic.FunctionSignature {
+        guard let signature = self.signature else {
+            throw .notImplemented(
+                "do not support signatureless function",
+                location: self.location)
+        }
+        return try signature.getSignature(identifier: identifier)
+    }
 }
 
 extension Syntax.Expression {
@@ -17,13 +29,7 @@ extension Syntax.Expression {
     ) throws(Semantic.Error) -> Semantic.ExpressionSignature {
         switch self {
         case let .function(function):
-            guard let signature = function.signature else {
-                throw .notImplemented(
-                    "do not support signatureless function",
-                    location: function.location)
-            }
-            return .function(
-                try signature.getSignature(identifier: identifier))
+            return try .function(function.getSignature(identifier: identifier))
         default:
             throw .notImplemented(
                 "we do not support compile time expressions yet",
@@ -70,11 +76,11 @@ extension Syntax.FunctionType {
                 (
                     tag: .input,
                     type: .raw(
-                    .record(
-                        try [
-                            Syntax.TypeField.homogeneousTypeProduct(
-                                homogeneousTypeProduct)
-                        ].getProductSemanticTypes()))
+                        .record(
+                            try [
+                                Syntax.TypeField.homogeneousTypeProduct(
+                                    homogeneousTypeProduct)
+                            ].getProductSemanticTypes()))
                 )
 
             case .none:
@@ -98,24 +104,23 @@ extension Syntax.FunctionType {
     }
 }
 
-extension ValueDefinitionChecker {
-    public func resolveValueSymbols(
+extension FunctionDefinitionChecker {
+    public func resolveFunctionSymbols(
         typeDeclarations: borrowing Semantic.TypeDeclarationsMap,
-        contextValueDeclarations: borrowing Semantic.ValueDeclarationsMap
+        contextFunctionDeclarations: borrowing Semantic.FunctionDeclarationsMap
     ) -> (
-        valueDeclarations: Semantic.ValueDeclarationsMap,
-        valueLookup: Semantic.ValueLookupMap,
-        functionExpressions: [Semantic.FunctionSignature: Syntax.Expression],
+        functionDeclarations: Semantic.FunctionDeclarationsMap,
+        functionLookup: Semantic.FunctionLookupMap,
         errors: [Semantic.Error]
     ) {
-        let declarations = self.getValueDeclarations()
+        let declarations = self.getFunctionDeclarations()
 
         let allTypes = Set(Array(typeDeclarations.keys))
 
         // detecting invalid type identifiers
-        let typesNotInScope = declarations.flatMap { value in
-            if case let .function(signature, _) =
-                value.expression.expressionType, let signature
+        let typesNotInScope = declarations.flatMap { definition in
+            if case let .function(function) = definition.definition,
+                let signature = function.signature
             {
                 let undefinedInputTypes =
                     signature.inputType?.undefinedTypes(
@@ -136,17 +141,24 @@ extension ValueDefinitionChecker {
             return []
         }.map { Semantic.Error.typeNotInScope(type: $0) }
 
-        // verifying value redeclarations
-        var valuesLocations:
-            [Semantic.ExpressionSignature:
-                [Syntax.ValueDefinition]] = [:]
+        // verifying function redeclarations
+        var functionLocations:
+            [Semantic.FunctionSignature:
+                [Syntax.Definition]] = [:]
         var signatureErrors: [Semantic.Error] = []
-        for value in declarations {
+        for declaration in declarations {
             do {
-                let signature = try value.expression.getSignature(
-                    identifier: value.identifier.getSemanticIdentifier())
-                valuesLocations[signature] =
-                    (valuesLocations[signature] ?? []) + [value]
+                switch declaration.definition {
+                case let .function(function):
+                    let signature = try function.getSignature(
+                        identifier: declaration
+                            .identifier
+                            .getSemanticIdentifier())
+                    functionLocations[signature] =
+                        (functionLocations[signature] ?? []) + [declaration]
+                default:
+                    break
+                }
             } catch {
                 signatureErrors.append(error)
             }
@@ -154,7 +166,7 @@ extension ValueDefinitionChecker {
 
         // detecting redeclarations
         // NOTE: for the future, interesting features to introduce are default arguments values and overloading
-        let redeclarations = valuesLocations.compactMap { _, valueLocations in
+        let redeclarations = functionLocations.compactMap { _, valueLocations in
             if valueLocations.count > 1 {
                 return Semantic.Error.valueRedeclaration(values: valueLocations)
             } else {
@@ -162,52 +174,47 @@ extension ValueDefinitionChecker {
             }
         }
 
-        let valueLookup = valuesLocations.compactMapValues { values in
+        let functionLookup = functionLocations.compactMapValues { values in
             return values.first
         }
 
-        let functionExpressions:
-            [Semantic.FunctionSignature: Syntax.Expression] =
-                valueLookup.reduce(into: [:]) { acc, pair in
-                    switch (pair.key, pair.value.expression.expressionType) {
-                    case let (.function(function), .function(_, expression)):
-                        acc[function] = expression
-                    default:
-                        break
-                    }
-                }
-
-        var valueDeclarations: Semantic.ValueDeclarationsMap = [:]
+        var functionDeclarations: Semantic.FunctionDeclarationsMap = [:]
         var typeSpecifierErrors: [Semantic.Error] = []
 
-        for (signature, value) in valueLookup {
+        for (signature, definition) in functionLookup {
             do {
-                valueDeclarations[signature] = try value.expression.getType()
+                functionDeclarations[signature] =
+                    try definition.definition.getType()
             } catch {
                 typeSpecifierErrors.append(error)
             }
         }
         return (
-            valueDeclarations: valueDeclarations,
-            valueLookup: valueLookup,
-            functionExpressions: functionExpressions,
+            functionDeclarations: functionDeclarations,
+            functionLookup: functionLookup,
             errors: typesNotInScope + signatureErrors + redeclarations
                 + typeSpecifierErrors
         )
     }
 }
 
-extension Syntax.Module: ValueDefinitionChecker {
-    public func getValueDeclarations() -> [Syntax.Definition] {
-        return self.definitions.filter { statement in
+extension Syntax.Module: FunctionDefinitionChecker {
+    public func getFunctionDeclarations() -> [Syntax.Definition] {
+        return self.definitions.filter { definition in
+            switch definition.definition {
+            case .function:
+                return true
+            default:
+                return false
+            }
         }
     }
 }
 
-extension Syntax.Project: ValueDefinitionChecker {
-    public func getValueDeclarations() -> [Syntax.ValueDefinition] {
+extension Syntax.Project: FunctionDefinitionChecker {
+    public func getFunctionDeclarations() -> [Syntax.Definition] {
         return self.modules.values.flatMap { module in
-            module.getValueDeclarations()
+            module.getFunctionDeclarations()
         }
     }
 }

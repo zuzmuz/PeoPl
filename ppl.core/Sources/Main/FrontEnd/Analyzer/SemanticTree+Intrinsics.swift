@@ -19,7 +19,7 @@ extension Semantic {
                 .init(chain: ["Float"]): .float,
                 .init(chain: ["Bool"]): .bool,
             ],
-            valueDeclarations: [:],
+            functionDeclarations: [:],
             operatorDeclarations: [
                 .init(left: .uint, right: .uint, op: .plus): .uint,
                 .init(left: .nothing, right: .uint, op: .plus): .uint,
@@ -81,7 +81,7 @@ extension Semantic {
 
     func getIntrinsicDefinitions() -> Semantic.DefinitionsContext {
         return .init(
-            valueDefinitions: [:],
+            functionDefinitions: [:],
             // operators: [
             //     .init(left: .uint, right: .uint, op: .plus): .init(
             //         expression: .intrinsic, type: .int),
