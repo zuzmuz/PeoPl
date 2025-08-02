@@ -47,10 +47,11 @@ public enum Semantic {
     public typealias TypeLookupMap =
         [QualifiedIdentifier: Syntax.Definition]
     public typealias TypeDeclarationsMap = [QualifiedIdentifier: TypeSpecifier]
-    public typealias ValueLookupMap =
-        [ExpressionSignature: Syntax.Definition]
-    public typealias ValueDeclarationsMap = [ExpressionSignature: TypeSpecifier]
-    public typealias ValueDefinitionsMap = [ExpressionSignature: Expression]
+    public typealias FunctionLookupMap =
+        [FunctionSignature: Syntax.Definition]
+    public typealias FunctionDeclarationsMap =
+        [FunctionSignature: TypeSpecifier]
+    public typealias FunctionDefinitionsMap = [FunctionSignature: Expression]
 
     public enum ExpressionSignature: Hashable {
         case function(FunctionSignature)
@@ -79,13 +80,13 @@ public enum Semantic {
     }
 
     public struct DefinitionsContext {
-        let valueDefinitions: ValueDefinitionsMap
+        let functionDefinitions: FunctionDefinitionsMap
         // let operators: [OperatorField: Expression]
     }
 
     public struct DeclarationsContext {
         let typeDeclarations: TypeDeclarationsMap
-        let valueDeclarations: ValueDeclarationsMap
+        let functionDeclarations: FunctionDeclarationsMap
         let operatorDeclarations: [OperatorField: TypeSpecifier]
         // stores values based on identifier only for better error reporting
     }

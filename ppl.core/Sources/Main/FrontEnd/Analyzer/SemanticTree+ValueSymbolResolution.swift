@@ -1,11 +1,11 @@
-public protocol ValueDefinitionChecker {
+public protocol FunctionDefinitionChecker {
     func getValueDeclarations() -> [Syntax.Definition]
     func resolveValueSymbols(
         typeDeclarations: borrowing Semantic.TypeDeclarationsMap,
         contextValueDeclarations: borrowing Semantic.ValueDeclarationsMap
     ) -> (
-        valueDeclarations: Semantic.ValueDeclarationsMap,
-        valueLookup: Semantic.ValueLookupMap,
+        functionDeclarations: Semantic.ValueDeclarationsMap,
+        functionLookup: Semantic.ValueLookupMap,
         functionExpressions: [Semantic.FunctionSignature: Syntax.Expression],
         errors: [Semantic.Error]
     )
@@ -198,13 +198,8 @@ extension ValueDefinitionChecker {
 }
 
 extension Syntax.Module: ValueDefinitionChecker {
-    public func getValueDeclarations() -> [Syntax.ValueDefinition] {
-        return self.definitions.compactMap { statement in
-            if case let .valueDefinition(typeDefinition) = statement {
-                return typeDefinition
-            } else {
-                return nil
-            }
+    public func getValueDeclarations() -> [Syntax.Definition] {
+        return self.definitions.filter { statement in
         }
     }
 }
