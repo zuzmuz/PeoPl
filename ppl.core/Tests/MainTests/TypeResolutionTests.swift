@@ -6,43 +6,11 @@ extension Semantic.Error: Testable {
     func assertEqual(
         with: Self
     ) {
-        switch self {
-        case .bindingMismatch(let expression):
-            break
-        case .bindingNotAllowed(let expression):
-            break
-        case .consecutiveUnary(let expression):
-            break
-        case .cyclicType(let type, let cyclicType):
-            break
-        case .duplicateFieldName(let field):
-            break
-        case .duplicatedExpressionFieldName(let expression):
-            break
-        case .guardShouldReturnBool(let expression):
-            break
-        case .homogeneousTypeProductInSum(let field):
-            break
-        case .inputMismatch(let expression, let expected, let received):
-            break
-        case .invalidOperation(let expression, let leftType, let rightType):
-            break
-        case .notImplemented(_, let location):
-            break
-        case .taggedTypeSpecifierRequired:
-            break
-        case .typeNotInScope(let type):
-            break
-        case .typeRedeclaration(let types):
-            break
-        case .undefinedCall(let expression):
-            break
-        case .undefinedField(let expression, let field):
-            break
-        case .undefinedType(let expression, let identifier):
-            break
-        case .valueRedeclaration(let values):
-            break
+        switch (self, with) {
+        case let (.typeRedeclaration(selfTypes), .typeRedeclaration(withTypes)):
+            XCTAssertEqual(selfTypes.count, withTypes.count)
+        default:
+            XCTFail("Not Implemented for \(self) vs \(with)")
         }
     }
 }
@@ -110,6 +78,21 @@ final class TypeResoltionTests: XCTestCase {
                     ])),
                 ],
                 []
+            ),
+            "redeclared_types": (
+                [
+                    .chain(["redeclared"]): .raw(.record([
+                        .unnamed(0): .nominal(.chain(["Int"])),
+                        .unnamed(1): .nominal(.chain(["Float"])),
+                        .unnamed(2): .nominal(.chain(["Bool"])),
+                    ])),
+                    .chain(["declared"]): .raw(.record([
+                        .unnamed(0): .nominal(.chain(["redeclared"]))
+                    ]))
+                ],
+                [
+                    .typeRedeclaration(types: [])
+                ]
             )
         ]
 

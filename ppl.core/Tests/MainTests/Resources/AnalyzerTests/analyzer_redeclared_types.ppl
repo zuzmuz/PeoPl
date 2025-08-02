@@ -1,0 +1,13 @@
+redeclared: [
+    Int, Float, Bool
+]
+
+redeclared: [
+    a' Int,
+    b' Float,
+    c' Bool
+]
+
+declared: [
+    redeclared
+]
