@@ -68,7 +68,9 @@ extension [Syntax.TypeField] {
             case let .typeSpecifier(typeSpecifier):
                 let fieldTag = Semantic.Tag.unnamed(fieldCounter)
                 if recordFields[fieldTag] != nil {
-                    throw .duplicateFieldName(field: typeField)
+                    throw .init(
+                        location: typeField.location,
+                        errorChoice: .duplicateFieldName)
                 }
                 recordFields[fieldTag] =
                     try typeSpecifier.getSemanticType()
@@ -77,13 +79,17 @@ extension [Syntax.TypeField] {
                 let fieldTag = Semantic.Tag.named(
                     taggedTypeSpecifier.tag)
                 if recordFields[fieldTag] != nil {
-                    throw .duplicateFieldName(field: typeField)
+                    throw .init(
+                        location: typeField.location,
+                        errorChoice: .duplicateFieldName)
                 }
                 guard
                     let typeSpecifier =
                         taggedTypeSpecifier.typeSpecifier
                 else {
-                    throw .taggedTypeSpecifierRequired
+                    throw .init(
+                        location: typeField.location,
+                        errorChoice: .taggedTypeSpecifierRequired)
                 }
                 recordFields[fieldTag] =
                     try typeSpecifier.getSemanticType()
@@ -97,16 +103,19 @@ extension [Syntax.TypeField] {
                         let fieldTag = Semantic.Tag.unnamed(
                             fieldCounter + index)
                         if recordFields[fieldTag] != nil {
-                            throw .duplicateFieldName(field: typeField)
+                            throw .init(
+                                location: typeField.location,
+                                errorChoice: .duplicateFieldName)
                         }
                         recordFields[fieldTag] =
                             semanticType
                     }
                     fieldCounter += value
                 case .identifier:
-                    throw .notImplemented(
-                        "compile time values not supported yet",
-                        location: typeField.location)
+                    throw .init(
+                        location: typeField.location,
+                        errorChoice: .notImplemented(
+                            "compile time values not supported yet"))
                 }
             }
         }
@@ -130,8 +139,9 @@ extension [Syntax.TypeField] {
                     ?? .nothing
                 fieldCounter += 1
             case .homogeneousTypeProduct:
-                throw .homogeneousTypeProductInSum(
-                    field: typeField)
+                throw .init(
+                    location: typeField.location,
+                    errorChoice: .homogeneousTypeProductInSum)
             }
         }
         return recordFields
@@ -234,13 +244,21 @@ extension TypeDeclarationsChecker {
                 }
 
         // detecting redeclarations
-        let redeclarations = typesLocations.compactMap { _, typeLocations in
-            if typeLocations.count > 1 {
-                return Semantic.Error.typeRedeclaration(types: typeLocations)
-            } else {
-                return nil
+        let redeclarations =
+            typesLocations.flatMap { identifier, typeLocations in
+                if typeLocations.count > 1 {
+                    let locations = typeLocations.map { $0.location }
+                    return typeLocations.map { typeLocation in
+                        Semantic.Error.init(
+                            location: typeLocation.location,
+                            errorChoice: .typeRedeclaration(
+                                identifier: identifier,
+                                otherLocations: locations))
+                    }
+                } else {
+                    return []
+                }
             }
-        }
 
         let typeLookup = typesLocations.compactMapValues { types in
             return types.first
@@ -259,7 +277,11 @@ extension TypeDeclarationsChecker {
             default:
                 return []
             }
-        }.map { Semantic.Error.typeNotInScope(type: $0) }
+        }.map {
+            Semantic.Error.init(
+                location: $0.location,
+                errorChoice: .typeNotInScope(identifier: $0))
+        }
 
         // detecting cyclical dependencies
         let cyclicalDependencies = checkCyclicalDependencies(
@@ -332,7 +354,10 @@ extension TypeDeclarationsChecker {
                                 stack: stack)
                         } else {
                             // NOTE: nil typeSpecifiers are not allowed in record types
-                            errors.append(.taggedTypeSpecifierRequired)
+                            errors.append(
+                                .init(
+                                    location: field.location,
+                                    errorChoice: .taggedTypeSpecifierRequired))
                         }
                     case let .homogeneousTypeProduct(homogeneousTypeProduct):
                         checkCyclicalDependencies(
@@ -357,8 +382,9 @@ extension TypeDeclarationsChecker {
                         }
                     case .homogeneousTypeProduct:
                         errors.append(
-                            // TODO: consider cleaning up where this check is done
-                            .homogeneousTypeProductInSum(field: field))
+                            .init(
+                                location: field.location,
+                                errorChoice: .homogeneousTypeProductInSum))
                     }
                 }
             default:
@@ -380,9 +406,13 @@ extension TypeDeclarationsChecker {
             }
             if nodeStates[typeIdentifier] == .visiting {
                 print("cyclic type detected \(typeIdentifier)")
-                errors.append(
-                    .cyclicType(
-                        stack: stack))
+                for element in stack {
+                    errors.append(
+                        .init(
+                            location: typeIdentifier.location,
+                            errorChoice: .cyclicType(
+                                stack: stack)))
+                }
                 return
             }
             nodeStates[typeIdentifier] = .visiting

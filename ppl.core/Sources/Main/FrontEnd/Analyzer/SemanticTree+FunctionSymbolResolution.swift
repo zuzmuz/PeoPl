@@ -15,9 +15,10 @@ extension Syntax.Function {
         identifier: Semantic.QualifiedIdentifier
     ) throws(Semantic.Error) -> Semantic.FunctionSignature {
         guard let signature = self.signature else {
-            throw .notImplemented(
-                "do not support signatureless function",
-                location: self.location)
+            throw .init(
+                location: self.location,
+                errorChoice: .notImplemented(
+                    "do not support signatureless function"))
         }
         return try signature.getSignature(identifier: identifier)
     }
@@ -31,9 +32,10 @@ extension Syntax.Expression {
         case let .function(function):
             return try .function(function.getSignature(identifier: identifier))
         default:
-            throw .notImplemented(
-                "we do not support compile time expressions yet",
-                location: .nowhere)
+            throw .init(
+                location: self.location,
+                errorChoice: .notImplemented(
+                    "we do not support compile time expressions yet"))
         }
     }
 
@@ -41,16 +43,19 @@ extension Syntax.Expression {
         switch self {
         case let .function(function):
             guard let signature = function.signature else {
-                throw .notImplemented(
-                    "do not support signatureless function",
-                    location: function.location)
+                throw .init(
+                    location: self.location,
+                    errorChoice: .notImplemented(
+                        "do not support signatureless function"))
             }
             // TODO: think about the type of the expression (shouldn't be a function)
             return try signature.outputType.getSemanticType()
         default:
-            throw .notImplemented(
-                "\(self) do not support compile time expressions yet, should calculate expression at compile time",
-                location: .nowhere)
+            throw .init(
+                location: self.location,
+                errorChoice: .notImplemented(
+                    "\(self) do not support compile time expressions yet, should calculate expression at compile time"
+                ))
         }
     }
 }
@@ -70,7 +75,9 @@ extension Syntax.FunctionType {
                         type: try typeSpecifier.getSemanticType()
                     )
                 } else {
-                    throw .taggedTypeSpecifierRequired
+                    throw .init(
+                        location: taggedTypeSpecifier.location,
+                        errorChoice: .taggedTypeSpecifierRequired)
                 }
             case let .homogeneousTypeProduct(homogeneousTypeProduct):
                 (
@@ -94,8 +101,9 @@ extension Syntax.FunctionType {
         if let inputTypeField = self.inputType,
             arguments[inputType.tag] != nil
         {
-            throw Semantic.Error.duplicateFieldName(
-                field: inputTypeField)
+            throw .init(
+                location: inputTypeField.location,
+                errorChoice: .duplicateFieldName)
         }
         return .init(
             identifier: identifier,
@@ -139,7 +147,11 @@ extension FunctionDefinitionChecker {
                     + undefinedOutputTypes
             }
             return []
-        }.map { Semantic.Error.typeNotInScope(type: $0) }
+        }.map { identifier in
+            Semantic.Error.init(
+                location: identifier.location,
+                errorChoice: .typeNotInScope(identifier: identifier))
+        }
 
         // verifying function redeclarations
         var functionLocations:
@@ -166,13 +178,21 @@ extension FunctionDefinitionChecker {
 
         // detecting redeclarations
         // NOTE: for the future, interesting features to introduce are default arguments values and overloading
-        let redeclarations = functionLocations.compactMap { _, valueLocations in
-            if valueLocations.count > 1 {
-                return Semantic.Error.valueRedeclaration(values: valueLocations)
-            } else {
-                return nil
+        let redeclarations =
+            functionLocations.flatMap { signature, functionLocations in
+                if functionLocations.count > 1 {
+                    let locations = functionLocations.map { $0.location }
+                    return functionLocations.map { functionLocation in
+                        Semantic.Error.init(
+                            location: functionLocation.location,
+                            errorChoice: .functionRedeclaration(
+                                signature: signature,
+                                otherLocations: locations))
+                    }
+                } else {
+                    return []
+                }
             }
-        }
 
         let functionLookup = functionLocations.compactMapValues { values in
             return values.first

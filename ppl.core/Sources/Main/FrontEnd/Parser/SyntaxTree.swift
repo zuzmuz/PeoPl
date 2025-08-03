@@ -357,7 +357,7 @@ public enum Syntax {
     }
 
     /// Core expression node representing all computations and values in the language
-    public indirect enum Expression: Codable, Sendable {
+    public indirect enum Expression: Codable, Sendable, SyntaxNode {
         case literal(Literal)
         case unary(Unary)
         case binary(Binary)
@@ -370,6 +370,35 @@ public enum Syntax {
         case taggedExpression(TaggedExpression)
         case branched(Branched)
         case piped(Pipe)
+
+        public var location: Syntax.NodeLocation {
+            switch self {
+            case let .literal(literal):
+                literal.location
+            case let .unary(unary):
+                unary.location
+            case let .binary(binary):
+                binary.location
+            case let .nominal(nominal):
+                nominal.location
+            case let .typeSpecifier(typeSpecifier):
+                typeSpecifier.location
+            case let .function(function):
+                function.location
+            case let .call(call):
+                call.location
+            case let .access(access):
+                access.location
+            case let .binding(binding):
+                binding.location
+            case let .taggedExpression(taggedExpression):
+                taggedExpression.location
+            case let .branched(branched):
+                branched.location
+            case let .piped(piped):
+                piped.location
+            }
+        }
     }
 
     public struct Literal: SyntaxNode, Sendable {
