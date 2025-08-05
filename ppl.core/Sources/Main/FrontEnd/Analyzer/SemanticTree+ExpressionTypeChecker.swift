@@ -54,16 +54,14 @@ extension [Syntax.Expression] {
     }
 }
 
-extension Syntax.Expression {
-
-    func checkLiteral(
+extension Syntax.Literal {
+    func checkType(
         with input: Semantic.Expression,
-        literal: Syntax.Literal,
         localScope: borrowing Semantic.LocalScope,
         context: borrowing Semantic.DeclarationsContext,
     ) throws(Semantic.Error) -> Semantic.Expression {
 
-        switch (input, literal.value) {
+        switch (input, self.value) {
         case (_, .never):
             return .never
         case (.nothing, .nothing):
@@ -74,7 +72,7 @@ extension Syntax.Expression {
             return .floatLiteral(value)
         case (.nothing, .stringLiteral(let value)):
             throw .init(
-                location: literal.location,
+                location: self.location,
                 errorChoice: .notImplemented(
                     "String literal type checking is not implemented yet"))
         // return .init(expression: .stringLiteral(value), type: .string)
@@ -82,23 +80,23 @@ extension Syntax.Expression {
             return .boolLiteral(value)
         default:
             throw .init(
-                location: literal.location,
+                location: self.location,
                 errorChoice: .inputMismatch(
                     expected: .nothing,
                     received: input.type))
         }
     }
+}
 
-    func checkTypeUnary(
+extension Syntax.Unary {
+    func checkType(
         with input: Semantic.Expression,
-        op: Operator,
-        expression: Syntax.Expression,
         localScope: borrowing Semantic.LocalScope,
         context: borrowing Semantic.DeclarationsContext,
     ) throws(Semantic.Error) -> Semantic.Expression {
         // multiple consecutive unary operations are not allowed
         // because things like `+ * - exp` are allowed syntactically
-        if case .unary = expression {
+        if case .unary = self.expression {
             throw .init(
                 location: expression.location,
                 errorChoice: .consecutiveUnary)
@@ -130,27 +128,28 @@ extension Syntax.Expression {
                 op, left: input, right: typedExpression, type: opReturnType)
         }
     }
+}
 
-    func checkTypeBinary(
-        left: Syntax.Expression,
-        op: Operator,
-        right: Syntax.Expression,
+extension Syntax.Binary {
+    func checkType(
+        with input: Semantic.Expression,
         localScope: borrowing Semantic.LocalScope,
         context: borrowing Semantic.DeclarationsContext,
     ) throws(Semantic.Error) -> Semantic.Expression {
-
-        let leftTyped = try left.checkType(
+        let leftTyped = try self.left.checkType(
             with: .nothing,
             localScope: localScope,
             context: context)
 
-        // if case .unary = left {
-        //     throw .init(
-        //         location: self.location,
-        //         errorChoice: .consecutiveUnary)
-        // }
+        // FIX: this is problematic in case of an expression starting with an unary
+        // this is only a error if a binary expression is nested inside another one
+        if case .unary = left {
+            throw .init(
+                location: self.location,
+                errorChoice: .consecutiveUnary)
+        }
 
-        let rightTyped = try right.checkType(
+        let rightTyped = try self.right.checkType(
             with: .nothing,
             localScope: localScope,
             context: context)
@@ -175,34 +174,43 @@ extension Syntax.Expression {
         return .binary(
             op, left: leftTyped, right: rightTyped, type: opReturnType)
     }
+}
 
-    func checkFunctionCall(
-        input: Semantic.Expression,
-        prefix: Syntax.Expression,
-        arguments: [Syntax.Expression],
+extension Syntax.Call {
+    func checkType(
+        with input: Semantic.Expression,
         localScope: borrowing Semantic.LocalScope,
-        context: borrowing Semantic.DeclarationsContext
+        context: borrowing Semantic.DeclarationsContext,
     ) throws(Semantic.Error) -> Semantic.Expression {
-
         let argumentsTyped = try arguments.checkType(
             with: .nothing,
             localScope: localScope,
             context: context)
 
-        switch prefix.expressionType {
-        case let .access(accessPrefix, field):
-            throw .notImplemented(
-                "Not ready for this yet accessing field in function call")
-        case let .field(identifier):
+        switch self.prefix {
+        case let .access(access):
+            throw .init(
+                location: access.location,
+                errorChoice: .notImplemented(
+                    "Not ready for this yet accessing field in function call"))
+        case let .nominal(nominal):
+            
+            // the nominal is a type initializer
+            if let typeSpecifier = context.typeDeclarations[
+                nominal.identifier.getSemanticIdentifier()]
+            {
+            }
+
             let functionSignature: Semantic.FunctionSignature =
                 .init(
-                    identifier: identifier.getSemanticIdentifier(),
+                    identifier: nominal.identifier.getSemanticIdentifier(),
                     inputType: (tag: .input, type: input.type),
                     arguments: argumentsTyped.mapValues { $0.type })
             let signature: Semantic.ExpressionSignature = .function(
                 functionSignature)
-
-            if let functionOutputType = context.valueDeclarations[signature] {
+            
+            // the nominal is a function call
+            if let functionOutputType = context.Declarations[signature] {
                 return .init(
                     expressionType: .call(
                         signature: functionSignature,
@@ -212,11 +220,19 @@ extension Syntax.Expression {
             } else {
                 throw .undefinedCall(expression: prefix)
             }
+        case .none:
+            throw .init(
+                location: self.location,
+                errorChoice: .notImplemented(
+                    "literal tuple not implemented yet"))
         default:
             throw .notImplemented(
                 "function call prefix \(prefix.expressionType) not implemented")
         }
     }
+}
+
+extension Syntax.Expression {
 
     func checkBranched(
         input: Semantic.Expression,
@@ -427,9 +443,8 @@ extension Syntax.Expression {
 
         switch (input.type, self) {
         case let (_, .literal(literal)):
-            return try self.checkLiteral(
+            return try literal.checkType(
                 with: input,
-                literal: literal,
                 localScope: localScope,
                 context: context)
         // Unary

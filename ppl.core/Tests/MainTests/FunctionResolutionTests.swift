@@ -137,7 +137,7 @@ final class FunctionResolutionTests: XCTestCase {
                 withExtension: "ppl")!
             let source = try Syntax.Source(url: sourceUrl)
             let module = TreeSitterModulParser.parseModule(source: source)
-            let (typeDeclarations, _, _) =
+            let (typeDeclarations, typeLookup, _) =
                 module.resolveTypeSymbols(
                     contextTypeDeclarations: intrinsicDeclarations
                         .typeDeclarations)
@@ -145,6 +145,7 @@ final class FunctionResolutionTests: XCTestCase {
                 .merging(typeDeclarations) { $1 }
             let (functionDeclarations, _, functionErrors) =
                 module.resolveFunctionSymbols(
+                    typeLookup: typeDeclarations,
                     typeDeclarations: allTypeDeclarations,
                     contextFunctionDeclarations: intrinsicDeclarations
                         .functionDeclarations)

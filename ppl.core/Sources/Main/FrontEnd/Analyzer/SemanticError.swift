@@ -17,6 +17,10 @@ extension Semantic {
             case functionRedeclaration(
                 signature: Semantic.FunctionSignature,
                 otherLocations: [Syntax.NodeLocation])
+            case functionRedeclaringType(
+                identifier: Semantic.QualifiedIdentifier,
+                typeLocation: Syntax.NodeLocation,
+            )
             case taggedTypeSpecifierRequired
             case inputMismatch(
                 expected: Semantic.TypeSpecifier,

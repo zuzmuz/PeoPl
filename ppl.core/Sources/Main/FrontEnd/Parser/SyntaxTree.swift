@@ -472,7 +472,7 @@ public enum Syntax {
     }
 
     public struct Call: SyntaxNode, Sendable {
-        let prefix: Expression
+        let prefix: Expression?
         let arguments: [Expression]
         public let location: NodeLocation
 

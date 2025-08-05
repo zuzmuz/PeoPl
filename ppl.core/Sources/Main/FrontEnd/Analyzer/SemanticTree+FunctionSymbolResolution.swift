@@ -114,6 +114,7 @@ extension Syntax.FunctionType {
 
 extension FunctionDefinitionChecker {
     public func resolveFunctionSymbols(
+        typeLookup: borrowing Semantic.TypeLookupMap,
         typeDeclarations: borrowing Semantic.TypeDeclarationsMap,
         contextFunctionDeclarations: borrowing Semantic.FunctionDeclarationsMap
     ) -> (
@@ -197,6 +198,23 @@ extension FunctionDefinitionChecker {
         let functionLookup = functionLocations.compactMapValues { values in
             return values.first
         }
+
+        // detection redeclarations of identifiers of types
+        let typeRedeclaration =
+            functionLookup.compactMap { signature, definition in
+                if let typeDeclaration = typeDeclarations[signature.identifier]
+                {
+                    if let typeLocation = typeLookup[signature.identifier] {
+                        return Semantic.Error.init(
+                            location: definition.location,
+                            errorChoice: .functionRedeclaringType(
+                                identifier: signature.identifier,
+                                typeLocation: typeLocation.location)
+                        )
+                    }
+                    // TODO: check for builtin shadowing
+                }
+            }
 
         var functionDeclarations: Semantic.FunctionDeclarationsMap = [:]
         var typeSpecifierErrors: [Semantic.Error] = []

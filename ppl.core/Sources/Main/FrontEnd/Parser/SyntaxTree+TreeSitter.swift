@@ -743,11 +743,11 @@ extension Syntax.Call: TreeSitterNode {
         node: Node,
         in source: Syntax.Source
     ) throws(Syntax.Error) -> Self {
-        guard let prefixNode = node.child(byFieldName: "prefix")
-        else {
-            throw .errorParsing(
-                element: "CallExpression",
-                location: node.getLocation(in: source))
+        let prefix: Syntax.Expression?
+        if let prefixNode = node.child(byFieldName: "prefix") {
+            prefix = try .from(node: prefixNode, in: source)
+        } else {
+            prefix = nil
         }
 
         let arguments: [Syntax.Expression]
@@ -760,7 +760,7 @@ extension Syntax.Call: TreeSitterNode {
         // TODO: trailling closures
 
         return .init(
-            prefix: try .from(node: prefixNode, in: source),
+            prefix: prefix,
             arguments: arguments,
             location: node.getLocation(in: source)
         )
