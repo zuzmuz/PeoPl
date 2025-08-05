@@ -194,11 +194,13 @@ extension Syntax.Call {
                 errorChoice: .notImplemented(
                     "Not ready for this yet accessing field in function call"))
         case let .nominal(nominal):
-            
             // the nominal is a type initializer
             if let typeSpecifier = context.typeDeclarations[
                 nominal.identifier.getSemanticIdentifier()]
             {
+                return .initializer(
+                    type: typeSpecifier,
+                    arguments: argumentsTyped)
             }
 
             let functionSignature: Semantic.FunctionSignature =
@@ -206,28 +208,34 @@ extension Syntax.Call {
                     identifier: nominal.identifier.getSemanticIdentifier(),
                     inputType: (tag: .input, type: input.type),
                     arguments: argumentsTyped.mapValues { $0.type })
-            let signature: Semantic.ExpressionSignature = .function(
-                functionSignature)
-            
+
             // the nominal is a function call
-            if let functionOutputType = context.Declarations[signature] {
-                return .init(
-                    expressionType: .call(
-                        signature: functionSignature,
-                        input: input,
-                        arguments: argumentsTyped),
+            if let functionOutputType =
+                context.functionDeclarations[functionSignature]
+            {
+                return .call(
+                    signature: functionSignature,
+                    input: input,
+                    arguments: argumentsTyped,
                     type: functionOutputType)
-            } else {
-                throw .undefinedCall(expression: prefix)
             }
+
+            throw .init(
+                location: self.location,
+                errorChoice: .undefinedCall)
         case .none:
+            // literal tuple
+            return .initializer(
+                type: .raw(.record(argumentsTyped.mapValues { $0.type })),
+                arguments: argumentsTyped
+            )
+
+        default:
             throw .init(
                 location: self.location,
                 errorChoice: .notImplemented(
-                    "literal tuple not implemented yet"))
-        default:
-            throw .notImplemented(
-                "function call prefix \(prefix.expressionType) not implemented")
+                    "function call prefix \(String(describing: prefix)) not implemented"
+                ))
         }
     }
 }

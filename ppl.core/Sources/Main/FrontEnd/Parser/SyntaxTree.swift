@@ -477,7 +477,7 @@ public enum Syntax {
         public let location: NodeLocation
 
         init(
-            prefix: Expression,
+            prefix: Expression?,
             arguments: [Expression] = [],
             location: NodeLocation = .nowhere
         ) {

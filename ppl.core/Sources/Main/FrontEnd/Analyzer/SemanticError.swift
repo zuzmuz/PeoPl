@@ -31,7 +31,7 @@ extension Semantic {
                 rightType: Semantic.TypeSpecifier)
             case undefinedField(field: String)
             case undefinedType(identifier: Semantic.QualifiedIdentifier)
-            case undefinedCall(expression: Syntax.Expression)
+            case undefinedCall
             case duplicatedExpressionFieldName
             case consecutiveUnary
             case bindingNotAllowed

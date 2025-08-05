@@ -135,6 +135,10 @@ public enum Semantic {
             right: Expression,
             type: TypeSpecifier)
 
+        case initializer(
+            type: TypeSpecifier,
+            arguments: [Tag: Expression])
+
         case call(
             signature: FunctionSignature,
             input: Expression,
@@ -161,6 +165,7 @@ public enum Semantic {
             case let .unary(_, _, type): type
             case let .binary(_, _, _, type): type
             case let .call(_, _, _, type): type
+            case let .initializer(type, _): type
             case let .branching(_, type): type
             }
         }

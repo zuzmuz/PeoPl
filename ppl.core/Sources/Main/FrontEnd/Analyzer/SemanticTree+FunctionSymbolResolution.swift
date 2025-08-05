@@ -1,6 +1,7 @@
 public protocol FunctionDefinitionChecker {
     func getFunctionDeclarations() -> [Syntax.Definition]
     func resolveFunctionSymbols(
+        typeLookup: borrowing Semantic.TypeLookupMap,
         typeDeclarations: borrowing Semantic.TypeDeclarationsMap,
         contextFunctionDeclarations: borrowing Semantic.FunctionDeclarationsMap
     ) -> (
@@ -202,7 +203,8 @@ extension FunctionDefinitionChecker {
         // detection redeclarations of identifiers of types
         let typeRedeclaration =
             functionLookup.compactMap { signature, definition in
-                if let typeDeclaration = typeDeclarations[signature.identifier]
+                if let typeDeclaration =
+                    typeDeclarations[signature.identifier]
                 {
                     if let typeLocation = typeLookup[signature.identifier] {
                         return Semantic.Error.init(
@@ -214,6 +216,7 @@ extension FunctionDefinitionChecker {
                     }
                     // TODO: check for builtin shadowing
                 }
+                return nil
             }
 
         var functionDeclarations: Semantic.FunctionDeclarationsMap = [:]
@@ -231,7 +234,7 @@ extension FunctionDefinitionChecker {
             functionDeclarations: functionDeclarations,
             functionLookup: functionLookup,
             errors: typesNotInScope + signatureErrors + redeclarations
-                + typeSpecifierErrors
+                + typeSpecifierErrors + typeRedeclaration
         )
     }
 }
