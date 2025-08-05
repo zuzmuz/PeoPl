@@ -148,6 +148,22 @@ public enum Semantic {
                 body: Expression
             )],
             type: TypeSpecifier)
+
+        var type: TypeSpecifier {
+            switch self {
+            case .nothing: .nothing
+            case .never: .never
+            case .intLiteral: .int
+            case .floatLiteral: .float
+            case .boolLiteral: .bool
+            case .stringLiteral: fatalError("not implemented")
+            case let .input(type): type
+            case let .unary(_, _, type): type
+            case let .binary(_, _, _, type): type
+            case let .call(_, _, _, type): type
+            case let .branching(_, type): type
+            }
+        }
     }
 
     public struct BindingExpression: Sendable {
