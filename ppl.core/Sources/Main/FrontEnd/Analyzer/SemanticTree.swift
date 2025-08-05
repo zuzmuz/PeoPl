@@ -66,7 +66,7 @@ public enum Semantic {
         public func hash(into hasher: inout Hasher) {
             hasher.combine(identifier)
             hasher.combine(inputType.type)
-            hasher.combine(arguments)
+            hasher.combine(Set(arguments.keys))
         }
 
         public static func == (
@@ -75,7 +75,7 @@ public enum Semantic {
         ) -> Bool {
             return lhs.identifier == rhs.identifier
                 && lhs.inputType.type == rhs.inputType.type
-                && lhs.arguments == rhs.arguments
+                && lhs.arguments.keys == rhs.arguments.keys
         }
     }
 

@@ -1,0 +1,15 @@
+first: func [a' Int, b' Float] -> Bool {
+    true
+}
+
+first: func [a' Int, b' String] -> Float {
+    false
+}
+
+with\input: func (Float)[] -> Float {
+    + 3
+}
+
+with\input: func (in' Float)[] -> Float {
+    + 4
+}

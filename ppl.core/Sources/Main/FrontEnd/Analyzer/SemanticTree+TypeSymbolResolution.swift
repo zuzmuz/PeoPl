@@ -399,13 +399,10 @@ extension TypeDeclarationsChecker {
             stack: [Syntax.Definition]
         ) {
             let typeIdentifier = typeDefinition.identifier
-            print("typeIdentifier: \(typeIdentifier)")
             if nodeStates[typeIdentifier] == .visited {
-                print("already visited \(typeIdentifier)")
                 return
             }
             if nodeStates[typeIdentifier] == .visiting {
-                print("cyclic type detected \(typeIdentifier)")
                 for element in stack {
                     errors.append(
                         .init(
@@ -416,7 +413,6 @@ extension TypeDeclarationsChecker {
                 return
             }
             nodeStates[typeIdentifier] = .visiting
-            print("visiting \(typeIdentifier)")
 
             if case let .typeSpecifier(typeSpecifier) =
                 typeDefinition.definition
@@ -426,7 +422,6 @@ extension TypeDeclarationsChecker {
                     stack: stack + [typeDefinition]
                 )
                 nodeStates[typeIdentifier] = .visited
-                print("visited \(typeIdentifier)")
             }
         }
 

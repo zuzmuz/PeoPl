@@ -35,7 +35,7 @@ final class FunctionResolutionTests: XCTestCase {
                         inputType: (.input, .nothing),
                         arguments: [
                             .named("a"): .nominal(.chain(["Int"])),
-                            .named("b"): .nominal(.chain(["Int"])),
+                            .named("b"): .nominal(.chain(["Float"])),
                         ]
                     ): .nominal(.chain(["Int"])),
                     .init(
@@ -43,12 +43,14 @@ final class FunctionResolutionTests: XCTestCase {
                         inputType: (.input, .nothing),
                         arguments: [
                             .named("a"): .nominal(.chain(["Int"])),
-                            .named("c"): .nominal(.chain(["Int"])),
+                            .named("c"): .nominal(.chain(["Float"])),
                         ]
                     ): .nominal(.chain(["Int"])),
                 ],
                 []
             )
+            // "redeclared_functions": (
+            // )
         ]
 
     func testFiles() throws {
@@ -66,9 +68,11 @@ final class FunctionResolutionTests: XCTestCase {
                 module.resolveTypeSymbols(
                     contextTypeDeclarations: intrinsicDeclarations
                         .typeDeclarations)
+            let allTypeDeclarations = intrinsicDeclarations.typeDeclarations
+                .merging(typeDeclarations) { $1 }
             let (functionDeclarations, _, functionErrors) =
                 module.resolveFunctionSymbols(
-                    typeDeclarations: typeDeclarations,
+                    typeDeclarations: allTypeDeclarations,
                     contextFunctionDeclarations: intrinsicDeclarations
                         .functionDeclarations)
 
