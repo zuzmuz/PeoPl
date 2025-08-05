@@ -2,7 +2,7 @@ first: func [a' Int, b' Float] -> Bool {
     true
 }
 
-first: func [a' Int, b' String] -> Float {
+first: func [a' Int, b' Bool] -> Float {
     false
 }
 

@@ -9,7 +9,7 @@ final class FunctionResolutionTests: XCTestCase {
             functionErrors: [Semantic.Error]
         )] = [
             "goodfunctions": (
-                [
+                functionDeclarations: [
                     .init(
                         identifier: .chain(["with", "input"]),
                         inputType: (.input, .nominal(.chain(["Float"]))),
@@ -47,10 +47,83 @@ final class FunctionResolutionTests: XCTestCase {
                         ]
                     ): .nominal(.chain(["Int"])),
                 ],
-                []
-            )
-            // "redeclared_functions": (
-            // )
+                functionErrors: []
+            ),
+            "redeclared_functions": (
+                functionDeclarations: [
+                    .init(
+                        identifier: .chain(["first"]),
+                        inputType: (.input, .nothing),
+                        arguments: [
+                            .named("a"): .nominal(.chain(["Int"])),
+                            .named("b"): .nominal(.chain(["Bool"])),
+                        ]
+                    ): .nominal(.chain(["Bool"])),
+                    .init(
+                        identifier: .chain(["with", "input"]),
+                        inputType: (.input, .nominal(.chain(["Float"]))),
+                        arguments: [:]
+                    ): .nominal(.chain(["Float"])),
+                ],
+                functionErrors: [
+                    .init(
+                        location: .nowhere,
+                        errorChoice: .functionRedeclaration(
+                            signature:
+                                .init(
+                                    identifier: .chain(["first"]),
+                                    inputType: (.input, .nothing),
+                                    arguments: [
+                                        .named("a"): .nominal(.chain(["Int"])),
+                                        .named("b"): .nominal(.chain(["Bool"])),
+                                    ]),
+                            otherLocations: [
+                                .nowhere, .nowhere // FIX: put correct locations
+                            ])),
+                    .init(
+                        location: .nowhere,
+                        errorChoice: .functionRedeclaration(
+                            signature:
+                                .init(
+                                    identifier: .chain(["first"]),
+                                    inputType: (.input, .nothing),
+                                    arguments: [
+                                        .named("a"): .nominal(.chain(["Int"])),
+                                        .named("b"): .nominal(.chain(["Bool"])),
+                                    ]),
+                            otherLocations: [
+                                .nowhere, .nowhere // FIX: put correct locations
+                            ])),
+                    .init(
+                        location: .nowhere,
+                        errorChoice: .functionRedeclaration(
+                            signature:
+                                .init(
+                                    identifier: .chain(["with", "input"]),
+                                    inputType: (
+                                        .input, .nominal(.chain(["Float"]))
+                                    ),
+                                    arguments: [:]
+                                ),
+                            otherLocations: [
+                                .nowhere, .nowhere // FIX: put correct locations
+                            ])),
+                    .init(
+                        location: .nowhere,
+                        errorChoice: .functionRedeclaration(
+                            signature:
+                                .init(
+                                    identifier: .chain(["with", "input"]),
+                                    inputType: (
+                                        .input, .nominal(.chain(["Float"]))
+                                    ),
+                                    arguments: [:]
+                                ),
+                            otherLocations: [
+                                .nowhere, .nowhere // FIX: put correct locations
+                            ])),
+                ]
+            ),
         ]
 
     func testFiles() throws {
@@ -79,6 +152,10 @@ final class FunctionResolutionTests: XCTestCase {
             XCTAssertEqual(
                 functionErrors.count,
                 reference.functionErrors.count)
+            zip(functionErrors, reference.functionErrors).forEach {
+                $0.assertEqual(with: $1)
+            }
+
             for (signature, typeSpecifier) in functionDeclarations {
                 XCTAssertNotNil(reference.functionDeclarations[signature])
                 if let referenceFunction =

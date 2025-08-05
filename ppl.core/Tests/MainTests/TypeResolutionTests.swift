@@ -18,6 +18,12 @@ extension Semantic.Error: Testable {
             .cyclicType(withStack)
         ):
             XCTAssertEqual(selfStack.count, withStack.count)
+        case let (
+            .functionRedeclaration(selfSignature, selfLocations),
+            .functionRedeclaration(withSignature, withLocations)
+        ):
+            XCTAssertEqual(selfSignature, withSignature)
+            XCTAssertEqual(selfLocations.count, withLocations.count)
         default:
             XCTFail("Not Implemented for \(self) vs \(with)")
         }
