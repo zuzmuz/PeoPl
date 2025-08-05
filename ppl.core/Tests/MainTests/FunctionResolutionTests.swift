@@ -152,7 +152,11 @@ final class FunctionResolutionTests: XCTestCase {
             XCTAssertEqual(
                 functionErrors.count,
                 reference.functionErrors.count)
-            zip(functionErrors, reference.functionErrors).forEach {
+
+            zip(
+                functionErrors.sorted { $0.location < $1.location },
+                reference.functionErrors
+            ).forEach {
                 $0.assertEqual(with: $1)
             }
 
