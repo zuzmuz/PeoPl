@@ -243,7 +243,7 @@ extension Syntax.Call {
 extension Syntax.Branched {
     func checkType(
         with input: Semantic.Expression,
-        localScope: borrowing Semantic.LocalScope,
+        localScope: Semantic.LocalScope,
         context: borrowing Semantic.DeclarationsContext,
     ) throws(Semantic.Error) -> Semantic.Expression {
         let branches =
@@ -350,7 +350,53 @@ extension Syntax.Pipe {
 
 extension Syntax.Expression {
 
-    // check binding expression
+    
+    func checkBindingExpression(
+        input: Semantic.Expression,
+        localScope: borrowing Semantic.LocalScope,
+        context: borrowing Semantic.DeclarationsContext
+    ) throws(Semantic.Error) -> Semantic.BindingExpression {
+        switch (input.type, self) {
+        case (.nothing, .literal(let literal)) where literal.value == .nothing:
+            return .init(
+                condition: .boolLiteral(true),
+                bindings: [:])
+        case (_, .literal(let literal)) where literal.value == .nothing:
+            throw .init(
+                location: self.location,
+                errorChoice: .bindingMismatch)
+        case let (_, .binding(binding)):
+            return .init(
+                condition: .boolLiteral(true),
+                bindings: [Semantic.Tag.named(binding.identifier): input.type])
+        // TODO: more complicated pattern matching
+        case let (inputType, .literal(literal)):
+            let literalTyped = try literal.checkType(
+                with: .nothing,
+                localScope: localScope,
+                context: context)
+            if inputType != literalTyped.type {
+                throw .init(
+                    location: self.location,
+                    errorChoice: .inputMismatch(
+                        expected: inputType,
+                        received: literalTyped.type))
+            }
+            return .init(
+                condition: .binary(
+                    .equal,
+                    left: input,
+                    right: literalTyped,
+                    type: .bool),
+                bindings: [:])
+        // TODO: other complex pattern matching requires expression to be an initializer expression
+        default:
+            throw .init(
+                location: self.location,
+                errorChoice: .notImplemented(
+                    "Advanced pattern matching is not implemented yet"))
+        }
+    }
 
     // func accessFieldType(
     //     type: Semantic.TypeSpecifier,
