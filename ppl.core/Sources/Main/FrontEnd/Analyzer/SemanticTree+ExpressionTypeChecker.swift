@@ -240,16 +240,14 @@ extension Syntax.Call {
     }
 }
 
-extension Syntax.Expression {
-
-    func checkBranched(
-        input: Semantic.Expression,
-        branched: Syntax.Expression.Branched,
-        localScope: Semantic.LocalScope,
-        context: borrowing Semantic.DeclarationsContext
+extension Syntax.Branched {
+    func checkType(
+        with input: Semantic.Expression,
+        localScope: borrowing Semantic.LocalScope,
+        context: borrowing Semantic.DeclarationsContext,
     ) throws(Semantic.Error) -> Semantic.Expression {
         let branches =
-            try branched.branches.map { branch throws(Semantic.Error) in
+            try self.branches.map { branch throws(Semantic.Error) in
                 let bindingExpression =
                     try branch.matchExpression.checkBindingExpression(
                         input: input, localScope: localScope, context: context
@@ -262,11 +260,12 @@ extension Syntax.Expression {
                         with: .nothing,
                         localScope: extendedLocalScope,
                         context: context)
-                    ?? .init(
-                        expressionType: .boolLiteral(true), type: .bool)
+                    ?? .boolLiteral(true)
 
                 if guardExpression.type != .bool {
-                    throw .guardShouldReturnBool(expression: self)
+                    throw .init(
+                        location: self.location,
+                        errorChoice: .guardShouldReturnBool)
                 }
 
                 let bodyExpression =
@@ -306,85 +305,52 @@ extension Syntax.Expression {
                                 element.element
                         }))
         }
-        return .init(
-            expressionType: .branching(branches: branches),
-            type: type)
+        return .branching(branches: branches, type: type)
     }
+}
 
-    func checkBindingExpression(
-        input: Semantic.Expression,
+extension Syntax.Binding {
+    func checkType(
+        with input: Semantic.Expression,
         localScope: borrowing Semantic.LocalScope,
-        context: borrowing Semantic.DeclarationsContext
-    ) throws(Semantic.Error) -> Semantic.BindingExpression {
-        switch (input.type, self.expressionType) {
-        case (.nothing, .literal(.nothing)):
-            return .init(
-                condition: .init(
-                    expressionType: .boolLiteral(true),
-                    type: .bool),
-                bindings: [:])
-        case (_, .literal(.nothing)):
-            throw .bindingMismatch(expression: self)
-        case let (_, .binding(binding)):
-            return .init(
-                condition: .init(
-                    expressionType: .boolLiteral(true),
-                    type: .bool),
-                bindings: [Semantic.Tag.named(binding): input.type])
-        // TODO: more complicated pattern matching
-        case let (inputType, .literal(literal)):
-            let literalTyped = try self.checkLiteral(
-                with: .nothing,
-                literal: literal,
-                localScope: localScope,
-                context: context)
-            if inputType != literalTyped.type {
-                throw .inputMismatch(
-                    expression: self,
-                    expected: inputType,
-                    received: literalTyped.type)
-            }
-            return .init(
-                condition: .init(
-                    expressionType: .binary(
-                        .equal,
-                        left: input,
-                        right: literalTyped),
-                    type: .bool),
-                bindings: [:])
-        // TODO: other complex pattern matching requires expression to be an initializer expression
-        default:
-            throw .notImplemented(
-                "Advanced pattern matching is not implemented yet")
-        }
-    }
-
-    func checkPipe(
-        input: Semantic.Expression,
-        left: Syntax.Expression,
-        right: Syntax.Expression,
-        localScope: borrowing Semantic.LocalScope,
-        context: borrowing Semantic.DeclarationsContext
+        context: borrowing Semantic.DeclarationsContext,
     ) throws(Semantic.Error) -> Semantic.Expression {
-        let leftTyped = try left.checkType(
-            with: input,
-            localScope: localScope,
-            context: context)
-
-        switch right.expressionType {
-        case let .branched(branched):
-            return try self.checkBranched(
-                input: leftTyped,
-                branched: branched,
-                localScope: localScope,
-                context: context)
-        default:
-            return try right.checkType(
-                with: leftTyped,
-                localScope: localScope,
-                context: context)
-        }
+        fatalError()
     }
+}
+
+extension Syntax.Pipe {
+    func checkType(
+        with input: Semantic.Expression,
+        localScope: borrowing Semantic.LocalScope,
+        context: borrowing Semantic.DeclarationsContext,
+    ) throws(Semantic.Error) -> Semantic.Expression {
+        fatalError()
+
+        // let leftTyped = try left.checkType(
+        //     with: input,
+        //     localScope: localScope,
+        //     context: context)
+        //
+        // switch right.expressionType {
+        // case let .branched(branched):
+        //     return try self.checkBranched(
+        //         input: leftTyped,
+        //         branched: branched,
+        //         localScope: localScope,
+        //         context: context)
+        // default:
+        //     return try right.checkType(
+        //         with: leftTyped,
+        //         localScope: localScope,
+        //         context: context)
+        // }
+    }
+}
+
+extension Syntax.Expression {
+
+    // check binding expression
 
     // func accessFieldType(
     //     type: Semantic.TypeSpecifier,
@@ -457,18 +423,14 @@ extension Syntax.Expression {
                 context: context)
         // Unary
         case let (_, .unary(unary)):
-            return try self.checkTypeUnary(
+            return try unary.checkType(
                 with: input,
-                op: unary.op,
-                expression: unary.expression,
                 localScope: localScope,
                 context: context)
         // Binary
         case let (.nothing, .binary(binary)):
-            return try self.checkTypeBinary(
-                left: binary.left,
-                op: binary.op,
-                right: binary.right,
+            return try binary.checkType(
+                with: input,
                 localScope: localScope,
                 context: context)
         case (_, .binary):
@@ -517,25 +479,20 @@ extension Syntax.Expression {
                     received: input.type))
 
         case let (_, .call(call)):
-            return try self.checkFunctionCall(
-                input: input,
-                prefix: call.prefix,
-                arguments: call.arguments,
+            return try call.checkType(
+                with: input,
                 localScope: localScope,
                 context: context)
 
         case let (_, .branched(branched)):
-            return try self.checkBranched(
-                input: input,
-                branched: branched,
+            return try branched.checkType(
+                with: input,
                 localScope: localScope,
                 context: context)
 
         case let (_, .piped(piped)):
-            return try self.checkPipe(
-                input: input,
-                left: piped.left,
-                right: piped.right,
+            return try piped.checkType(
+                with: input,
                 localScope: localScope,
                 context: context)
 
