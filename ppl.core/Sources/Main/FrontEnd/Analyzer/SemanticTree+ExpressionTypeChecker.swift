@@ -350,7 +350,6 @@ extension Syntax.Pipe {
 
 extension Syntax.Expression {
 
-    
     func checkBindingExpression(
         input: Semantic.Expression,
         localScope: borrowing Semantic.LocalScope,
