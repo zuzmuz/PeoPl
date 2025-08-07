@@ -266,7 +266,14 @@ extension Syntax.Call: Testable {
     func assertEqual(
         with: Self
     ) {
-        self.prefix.assertEqual(with: with.prefix)
+        if let selfPrefix = self.prefix {
+            XCTAssertNotNil(with.prefix)
+            if let withPrefix = with.prefix {
+                selfPrefix.assertEqual(with: withPrefix)
+            }
+        } else {
+            XCTAssertNil(with.prefix)
+        }
 
         XCTAssertEqual(self.arguments.count, with.arguments.count)
 

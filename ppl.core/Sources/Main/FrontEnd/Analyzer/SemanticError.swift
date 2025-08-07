@@ -37,6 +37,9 @@ extension Semantic {
             case bindingNotAllowed
             case bindingMismatch
             case guardShouldReturnBool
+            case functionBodyOutputTypeMismatch(
+                expected: Semantic.TypeSpecifier,
+                received: Semantic.TypeSpecifier)
         }
 
         public var errorDescription: String? {

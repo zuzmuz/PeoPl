@@ -1,0 +1,3 @@
+factorial: (Int)[] -> Int {
+    |1| 1
+}

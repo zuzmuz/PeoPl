@@ -145,7 +145,7 @@ final class FunctionResolutionTests: XCTestCase {
                 .merging(typeDeclarations) { $1 }
             let (functionDeclarations, _, functionErrors) =
                 module.resolveFunctionSymbols(
-                    typeLookup: typeDeclarations,
+                    typeLookup: typeLookup,
                     typeDeclarations: allTypeDeclarations,
                     contextFunctionDeclarations: intrinsicDeclarations
                         .functionDeclarations)

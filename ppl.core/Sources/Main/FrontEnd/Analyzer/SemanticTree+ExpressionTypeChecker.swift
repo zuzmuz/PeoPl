@@ -1,3 +1,39 @@
+extension Semantic.FunctionSignature {
+    public func checkBody(
+        body: Syntax.Expression,
+        outputType: Semantic.TypeSpecifier,
+        context: borrowing Semantic.DeclarationsContext
+    ) throws(Semantic.Error) -> Semantic.Expression {
+        let inputExpression: Semantic.Expression
+        let localScope: [Semantic.Tag: Semantic.TypeSpecifier]
+
+        switch self.inputType.tag {
+        case .input:
+            localScope = self.arguments
+            inputExpression = .input(type: self.inputType.type)
+        default:
+            localScope = self.arguments.merging(
+                [self.inputType.tag: self.inputType.type]
+            ) { $1 }
+            inputExpression = .input(type: .nothing)
+        }
+
+        let bodyExpression = try body.checkType(
+            with: inputExpression,
+            localScope: localScope,
+            context: context)
+
+        if bodyExpression.type != outputType {
+            throw .init(
+                location: body.location,
+                errorChoice: .functionBodyOutputTypeMismatch(
+                    expected: outputType, received: bodyExpression.type))
+        }
+
+        return bodyExpression
+    }
+}
+
 extension [Syntax.Expression] {
     /// Transforms a list of syntax expressions to a tagged list of semantic expressions.
     /// If an expression of the list is a tagged expressions,
