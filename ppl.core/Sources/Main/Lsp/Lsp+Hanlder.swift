@@ -55,7 +55,7 @@ extension Semantic.Error {
             "\(value): this feature is not implemented yet"
         case let .cyclicType(stack):
             "This identifier defines a cyclical type, the cycle is defined \(stack.map { $0.identifier.display() }.joined(separator: "->"))"
-        case let .typeRedeclaration(identifier, otherLocations):
+        case let .typeRedeclaration(identifier, _):
             "This is an invalid type redeclaration of the identifier '\(identifier.display())'"
         case let .typeNotInScope(identifier):
             "The identifier \(identifier.display()) is not defined anywhere"
@@ -63,10 +63,24 @@ extension Semantic.Error {
             "Homegenous array type is not allowed inside a choice type"
         case .duplicateFieldName:
             "The type field list has duplicated field names"
-        case let .functionRedeclaration(signature, otherLocations):
+        case let .functionRedeclaration(signature, _):
             "This is an invalid function redeclaration of the signature '\(signature.display())'"
-        case let .functionRedeclaringType(identifier):
-            "A type exisist with this identifier"
+        case let .functionRedeclaringType(identifier, _):
+            "A type exisist with this identifier: \(identifier)"
+        case .taggedTypeSpecifierRequired:
+            "This type specifier requires a name"
+        case let .inputMismatch(expected, received):
+            "The expression has mismathed input, expected: \(expected.display()), received: \(received.display())"
+        case let .invalidOperation(leftType, op, rightType):
+            "Invalid operation, can not apply \(op) on \(leftType.display()) and \(rightType.display())"
+        case let .undefinedCall(signature):
+            "Can not find \(signature.display()) in scope"
+        case .duplicatedExpressionFieldName:
+            "The expression field list has duplicated field names"
+        case .consecutiveUnary:
+            "Consecutive unary operations are not allowed"
+        case let .functionBodyOutputTypeMismatch(expected, received):
+            "The function body output type mismatch, expected: \(expected.display()), received: \(received.display())"
         default:
             "no message for this error yet"
         }

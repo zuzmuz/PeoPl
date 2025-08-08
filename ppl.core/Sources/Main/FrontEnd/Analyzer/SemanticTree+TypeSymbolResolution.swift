@@ -199,8 +199,6 @@ extension Syntax.TypeSpecifier {
         case let .function(function):
             return .raw(
                 .function(.init()))
-        default:
-            fatalError("Other types are not implemented yet")
         }
     }
 }
@@ -392,10 +390,6 @@ extension TypeDeclarationsChecker {
                 }
             case .function:
                 break
-            default:
-                fatalError(
-                    "checking cyclical dependencies for \(typeSpecifier) is not implemented yet"
-                )
             }
         }
 

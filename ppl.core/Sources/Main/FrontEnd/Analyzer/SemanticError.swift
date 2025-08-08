@@ -29,9 +29,9 @@ extension Semantic {
                 leftType: Semantic.TypeSpecifier,
                 op: Operator,
                 rightType: Semantic.TypeSpecifier)
-            case undefinedField(field: String)
-            case undefinedType(identifier: Semantic.QualifiedIdentifier)
-            case undefinedCall
+            // case undefinedField(field: String)
+            // case undefinedType(identifier: Semantic.QualifiedIdentifier)
+            case undefinedCall(signature: Semantic.FunctionSignature)
             case duplicatedExpressionFieldName
             case consecutiveUnary
             case bindingNotAllowed

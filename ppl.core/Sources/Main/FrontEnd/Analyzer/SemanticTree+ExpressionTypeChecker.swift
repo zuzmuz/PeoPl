@@ -258,7 +258,7 @@ extension Syntax.Call {
 
             throw .init(
                 location: self.location,
-                errorChoice: .undefinedCall)
+                errorChoice: .undefinedCall(signature: functionSignature))
         case .none:
             // literal tuple
             return .initializer(
