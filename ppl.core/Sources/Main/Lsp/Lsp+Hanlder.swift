@@ -149,41 +149,35 @@ enum PpLsp {
 
             for (moduleUri, module) in modules {
                 if moduleUri == uri {
-                    // diagnostics.append(
-                    //     contentsOf: module.syntaxErrors.map { error in
-                    //         .init(
-                    //             range: error.lspRange,
-                    //             severity: .error,
-                    //             message: error.localizedDescription)
-                    //     })
+                    diagnostics.append(
+                        contentsOf: module.syntaxErrors.map { error in
+                            .init(
+                                range: error.lspRange,
+                                severity: .error,
+                                message: error.diagnosticMessage)
+                        })
+
+                    guard module.syntaxErrors.count == 0 else {
+                        break
+                    }
+
+                    let semanticContext = module.semanticCheck()
+
+                    switch semanticContext {
+                    case let .failure(errorList):
+                        diagnostics.append(
+                            contentsOf: errorList.errors.map { error in
+                                .init(
+                                    range: error.lspRange,
+                                    severity: .error,
+                                    message: error.diagnosticMessage)
+                            })
+                    case .success:
+                        break
+                    }
                 }
+
             }
-            //
-            // let project = Syntax.Project.init(
-            //     modules: modulesResult.compactMapValues { result in
-            //         switch result {
-            //         case let .success(module):
-            //             return module
-            //         case .failure:
-            //             return nil
-            //         }
-            //     })
-
-            // let context = project.semanticCheck()
-
-            // switch context {
-            // case let .failure(errorList):
-            //     for error in errorList.errors {
-            //         diagnostics.append(
-            //             .init(
-            //                 range: error.lspRange,
-            //                 severity: .error,
-            //                 message: error.localizedDescription))
-            //     }
-            // case .success:
-            //     break
-            // }
-
             return diagnostics
         }
 

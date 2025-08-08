@@ -196,6 +196,9 @@ extension Syntax.TypeSpecifier {
             return .raw(.choice(try choice.typeFields.getSumSemanticTypes()))
         case let .nominal(nominal):
             return .nominal(nominal.identifier.getSemanticIdentifier())
+        case let .function(function):
+            return .raw(
+                .function(.init()))
         default:
             fatalError("Other types are not implemented yet")
         }
@@ -387,6 +390,8 @@ extension TypeDeclarationsChecker {
                                 errorChoice: .homogeneousTypeProductInSum))
                     }
                 }
+            case .function:
+                break
             default:
                 fatalError(
                     "checking cyclical dependencies for \(typeSpecifier) is not implemented yet"

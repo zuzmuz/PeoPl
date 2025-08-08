@@ -117,6 +117,7 @@ public enum Semantic {
     }
 
     public struct Function: Hashable, Sendable {
+        // FIX: what should I do with this, I kind of forgot
     }
 
     public indirect enum Expression: Sendable {
