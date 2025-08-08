@@ -27,7 +27,7 @@ extension Syntax.Expression {
                     errorChoice: .illegalUnaryInMatch(op: unary.op))
             }
         case let .binding(binding):
-            return .binding(binding.identifier)
+            return .binding(.named(binding.identifier))
         case let .call(call):
             return .destructor(
                 try call.arguments.map { argument throws(Semantic.Error) in
@@ -49,7 +49,17 @@ extension Syntax.Expression {
 }
 
 extension Semantic.Pattern {
-    func getBindings() -> [Semantic.Tag: Semantic.TypeSpecifier] {
-        fatalError()
+    func getBindings() -> [Semantic.Tag] {
+        switch self {
+        case .wildcard, .value: return []
+        case let .destructor(patterns):
+            return patterns.flatMap { pattern in
+                pattern.getBindings()
+            }
+        case let .constructor(_, pattern):
+            return pattern.getBindings()
+        case let .binding(binding):
+            return [binding]
+        }
     }
 }

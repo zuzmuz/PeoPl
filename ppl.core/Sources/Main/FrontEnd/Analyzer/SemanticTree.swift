@@ -150,8 +150,8 @@ public enum Semantic {
             tag: Tag,
             type: TypeSpecifier)
 
-        case branching(
-            branches: [Branch],
+        case branched(
+            matirx: DecompositionMatrix,
             type: TypeSpecifier)
 
         var type: TypeSpecifier {
@@ -168,18 +168,18 @@ public enum Semantic {
             case let .initializer(type, _): type
             case let .call(_, _, _, type): type
             case let .fieldInScope(_, type): type
-            case let .branching(_, type): type
+            case let .branched(_, type): type
             }
         }
     }
 
-    public struct DecompositionMatrix {
+    public struct DecompositionMatrix: Sendable {
         let patterns: [Pattern]
     }
 
-    enum Pattern {
+    public enum Pattern: Sendable {
         case wildcard
-        case binding(String)
+        case binding(Tag)
         case value(Expression)
         case destructor([Pattern])
         indirect case constructor(tag: Tag, pattern: Pattern)

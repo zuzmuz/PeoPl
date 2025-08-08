@@ -39,6 +39,7 @@ extension Semantic {
             case bindingNotAllowed
             case bindingMismatch
             case illegalUnaryInMatch(op: Operator)
+            case duplicateBindings
             case guardShouldReturnBool(
                 received: Semantic.TypeSpecifier)
             case functionBodyOutputTypeMismatch(

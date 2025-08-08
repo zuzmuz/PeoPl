@@ -282,69 +282,74 @@ extension Syntax.Branched {
         localScope: Semantic.LocalScope,
         context: borrowing Semantic.DeclarationsContext,
     ) throws(Semantic.Error) -> Semantic.Expression {
-        let branches =
-            try self.branches.map { branch throws(Semantic.Error) in
-                let bindingExpression =
-                    try branch.matchExpression.getPattern(
-                        localScope: localScope, context: context
-                    )
-                let extendedLocalScope =
-                    localScope.merging(bindingExpression.bindings) { $1 }
-
-                let guardExpression =
-                    try branch.guardExpression?.checkType(
-                        with: .nothing,
-                        localScope: extendedLocalScope,
-                        context: context)
-                    ?? .boolLiteral(true)
-
-                if guardExpression.type != .bool {
-                    throw .init(
-                        location: self.location,
-                        errorChoice: .guardShouldReturnBool(
-                            received: guardExpression.type))
-                }
-
-                let bodyExpression =
-                    try branch.body.checkType(
-                        with: .nothing,
-                        localScope: extendedLocalScope,
-                        context: context)
-
-                return Semantic.Branch(
-                    matchExpression: bindingExpression,
-                    guardExpression: guardExpression,
-                    body: bodyExpression
-                )
-            }
-
-        // removing duplicate types while keeping order
-        let branchesType: [Semantic.TypeSpecifier] =
-            branches.reduce(into: []) { arr, branch in
-                let branchType = branch.body.type
-
-                // Never type can be ignored
-                if !arr.contains(branchType) && branchType != .never {
-                    arr.append(branchType)
-                }
-            }
-
-        let type: Semantic.TypeSpecifier
-        if branchesType.isEmpty {
-            type = .never
-        } else if branchesType.count == 1, let branchType = branchesType.first {
-            type = branchType
-        } else {
-            type = .raw(
-                .choice(
-                    branchesType
-                        .enumerated()
-                        .reduce(into: [:]) { acc, element in
-                            acc[.unnamed(UInt64(element.offset))] =
-                                element.element
-                        }))
-        }
-        return .branching(branches: branches, type: type)
+        fatalError()
+        // let branches =
+        //     try self.branches.map { branch throws(Semantic.Error) in
+        //         let pattern =
+        //             try branch.matchExpression.getPattern(
+        //                 localScope: localScope, context: context
+        //             )
+        //         
+        //         let bindings = pattern.getBindings()
+        //         if Set(bindings).count < bindings.count {
+        //             throw .init(
+        //                 location: branch.location,
+        //                 errorChoice: .duplicateBindings)
+        //         }
+        //
+        //
+        //         let extendedLocalScope = localScope
+        //
+        //         let guardExpression =
+        //             try branch.guardExpression?.checkType(
+        //                 with: .nothing,
+        //                 localScope: extendedLocalScope,
+        //                 context: context)
+        //             ?? .boolLiteral(true)
+        //
+        //         if guardExpression.type != .bool {
+        //             throw .init(
+        //                 location: self.location,
+        //                 errorChoice: .guardShouldReturnBool(
+        //                     received: guardExpression.type))
+        //         }
+        //
+        //         let bodyExpression =
+        //             try branch.body.checkType(
+        //                 with: .nothing,
+        //                 localScope: extendedLocalScope,
+        //                 context: context)
+        //
+        //         return 
+        //     }
+        //
+        // // removing duplicate types while keeping order
+        // let branchesType: [Semantic.TypeSpecifier] =
+        //     branches.reduce(into: []) { arr, branch in
+        //         let branchType = branch.body.type
+        //
+        //         // Never type can be ignored
+        //         if !arr.contains(branchType) && branchType != .never {
+        //             arr.append(branchType)
+        //         }
+        //     }
+        //
+        // let type: Semantic.TypeSpecifier
+        // if branchesType.isEmpty {
+        //     type = .never
+        // } else if branchesType.count == 1, let branchType = branchesType.first {
+        //     type = branchType
+        // } else {
+        //     type = .raw(
+        //         .choice(
+        //             branchesType
+        //                 .enumerated()
+        //                 .reduce(into: [:]) { acc, element in
+        //                     acc[.unnamed(UInt64(element.offset))] =
+        //                         element.element
+        //                 }))
+        // }
+        // return .branching(branches: branches, type: type)
     }
 
     // private static func validateExhaustiveness(
