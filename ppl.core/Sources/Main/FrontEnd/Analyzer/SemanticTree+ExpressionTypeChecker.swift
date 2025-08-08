@@ -8,10 +8,10 @@ extension Semantic.FunctionSignature {
         let localScope: [Semantic.Tag: Semantic.TypeSpecifier]
 
         switch self.inputType.tag {
-        case .input:
+        case .input, .unnamed:
             localScope = self.arguments
             inputExpression = .input(type: self.inputType.type)
-        default:
+        case .named:
             localScope = self.arguments.merging(
                 [self.inputType.tag: self.inputType.type]
             ) { $1 }

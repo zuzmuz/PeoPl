@@ -1,4 +1,4 @@
-public protocol FunctionDefinitionChecker {
+public protocol FunctionDefinitionsChecker {
     func getFunctionDeclarations() -> [Syntax.Definition]
     func resolveFunctionSymbols(
         typeLookup: borrowing Semantic.TypeLookupMap,
@@ -115,7 +115,7 @@ extension Syntax.FunctionType {
     }
 }
 
-extension FunctionDefinitionChecker {
+extension FunctionDefinitionsChecker {
     public func resolveFunctionSymbols(
         typeLookup: borrowing Semantic.TypeLookupMap,
         typeDeclarations: borrowing Semantic.TypeDeclarationsMap,
@@ -256,7 +256,7 @@ extension FunctionDefinitionChecker {
     }
 }
 
-extension Syntax.Module: FunctionDefinitionChecker {
+extension Syntax.Module: FunctionDefinitionsChecker {
     public func getFunctionDeclarations() -> [Syntax.Definition] {
         return self.definitions.filter { definition in
             switch definition.definition {
@@ -269,7 +269,7 @@ extension Syntax.Module: FunctionDefinitionChecker {
     }
 }
 
-extension Syntax.Project: FunctionDefinitionChecker {
+extension Syntax.Project: FunctionDefinitionsChecker {
     public func getFunctionDeclarations() -> [Syntax.Definition] {
         return self.modules.values.flatMap { module in
             module.getFunctionDeclarations()
