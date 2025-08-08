@@ -6,6 +6,8 @@ public protocol FunctionDefinitionChecker {
         contextFunctionDeclarations: borrowing Semantic.FunctionDeclarationsMap
     ) -> (
         functionDeclarations: Semantic.FunctionDeclarationsMap,
+        functionBodyExpressions: [Semantic.FunctionSignature: Syntax
+            .Expression],
         functionLookup: Semantic.FunctionLookupMap,
         errors: [Semantic.Error]
     )
@@ -120,6 +122,8 @@ extension FunctionDefinitionChecker {
         contextFunctionDeclarations: borrowing Semantic.FunctionDeclarationsMap
     ) -> (
         functionDeclarations: Semantic.FunctionDeclarationsMap,
+        functionBodyExpressions: [Semantic.FunctionSignature: Syntax
+            .Expression],
         functionLookup: Semantic.FunctionLookupMap,
         errors: [Semantic.Error]
     ) {
@@ -220,18 +224,31 @@ extension FunctionDefinitionChecker {
             }
 
         var functionDeclarations: Semantic.FunctionDeclarationsMap = [:]
+        var functionBodyExpressions: [Semantic.FunctionSignature: Syntax
+            .Expression] = [:]
         var typeSpecifierErrors: [Semantic.Error] = []
 
         for (signature, definition) in functionLookup {
             do {
                 functionDeclarations[signature] =
                     try definition.definition.getType()
+
+                // FIX: I'm doing this switch multiple times, I can do it from the start and filter that gradually
+                switch definition.definition {
+                case let .function(function):
+                    functionBodyExpressions[signature] =
+                        function.body
+                default:
+                    break
+                }
+
             } catch {
                 typeSpecifierErrors.append(error)
             }
         }
         return (
             functionDeclarations: functionDeclarations,
+            functionBodyExpressions: functionBodyExpressions,
             functionLookup: functionLookup,
             errors: typesNotInScope + signatureErrors + redeclarations
                 + typeSpecifierErrors + typeRedeclaration

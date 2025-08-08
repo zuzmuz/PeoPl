@@ -2,6 +2,88 @@ import XCTest
 
 @testable import Main
 
+extension Semantic.Expression: Testable {
+    func assertEqual(
+        with: Self
+    ) {
+        switch (self, with) {
+        case (.nothing, .nothing), (.never, .never):
+            break
+        case let (.intLiteral(selfLiteral), .intLiteral(withLiteral)):
+            XCTAssertEqual(selfLiteral, withLiteral)
+        case let (.floatLiteral(selfLiteral), .floatLiteral(withLiteral)):
+            XCTAssertEqual(selfLiteral, withLiteral)
+        case let (.stringLiteral(selfLiteral), .stringLiteral(withLiteral)):
+            XCTAssertEqual(selfLiteral, withLiteral)
+        case let (.boolLiteral(selfLiteral), .boolLiteral(withLiteral)):
+            XCTAssertEqual(selfLiteral, withLiteral)
+        case let (.input(selfType), .input(withType)):
+            XCTAssertEqual(selfType, withType)
+        case let (
+            .unary(selfOperator, selfExpression, selfType),
+            .unary(withOperator, withExpression, withType)
+        ):
+            XCTAssertEqual(selfOperator, withOperator)
+            selfExpression.assertEqual(with: withExpression)
+            XCTAssertEqual(selfType, withType)
+        case let (
+            .binary(selfOperator, selfLeft, selfRight, selfType),
+            .binary(withOperator, withLeft, withRight, withType)
+        ):
+            XCTAssertEqual(selfOperator, withOperator)
+            selfLeft.assertEqual(with: withLeft)
+            selfRight.assertEqual(with: withRight)
+            XCTAssertEqual(selfType, withType)
+        case let (
+            .initializer(selfType, selfArguments),
+            .initializer(withType, withArguments)
+        ):
+            XCTAssertEqual(selfType, withType)
+            XCTAssertEqual(selfArguments.count, withArguments.count)
+            for (selfTag, selfExpression) in selfArguments {
+                guard let withExpression = withArguments[selfTag] else {
+                    XCTFail("Missing argument \(selfTag)")
+                    return
+                }
+                selfExpression.assertEqual(with: withExpression)
+            }
+        case let (
+            .call(selfSignature, selfInput, selfArguments, selfType),
+            .call(withSignature, withInput, withArguments, withType)
+        ):
+            XCTAssertEqual(selfSignature, withSignature)
+            selfInput.assertEqual(with: withInput)
+            XCTAssertEqual(selfArguments.count, withArguments.count)
+            for (selfTag, selfExpression) in selfArguments {
+                guard let withExpression = withArguments[selfTag] else {
+                    XCTFail("Missing argument \(selfTag)")
+                    return
+                }
+                selfExpression.assertEqual(with: withExpression)
+            }
+            XCTAssertEqual(selfType, withType)
+        case let (
+            .branching(selfBranches, selfType),
+            .branching(withBranches, withType)
+        ):
+            XCTAssertEqual(selfType, withType)
+            XCTAssertEqual(selfBranches.count, withBranches.count)
+            for (selfBranch, withBranch) in zip(selfBranches, withBranches) {
+                XCTAssertEqual(
+                    selfBranch.match.condition.type,
+                    withBranch.match.condition.type)
+                selfBranch.match.condition.assertEqual(
+                    with: withBranch.match.condition)
+                XCTAssertEqual(selfBranch.guard.type, withBranch.guard.type)
+                selfBranch.guard.assertEqual(with: withBranch.guard)
+                selfBranch.body.assertEqual(with: withBranch.body)
+            }
+        default:
+            fatalError()
+        }
+    }
+}
+
 final class ExpressionTypeCheckingTests: XCTestCase {
     let fileNames:
         [String: (
@@ -47,7 +129,12 @@ final class ExpressionTypeCheckingTests: XCTestCase {
             let source = try Syntax.Source(url: sourceUrl)
             let module = TreeSitterModulParser.parseModule(source: source)
 
-            let (functionDeclarations, functionLookup, functionErrors) =
+            let (
+                functionDeclarations,
+                functionBodyExpressions,
+                functionLookup,
+                functionErrors
+            ) =
                 module.resolveFunctionSymbols(
                     typeLookup: [:],
                     typeDeclarations: intrinsicDeclarations.typeDeclarations,
@@ -62,12 +149,13 @@ final class ExpressionTypeCheckingTests: XCTestCase {
                 operatorDeclarations: intrinsicDeclarations.operatorDeclarations
             )
 
-            for (signature, definition) in functionLookup {
+            for (signature, body) in functionBodyExpressions {
                 if let outputype = functionDeclarations[signature] {
                     let exprression = try signature.checkBody(
-                        body: definition.definition,
+                        body: body,
                         outputType: outputype,
                         context: context)
+                    
                 }
             }
         }
