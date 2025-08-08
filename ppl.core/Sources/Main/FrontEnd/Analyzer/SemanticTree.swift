@@ -151,11 +151,7 @@ public enum Semantic {
             type: TypeSpecifier)
 
         case branching(
-            branches: [(
-                match: BindingExpression,
-                guard: Expression,
-                body: Expression
-            )],
+            branches: [Branch],
             type: TypeSpecifier)
 
         var type: TypeSpecifier {
@@ -175,6 +171,12 @@ public enum Semantic {
             case let .branching(_, type): type
             }
         }
+    }
+
+    public struct Branch: Sendable {
+        let matchExpression: BindingExpression
+        let guardExpression: Expression
+        let body: Expression
     }
 
     public struct BindingExpression: Sendable {

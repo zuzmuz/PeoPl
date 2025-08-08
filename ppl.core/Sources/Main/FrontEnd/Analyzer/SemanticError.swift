@@ -11,6 +11,8 @@ extension Semantic {
             case typeRedeclaration(
                 identifier: Semantic.QualifiedIdentifier,
                 otherLocations: [Syntax.NodeLocation])
+            case typeShadowing(
+                identifier: Semantic.QualifiedIdentifier)
             case typeNotInScope(identifier: Syntax.QualifiedIdentifier)
             case homogeneousTypeProductInSum
             case duplicateFieldName
@@ -36,7 +38,8 @@ extension Semantic {
             case consecutiveUnary
             case bindingNotAllowed
             case bindingMismatch
-            case guardShouldReturnBool
+            case guardShouldReturnBool(
+                received: Semantic.TypeSpecifier)
             case functionBodyOutputTypeMismatch(
                 expected: Semantic.TypeSpecifier,
                 received: Semantic.TypeSpecifier)

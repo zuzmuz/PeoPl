@@ -33,7 +33,7 @@ ScopedTypes: [
 ]
 
 TypeWithNothing: [
-    m' _,
+    m' nothing,
     n' nothing
 ]
 

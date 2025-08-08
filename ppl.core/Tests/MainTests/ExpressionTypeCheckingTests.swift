@@ -76,12 +76,15 @@ extension Semantic.Expression: Testable {
             XCTAssertEqual(selfBranches.count, withBranches.count)
             for (selfBranch, withBranch) in zip(selfBranches, withBranches) {
                 XCTAssertEqual(
-                    selfBranch.match.condition.type,
-                    withBranch.match.condition.type)
-                selfBranch.match.condition.assertEqual(
-                    with: withBranch.match.condition)
-                XCTAssertEqual(selfBranch.guard.type, withBranch.guard.type)
-                selfBranch.guard.assertEqual(with: withBranch.guard)
+                    selfBranch.matchExpression.condition.type,
+                    withBranch.matchExpression.condition.type)
+                selfBranch.matchExpression.condition.assertEqual(
+                    with: withBranch.matchExpression.condition)
+                XCTAssertEqual(
+                    selfBranch.guardExpression.type,
+                    withBranch.guardExpression.type)
+                selfBranch.guardExpression.assertEqual(
+                    with: withBranch.guardExpression)
                 selfBranch.body.assertEqual(with: withBranch.body)
             }
         default:
@@ -105,8 +108,8 @@ final class ExpressionTypeCheckingTests: XCTestCase {
                     ):
                         .branching(
                             branches: [
-                                (
-                                    match: .init(
+                                .init(
+                                    matchExpression: .init(
                                         condition: .binary(
                                             .equal,
                                             left: .fieldInScope(
@@ -115,14 +118,14 @@ final class ExpressionTypeCheckingTests: XCTestCase {
                                             type: .bool
                                         ),
                                         bindings: [:]),
-                                    guard: .boolLiteral(true),
+                                    guardExpression: .boolLiteral(true),
                                     body: .intLiteral(1)
                                 ),
-                                (
-                                    match: .init(
+                                .init(
+                                    matchExpression: .init(
                                         condition: .boolLiteral(true),
                                         bindings: [:]),
-                                    guard: .boolLiteral(true),
+                                    guardExpression: .boolLiteral(true),
                                     body: .binary(
                                         .times,
                                         left: .fieldInScope(

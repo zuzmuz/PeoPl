@@ -35,7 +35,6 @@ extension Syntax.TypeField {
         case let .typeSpecifier(typeSpecifier):
             return typeSpecifier.getTypeIdentifiers()
         case let .taggedTypeSpecifier(taggedTypeSpecifier):
-            // TODO: the type specifier can be null,
             // in the context of choice types, type specifier is nothing
             // in the context of generic types type specifier is Type (the type set containing all types)
             return taggedTypeSpecifier.typeSpecifier?.getTypeIdentifiers() ?? []
@@ -265,7 +264,16 @@ extension TypeDeclarationsChecker {
             return types.first
         }
 
-        // TODO: detecting shadowings
+        let shadowing =
+            typeLookup.compactMap { identifier, definition in
+                if contextTypeDeclarations[identifier] != nil {
+                    return Semantic.Error.init(
+                        location: definition.location,
+                        errorChoice: .typeShadowing(
+                            identifier: identifier))
+                }
+                return nil
+            }
 
         let allTypes = Set(Array(typeLookup.keys)).union(
             Set(Array(contextTypeDeclarations.keys)))
@@ -310,6 +318,7 @@ extension TypeDeclarationsChecker {
             typeDeclarations: localTypeDeclarations,
             typeLookup: typeLookup,
             errors: redeclarations
+                + shadowing
                 + typesNotInScope
                 + cyclicalDependencies
                 + typeSepcifierErrors

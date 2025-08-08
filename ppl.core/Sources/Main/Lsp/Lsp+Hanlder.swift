@@ -68,7 +68,7 @@ extension Semantic.Error {
         case let .functionRedeclaringType(identifier, _):
             "A type exisist with this identifier: \(identifier)"
         case .taggedTypeSpecifierRequired:
-            "This type specifier requires a name"
+            "This tag requires a type specifier in this context"
         case let .inputMismatch(expected, received):
             "The expression has mismathed input, expected: \(expected.display()), received: \(received.display())"
         case let .invalidOperation(leftType, op, rightType):

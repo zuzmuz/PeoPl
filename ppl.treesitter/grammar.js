@@ -41,6 +41,8 @@ module.exports = grammar({
 
     identifier: $ => /[a-zA-Z_][a-zA-Z0-9_]*/,
 
+    // wildcard: $ => '_',
+    //
     qualified_identifier: $ => choice(
       field("identifier", $.identifier),
       prec.left(
@@ -61,7 +63,7 @@ module.exports = grammar({
     ),
 
     definition: $ => seq(
-      optional(field("access_modifier", $.access_modifier)),
+      // optional(field("access_modifier", $.access_modifier)),
       field("identifier", $.qualified_identifier),
       optional(field("type_specifier", $._type_specifier)),
       ':',
@@ -140,14 +142,14 @@ module.exports = grammar({
     ),
 
     tagged_type_specifier: $ => seq(
-      optional(field('hidden', '_')),
+      // optional(field('hidden', '_')),
       field("identifier", $.identifier),
       "'",
       optional(field("type_specifier", $._type_specifier)),
     ),
 
     type_field: $ => seq(
-      optional(field('access_modifier', $.access_modifier)),
+      // optional(field('access_modifier', $.access_modifier)),
       choice(
         $.tagged_type_specifier,
         $._type_specifier,

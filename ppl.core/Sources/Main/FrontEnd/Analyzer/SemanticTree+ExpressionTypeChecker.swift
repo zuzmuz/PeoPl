@@ -301,7 +301,8 @@ extension Syntax.Branched {
                 if guardExpression.type != .bool {
                     throw .init(
                         location: self.location,
-                        errorChoice: .guardShouldReturnBool)
+                        errorChoice: .guardShouldReturnBool(
+                            received: guardExpression.type))
                 }
 
                 let bodyExpression =
@@ -310,9 +311,9 @@ extension Syntax.Branched {
                         localScope: extendedLocalScope,
                         context: context)
 
-                return (
-                    match: bindingExpression,
-                    guard: guardExpression,
+                return Semantic.Branch(
+                    matchExpression: bindingExpression,
+                    guardExpression: guardExpression,
                     body: bodyExpression
                 )
             }
@@ -329,7 +330,9 @@ extension Syntax.Branched {
             }
 
         let type: Semantic.TypeSpecifier
-        if branchesType.count == 1, let branchType = branchesType.first {
+        if branchesType.isEmpty {
+            type = .never
+        } else if branchesType.count == 1, let branchType = branchesType.first {
             type = branchType
         } else {
             type = .raw(
@@ -342,6 +345,14 @@ extension Syntax.Branched {
                         }))
         }
         return .branching(branches: branches, type: type)
+    }
+
+    private static func validateExhaustiveness(
+        input: Semantic.Expression,
+        branches: [Semantic.Branch],
+        context: borrowing Semantic.DeclarationsContext
+    ) throws(Semantic.Error) {
+
     }
 }
 
