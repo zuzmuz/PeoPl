@@ -74,6 +74,7 @@ extension [Syntax.Expression] {
             default:
                 let expressionTag = Semantic.Tag.unnamed(fieldCounter)
                 fieldCounter += 1
+                // WARN: this might be buggy, I guess I should put this outside the switch
                 if expressions[expressionTag] != nil {
                     throw .init(
                         location: expression.location,

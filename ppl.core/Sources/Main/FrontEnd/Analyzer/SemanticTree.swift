@@ -150,6 +150,11 @@ public enum Semantic {
             tag: Tag,
             type: TypeSpecifier)
 
+        case access(
+            expression: Expression,
+            field: Tag,
+            type: TypeSpecifier)
+
         case branched(
             matirx: DecompositionMatrix,
             type: TypeSpecifier)
@@ -168,6 +173,7 @@ public enum Semantic {
             case let .initializer(type, _): type
             case let .call(_, _, _, type): type
             case let .fieldInScope(_, type): type
+            case let .access(_, _, type): type
             case let .branched(_, type): type
             }
         }
@@ -181,7 +187,7 @@ public enum Semantic {
         case wildcard
         case binding(Tag)
         case value(Expression)
-        case destructor([Pattern])
+        case destructor([Tag: Pattern])
         indirect case constructor(tag: Tag, pattern: Pattern)
     }
 

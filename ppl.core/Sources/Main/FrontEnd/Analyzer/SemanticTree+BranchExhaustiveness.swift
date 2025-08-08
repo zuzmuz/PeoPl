@@ -30,10 +30,8 @@ extension Syntax.Expression {
             return .binding(.named(binding.identifier))
         case let .call(call):
             return .destructor(
-                try call.arguments.map { argument throws(Semantic.Error) in
-                    try argument.getPattern(
-                        localScope: localScope, context: context)
-                })
+                try call.arguments.getPattern(
+                    localScope: localScope, context: context))
         case let .taggedExpression(taggedExpression):
             return .constructor(
                 tag: .named(taggedExpression.tag),
@@ -48,18 +46,89 @@ extension Syntax.Expression {
     }
 }
 
-extension Semantic.Pattern {
-    func getBindings() -> [Semantic.Tag] {
-        switch self {
-        case .wildcard, .value: return []
-        case let .destructor(patterns):
-            return patterns.flatMap { pattern in
-                pattern.getBindings()
+extension [Syntax.Expression] {
+    func getPattern(
+        localScope: borrowing Semantic.LocalScope,
+        context: borrowing Semantic.DeclarationsContext
+    ) throws(Semantic.Error) -> [Semantic.Tag: Semantic.Pattern] {
+        var patterns: [Semantic.Tag: Semantic.Pattern] = [:]
+        var fieldCounter = UInt64(0)
+        for expression in self {
+            switch expression {
+            case let .taggedExpression(taggedExpression):
+                let expressionTag = Semantic.Tag.named(taggedExpression.tag)
+                if patterns[expressionTag] != nil {
+                    throw .init(
+                        location: taggedExpression.location,
+                        errorChoice: .duplicatedExpressionFieldName)
+                }
+                patterns[expressionTag] =
+                    try taggedExpression.expression.getPattern(
+                        localScope: localScope,
+                        context: context)
+            default:
+                let expressionTag = Semantic.Tag.unnamed(fieldCounter)
+                fieldCounter += 1
+                // WARN: this might be buggy, I guess I should put this outside the switch
+                if patterns[expressionTag] != nil {
+                    throw .init(
+                        location: expression.location,
+                        errorChoice: .duplicatedExpressionFieldName)
+                }
+                patterns[expressionTag] =
+                    try expression.getPattern(
+                        localScope: localScope,
+                        context: context)
             }
-        case let .constructor(_, pattern):
-            return pattern.getBindings()
-        case let .binding(binding):
-            return [binding]
+        }
+        return patterns
+    }
+}
+
+extension Semantic.Pattern {
+    func typeCheck(
+        with input: Semantic.Expression,
+        localScope: borrowing Semantic.LocalScope,
+        context: borrowing Semantic.DeclarationsContext
+    ) throws(Semantic.PatternError) -> [Semantic.Tag: Semantic.Expression] {
+        switch self {
+        case .wildcard: return [:]
+        case let .binding(tag):
+            return [tag: input]
+        case let .value(expression):
+            if expression.type != input.type {
+                throw .bindingTypeMismatch
+            } else {
+                return [:]
+            }
+        case let .destructor(patterns):
+            let rawType = input.type.getRawType(
+                typeDeclarations: context.typeDeclarations)
+            switch rawType {
+            case let .record(fields):
+                guard fields.count == patterns.count else {
+                    throw .numberOfPatternMismatch(
+                        expected: fields.count, received: patterns.count)
+                }
+
+                var bindings: [Semantic.Tag: Semantic.Expression] = [:]
+
+                for (tag, expression) in fields {
+                }
+
+                fatalError("implementing destructor pattern matching")
+            default:
+                // TODO: this is not maybe wrong
+                throw .numberOfPatternMismatch(
+                    expected: 1, received: patterns.count)
+
+            }
+        case let .constructor(tag, pattern):
+            fatalError()
+        // patterns.reduce(into: [:]) { pattern in
+        //     pattern.type
+        // }
         }
     }
 }
+

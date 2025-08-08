@@ -1,6 +1,14 @@
 import Foundation
 
 extension Semantic {
+    public enum PatternError: LocalizedError {
+        case duplicateBindings
+        case bindingTypeMismatch
+        case numberOfPatternMismatch(
+            expected: Int,
+            received: Int)
+    }
+
     public struct Error: LocalizedError {
         let location: Syntax.NodeLocation
         let errorChoice: ErrorType
