@@ -149,13 +149,29 @@ final class ExpressionTypeCheckingTests: XCTestCase {
                 operatorDeclarations: intrinsicDeclarations.operatorDeclarations
             )
 
+            var expressionDefinitions: Semantic.FunctionDefinitionsMap = [:]
+
             for (signature, body) in functionBodyExpressions {
                 if let outputype = functionDeclarations[signature] {
-                    let exprression = try signature.checkBody(
+                    // TODO: should catch the errors and check for them
+                    let expression = try signature.checkBody(
                         body: body,
                         outputType: outputype,
                         context: context)
-                    
+                    expressionDefinitions[signature] = expression
+                }
+            }
+
+            XCTAssertEqual(
+                expressionDefinitions.count,
+                reference.expressionDefinitions.count)
+
+            for (signature, expression) in expressionDefinitions {
+                XCTAssertNotNil(reference.expressionDefinitions[signature])
+                if let referenceExpression =
+                    reference.expressionDefinitions[signature]
+                {
+                    expression.assertEqual(with: referenceExpression)
                 }
             }
         }
