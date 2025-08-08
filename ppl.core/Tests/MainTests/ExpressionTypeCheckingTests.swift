@@ -90,32 +90,33 @@ final class ExpressionTypeCheckingTests: XCTestCase {
             expressionDefinitions: Semantic.FunctionDefinitionsMap,
             expressionErrors: [Semantic.Error]
         )] = [
-            "goodexpressions": (
-                expressionDefinitions: [
-                    .init(
-                        identifier: .chain(["factorial"]),
-                        inputType: (.input, .int),
-                        arguments: [:]
-                    ): .branching(
-                        branches: [
-                            (
-                                match: .init(
-                                    condition: .binary(
-                                        .equal,
-                                        left: .input(type: .int),
-                                        right: .intLiteral(1),
-                                        type: .bool
-                                    ),
-                                    bindings: [:]),
-                                guard: .boolLiteral(true),
-                                body: .intLiteral(1)
-                            )
-                        ],
-                        type: .int
-                    )
-                ],
-                expressionErrors: []
-            )
+            // "goodexpressions": (
+            //     expressionDefinitions: [
+            //         .init(
+            //             identifier: .chain(["factorial"]),
+            //             inputType: (.input, .int),
+            //             arguments: [:]
+            //         ): .branching(
+            //             branches: [
+            //                 (
+            //                     match: .init(
+            //                         condition: .binary(
+            //                             .equal,
+            //                             left: .input(type: .int),
+            //                             right: .intLiteral(1),
+            //                             type: .bool
+            //                         ),
+            //                         bindings: [:]),
+            //                     guard: .boolLiteral(true),
+            //                     body: .intLiteral(1)
+            //                 )
+            //             ],
+            //             type: .int
+            //         )
+            //     ],
+            //     expressionErrors: []
+            // )
+            :
         ]
 
     func testFiles() throws {

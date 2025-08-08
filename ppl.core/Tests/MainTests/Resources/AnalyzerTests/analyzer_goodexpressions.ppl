@@ -1,4 +1,6 @@
-factorial: func (Int)[] -> Int {
+factorial: [n' Int] -> Int {
+    n
+    |>
     |1| 1
-    |$n| n.factorial()
+    |$n| n * factorial(n-1)
 }

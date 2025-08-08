@@ -1503,7 +1503,12 @@
       "value": "\\s|\\\\\\r?\\n"
     }
   ],
-  "conflicts": [],
+  "conflicts": [
+    [
+      "type_field",
+      "_simple_expression"
+    ]
+  ],
   "precedences": [],
   "externals": [],
   "inline": [],

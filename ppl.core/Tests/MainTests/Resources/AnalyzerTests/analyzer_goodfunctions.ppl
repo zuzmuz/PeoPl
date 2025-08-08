@@ -1,20 +1,20 @@
-with\input: func (Float)[] -> Float {
+with\input: (Float)[] -> Float {
     + 3
 }
 
 
-add: func [a' Int, b' Int] -> Int {
+add: [a' Int, b' Int] -> Int {
     a + b -- c - * 3
 }
 
-overload: func [a' Int] -> Int {
+overload: [a' Int] -> Int {
     1
 }
 
-overload: func [a' Int, b' Float] -> Int {
+overload: [a' Int, b' Float] -> Int {
     1
 }
 
-overload: func [a' Int, c' Float] -> Int {
+overload: [a' Int, c' Float] -> Int {
     1
 }

@@ -1,15 +1,15 @@
-first: func [a' Int, b' Float] -> Bool {
+first: [a' Int, b' Float] -> Bool {
     true
 }
 
-first: func [a' Int, b' Bool] -> Float {
+first: [a' Int, b' Bool] -> Float {
     false
 }
 
-with\input: func (Float)[] -> Float {
+with\input: (Float)[] -> Float {
     + 3
 }
 
-with\input: func (in' Float)[] -> Float {
+with\input: (in' Float)[] -> Float {
     + 4
 }
