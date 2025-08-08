@@ -25,42 +25,41 @@
 //     }
 // }
 //
-// extension Semantic.FunctionSignature {
-//     func display() -> String {
-//         // TODO: display type arguments
-//         "\(self.identifier.display())"
-//     }
-// }
-//
-// extension Semantic.ScopedIdentifier {
-//     func display() -> String {
-//         self.chain.joined(separator: "::")
-//     }
-// }
-//
-// extension Semantic.Tag {
-//     func display() -> String {
-//         switch self {
-//         case .input:
-//             "#input#"
-//         case let .named(name):
-//             name
-//         case let .unnamed(value):
-//             "_\(value)"
-//         }
-//     }
-// }
-//
-// extension Semantic.TypeSpecifier {
-//     func display() -> String {
-//         switch self {
-//         case let .nominal(nominal):
-//             nominal.display()
-//         case let .raw(raw):
-//             "()"
-//         }
-//     }
-// }
+extension Semantic.FunctionSignature {
+    func display() -> String {
+        "\(self.inputType.type.display()).\(self.identifier.display())(\(self.arguments.map { "\($0.key.display()):_" }.joined(separator: ", "))"
+    }
+}
+
+extension Semantic.QualifiedIdentifier {
+    func display() -> String {
+        self.chain.joined(separator: "\\")
+    }
+}
+
+extension Semantic.Tag {
+    func display() -> String {
+        switch self {
+        case .input:
+            "#input#"
+        case let .named(name):
+            name
+        case let .unnamed(value):
+            "_\(value)"
+        }
+    }
+}
+
+extension Semantic.TypeSpecifier {
+    func display() -> String {
+        switch self {
+        case let .nominal(nominal):
+            nominal.display()
+        case let .raw(raw):
+            "()"
+        }
+    }
+}
 //
 // extension Semantic.Expression {
 //     func display() -> String {

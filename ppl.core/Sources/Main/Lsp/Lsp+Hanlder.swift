@@ -7,52 +7,75 @@ enum LspCommand: String {
     case socket
 }
 
-// extension Syntax.Error {
-//     var diagnosticMessage: String {
-//         switch self {
-//         case let .errorParsing(element, _):
-//             element
-//         case let .notImplemented(element, _):
-//             "\(element) not implemented"
-//         case .languageNotSupported:
-//             "well something is terribly wrong here"
-//         case .rangeNotInContent:
-//             "oops range went out of bounds here, don't know how that happened"
-//         case .sourceUnreadable:
-//             "well something's wrong with you"
-//         }
-//     }
-//
-//     var lspRange: Lsp.Range {
-//         switch self {
-//         case .rangeNotInContent, .languageNotSupported, .sourceUnreadable:
-//             return .init(
-//                 start: .init(line: 0, character: 0),
-//                 end: .init(line: 0, character: 0))
-//         case .notImplemented(_, let location),
-//             .errorParsing(_, let location):
-//             return .init(
-//                 start: .init(
-//                     line: location.pointRange.lowerBound.line,
-//                     character: location.pointRange.lowerBound.column / 2),
-//                 end: .init(
-//                     line: location.pointRange.upperBound.line,
-//                     character: location.pointRange.upperBound.column / 2))
-//         }
-//     }
-// }
+extension Syntax.NodeLocation {
+    var lspRange: Lsp.Range {
+        return .init(
+            start: .init(
+                line: self.pointRange.lowerBound.line,
+                character: self.pointRange.lowerBound.column / 2),
+            end: .init(
+                line: self.pointRange.upperBound.line,
+                character: self.pointRange.upperBound.column / 2))
+    }
+}
 
-// extension Semantic.Error {
-//     var diagnosticMessage: String {
-//         "what"
-//     }
-//
-//     var lspRange: Lsp.Range {
-//         return .init(
-//             start: .init(line: 0, character: 0),
-//             end: .init(line: 0, character: 0))
-//     }
-// }
+extension Syntax.Error {
+    var diagnosticMessage: String {
+        switch self {
+        case let .errorParsing(element, _):
+            element
+        case let .notImplemented(element, _):
+            "\(element) not implemented"
+        case .languageNotSupported:
+            "well something is terribly wrong here"
+        case .rangeNotInContent:
+            "oops range went out of bounds here, don't know how that happened"
+        case .sourceUnreadable:
+            "well something's wrong with you"
+        }
+    }
+
+    var lspRange: Lsp.Range {
+        switch self {
+        case .rangeNotInContent, .languageNotSupported, .sourceUnreadable:
+            return .init(
+                start: .init(line: 0, character: 0),
+                end: .init(line: 0, character: 0))
+        case .notImplemented(_, let location),
+            .errorParsing(_, let location):
+            return location.lspRange
+        }
+    }
+}
+
+extension Semantic.Error {
+    var diagnosticMessage: String {
+        switch errorChoice {
+        case let .notImplemented(value):
+            "\(value): this feature is not implemented yet"
+        case let .cyclicType(stack):
+            "This identifier defines a cyclical type, the cycle is defined \(stack.map { $0.identifier.display() }.joined(separator: "->"))"
+        case let .typeRedeclaration(identifier, otherLocations):
+            "This is an invalid type redeclaration of the identifier '\(identifier.display())'"
+        case let .typeNotInScope(identifier):
+            "The identifier \(identifier.display()) is not defined anywhere"
+        case .homogeneousTypeProductInSum:
+            "Homegenous array type is not allowed inside a choice type"
+        case .duplicateFieldName:
+            "The type field list has duplicated field names"
+        case let .functionRedeclaration(signature, otherLocations):
+            "This is an invalid function redeclaration of the signature '\(signature.display())'"
+        case let .functionRedeclaringType(identifier):
+            "A type exisist with this identifier"
+        default:
+            "no message for this error yet"
+        }
+    }
+
+    var lspRange: Lsp.Range {
+        return location.lspRange
+    }
+}
 
 enum PpLsp {
     actor Handler<L: Utils.Logger, P: Syntax.ModuleParser>: Lsp.Handler {

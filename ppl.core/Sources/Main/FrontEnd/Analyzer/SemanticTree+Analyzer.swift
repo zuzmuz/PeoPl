@@ -90,7 +90,9 @@ extension SemanticChecker {
                     })
         // NOTE: I might need to send only function to code gen
         return .success(
-            .init(definitions: .init(functionDefinitions: [:])))
+            .init(
+                definitions: .init(
+                    functionDefinitions: functionDefinitions)))
     }
 }
 
