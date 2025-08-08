@@ -15,7 +15,6 @@
   - [[#pipeline-expressions][Pipeline Expressions]]
   - [[#input-capturing-and-pattern-matching][Input Capturing and Pattern Matching]]
 - [[#function-definitions][Function Definitions]]
-  - [[#why-func][Why =func=]]
   - [[#input][Input]]
   - [[#function-examples][Function Examples]]
   - [[#function-overloading][Function Overloading]]
@@ -64,7 +63,7 @@ Running this file will call =main=, and the program will then terminate with the
 This is how functions are defined:
 
 #+BEGIN_SRC peopl
-main: func [] -> Int {
+main: [] -> Int {
     0
 }
 #+END_SRC
@@ -187,13 +186,10 @@ Functions in PeoPl are pure expressions.
 To define a function:
 
 #+BEGIN_SRC peopl
-qualifiedIdentifier: func (OptionalInputType)[arg1' ArgType1, arg2' ArgType2] -> OutputType {
+qualifiedIdentifier: (OptionalInputType)[arg1' ArgType1, arg2' ArgType2] -> OutputType {
   // function body
 }
 #+END_SRC
-
-** Why =func=
-=function= is too long, =fn= is too short of an abbreviation, =def= isn't specific enough, =fun= is too silly, =defun= is... just why??
 
 ** Input
 PeoPl doesn't have classes, but you can emulate methods using functions with inputs.
@@ -204,17 +200,17 @@ A function doesn't need to have an input. This means the function is top-level o
 
 #+BEGIN_SRC peopl
 // Function with no input (static function)
-thisReturns42: func [] -> Int {
+thisReturns42: [] -> Int {
   42
 }
 
 // Function with input
-square: func (Int)[] -> Int {
+square: (Int)[] -> Int {
   |$in| in * in
 }
 
 // Function with arguments
-add: func [a' Int, b' Int] -> Int {
+add: [a' Int, b' Int] -> Int {
   a + b
 }
 
@@ -299,7 +295,7 @@ Start a comment with two forward slashes. Multiline comments are not supported:
 
 #+BEGIN_SRC peopl
 // This is a comment
-main: func [] -> Int { // This is also a comment
+main: [] -> Int { // This is also a comment
     0
 }
 #+END_SRC

@@ -83,7 +83,7 @@ which is 0.
 This is how functions are defined:
 
 #+BEGIN_SRC peopl
-main: func [] -> Int {
+main: [] -> Int {
     0
 }
 #+END_SRC
@@ -102,7 +102,7 @@ this doesn't justify their existence.
 
 #+BEGIN_SRC peopl
 // this is a comment
-main: func [] -> Int { // this is also a comment
+main: [] -> Int { // this is also a comment
     0
 }
 #+END_SRC
@@ -479,7 +479,7 @@ However, in PeoPl, inputs and outputs are structured types.
 More on [[#types][types]] later.
 
 #+BEGIN_SRC peopl
-thisReturns42: func [] -> Int {
+thisReturns42: [] -> Int {
   42
 }
 #+END_SRC
@@ -496,7 +496,7 @@ Inputs are usually anonymous, which means they can be pipelined directly into ot
 However, if needed, they can also be captured.
 
 #+BEGIN_SRC peopl
-square: func (Int)[] -> Int {
+square: (Int)[] -> Int {
   |$in| in*in
 }
 #+END_SRC
@@ -507,7 +507,7 @@ In addition to function input, functions also take extra arguments.
 Extra arguments are always named.
 
 #+BEGIN_SRC peopl
-add: func [a' Int, b' Int] -> Int {
+add: [a' Int, b' Int] -> Int {
   a + b
 }
 #+END_SRC
@@ -542,7 +542,7 @@ They need to be bound to a label.
 #+BEGIN_SRC peopl
 a: 3 // creating the constant a with the value 3
 
-main: func [] -> nothing { // main function
+main: [] -> nothing { // main function
   _
 }
 #+END_SRC
@@ -574,10 +574,10 @@ MAX_SIZE: 1024
 greeting: "Hello, World!"
 
 // Function definitions
-factorial: func (Int) -> Int {
-  |$n| 
-  |0| 1,
-  |1| 1,
+factorial: [n' Int] -> Int {
+  n
+  |>
+  |1| 1
   |$x| x * factorial(x - 1)
 }
 #+END_SRC
@@ -654,7 +654,7 @@ ShapeTaggedChoiceAlt: choice [
 Choice types work seamlessly with pattern matching:
 
 #+BEGIN_SRC peopl
-processShape: func (Shape) -> Float {
+processShape: (Shape)[] -> Float {
   |circle: (center: _, radius: $r)| PI * r * r,
   |rectangle: (a: _, b: _, width: $w, height: $h)| w * h
 }
@@ -666,12 +666,12 @@ Functions are also types and can be used as first-class values:
 
 #+BEGIN_SRC peopl
 // Function type definitions
-Transformer: func (String) -> String
-Predicate: func (Int) -> Bool
-BinaryOp: func [a Int, b Int] -> Int
+Transformer: (String)[] -> String
+Predicate: (Int)[] -> Bool
+BinaryOp: [a Int, b Int] -> Int
 
 // Using function types
-applyTwice: func (Int, transform Transformer) -> String {
+applyTwice: (Int)[transform' Transformer] -> String {
   |$input| input |> transform() |> transform()
 }
 #+END_SRC
@@ -685,7 +685,7 @@ PeoPl supports generic types for writing reusable code:
 Container: [T'] => [value T, timestamp Int]
 
 // Generic function
-map: [T', U'] => func (List[T])[transform func(T) -> U] -> List[U] {
+map: [T', U'] => (List[T])[transform' (T)[] -> U] -> List[U] {
   // implementation
 }
 #+END_SRC
