@@ -1051,11 +1051,6 @@
     }
   },
   {
-    "type": "nothing",
-    "named": true,
-    "fields": {}
-  },
-  {
     "type": "optional_pipe_operator",
     "named": true,
     "fields": {}
@@ -1942,7 +1937,7 @@
   },
   {
     "type": "nothing",
-    "named": false
+    "named": true
   },
   {
     "type": "or_operator",

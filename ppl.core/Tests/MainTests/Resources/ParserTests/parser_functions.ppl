@@ -22,7 +22,7 @@ allCaptures: func (Some\Object)[] -> Some\Other\Object {
     |(n: $n, i: $i) if n = i| "they are equal"
 }
 
-allExpressionTypes: func [] -> _ {
+allExpressionTypes: func [] -> nothing {
     Something(1, 2, 3)
     |> modify(with: 10.0) 
     |> Nested\method(42) 

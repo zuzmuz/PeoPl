@@ -299,7 +299,7 @@ module.exports = grammar({
       $.bool_literal,
     ),
 
-    nothing: _ => choice("nothing", '_'),
+    nothing: _ => "nothing",
     never: _ => "Never",
 
     int_literal: $ => token(choice(

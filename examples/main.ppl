@@ -132,6 +132,6 @@ Result: [S', E' Error] => choice [
     error' E
 ]
 
-Optional: [T'] => choice [T, _]
+Optional: [T'] => choice [T, nothing]
 
 
