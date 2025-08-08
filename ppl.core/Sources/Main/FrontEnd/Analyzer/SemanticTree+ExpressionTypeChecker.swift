@@ -285,8 +285,8 @@ extension Syntax.Branched {
         let branches =
             try self.branches.map { branch throws(Semantic.Error) in
                 let bindingExpression =
-                    try branch.matchExpression.checkBindingExpression(
-                        input: input, localScope: localScope, context: context
+                    try branch.matchExpression.getPattern(
+                        localScope: localScope, context: context
                     )
                 let extendedLocalScope =
                     localScope.merging(bindingExpression.bindings) { $1 }
@@ -347,13 +347,13 @@ extension Syntax.Branched {
         return .branching(branches: branches, type: type)
     }
 
-    private static func validateExhaustiveness(
-        input: Semantic.Expression,
-        branches: [Semantic.Branch],
-        context: borrowing Semantic.DeclarationsContext
-    ) throws(Semantic.Error) {
-
-    }
+    // private static func validateExhaustiveness(
+    //     input: Semantic.Expression,
+    //     branches: [Semantic.Branch],
+    //     context: borrowing Semantic.DeclarationsContext
+    // ) throws(Semantic.Error) {
+    //
+    // }
 }
 
 extension Syntax.Binding {
@@ -362,7 +362,7 @@ extension Syntax.Binding {
         localScope: borrowing Semantic.LocalScope,
         context: borrowing Semantic.DeclarationsContext,
     ) throws(Semantic.Error) -> Semantic.Expression {
-        fatalError()
+        throw .init(location: self.location, errorChoice: .bindingNotAllowed)
     }
 }
 
@@ -393,53 +393,6 @@ extension Syntax.Pipe {
 }
 
 extension Syntax.Expression {
-
-    func checkBindingExpression(
-        input: Semantic.Expression,
-        localScope: borrowing Semantic.LocalScope,
-        context: borrowing Semantic.DeclarationsContext
-    ) throws(Semantic.Error) -> Semantic.BindingExpression {
-        switch (input.type, self) {
-        case (.nothing, .literal(let literal)) where literal.value == .nothing:
-            return .init(
-                condition: .boolLiteral(true),
-                bindings: [:])
-        case (_, .literal(let literal)) where literal.value == .nothing:
-            throw .init(
-                location: self.location,
-                errorChoice: .bindingMismatch)
-        case let (_, .binding(binding)):
-            return .init(
-                condition: .boolLiteral(true),
-                bindings: [Semantic.Tag.named(binding.identifier): input.type])
-        // TODO: more complicated pattern matching
-        case let (inputType, .literal(literal)):
-            let literalTyped = try literal.checkType(
-                with: .nothing,
-                localScope: localScope,
-                context: context)
-            if inputType != literalTyped.type {
-                throw .init(
-                    location: self.location,
-                    errorChoice: .inputMismatch(
-                        expected: inputType,
-                        received: literalTyped.type))
-            }
-            return .init(
-                condition: .binary(
-                    .equal,
-                    left: input,
-                    right: literalTyped,
-                    type: .bool),
-                bindings: [:])
-        // TODO: other complex pattern matching requires expression to be an initializer expression
-        default:
-            throw .init(
-                location: self.location,
-                errorChoice: .notImplemented(
-                    "Advanced pattern matching is not implemented yet"))
-        }
-    }
 
     // func accessFieldType(
     //     type: Semantic.TypeSpecifier,

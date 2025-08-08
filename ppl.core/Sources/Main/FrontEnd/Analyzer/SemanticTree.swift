@@ -173,6 +173,18 @@ public enum Semantic {
         }
     }
 
+    public struct DecompositionMatrix {
+        let patterns: [Pattern]
+    }
+
+    enum Pattern {
+        case wildcard
+        case binding(String)
+        case value(Expression)
+        case destructor([Pattern])
+        indirect case constructor(tag: Tag, pattern: Pattern)
+    }
+
     public struct Branch: Sendable {
         let matchExpression: BindingExpression
         let guardExpression: Expression
