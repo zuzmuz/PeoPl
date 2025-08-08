@@ -41,6 +41,8 @@ extension Semantic {
                 rightType: Semantic.TypeSpecifier)
             // case undefinedField(field: String)
             // case undefinedType(identifier: Semantic.QualifiedIdentifier)
+            case accessFieldUnknown(field: String)
+            case accessingNonRecord
             case undefinedCall(signature: Semantic.FunctionSignature)
             case duplicatedExpressionFieldName
             case consecutiveUnary

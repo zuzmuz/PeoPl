@@ -213,6 +213,40 @@ extension Syntax.Binary {
     }
 }
 
+extension Syntax.Access {
+    func checkType(
+        with input: Semantic.Expression,
+        localScope: borrowing Semantic.LocalScope,
+        context: borrowing Semantic.DeclarationsContext,
+    ) throws(Semantic.Error) -> Semantic.Expression {
+        let prefixTyped = try self.prefix.checkType(
+            with: input,
+            localScope: localScope,
+            context: context)
+
+        switch prefixTyped.type.getRawType(
+            typeDeclarations: context.typeDeclarations)
+        {
+        case let .record(fields):
+            let tag = Semantic.Tag.named(self.field)
+            if let recordFieldType = fields[tag] {
+                return .access(
+                    expression: prefixTyped,
+                    field: tag,
+                    type: recordFieldType)
+            } else {
+                throw .init(
+                    location: self.location,
+                    errorChoice: .accessFieldUnknown(field: self.field))
+            }
+        default:
+            throw .init(
+                location: self.location,
+                errorChoice: .accessingNonRecord)
+        }
+    }
+}
+
 extension Syntax.Call {
     func checkType(
         with input: Semantic.Expression,
@@ -290,7 +324,7 @@ extension Syntax.Branched {
         //             try branch.matchExpression.getPattern(
         //                 localScope: localScope, context: context
         //             )
-        //         
+        //
         //         let bindings = pattern.getBindings()
         //         if Set(bindings).count < bindings.count {
         //             throw .init(
@@ -321,7 +355,7 @@ extension Syntax.Branched {
         //                 localScope: extendedLocalScope,
         //                 context: context)
         //
-        //         return 
+        //         return
         //     }
         //
         // // removing duplicate types while keeping order
@@ -489,10 +523,34 @@ extension Syntax.Expression {
                     received: input.type))
         case let (_, .nominal(nominal)):
             if nominal.identifier.chain.count == 1,
-                let field = nominal.identifier.chain.first,
-                let fieldTypeInScope = localScope[.named(field)]
+                let field = nominal.identifier.chain.first
             {  // NOTE: named and unnamed are equivalent, but I should figure out how to switch between the two
-                return .fieldInScope(tag: .named(field), type: fieldTypeInScope)
+                if input.type == .nothing,
+                    let fieldTypeInScope = localScope[.named(field)]
+                {
+                    return .fieldInScope(
+                        tag: .named(field), type: fieldTypeInScope)
+                } else {
+                    switch input.type.getRawType(
+                        typeDeclarations: context.typeDeclarations)
+                    {
+                    case let .record(fields):
+                        let tag = Semantic.Tag.named(field)
+                        if let recordFieldType = fields[tag] {
+                            return .access(
+                                expression: input, field: .named(field),
+                                type: recordFieldType)
+                        } else {
+                            throw .init(
+                                location: nominal.location,
+                                errorChoice: .accessFieldUnknown(field: field))
+                        }
+                    default:
+                        throw .init(
+                            location: self.location,
+                            errorChoice: .accessingNonRecord)
+                    }
+                }
             }
             // TODO: qualified identifiers might be compile time expressions or globals
             throw .init(
@@ -500,32 +558,11 @@ extension Syntax.Expression {
                 errorChoice: .notImplemented(
                     "Field expression type checking is not implemented yet"))
         // NOTE: should bindings shadow definitions in scope or context
-        case let (.nothing, .access(access)):
-            // let prefixTyped = try prefix.checkType(
-            //     with: input,
-            //     localScope: localScope,
-            //     context: context)
-            //
-            // let accessFieldType = try self.accessFieldType(
-            //     type: prefixTyped.type,
-            //     fieldIdentifier: fieldIdentifier,
-            //     context: context)
-            throw .init(
-                location: self.location,
-                errorChoice: .notImplemented(
-                    "access field expression type checking is not implemented yet"
-                ))
-        // return .init(
-        //     expressionType:
-        //         .access(prefix: prefixTyped, field: fieldIdentifier),
-        //     type: accessFieldType)
-
-        case (_, .access):
-            throw .init(
-                location: self.location,
-                errorChoice: .inputMismatch(
-                    expected: .nothing,
-                    received: input.type))
+        case let (_, .access(access)):
+            return try access.checkType(
+                with: input,
+                localScope: localScope,
+                context: context)
 
         case let (_, .call(call)):
             return try call.checkType(
