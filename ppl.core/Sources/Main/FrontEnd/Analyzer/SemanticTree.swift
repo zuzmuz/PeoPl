@@ -145,6 +145,10 @@ public enum Semantic {
             arguments: [Tag: Expression],
             type: TypeSpecifier)
 
+        case fieldInScope(
+            tag: Tag,
+            type: TypeSpecifier)
+
         case branching(
             branches: [(
                 match: BindingExpression,
@@ -164,8 +168,9 @@ public enum Semantic {
             case let .input(type): type
             case let .unary(_, _, type): type
             case let .binary(_, _, _, type): type
-            case let .call(_, _, _, type): type
             case let .initializer(type, _): type
+            case let .call(_, _, _, type): type
+            case let .fieldInScope(_, type): type
             case let .branching(_, type): type
             }
         }

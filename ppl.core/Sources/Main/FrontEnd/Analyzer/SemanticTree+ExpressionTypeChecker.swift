@@ -361,26 +361,23 @@ extension Syntax.Pipe {
         localScope: borrowing Semantic.LocalScope,
         context: borrowing Semantic.DeclarationsContext,
     ) throws(Semantic.Error) -> Semantic.Expression {
-        fatalError()
+        let leftTyped = try left.checkType(
+            with: input,
+            localScope: localScope,
+            context: context)
 
-        // let leftTyped = try left.checkType(
-        //     with: input,
-        //     localScope: localScope,
-        //     context: context)
-        //
-        // switch right.expressionType {
-        // case let .branched(branched):
-        //     return try self.checkBranched(
-        //         input: leftTyped,
-        //         branched: branched,
-        //         localScope: localScope,
-        //         context: context)
-        // default:
-        //     return try right.checkType(
-        //         with: leftTyped,
-        //         localScope: localScope,
-        //         context: context)
-        // }
+        switch right {
+        case let .branched(branched):
+            return try branched.checkType(
+                with: leftTyped,
+                localScope: localScope,
+                context: context)
+        default:
+            return try right.checkType(
+                with: leftTyped,
+                localScope: localScope,
+                context: context)
+        }
     }
 }
 
@@ -521,12 +518,13 @@ extension Syntax.Expression {
                     expected: .nothing,
                     received: input.type))
         case let (_, .nominal(nominal)):
-            // if nominal.identifier.chain.count == 1,
-            //     let field = nominal.identifier.chain.first,
-            //     let fieldTypeInScope = localScope[.named(field)]
-            // {  // NOTE: named and unnamed are equivalent, but I should figure out how to switch between the two
-            //     return .fieldInScope(.named(field))
-            // }
+            if nominal.identifier.chain.count == 1,
+                let field = nominal.identifier.chain.first,
+                let fieldTypeInScope = localScope[.named(field)]
+            {  // NOTE: named and unnamed are equivalent, but I should figure out how to switch between the two
+                return .fieldInScope(tag: .named(field), type: fieldTypeInScope)
+            }
+            // TODO: qualified identifiers might be compile time expressions or globals
             throw .init(
                 location: self.location,
                 errorChoice: .notImplemented(

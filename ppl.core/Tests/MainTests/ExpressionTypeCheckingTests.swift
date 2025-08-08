@@ -63,6 +63,12 @@ extension Semantic.Expression: Testable {
             }
             XCTAssertEqual(selfType, withType)
         case let (
+            .fieldInScope(selfField, selfType),
+            .fieldInScope(withField, withType)
+        ):
+            XCTAssertEqual(selfField, withField)
+            XCTAssertEqual(selfType, withType)
+        case let (
             .branching(selfBranches, selfType),
             .branching(withBranches, withType)
         ):
@@ -79,7 +85,7 @@ extension Semantic.Expression: Testable {
                 selfBranch.body.assertEqual(with: withBranch.body)
             }
         default:
-            fatalError()
+            fatalError("can't compare \(self) with \(with)")
         }
     }
 }
@@ -90,33 +96,62 @@ final class ExpressionTypeCheckingTests: XCTestCase {
             expressionDefinitions: Semantic.FunctionDefinitionsMap,
             expressionErrors: [Semantic.Error]
         )] = [
-            // "goodexpressions": (
-            //     expressionDefinitions: [
-            //         .init(
-            //             identifier: .chain(["factorial"]),
-            //             inputType: (.input, .int),
-            //             arguments: [:]
-            //         ): .branching(
-            //             branches: [
-            //                 (
-            //                     match: .init(
-            //                         condition: .binary(
-            //                             .equal,
-            //                             left: .input(type: .int),
-            //                             right: .intLiteral(1),
-            //                             type: .bool
-            //                         ),
-            //                         bindings: [:]),
-            //                     guard: .boolLiteral(true),
-            //                     body: .intLiteral(1)
-            //                 )
-            //             ],
-            //             type: .int
-            //         )
-            //     ],
-            //     expressionErrors: []
-            // )
-            :
+            "goodexpressions": (
+                expressionDefinitions: [
+                    .init(
+                        identifier: .chain(["factorial"]),
+                        inputType: (.input, .nothing),
+                        arguments: [.named("n"): .int]
+                    ):
+                        .branching(
+                            branches: [
+                                (
+                                    match: .init(
+                                        condition: .binary(
+                                            .equal,
+                                            left: .fieldInScope(
+                                                tag: .named("n"), type: .int),
+                                            right: .intLiteral(1),
+                                            type: .bool
+                                        ),
+                                        bindings: [:]),
+                                    guard: .boolLiteral(true),
+                                    body: .intLiteral(1)
+                                ),
+                                (
+                                    match: .init(
+                                        condition: .boolLiteral(true),
+                                        bindings: [:]),
+                                    guard: .boolLiteral(true),
+                                    body: .binary(
+                                        .times,
+                                        left: .fieldInScope(
+                                            tag: .named("n"), type: .int),
+                                        right: .call(
+                                            signature: .init(
+                                                identifier: .chain(
+                                                    ["factorial"]),
+                                                inputType: (.input, .nothing),
+                                                arguments: [.named("n"): .int]),
+                                            input: .nothing,
+                                            arguments: [.named("n"): .binary(
+                                                    .minus,
+                                                    left: .fieldInScope(
+                                                        tag: .named("n"),
+                                                        type: .int),
+                                                    right: .intLiteral(1),
+                                                    type: .int
+                                                )
+                                            ],
+                                            type: .int),
+                                        type: .int)
+                                )
+                            ],
+                            type: .int
+                        )
+                ],
+                expressionErrors: []
+            )
         ]
 
     func testFiles() throws {
