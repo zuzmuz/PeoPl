@@ -39,11 +39,11 @@ And by the way I'm not even following this todo list
 
 Todo list:
 - [-] Treesitter grammar version 0.1.0.0
-  - [X] Type system
+  - [-] Type system
     - [X] Tuples
     - [X] Choices
-    - [X] Subsets
-    - [X] Generics
+    - [ ] Subsets
+    - [ ] Generics
     - [X] Functions
   - [X] Expressions
     - [X] Arithmetic expressions

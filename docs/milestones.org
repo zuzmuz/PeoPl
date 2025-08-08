@@ -1,0 +1,32 @@
+* Milestones
+
+** 0.0.1.0
+
+=0.0.1.0= will be the first proper alfa release
+
+These are the expected features
+- Simple builtins Int, Float, Bool
+- Value type records and choices
+- Pure functions on builtins and custom types
+- Complex exhaustive pattern matching
+- Working llvm backend
+- LSP with diagnostics
+
+
+** Next
+The next releases are not yet planned based on general progress.
+The main tasks in the pipeline
+- Low level memory management
+- Side effects management
+- Advanced moving and copying semantics
+- Lambdas and higher order functions
+- Generics, TypeSets
+- Existential and universal types
+- Proper debugging
+- More LSP features (completion, hover, go tos)
+  
+  
+
+** 0.1.0.0
+=0.1.0.0= will be the first proper beta release
+  

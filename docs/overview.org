@@ -553,7 +553,7 @@ Other definitions can exist alongside it.
 Define a value using this syntax:
 
 #+BEGIN_SRC peopl
-label OptionalType: Expression
+label' OptionalType: Expression
 #+END_SRC
 
 Expressions can be 3 things:
@@ -640,11 +640,11 @@ Color: choice [red', blue', green', yellow'] // basic enums
 
 ShapeUnion: choice [Circle, Rectangle] // unions (they are secretly tagged)
 
-ShapeTaggedChoice: choice [circle Circle, rectangle Rectangle] // enums with associated values, or tagged unions
+ShapeTaggedChoice: choice [circle' Circle, rectangle' Rectangle] // enums with associated values, or tagged unions
 
 ShapeTaggedChoiceAlt: choice [
-    circle '[center Point, radius Float],
-    rectangle '[a Point, b Point, width Float, height Float]
+    circle' [center' Point, radius' Float],
+    rectangle' [a' Point, b' Point, width' Float, height' Float]
 ]
 // Definitions can be nested, preventing the proliferation of small types that are only used in one place
 #+END_SRC
