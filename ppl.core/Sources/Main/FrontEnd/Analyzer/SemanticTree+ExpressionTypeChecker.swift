@@ -248,6 +248,35 @@ extension Syntax.Access {
 }
 
 extension Syntax.Call {
+    private func methodCall(
+        identifier: Semantic.QualifiedIdentifier,
+        input: Semantic.Expression,
+        arguments: [Semantic.Tag: Semantic.Expression],
+        localScope: borrowing Semantic.LocalScope,
+        context: borrowing Semantic.DeclarationsContext
+    ) throws(Semantic.Error) -> Semantic.Expression {
+        let functionSignature: Semantic.FunctionSignature =
+            .init(
+                identifier: identifier,
+                inputType: (tag: .input, type: input.type),
+                arguments: arguments.mapValues { $0.type })
+
+        // the nominal is a function call
+        if let functionOutputType =
+            context.functionDeclarations[functionSignature]
+        {
+            return .call(
+                signature: functionSignature,
+                input: input,
+                arguments: arguments,
+                type: functionOutputType)
+        }
+
+        throw .init(
+            location: self.location,
+            errorChoice: .undefinedCall(signature: functionSignature))
+    }
+
     func checkType(
         with input: Semantic.Expression,
         localScope: borrowing Semantic.LocalScope,
@@ -260,10 +289,19 @@ extension Syntax.Call {
 
         switch self.prefix {
         case let .access(access):
-            throw .init(
-                location: access.location,
-                errorChoice: .notImplemented(
-                    "Not ready for this yet accessing field in function call"))
+            let prefixTyped = try access.prefix.checkType(
+                with: input,
+                localScope: localScope,
+                context: context)
+
+            return try self.methodCall(
+                // TODO: have to consider qualified identifiers and scoping based on input type qualifier
+                identifier: .init(chain: [access.field]),
+                input: prefixTyped,
+                arguments: argumentsTyped,
+                localScope: localScope,
+                context: context)
+
         case let .nominal(nominal):
             // the nominal is a type initializer
             if let typeSpecifier = context.typeDeclarations[
@@ -274,26 +312,13 @@ extension Syntax.Call {
                     arguments: argumentsTyped)
             }
 
-            let functionSignature: Semantic.FunctionSignature =
-                .init(
-                    identifier: nominal.identifier.getSemanticIdentifier(),
-                    inputType: (tag: .input, type: input.type),
-                    arguments: argumentsTyped.mapValues { $0.type })
+            return try self.methodCall(
+                identifier: nominal.identifier.getSemanticIdentifier(),
+                input: input,
+                arguments: argumentsTyped,
+                localScope: localScope,
+                context: context)
 
-            // the nominal is a function call
-            if let functionOutputType =
-                context.functionDeclarations[functionSignature]
-            {
-                return .call(
-                    signature: functionSignature,
-                    input: input,
-                    arguments: argumentsTyped,
-                    type: functionOutputType)
-            }
-
-            throw .init(
-                location: self.location,
-                errorChoice: .undefinedCall(signature: functionSignature))
         case .none:
             // literal tuple
             return .initializer(

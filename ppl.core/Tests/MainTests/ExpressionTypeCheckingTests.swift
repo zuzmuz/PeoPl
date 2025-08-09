@@ -161,7 +161,13 @@ final class ExpressionTypeCheckingTests: XCTestCase {
                                     tag: .named("c"), type: .int),
                             ],
                             type: .bool),
-
+                    .init(
+                        identifier: .chain(["access"]),
+                        inputType: (.input, .nothing),
+                        arguments: [
+                            .named("r"): .nominal(.chain(["Record"]))
+                        ]):
+                        .nothing,
                 ],
                 expressionErrors: []
             )
@@ -179,19 +185,28 @@ final class ExpressionTypeCheckingTests: XCTestCase {
             let module = TreeSitterModulParser.parseModule(source: source)
 
             let (
+                typeDeclarations,
+                typeLookup,
+                typeErrors
+            ) = module.resolveTypeSymbols(
+                contextTypeDeclarations: intrinsicDeclarations.typeDeclarations)
+
+            let allTypeDeclarations = intrinsicDeclarations.typeDeclarations
+                .merging(typeDeclarations) { $1 }
+
+            let (
                 functionDeclarations,
                 functionBodyExpressions,
                 functionLookup,
                 functionErrors
-            ) =
-                module.resolveFunctionSymbols(
-                    typeLookup: [:],
-                    typeDeclarations: intrinsicDeclarations.typeDeclarations,
-                    contextFunctionDeclarations: intrinsicDeclarations
-                        .functionDeclarations)
+            ) = module.resolveFunctionSymbols(
+                typeLookup: typeLookup,
+                typeDeclarations: allTypeDeclarations,
+                contextFunctionDeclarations: intrinsicDeclarations
+                    .functionDeclarations)
 
             let context = Semantic.DeclarationsContext(
-                typeDeclarations: intrinsicDeclarations.typeDeclarations,
+                typeDeclarations: allTypeDeclarations,
                 functionDeclarations: intrinsicDeclarations
                     .functionDeclarations
                     .merging(functionDeclarations) { $1 },
