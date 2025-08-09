@@ -1,6 +1,13 @@
-factorial: [n' Int] -> Int {
-    n
-    |>
-    |1| 1
-    |$n| n * factorial(n: n-1)
+// factorial: [n' Int] -> Int {
+//     n
+//     |>
+//     |1| 1
+//     |$n| n * factorial(n: n-1)
+// }
+
+arithmetic: (Int)[a' Int, b' Int] -> Bool {
+    * (a + b)
+    |> - 3
+    |> > (a - b)
+
 }

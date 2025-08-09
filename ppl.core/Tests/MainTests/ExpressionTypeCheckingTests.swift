@@ -94,125 +94,73 @@ extension Semantic.Expression: Testable {
 }
 
 final class ExpressionTypeCheckingTests: XCTestCase {
-    // let fileNames:
-    //     [String: (
-    //         expressionDefinitions: Semantic.FunctionDefinitionsMap,
-    //         expressionErrors: [Semantic.Error]
-    //     )] = [
-    //         "goodexpressions": (
-    //             expressionDefinitions: [
-    //                 .init(
-    //                     identifier: .chain(["factorial"]),
-    //                     inputType: (.input, .nothing),
-    //                     arguments: [.named("n"): .int]
-    //                 ):
-    //                     .branching(
-    //                         branches: [
-    //                             .init(
-    //                                 matchExpression: .init(
-    //                                     condition: .binary(
-    //                                         .equal,
-    //                                         left: .fieldInScope(
-    //                                             tag: .named("n"), type: .int),
-    //                                         right: .intLiteral(1),
-    //                                         type: .bool
-    //                                     ),
-    //                                     bindings: [:]),
-    //                                 guardExpression: .boolLiteral(true),
-    //                                 body: .intLiteral(1)
-    //                             ),
-    //                             .init(
-    //                                 matchExpression: .init(
-    //                                     condition: .boolLiteral(true),
-    //                                     bindings: [:]),
-    //                                 guardExpression: .boolLiteral(true),
-    //                                 body: .binary(
-    //                                     .times,
-    //                                     left: .fieldInScope(
-    //                                         tag: .named("n"), type: .int),
-    //                                     right: .call(
-    //                                         signature: .init(
-    //                                             identifier: .chain(
-    //                                                 ["factorial"]),
-    //                                             inputType: (.input, .nothing),
-    //                                             arguments: [.named("n"): .int]),
-    //                                         input: .nothing,
-    //                                         arguments: [.named("n"): .binary(
-    //                                                 .minus,
-    //                                                 left: .fieldInScope(
-    //                                                     tag: .named("n"),
-    //                                                     type: .int),
-    //                                                 right: .intLiteral(1),
-    //                                                 type: .int
-    //                                             )
-    //                                         ],
-    //                                         type: .int),
-    //                                     type: .int)
-    //                             )
-    //                         ],
-    //                         type: .int
-    //                     )
-    //             ],
-    //             expressionErrors: []
-    //         )
-    //     ]
+    let fileNames:
+        [String: (
+            expressionDefinitions: Semantic.FunctionDefinitionsMap,
+            expressionErrors: [Semantic.Error]
+        )] = [
+            "goodexpressions": (
+                expressionDefinitions: [:],
+                expressionErrors: []
+            ),
+        ]
 
     func testFiles() throws {
         let bundle = Bundle.module
         let intrinsicDeclarations = Semantic.getIntrinsicDeclarations()
 
-        // for (name, reference) in fileNames {
-        //     let sourceUrl = bundle.url(
-        //         forResource: "analyzer_\(name)",
-        //         withExtension: "ppl")!
-        //     let source = try Syntax.Source(url: sourceUrl)
-        //     let module = TreeSitterModulParser.parseModule(source: source)
-        //
-        //     let (
-        //         functionDeclarations,
-        //         functionBodyExpressions,
-        //         functionLookup,
-        //         functionErrors
-        //     ) =
-        //         module.resolveFunctionSymbols(
-        //             typeLookup: [:],
-        //             typeDeclarations: intrinsicDeclarations.typeDeclarations,
-        //             contextFunctionDeclarations: intrinsicDeclarations
-        //                 .functionDeclarations)
-        //
-        //     let context = Semantic.DeclarationsContext(
-        //         typeDeclarations: intrinsicDeclarations.typeDeclarations,
-        //         functionDeclarations: intrinsicDeclarations
-        //             .functionDeclarations
-        //             .merging(functionDeclarations) { $1 },
-        //         operatorDeclarations: intrinsicDeclarations.operatorDeclarations
-        //     )
-        //
-        //     var expressionDefinitions: Semantic.FunctionDefinitionsMap = [:]
-        //
-        //     for (signature, body) in functionBodyExpressions {
-        //         if let outputype = functionDeclarations[signature] {
-        //             // TODO: should catch the errors and check for them
-        //             let expression = try signature.checkBody(
-        //                 body: body,
-        //                 outputType: outputype,
-        //                 context: context)
-        //             expressionDefinitions[signature] = expression
-        //         }
-        //     }
-        //
-        //     XCTAssertEqual(
-        //         expressionDefinitions.count,
-        //         reference.expressionDefinitions.count)
-        //
-        //     for (signature, expression) in expressionDefinitions {
-        //         XCTAssertNotNil(reference.expressionDefinitions[signature])
-        //         if let referenceExpression =
-        //             reference.expressionDefinitions[signature]
-        //         {
-        //             expression.assertEqual(with: referenceExpression)
-        //         }
-        //     }
-        // }
+        for (name, reference) in fileNames {
+            let sourceUrl = bundle.url(
+                forResource: "analyzer_\(name)",
+                withExtension: "ppl")!
+            let source = try Syntax.Source(url: sourceUrl)
+            let module = TreeSitterModulParser.parseModule(source: source)
+
+            let (
+                functionDeclarations,
+                functionBodyExpressions,
+                functionLookup,
+                functionErrors
+            ) =
+                module.resolveFunctionSymbols(
+                    typeLookup: [:],
+                    typeDeclarations: intrinsicDeclarations.typeDeclarations,
+                    contextFunctionDeclarations: intrinsicDeclarations
+                        .functionDeclarations)
+
+            let context = Semantic.DeclarationsContext(
+                typeDeclarations: intrinsicDeclarations.typeDeclarations,
+                functionDeclarations: intrinsicDeclarations
+                    .functionDeclarations
+                    .merging(functionDeclarations) { $1 },
+                operatorDeclarations: intrinsicDeclarations.operatorDeclarations
+            )
+
+            var expressionDefinitions: Semantic.FunctionDefinitionsMap = [:]
+
+            for (signature, body) in functionBodyExpressions {
+                if let outputype = functionDeclarations[signature] {
+                    // TODO: should catch the errors and check for them
+                    let expression = try signature.checkBody(
+                        body: body,
+                        outputType: outputype,
+                        context: context)
+                    expressionDefinitions[signature] = expression
+                }
+            }
+
+            XCTAssertEqual(
+                expressionDefinitions.count,
+                reference.expressionDefinitions.count)
+
+            for (signature, expression) in expressionDefinitions {
+                XCTAssertNotNil(reference.expressionDefinitions[signature])
+                if let referenceExpression =
+                    reference.expressionDefinitions[signature]
+                {
+                    expression.assertEqual(with: referenceExpression)
+                }
+            }
+        }
     }
 }

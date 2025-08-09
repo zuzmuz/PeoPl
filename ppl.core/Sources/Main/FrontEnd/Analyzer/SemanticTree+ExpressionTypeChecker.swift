@@ -225,8 +225,8 @@ extension Syntax.Access {
             context: context)
 
         switch prefixTyped.type.getRawType(
-            typeDeclarations: context.typeDeclarations)
-        {
+            typeDeclarations: context.typeDeclarations
+        ) {
         case let .record(fields):
             let tag = Semantic.Tag.named(self.field)
             if let recordFieldType = fields[tag] {
@@ -396,16 +396,6 @@ extension Syntax.Branched {
     // }
 }
 
-extension Syntax.Binding {
-    func checkType(
-        with input: Semantic.Expression,
-        localScope: borrowing Semantic.LocalScope,
-        context: borrowing Semantic.DeclarationsContext,
-    ) throws(Semantic.Error) -> Semantic.Expression {
-        throw .init(location: self.location, errorChoice: .bindingNotAllowed)
-    }
-}
-
 extension Syntax.Pipe {
     func checkType(
         with input: Semantic.Expression,
@@ -434,64 +424,27 @@ extension Syntax.Pipe {
 
 extension Syntax.Expression {
 
-    // func accessFieldType(
-    //     type: Semantic.TypeSpecifier,
-    //     fieldIdentifier: String,
-    //     context: borrowing Semantic.DeclarationsContext
-    // ) throws(Semantic.Error) -> Semantic.TypeSpecifier {
-    //
-    //     switch type {
-    //     case .nothing, .never:
-    //         throw .undefinedField(expression: self, field: fieldIdentifier)
-    //     case .raw(let rawType):
-    //         return try self.accessFieldType(
-    //             rawType: rawType,
-    //             fieldIdentifier: fieldIdentifier,
-    //             context: context)
-    //     case .nominal(let typeIdentifier):
-    //         guard
-    //             let rawType =
-    //                 context.typeDeclarations[typeIdentifier]?
-    //                 .getRawType(
-    //                     typeDeclarations: context.typeDeclarations)
-    //         else {
-    //             throw .undefinedType(
-    //                 expression: self, identifier: typeIdentifier)
-    //         }
-    //         return try self.accessFieldType(
-    //             rawType: rawType,
-    //             fieldIdentifier: fieldIdentifier,
-    //             context: context)
-    //     }
-    // }
-    //
-    // func accessFieldType(
-    //     rawType: Semantic.RawTypeSpecifier,
-    //     fieldIdentifier: String,
-    //     context: borrowing Semantic.DeclarationsContext
-    // ) throws(Semantic.Error) -> Semantic.TypeSpecifier {
-    //
-    //     switch rawType {
-    //     case let .record(record):
-    //         if let accessedFieldType = record[.named(fieldIdentifier)] {
-    //             return accessedFieldType
-    //         }
-    //
-    //         if fieldIdentifier.first == "_",
-    //             let unnamedTag = UInt64(fieldIdentifier.dropFirst()),
-    //             let accessedFieldType = record[.unnamed(unnamedTag)]
-    //         {
-    //             return accessedFieldType
-    //         }
-    //         throw .undefinedField(expression: self, field: fieldIdentifier)
-    //     default:
-    //         throw .notImplemented(
-    //             "Accessing field type is not implemented for \(rawType)")
-    //
-    //     }
-    // }
-
+    /// Checks the type of the syntax expression against the input expression type.
+    /// A syntax expression is a node in the AST that represents an expression in the source code.
+    /// ``checkType(with:localScope:context:)`` will return a typed checked semantic expression node by processing, type checking and performing semantic analysis on the AST.
+    /// The generated semantic expression tree represents an intermediate representation of the source code, ready to be compiled.
+    /// # Params:
+    /// - with: the input expression. Expressions can have inputs and they need to be type matched.
+    /// - localScope: the local scope of the current context, which contains bindings and local 'variable' names
+    /// - context: the declarations context of the current module, which contains type, function and constant declarations
+    /// # Returns:
+    /// A ``Semantic.Expression`` that is a typed checked semantic expression node.
+    /// A semantic expression is not a one to one mapping of the syntax expression, but rather an optimized intermediate representation of the source code.
+    /// # Throws:
+    /// A ``Semantic.Error`` if the type checking fails.
+    /// # Notes:
+    /// ``checkType(with:localScope:context:)`` will:
+    /// - perform type checking of arithmetic operations
+    /// - resolve field access expressions, identifiers and generic types (TODO)
+    /// - deconstruct piped expressions into regular basic expressions and function calls
+    /// - check branching expressions for exhaustiveness and type consistency
     func checkType(
+        // swiftlint:disable:previous cyclomatic_complexity
         with input: Semantic.Expression,
         localScope: borrowing Semantic.LocalScope,
         context: borrowing Semantic.DeclarationsContext,
@@ -515,6 +468,7 @@ extension Syntax.Expression {
                 with: input,
                 localScope: localScope,
                 context: context)
+        // NOTE: Binary expressions need input to be nothing
         case (_, .binary):
             throw .init(
                 location: self.location,
