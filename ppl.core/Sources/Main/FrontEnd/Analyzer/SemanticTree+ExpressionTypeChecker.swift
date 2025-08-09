@@ -10,12 +10,17 @@ extension Semantic.FunctionSignature {
         switch self.inputType.tag {
         case .input, .unnamed:
             localScope = self.arguments
-            inputExpression = .input(type: self.inputType.type)
+            switch self.inputType.type {
+            case .nothing:
+                inputExpression = .nothing
+            default:
+                inputExpression = .input(type: self.inputType.type)
+            }
         case .named:
             localScope = self.arguments.merging(
                 [self.inputType.tag: self.inputType.type]
             ) { $1 }
-            inputExpression = .input(type: .nothing)
+            inputExpression = .nothing
         }
 
         let bodyExpression = try body.checkType(
