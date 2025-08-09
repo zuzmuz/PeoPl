@@ -100,9 +100,41 @@ final class ExpressionTypeCheckingTests: XCTestCase {
             expressionErrors: [Semantic.Error]
         )] = [
             "goodexpressions": (
-                expressionDefinitions: [:],
+                expressionDefinitions: [
+                    .init(
+                        identifier: .chain(["arithmetic"]),
+                        inputType: (.input, .int),
+                        arguments: [.named("a"): .int, .named("b"): .int]):
+                        .binary(
+                            .greaterThan,
+                            left: .binary(
+                                .minus,
+                                left: .binary(
+                                    .times,
+                                    left: .input(type: .int),
+                                    right: .binary(
+                                        .plus,
+                                        left: .fieldInScope(
+                                            tag: .named("a"), type: .int),
+                                        right: .fieldInScope(
+                                            tag: .named("b"), type: .int),
+                                        type: .int),
+                                    type: .int
+                                ),
+                                right: .intLiteral(3),
+                                type: .int
+                            ),
+                            right: .binary(
+                                .minus,
+                                left: .fieldInScope(
+                                    tag: .named("a"), type: .int),
+                                right: .fieldInScope(
+                                    tag: .named("b"), type: .int),
+                                type: .int),
+                            type: .bool)
+                ],
                 expressionErrors: []
-            ),
+            )
         ]
 
     func testFiles() throws {
