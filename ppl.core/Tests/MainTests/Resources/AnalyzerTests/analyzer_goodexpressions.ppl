@@ -11,3 +11,8 @@ arithmetic: (Int)[a' Int, b' Int] -> Bool {
     |> > (a - b)
 
 }
+
+functionCall: [a' Int, b' Int, c' Int] -> Bool {
+    a + b
+    |> arithmetic(a: b, b: c)
+}

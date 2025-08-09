@@ -131,7 +131,37 @@ final class ExpressionTypeCheckingTests: XCTestCase {
                                 right: .fieldInScope(
                                     tag: .named("b"), type: .int),
                                 type: .int),
-                            type: .bool)
+                            type: .bool),
+                    .init(
+                        identifier: .chain(["functionCall"]),
+                        inputType: (.input, .nothing),
+                        arguments: [
+                            .named("a"): .int,
+                            .named("b"): .int,
+                            .named("c"): .int,
+                        ]):
+                        .call(
+                            signature: .init(
+                                identifier: .chain(["arithmetic"]),
+                                inputType: (.input, .int),
+                                arguments: [
+                                    .named("a"): .int, .named("b"): .int,
+                                ]),
+                            input: .binary(
+                                .plus,
+                                left: .fieldInScope(
+                                    tag: .named("a"), type: .int),
+                                right: .fieldInScope(
+                                    tag: .named("b"), type: .int),
+                                type: .int),
+                            arguments: [
+                                .named("a"): .fieldInScope(
+                                    tag: .named("b"), type: .int),
+                                .named("b"): .fieldInScope(
+                                    tag: .named("c"), type: .int),
+                            ],
+                            type: .bool),
+
                 ],
                 expressionErrors: []
             )
