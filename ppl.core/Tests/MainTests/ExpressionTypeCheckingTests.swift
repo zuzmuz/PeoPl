@@ -48,6 +48,13 @@ extension Semantic.Expression: Testable {
                 selfExpression.assertEqual(with: withExpression)
             }
         case let (
+            .access(selfExpression, selfField, selfType),
+            .access(withExpression, withField, withType)
+        ):
+            selfExpression.assertEqual(with: withExpression)
+            XCTAssertEqual(selfField, withField)
+            XCTAssertEqual(selfType, withType)
+        case let (
             .call(selfSignature, selfInput, selfArguments, selfType),
             .call(withSignature, withInput, withArguments, withType)
         ):
@@ -167,7 +174,31 @@ final class ExpressionTypeCheckingTests: XCTestCase {
                         arguments: [
                             .named("r"): .nominal(.chain(["Record"]))
                         ]):
-                        .nothing,
+                        .call(
+                            signature: .init(
+                                identifier: .chain(["arithmetic"]),
+                                inputType: (.input, .int),
+                                arguments: [
+                                    .named("a"): .int, .named("b"): .int,
+                                ]),
+                            input: .intLiteral(1),
+                            arguments: [
+                                .named("a"): .access(
+                                    expression: .fieldInScope(
+                                        tag: .named("r"),
+                                        type: .nominal(.init(chain: ["Record"]))
+                                    ),
+                                    field: .named("a"),
+                                    type: .int),
+                                .named("b"): .access(
+                                    expression: .fieldInScope(
+                                        tag: .named("r"),
+                                        type: .nominal(.init(chain: ["Record"]))
+                                    ),
+                                    field: .named("b"),
+                                    type: .int),
+                            ],
+                            type: .bool),
                 ],
                 expressionErrors: []
             )
