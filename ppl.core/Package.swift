@@ -12,7 +12,12 @@ let package = Package(
     dependencies: [
         .package(path: "../ppl.treesitter"),
         .package(
-            url: "https://github.com/ChimeHQ/SwiftTreeSitter", from: "0.9.0"),
+            url: "https://github.com/ChimeHQ/SwiftTreeSitter",
+            from: "0.9.0"),
+        .package(
+            url: "https://github.com/apple/swift-argument-parser.git",
+            from: "1.0.0"),
+        // TODO
         // .package(url: "https://github.com/llvm-swift/LLVMSwift", from: "0.8.0"),
     ],
     targets: [
@@ -49,7 +54,10 @@ let package = Package(
                 "SwiftTreeSitter",
                 "cllvm",
                 "Lsp",
-                .product(name: "TreeSitterPeoPl", package: "ppl.treesitter"),
+                .product(
+                    name: "ArgumentParser", package: "swift-argument-parser"),
+                .product(
+                    name: "TreeSitterPeoPl", package: "ppl.treesitter"),
             ],
         ),
         .testTarget(
