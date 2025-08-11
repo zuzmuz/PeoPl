@@ -193,12 +193,12 @@ public enum Utils {
         private let queue = DispatchQueue(label: "file-logger", qos: .utility)
 
         public init(filePath: URL, level: LogLevel) throws {
-            // let filePath = path.appending(path: fileName)
+            let folderPath = filePath.deletingLastPathComponent()
             if !FileManager.default.fileExists(
-                atPath: filePath.deletingLastPathComponent().absoluteString)
+                atPath: folderPath.absoluteString)
             {
                 try FileManager.default.createDirectory(
-                    at: filePath, withIntermediateDirectories: true)
+                    at: folderPath, withIntermediateDirectories: true)
                 if !FileManager.default.createFile(
                     atPath: filePath.relativePath, contents: Data())
                 {

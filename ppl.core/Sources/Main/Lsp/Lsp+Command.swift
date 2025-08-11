@@ -63,104 +63,72 @@ extension Peopl {
             abstract: "Run the PeoPl language server protocol server",
         )
 
-        enum LoggerOption: String, ExpressibleByArgument {
-            case stderr
-            case stdout
-            case file
-        }
-
         enum ModeOption: String, ExpressibleByArgument {
             case inplace
             case proxy
-        }
-
-        enum TransportOption: String, ExpressibleByArgument {
-            case std
             case socket
         }
 
-        @Option(name: .shortAndLong, help: "server mode")
+        @Argument(help: "server mode")
         var mode: ModeOption = .inplace
 
-        @Option(name: .shortAndLong, help: "server transport layer")
-        var transport: TransportOption = .std
+        @Argument(help: "port")
+        var port: UInt16 = 8765
 
-        @Option(name: .shortAndLong, help: "server logger")
-        var logger: LoggerOption = .stderr
-
-        @Option(name: .long, help: "proxy target host")
-        var proxyHost: String = "localhost"
-
-        @Option(name: .long, help: "proxy target port")
-        var proxyPort: UInt16 = 8765
-
-        @Option(name: .long, help: "socket transport target host")
-        var transportHost: String = "localhost"
-
-        @Option(name: .long, help: "socket transport target port")
-        var transportPort: UInt16 = 8765
-
-        @Option(name: .long, help: "file path for file logger")
-        var filePath: String?
+        // @Option(name: .long, help: "file path for file logger")
+        // var filePath: String?
 
         @Option(name: .long, help: "logging level")
         var logLevel: Utils.LogLevel = .info
 
         func run() async throws {
 
-            let logger: WrappedLogger
-            switch self.logger {
-            case .stderr:
-                logger = .init(
-                    logger: Utils.StdErrLogger(level: self.logLevel))
-            case .stdout:
-                logger = .init(
-                    logger: Utils.ConsoleLogger(level: self.logLevel))
-            case .file:
-                guard let filePath = self.filePath else {
-                    throw ValidationError(
-                        "file path is required for file logger")
-                }
-                logger = .init(
-                    logger: try Utils.FileLogger(
-                        filePath: URL(filePath: filePath),
-                        level: self.logLevel))
-            }
-
-            let transport: WrappedTransport
-            switch self.transport {
-            case .std:
-                transport = .init(transport: Lsp.standardTransport)
-            case .socket:
-                let tcpServer = try Socket.TcpServer(
-                    port: self.transportPort, logger: logger)
-                transport = .init(
-                    transport: tcpServer)
-                try await tcpServer.start()
-            }
-
-            let mode: WrapperHandler
             switch self.mode {
             case .inplace:
-                mode = .init(
+                let logger = try Utils.FileLogger(
+                    filePath: FileManager
+                        .default
+                        .homeDirectoryForCurrentUser
+                        .appending(path: ".peopl/log/")
+                        .appending(path: "lsp.log"),
+                    level: self.logLevel)
+                let server = Lsp.Server(
                     handler: PpLsp.Handler(
-                        moduleParser: TreeSitterModulParser.self, logger: logger
-                    ))
+                        moduleParser: TreeSitterModulParser.self,
+                        logger: logger),
+                    transport: Lsp.standardTransport,
+                    logger: logger)
+                try await server.run()
+            case .socket:
+                let logger = Utils.ConsoleLogger(level: self.logLevel)
+                let tcpServer = try Socket.TcpServer(
+                    port: self.port, logger: logger)
+                let server = Lsp.Server(
+                    handler: PpLsp.Handler(
+                        moduleParser: TreeSitterModulParser.self,
+                        logger: logger),
+                    transport: tcpServer,
+                    logger: logger)
+                try await tcpServer.start()
+                try await server.run()
             case .proxy:
+                let logger = try Utils.FileLogger(
+                    filePath: FileManager
+                        .default
+                        .homeDirectoryForCurrentUser
+                        .appending(path: ".peopl/log/")
+                        .appending(path: "lsp.log"),
+                    level: self.logLevel)
                 let tcpClient = try Socket.TcpClient(
-                    port: self.proxyPort, host: self.proxyHost, logger: logger)
-                let proxy = try Lsp.ProxyHandler(
-                    client: tcpClient, logger: logger)
-                mode = .init(
-                    handler: proxy)
+                    port: self.port, host: "localhost", logger: logger)
+                let server = Lsp.Server(
+                    handler: try Lsp.ProxyHandler(
+                        client: tcpClient, logger: logger),
+                    transport: Lsp.standardTransport,
+                    logger: logger)
                 try await tcpClient.start()
+                try await server.run()
             }
-
-            let server = Lsp.Server(
-                handler: mode,
-                transport: transport,
-                logger: logger)
-            try await server.run()
         }
     }
 }
