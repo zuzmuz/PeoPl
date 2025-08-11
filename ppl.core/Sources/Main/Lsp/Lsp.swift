@@ -2,47 +2,6 @@ import Foundation
 import Lsp
 import Utils
 
-enum LspCommand {
-    case standard
-    case proxy(port: UInt16)
-    case socket(port: UInt16)
-
-    init(args: [String]) throws(CommandLineError) {
-        switch args.count {
-        case 2:
-            self = .standard
-        case 4:
-            switch (args[2], UInt16(args[3])) {
-            case ("socket", let .some(port)):
-                self = .socket(port: port)
-            case ("proxy", let .some(port)):
-                self = .proxy(port: port)
-            case ("socket", .none), ("proxy", .none):
-                throw CommandLineError.invalidArguments(
-                    "port <\(args[3])> is not a valid UInt16")
-            default:
-                throw CommandLineError.invalidArguments(
-                    "subcommand <\(args[2])> is not valid, choices [proxy, socket]"
-                )
-            }
-        default:
-            throw CommandLineError.invalidArguments(
-                "wrong number of arguments for lsp command")
-        }
-    }
-
-    func run() async throws {
-        switch self {
-        case .standard:
-            try await PpLsp.runLsp()
-        case let .socket(port):
-            try await PpLsp.runLspSocket(port: port)
-        case let .proxy(port):
-            try await PpLsp.runLspProxy(port: port)
-        }
-    }
-}
-
 extension Syntax.NodeLocation {
     var lspRange: Lsp.Range {
         return .init(

@@ -154,6 +154,37 @@ public enum Utils {
         }
     }
 
+    public final class StdErrLogger: Logger {
+        private let level: LogLevel
+        private let dateFormatter: DateFormatter
+
+        public init(level: LogLevel = .info) {
+            self.level = level
+            self.dateFormatter = DateFormatter()
+            self.dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        }
+
+        public func log(
+            level: LogLevel,
+            tag: String,
+            message: Data
+        ) {
+            if level.rawValue >= self.level.rawValue {
+                fputs(
+                    "\(self.dateFormatter.string(for: Date())!) \(level.label) \t\(tag): \t\(String(data: message, encoding: .utf8) ?? "")\n",
+                    stderr)
+            }
+        }
+
+        public func log(
+            level: LogLevel,
+            tag: String,
+            message: String
+        ) {
+            log(level: level, tag: tag, message: message.data(using: .utf8)!)
+        }
+    }
+
     /// Logger that logs into a file
     public final class FileLogger: Logger {
         private let handle: FileHandle
@@ -161,11 +192,13 @@ public enum Utils {
         private let level: LogLevel
         private let queue = DispatchQueue(label: "file-logger", qos: .utility)
 
-        public init(path: URL, fileName: String, level: LogLevel) throws {
-            let filePath = path.appending(path: fileName)
-            if !FileManager.default.fileExists(atPath: path.relativeString) {
+        public init(filePath: URL, level: LogLevel) throws {
+            // let filePath = path.appending(path: fileName)
+            if !FileManager.default.fileExists(
+                atPath: filePath.deletingLastPathComponent().absoluteString)
+            {
                 try FileManager.default.createDirectory(
-                    at: path, withIntermediateDirectories: true)
+                    at: filePath, withIntermediateDirectories: true)
                 if !FileManager.default.createFile(
                     atPath: filePath.relativePath, contents: Data())
                 {
