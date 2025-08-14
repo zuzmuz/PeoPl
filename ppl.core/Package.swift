@@ -47,9 +47,6 @@ let package = Package(
         ),
         .executableTarget(
             name: "Main",
-            // dependencies: [
-            //     "Core", "Lsp",
-            // ]
             dependencies: [
                 "SwiftTreeSitter",
                 "cllvm",
@@ -59,6 +56,10 @@ let package = Package(
                 .product(
                     name: "TreeSitterPeoPl", package: "ppl.treesitter"),
             ],
+            swiftSettings: [
+                .define("RELEASE"),
+            ]
+
         ),
         .testTarget(
             name: "MainTests",

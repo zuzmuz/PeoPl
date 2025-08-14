@@ -24,6 +24,15 @@ extension Peopl {
                 }
             }
         }
+
+#if RELEASE
+        static let configuration = CommandConfiguration(
+            commandName: "lsp",
+            abstract: "Run the PeoPl language server protocol server",
+            subcommands: [InplaceCommand.self],
+            defaultSubcommand: InplaceCommand.self
+        )
+#else
         static let configuration = CommandConfiguration(
             commandName: "lsp",
             abstract: "Run the PeoPl language server protocol server",
@@ -34,6 +43,7 @@ extension Peopl {
             ],
             defaultSubcommand: InplaceCommand.self
         )
+#endif
 
         struct InplaceCommand: AsyncParsableCommand {
             static let configuration = CommandConfiguration(
@@ -86,7 +96,7 @@ extension Peopl {
                 }
             }
         }
-
+#if !RELEASE
         struct SocketCommand: AsyncParsableCommand {
             static let configuration = CommandConfiguration(
                 commandName: "socket",
@@ -210,5 +220,6 @@ extension Peopl {
                 }
             }
         }
+#endif
     }
 }
