@@ -232,7 +232,25 @@ extension Semantic.Expression: LLVM.ValueBuilder {
     ) throws(LLVM.Error) -> LLVMValueRef? {
         let typeDefinition = try type.llvmGetTypeDefinition(llvm: &llvm)
         let structType = typeDefinition.structType
-        fatalError() 
+
+        let value = LLVMBuildAlloca(
+            llvm.builder, typeDefinition.structType, "struct")
+
+        for (tag, argument) in arguments {
+            let fieldIndex =
+                typeDefinition.paramNames[tag.llvmTag()]!
+            let fieldPointer = LLVMBuildStructGEP2(
+                llvm.builder,
+                structType,
+                value,
+                fieldIndex,
+                "field_ptr")
+            let argumentValue = try argument.llvmBuildValue(
+                llvm: &llvm, scope: scope)
+            LLVMBuildStore(llvm.builder, argumentValue, fieldPointer)
+        }
+
+        return value
     }
 
     func llvmBuildAccess(
@@ -247,6 +265,7 @@ extension Semantic.Expression: LLVM.ValueBuilder {
             llvm: &llvm, scope: scope)
         let fieldIndex =
             expressionType.paramNames[field.llvmTag()]!
+        let fieldType = expressionType.paramTypes[Int(fieldIndex)]
 
         let fieldPointer = LLVMBuildStructGEP2(
             llvm.builder,
@@ -254,14 +273,13 @@ extension Semantic.Expression: LLVM.ValueBuilder {
             expressionValue,
             fieldIndex,
             "field_ptr")
-            
 
         return LLVMBuildLoad2(
             llvm.builder,
-            expressionType.structType,
+            fieldType,
             fieldPointer,
             "field_value"
-            )
+        )
     }
 
     func llvmBuildBranches(
@@ -446,7 +464,8 @@ extension Semantic.Expression: LLVM.ValueBuilder {
         //         llvm: &llvm,
         //         scope: scope)
         default:
-            throw .notImplemented("other expressions \(self) are not implemented yet")
+            throw .notImplemented(
+                "other expressions \(self) are not implemented yet")
         }
     }
 }
