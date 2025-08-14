@@ -82,6 +82,7 @@ public enum Semantic {
     public struct DefinitionsContext {
         let functionDefinitions: FunctionDefinitionsMap
         // let operators: [OperatorField: Expression]
+        let typeDefinitions: TypeDeclarationsMap
     }
 
     public struct DeclarationsContext {
@@ -89,10 +90,6 @@ public enum Semantic {
         let functionDeclarations: FunctionDeclarationsMap
         let operatorDeclarations: [OperatorField: TypeSpecifier]
         // stores values based on identifier only for better error reporting
-    }
-
-    public struct Context {
-        let definitions: DefinitionsContext
     }
 
     public typealias LocalScope = [Tag: TypeSpecifier]
@@ -118,6 +115,16 @@ public enum Semantic {
 
     public struct Function: Hashable, Sendable {
         // FIX: what should I do with this, I kind of forgot
+    }
+
+    public struct FunctionDefinition: Sendable {
+        let signature: FunctionSignature
+        let body: Expression
+    }
+
+    public struct TypeDefinition: Sendable {
+        let identifier: QualifiedIdentifier
+        let rawType: RawTypeSpecifier
     }
 
     public indirect enum Expression: Sendable {

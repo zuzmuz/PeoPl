@@ -30,14 +30,6 @@ let package = Package(
                 .brew(["llvm"])
             ]
         ),
-        // .target(
-        //     name: "Core",
-        //     dependencies: [
-        //         "SwiftTreeSitter",
-        //         "cllvm",
-        //         .product(name: "TreeSitterPeoPl", package: "ppl.treesitter"),
-        //     ],
-        // ),
         .target(
             name: "Utils"
         ),

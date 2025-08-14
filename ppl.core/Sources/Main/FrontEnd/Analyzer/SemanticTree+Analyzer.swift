@@ -2,12 +2,15 @@ public protocol SemanticChecker:
     TypeDeclarationsChecker,
     FunctionDefinitionsChecker
 {
-    func semanticCheck() -> Result<Semantic.Context, Semantic.ErrorList>
+    func semanticCheck() -> Result<
+        Semantic.DefinitionsContext, Semantic.ErrorList
+    >
 }
 
 extension SemanticChecker {
-    public func semanticCheck() -> Result<Semantic.Context, Semantic.ErrorList>
-    {
+    public func semanticCheck() -> Result<
+        Semantic.DefinitionsContext, Semantic.ErrorList
+    > {
         let intrinsicDeclarations = Semantic.getIntrinsicDeclarations()
 
         // Getting type declarations
@@ -91,8 +94,8 @@ extension SemanticChecker {
         // NOTE: I might need to send only function to code gen
         return .success(
             .init(
-                definitions: .init(
-                    functionDefinitions: functionDefinitions)))
+                functionDefinitions: functionDefinitions,
+                typeDefinitions: typeDeclarations))
     }
 }
 

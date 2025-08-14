@@ -82,6 +82,7 @@ extension Semantic {
     func getIntrinsicDefinitions() -> Semantic.DefinitionsContext {
         return .init(
             functionDefinitions: [:],
+            typeDefinitions: [:]
             // operators: [
             //     .init(left: .uint, right: .uint, op: .plus): .init(
             //         expression: .intrinsic, type: .int),

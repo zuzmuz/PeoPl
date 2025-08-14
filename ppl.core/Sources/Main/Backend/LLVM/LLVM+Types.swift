@@ -27,6 +27,59 @@ extension Semantic.TypeSpecifier: LLVM.TypeBuilder {
         }
     }
 }
+extension Semantic.RawTypeSpecifier {
+    func llvmBuildType(
+        llvm: inout LLVM.Builder
+    ) throws(LLVM.Error) -> LLVMTypeRef {
+        switch self {
+        case let .record(fields):
+            var paramTypes = 1
+        default:
+            throw .notImplemented("Type \(self) is not implemented yet")
+        }
+        fatalError()
+    }
+}
+
+extension LLVM.Builder {
+    mutating func buildType(
+        identifier: Semantic.QualifiedIdentifier,
+        typeSpecifier: Semantic.TypeSpecifier
+    ) throws(LLVM.Error) -> LLVMTypeRef {
+        let typeName = "type_\(identifier.hashValue)"
+        switch typeSpecifier {
+        case let .raw(raw):
+            fatalError()
+        default:
+            fatalError("Unsupported type specifier: \(typeSpecifier)")
+        }
+    }
+}
+
+extension Semantic.DefinitionsContext {
+
+    static func llvmBuildType(
+        identifier: Semantic.QualifiedIdentifier,
+        typeSpecifier: Semantic.TypeSpecifier,
+        llvm: inout LLVM.Builder
+    ) throws(LLVM.Error) -> LLVMTypeRef {
+        let typeName = "type_\(identifier.hashValue)"
+        switch typeSpecifier {
+        case let .raw(raw):
+            return try raw.llvmBuildType(llvm: &llvm)
+        default:
+            return try llvm.buildType(identifier: identifier, typeSpecifier: typeSpecifier)
+        }
+    }
+
+    func llvmBuildTypes(
+        llvm: inout LLVM.Builder
+    ) throws(LLVM.Error) {
+        for (identifier, typeSpecifier) in self.typeDefinitions {
+
+        }
+    }
+}
 
 // extension TypeDefinition: LLVM.StatementBuilder {
 //     func llvmBuildStatement(llvm: inout LLVM.Builder) throws(LLVM.Error) {
