@@ -9,7 +9,8 @@ extension LLVM {
         let context: LLVMContextRef
         let builder: LLVMBuilderRef
 
-        var functions: [String: Function]
+        var functions: [String: FunctionDefinition] = [:]
+        var types: [String: TypeDefinition] = [:]
         // var 
 
         public init(name: String) {
@@ -24,9 +25,6 @@ extension LLVM {
 
             module = LLVMModuleCreateWithNameInContext(name, context)
             builder = LLVMCreateBuilderInContext(context)
-
-            functions = [:]
-
         }
 
         public func generate() -> String {
@@ -70,7 +68,13 @@ extension LLVM {
         case unreachable
     }
 
-    struct Function {
+    struct TypeDefinition { // TODO: what about choice types
+        let name: String
+        let paramTypes: [LLVMTypeRef?]
+        let paramNames: [LLVM.ParamTag: Int]
+    }
+
+    struct FunctionDefinition {
         let name: String
         let paramTypes: [LLVMTypeRef?]
         let paramNames: [LLVM.ParamTag: Int]

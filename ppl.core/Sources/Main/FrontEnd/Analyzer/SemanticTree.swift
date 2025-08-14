@@ -117,6 +117,7 @@ public enum Semantic {
         // FIX: what should I do with this, I kind of forgot
     }
 
+    // FIX: these might be useful we'll see
     public struct FunctionDefinition: Sendable {
         let signature: FunctionSignature
         let body: Expression

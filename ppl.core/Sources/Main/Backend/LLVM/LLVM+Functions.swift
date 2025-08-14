@@ -25,7 +25,7 @@ extension Semantic.FunctionSignature {
     func llvmFunction(
         body: borrowing Semantic.Expression,
         llvm: inout LLVM.Builder
-    ) throws(LLVM.Error) -> LLVM.Function {
+    ) throws(LLVM.Error) -> LLVM.FunctionDefinition {
         var paramTypes: [LLVMTypeRef?] = []
         var paramNames: [LLVM.ParamTag: Int] = [:]
 

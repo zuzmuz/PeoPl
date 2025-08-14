@@ -56,19 +56,56 @@ extension LLVM.Builder {
     }
 }
 
+extension [Semantic.Tag: Semantic.TypeSpecifier] {
+    func llvmBuildParams(
+        llvm: inout LLVM.Builder
+    ) throws(LLVM.Error) -> (
+        [LLVMTypeRef?],
+        [LLVM.ParamTag: Int]
+    ) {
+        var paramTypes: [LLVMTypeRef?] = []
+        var paramNames: [LLVM.ParamTag: Int] = [:]
+
+        for (index, argument) in self.enumerated() {
+            paramNames[argument.key.llvmTag()] = index
+            paramTypes.append(try argument.value.llvmGetType(llvm: &llvm))
+        }
+
+        return (paramTypes, paramNames)
+    }
+}
+
+extension Semantic.QualifiedIdentifier {
+    var llvmName: String {
+        chain.joined(separator: "\\")
+    }
+}
+
 extension Semantic.DefinitionsContext {
 
     static func llvmBuildType(
         identifier: Semantic.QualifiedIdentifier,
-        typeSpecifier: Semantic.TypeSpecifier,
+        typeSpecifier: Semantic.RawTypeSpecifier,
         llvm: inout LLVM.Builder
-    ) throws(LLVM.Error) -> LLVMTypeRef {
-        let typeName = "type_\(identifier.hashValue)"
+    ) throws(LLVM.Error) -> LLVM.TypeDefinition {
+        let typeName = identifier.llvmName
         switch typeSpecifier {
-        case let .raw(raw):
-            return try raw.llvmBuildType(llvm: &llvm)
+        case let .record(fields):
+            let structType = LLVMStructCreateNamed(llvm.context, typeName)
+            var (paramTypes, paramNames) =
+                try fields.llvmBuildParams(llvm: &llvm)
+            // LLVMStructType(UnsafeMutablePointer<LLVMTypeRef?>!, UInt32, LLVMBool)
+            paramTypes.withUnsafeMutableBufferPointer { buffer in
+                LLVMStructSetBody(
+                    structType, buffer.baseAddress, UInt32(buffer.count), 0)
+            }
+
+            return .init(
+                name: typeName,
+                paramTypes: paramTypes,
+                paramNames: paramNames)
         default:
-            return try llvm.buildType(identifier: identifier, typeSpecifier: typeSpecifier)
+            fatalError("not implemented yet")
         }
     }
 
@@ -76,7 +113,13 @@ extension Semantic.DefinitionsContext {
         llvm: inout LLVM.Builder
     ) throws(LLVM.Error) {
         for (identifier, typeSpecifier) in self.typeDefinitions {
-
+            if case let .raw(rawType) = typeSpecifier {
+                let typeDefinition = try Self.llvmBuildType(
+                    identifier: identifier,
+                    typeSpecifier: rawType,
+                    llvm: &llvm)
+                llvm.types[identifier.llvmName] = typeDefinition
+            }
         }
     }
 }
