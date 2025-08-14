@@ -56,9 +56,9 @@ let package = Package(
                 .product(
                     name: "TreeSitterPeoPl", package: "ppl.treesitter"),
             ],
-            swiftSettings: [
-                .define("RELEASE"),
-            ]
+            // swiftSettings: [
+            //     .define("RELEASE"),
+            // ]
 
         ),
         .testTarget(
