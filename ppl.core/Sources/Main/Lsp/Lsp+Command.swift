@@ -3,61 +3,28 @@ import Foundation
 import Lsp
 import Utils
 
-extension Utils.LogLevel: ExpressibleByArgument {}
-
-// NOTE: these wrappers are stupid and are only useful for development process
-private actor WrapperHandler: Lsp.Handler {
-    let handler: any Lsp.Handler
-
-    init(handler: any Lsp.Handler) {
-        self.handler = handler
-    }
-
-    func handle(request: Lsp.RequestMessage) async -> Lsp.ResponseMessage {
-        return await self.handler.handle(request: request)
-    }
-
-    func handle(notification: Lsp.NotificationMessage) async {
-        await self.handler.handle(notification: notification)
-    }
-
-}
-
-private actor WrappedTransport: Lsp.Transport {
-
-    let transport: any Lsp.Transport
-
-    init(transport: any Lsp.Transport) {
-        self.transport = transport
-    }
-
-    func read() async throws -> Data {
-        return try await self.transport.read()
-    }
-
-    func write(_ data: Data) async throws {
-        try await self.transport.write(data)
-    }
-}
-
-private final class WrappedLogger: Utils.Logger {
-    let logger: any Utils.Logger
-
-    init(logger: any Utils.Logger) {
-        self.logger = logger
-    }
-
-    func log(level: Utils.LogLevel, tag: String, message: String) {
-        self.logger.log(level: level, tag: tag, message: message)
-    }
-
-    func log(level: Utils.LogLevel, tag: String, message: Data) {
-        self.logger.log(level: level, tag: tag, message: message)
-    }
-}
-
 extension Peopl {
     struct LspComand: AsyncParsableCommand {
+
+        enum LogLevel: String, ExpressibleByArgument {
+            case verbose
+            case debug
+            case info
+            case warning
+            case error
+            case critical
+
+            var level: Utils.LogLevel {
+                switch self {
+                case .verbose: return .verbose
+                case .debug: return .debug
+                case .info: return .info
+                case .warning: return .warning
+                case .error: return .error
+                case .critical: return .critical
+                }
+            }
+        }
         static let configuration = CommandConfiguration(
             commandName: "lsp",
             abstract: "Run the PeoPl language server protocol server",
@@ -75,11 +42,8 @@ extension Peopl {
         @Argument(help: "port")
         var port: UInt16 = 8765
 
-        // @Option(name: .long, help: "file path for file logger")
-        // var filePath: String?
-
         @Option(name: .long, help: "logging level")
-        var logLevel: Utils.LogLevel = .info
+        var logLevel: LogLevel = .info
 
         func run() async throws {
 
@@ -91,7 +55,7 @@ extension Peopl {
                         .homeDirectoryForCurrentUser
                         .appending(path: ".peopl/log/")
                         .appending(path: "lsp.log"),
-                    level: self.logLevel)
+                    level: self.logLevel.level)
                 let server = Lsp.Server(
                     handler: PpLsp.Handler(
                         moduleParser: TreeSitterModulParser.self,
@@ -100,7 +64,7 @@ extension Peopl {
                     logger: logger)
                 try await server.run()
             case .socket:
-                let logger = Utils.ConsoleLogger(level: self.logLevel)
+                let logger = Utils.ConsoleLogger(level: self.logLevel.level)
                 let tcpServer = try Socket.TcpServer(
                     port: self.port, logger: logger)
                 let server = Lsp.Server(
@@ -118,7 +82,7 @@ extension Peopl {
                         .homeDirectoryForCurrentUser
                         .appending(path: ".peopl/log/")
                         .appending(path: "lsp.log"),
-                    level: self.logLevel)
+                    level: self.logLevel.level)
                 let tcpClient = try Socket.TcpClient(
                     port: self.port, host: "localhost", logger: logger)
                 let server = Lsp.Server(

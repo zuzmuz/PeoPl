@@ -11,7 +11,7 @@ extension Socket {
         private let port: NWEndpoint.Port
         private var connection: NWConnection?
         private let logger: L
-        private var connected: Bool = false
+        private var waiting: Bool = false
 
         /// Creates a Tcp Client
         /// # Params
@@ -35,8 +35,10 @@ extension Socket {
         }
 
         /// Sets the flag for the connection state, this flag is used to prevent multiple continuation calls in the ``start()`` call
-        private func setConnected(_ value: Bool) {
-            self.connected = value
+        private func setWaitingReturnOldValue(_ value: Bool) -> Bool {
+            let oldValue = self.waiting
+            self.waiting = value
+            return oldValue
         }
 
         /// Cancels the connection and sets it into nil
@@ -62,7 +64,7 @@ extension Socket {
                     host: self.host,
                     port: self.port,
                     using: .tcp)
-
+                _ = self.setWaitingReturnOldValue(true)
                 try await withCheckedThrowingContinuation { continuation in
                     self.connection?.stateUpdateHandler = { [weak self] state in
                         guard let self else {
@@ -75,8 +77,8 @@ extension Socket {
                                 tag: Socket.clientTag,
                                 message: "connection ready")
                             Task {
-                                if await !self.connected {
-                                    await self.setConnected(true)
+                                if await self.setWaitingReturnOldValue(true)
+                                {
                                     continuation.resume()
                                 }
                             }
@@ -87,10 +89,10 @@ extension Socket {
                                 message: "connection cancelled")
 
                             Task {
-                                let wasConnected = await self.connected
-                                await self.setConnected(false)
                                 await self.cancelConnection()
-                                if !wasConnected {
+                                if await self.setWaitingReturnOldValue(
+                                    false)
+                                {
                                     continuation.resume(
                                         throwing: Socket.Error
                                             .connectionCancelled)
@@ -104,10 +106,10 @@ extension Socket {
                                     "connection failed with error: \(error)"
                             )
                             Task {
-                                let wasConnected = await self.connected
-                                await self.setConnected(false)
                                 await self.cancelConnection()
-                                if !wasConnected {
+                                if await self.setWaitingReturnOldValue(
+                                    false)
+                                {
                                     continuation.resume(
                                         throwing: Socket.Error
                                             .connectionCancelled)

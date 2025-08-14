@@ -13,7 +13,7 @@ extension Socket {
         private var connection: NWConnection?
         private let queue: DispatchQueue
         private let logger: L
-        private var connected: Bool = false
+        private var waiting: Bool = false
 
         /// Creates a TcpServer
         /// # Params
@@ -33,8 +33,10 @@ extension Socket {
         }
 
         /// Sets the flag for the connection state, this flag is used to prevent multiple continuation calls in the ``setupServer()`` call
-        private func setConnection(_ value: Bool) {
-            self.connected = value
+        private func setWaitingReturnOldValue(_ value: Bool) -> Bool {
+            let oldValue = self.waiting
+            self.waiting = value
+            return oldValue
         }
 
         /// Cancels the connection and sets it into nil
@@ -111,6 +113,7 @@ extension Socket {
         private func setupServer(
             completion: @Sendable @escaping (Result<(), Error>) -> Void
         ) {
+            _ = self.setWaitingReturnOldValue(true)
             if self.listener != nil {
                 self.listener?.newConnectionHandler =
                     { [weak self] connection in
@@ -195,22 +198,20 @@ extension Socket {
         public func start() async throws(Socket.Error) {
             do {
                 try await withCheckedThrowingContinuation { continuation in
-
                     self.setupServer { result in
                         switch result {
                         case .success:
                             Task {
-                                if await !self.connected {
-                                    await self.setConnection(true)
+                                if await self.setWaitingReturnOldValue(false)
+                                {
                                     continuation.resume()
                                 }
                             }
                         case let .failure(error):
                             Task {
-                                let wasConnected = await self.connected
-                                await self.setConnection(false)
                                 await self.cancelConnection()
-                                if !wasConnected {
+                                if await self.setWaitingReturnOldValue(false)
+                                {
                                     continuation.resume(throwing: error)
                                 }
                             }
