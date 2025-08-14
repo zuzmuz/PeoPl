@@ -47,13 +47,13 @@ extension [Semantic.Tag: Semantic.TypeSpecifier] {
         llvm: inout LLVM.Builder
     ) throws(LLVM.Error) -> (
         [LLVMTypeRef?],
-        [LLVM.ParamTag: Int]
+        [LLVM.ParamTag: UInt32]
     ) {
         var paramTypes: [LLVMTypeRef?] = []
-        var paramNames: [LLVM.ParamTag: Int] = [:]
+        var paramNames: [LLVM.ParamTag: UInt32] = [:]
 
         for (index, argument) in self.enumerated() {
-            paramNames[argument.key.llvmTag()] = index
+            paramNames[argument.key.llvmTag()] = UInt32(index)
             paramTypes.append(try argument.value.llvmGetType(llvm: &llvm))
         }
 

@@ -210,7 +210,7 @@ extension Semantic.Expression: LLVM.ValueBuilder {
             let value = try argument.llvmBuildValue(
                 llvm: &llvm, scope: scope)
             let index = function.paramNames[tag.llvmTag()]!
-            params[index] = value
+            params[Int(index)] = value
         }
 
         return params.withUnsafeMutableBufferPointer { buffer in
@@ -232,7 +232,7 @@ extension Semantic.Expression: LLVM.ValueBuilder {
     ) throws(LLVM.Error) -> LLVMValueRef? {
         let typeDefinition = try type.llvmGetTypeDefinition(llvm: &llvm)
         let structType = typeDefinition.structType
-        fatalError()
+        fatalError() 
     }
 
     func llvmBuildAccess(
@@ -245,24 +245,17 @@ extension Semantic.Expression: LLVM.ValueBuilder {
             llvm: &llvm)
         let expressionValue = try expression.llvmBuildValue(
             llvm: &llvm, scope: scope)
-        // let field = expressionType.paramNamesexpressionType.paramNames[field.llvmTag()]
-        var indices: [LLVMValueRef?] = [
-            LLVMConstInt(
-                LLVMInt32TypeInContext(llvm.context),
-                0,
-                0), // This is the index of the struct itself
-            LLVMConstInt(
-                LLVMInt32TypeInContext(llvm.context),
-                UInt64(expressionType.paramNames[field.llvmTag()]!),
-                0) // This is the index of the field
-        ]
-        let fieldPointer = LLVMBuildGEP2(
+        let fieldIndex =
+            expressionType.paramNames[field.llvmTag()]!
+
+        let fieldPointer = LLVMBuildStructGEP2(
             llvm.builder,
             expressionType.structType,
             expressionValue,
-            &indices,
-            2,
+            fieldIndex,
             "field_ptr")
+            
+
         return LLVMBuildLoad2(
             llvm.builder,
             expressionType.structType,

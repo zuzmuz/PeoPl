@@ -71,14 +71,14 @@ extension LLVM {
     struct TypeDefinition { // TODO: what about choice types
         let name: String
         let paramTypes: [LLVMTypeRef?]
-        let paramNames: [LLVM.ParamTag: Int]
+        let paramNames: [LLVM.ParamTag: UInt32]
         let structType: LLVMTypeRef
     }
 
     struct FunctionDefinition {
         let name: String
         let paramTypes: [LLVMTypeRef?]
-        let paramNames: [LLVM.ParamTag: Int]
+        let paramNames: [LLVM.ParamTag: UInt32]
         let outputType: LLVMTypeRef
         let functionType: LLVMTypeRef
         let functionValue: LLVMValueRef
