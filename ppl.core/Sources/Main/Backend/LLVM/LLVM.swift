@@ -72,6 +72,7 @@ extension LLVM {
         let name: String
         let paramTypes: [LLVMTypeRef?]
         let paramNames: [LLVM.ParamTag: Int]
+        let structType: LLVMTypeRef
     }
 
     struct FunctionDefinition {

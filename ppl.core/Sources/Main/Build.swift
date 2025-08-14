@@ -19,7 +19,6 @@ extension Peopl {
             let fileManager = FileManager.default
             let currentDirectory = URL(
                 filePath: fileManager.currentDirectoryPath)
-            print("building PeoPl project in: \(currentDirectory)")
 
             let contents = try fileManager.contentsOfDirectory(
                 at: currentDirectory,
@@ -40,9 +39,21 @@ extension Peopl {
 
             let context = try project.semanticCheck().get()
 
-            let llvmBuilder = LLVM.Builder(name: "PeoPl")
+            print("\nResult of the semantic check:\n")
 
-            // context.definitions
+            print(context)
+
+            print("\n-----------------------------\n")
+
+            var llvmBuilder = LLVM.Builder(name: "PeoPl")
+
+            try context.llvmBuild(llvm: &llvmBuilder)
+            if llvm {
+                llvmBuilder.save(to: output ?? "output.ll")
+            } else {
+                print("\nGenerated LLVM IR:\n")
+                print(llvmBuilder.generate())
+            }
         }
     }
 }

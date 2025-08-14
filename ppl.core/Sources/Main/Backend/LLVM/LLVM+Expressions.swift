@@ -224,6 +224,53 @@ extension Semantic.Expression: LLVM.ValueBuilder {
         }
     }
 
+    func llvmBuildInitializer(
+        type: Semantic.TypeSpecifier,
+        arguments: [Semantic.Tag: Semantic.Expression],
+        llvm: inout LLVM.Builder,
+        scope: borrowing [LLVM.ParamTag: LLVMValueRef?]
+    ) throws(LLVM.Error) -> LLVMValueRef? {
+        let typeDefinition = try type.llvmGetTypeDefinition(llvm: &llvm)
+        let structType = typeDefinition.structType
+        fatalError()
+    }
+
+    func llvmBuildAccess(
+        expression: Semantic.Expression,
+        field: Semantic.Tag,
+        llvm: inout LLVM.Builder,
+        scope: borrowing [LLVM.ParamTag: LLVMValueRef?]
+    ) throws(LLVM.Error) -> LLVMValueRef? {
+        let expressionType = try expression.type.llvmGetTypeDefinition(
+            llvm: &llvm)
+        let expressionValue = try expression.llvmBuildValue(
+            llvm: &llvm, scope: scope)
+        // let field = expressionType.paramNamesexpressionType.paramNames[field.llvmTag()]
+        var indices: [LLVMValueRef?] = [
+            LLVMConstInt(
+                LLVMInt32TypeInContext(llvm.context),
+                0,
+                0), // This is the index of the struct itself
+            LLVMConstInt(
+                LLVMInt32TypeInContext(llvm.context),
+                UInt64(expressionType.paramNames[field.llvmTag()]!),
+                0) // This is the index of the field
+        ]
+        let fieldPointer = LLVMBuildGEP2(
+            llvm.builder,
+            expressionType.structType,
+            expressionValue,
+            &indices,
+            2,
+            "field_ptr")
+        return LLVMBuildLoad2(
+            llvm.builder,
+            expressionType.structType,
+            fieldPointer,
+            "field_value"
+            )
+    }
+
     func llvmBuildBranches(
         branches: [(
             match: Semantic.BindingExpression,
@@ -388,13 +435,25 @@ extension Semantic.Expression: LLVM.ValueBuilder {
                 arguments: arguments,
                 llvm: &llvm,
                 scope: scope)
+        case let .access(expression, field, _):
+            return try self.llvmBuildAccess(
+                expression: expression,
+                field: field,
+                llvm: &llvm,
+                scope: scope)
+        case let .initializer(type, arguments):
+            return try self.llvmBuildInitializer(
+                type: type,
+                arguments: arguments,
+                llvm: &llvm,
+                scope: scope)
         // case let .branching(branches):
         //     return try self.llvmBuildBranches(
         //         branches: branches,
         //         llvm: &llvm,
         //         scope: scope)
         default:
-            throw .notImplemented("other expressions are not implemented yet")
+            throw .notImplemented("other expressions \(self) are not implemented yet")
         }
     }
 }

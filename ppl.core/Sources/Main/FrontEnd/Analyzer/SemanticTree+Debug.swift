@@ -56,7 +56,22 @@ extension Semantic.TypeSpecifier {
         case let .nominal(nominal):
             nominal.display()
         case let .raw(raw):
-            "()"
+            raw.display()
+        }
+    }
+}
+
+extension Semantic.RawTypeSpecifier {
+    func display() -> String {
+        switch self {
+        case let .record(fields):
+            "record(\(fields.map { "\($0.key.display()): \($0.value.display())" }.joined(separator: ", ")))"
+        case let .function(function):
+            "funcion not implemented yet"
+        case let .choice(fields):
+            "choice not implemented yet"
+        case .intrinsic:
+            "intrinsic not implemented yet"
         }
     }
 }

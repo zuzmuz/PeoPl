@@ -309,16 +309,19 @@ extension Syntax.Call {
 
         case let .nominal(nominal):
             // the nominal is a type initializer
+            let semanticIdentifier =
+                nominal.identifier.getSemanticIdentifier()
             if let typeSpecifier = context.typeDeclarations[
-                nominal.identifier.getSemanticIdentifier()]
+                semanticIdentifier]
             {
+                // TODO: I have to know how to deal with type aliases
                 return .initializer(
-                    type: typeSpecifier,
+                    type: .nominal(semanticIdentifier),
                     arguments: argumentsTyped)
             }
 
             return try self.methodCall(
-                identifier: nominal.identifier.getSemanticIdentifier(),
+                identifier: semanticIdentifier,
                 input: input,
                 arguments: argumentsTyped,
                 localScope: localScope,

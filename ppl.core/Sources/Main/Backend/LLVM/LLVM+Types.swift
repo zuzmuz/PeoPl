@@ -19,6 +19,9 @@ extension Semantic.TypeSpecifier: LLVM.TypeBuilder {
             return LLVMDoubleTypeInContext(llvm.context)
         case .bool:
             return LLVMInt1TypeInContext(llvm.context)
+        case let .nominal(identifier):
+            // force unwrapping here, because we should have
+            return llvm.types[identifier.llvmName]!.structType
 
         default:
             // if let structType = LLVMGetTypeByName(llvm.module, typeName) {
@@ -26,32 +29,15 @@ extension Semantic.TypeSpecifier: LLVM.TypeBuilder {
             throw .notImplemented("other types are not implemented yet")
         }
     }
-}
-extension Semantic.RawTypeSpecifier {
-    func llvmBuildType(
-        llvm: inout LLVM.Builder
-    ) throws(LLVM.Error) -> LLVMTypeRef {
-        switch self {
-        case let .record(fields):
-            var paramTypes = 1
-        default:
-            throw .notImplemented("Type \(self) is not implemented yet")
-        }
-        fatalError()
-    }
-}
 
-extension LLVM.Builder {
-    mutating func buildType(
-        identifier: Semantic.QualifiedIdentifier,
-        typeSpecifier: Semantic.TypeSpecifier
-    ) throws(LLVM.Error) -> LLVMTypeRef {
-        let typeName = "type_\(identifier.hashValue)"
-        switch typeSpecifier {
-        case let .raw(raw):
-            fatalError()
+    func llvmGetTypeDefinition(
+        llvm: inout LLVM.Builder
+    ) throws(LLVM.Error) -> LLVM.TypeDefinition {
+        switch self {
+        case let .nominal(identifier):
+            return llvm.types[identifier.llvmName]!
         default:
-            fatalError("Unsupported type specifier: \(typeSpecifier)")
+            throw LLVM.Error.notImplemented("Only nominal types can be converted to struct types")
         }
     }
 }
@@ -103,7 +89,8 @@ extension Semantic.DefinitionsContext {
             return .init(
                 name: typeName,
                 paramTypes: paramTypes,
-                paramNames: paramNames)
+                paramNames: paramNames,
+                structType: structType!)
         default:
             fatalError("not implemented yet")
         }
@@ -114,63 +101,12 @@ extension Semantic.DefinitionsContext {
     ) throws(LLVM.Error) {
         for (identifier, typeSpecifier) in self.typeDefinitions {
             if case let .raw(rawType) = typeSpecifier {
-                let typeDefinition = try Self.llvmBuildType(
-                    identifier: identifier,
-                    typeSpecifier: rawType,
-                    llvm: &llvm)
-                llvm.types[identifier.llvmName] = typeDefinition
+                llvm.types[identifier.llvmName] =
+                    try Self.llvmBuildType(
+                        identifier: identifier,
+                        typeSpecifier: rawType,
+                        llvm: &llvm)
             }
         }
     }
 }
-
-// extension TypeDefinition: LLVM.StatementBuilder {
-//     func llvmBuildStatement(llvm: inout LLVM.Builder) throws(LLVM.Error) {
-//         switch self {
-//         case let .simple(simple):
-//             let typeName = simple.identifier.typeName
-//             var paramTypes = try simple.params.map { param throws(LLVM.Error) in
-//                 try param.type.llvmGetType(llvm: &llvm) as Optional
-//             }
-//             let structType = LLVMStructCreateNamed(llvm.context, typeName)
-//
-//             // LLVMStructSetBody(structType, &paramTypes, UInt32(paramTypes.count), 0)
-//
-//             paramTypes.withUnsafeMutableBufferPointer { buffer in
-//                 LLVMStructSetBody(structType, buffer.baseAddress, UInt32(buffer.count), 0)
-//             }
-//
-//         case let .sum(sum):
-//             throw .notImplemented
-//             // Claude shit
-//             // // For sum types (enums/unions), we need to create a tagged union
-//             // // This typically involves a struct with a tag field and a union field
-//             // let name = sum.identifier.chain.map { $0.typeName }.joined(separator: ".")
-//             //
-//             // // First, create a discriminator (tag) type - typically i32
-//             // let tagType = LLVMInt32TypeInContext(llvm.context)
-//             //
-//             // // Find the largest case to determine union size
-//             // var maxCaseSize: UInt64 = 0
-//             // var caseTypes: [LLVMTypeRef] = []
-//             //
-//             // for caseType in sum.cases {
-//             //     let caseParamTypes = caseType.params.map { $0.type.toLLVMType(llvm: &llvm) }
-//             //     let caseStructType = LLVMStructTypeInContext(llvm.context, caseParamTypes, UInt32(caseParamTypes.count), 0)
-//             //     caseTypes.append(caseStructType)
-//             //
-//             //     // Calculate size of this case
-//             //     let typeSize = LLVMABISizeOfType(LLVMModuleGetDataLayout(llvm.module), caseStructType)
-//             //     maxCaseSize = max(maxCaseSize, typeSize)
-//             // }
-//             //
-//             // // Create a union type using an array of i8 with the size of the largest case
-//             // let unionType = LLVMArrayType(LLVMInt8TypeInContext(llvm.context), UInt32(maxCaseSize))
-//             //
-//             // // Create the final tagged union struct (tag + union data)
-//             // let sumTypeElements = [tagType, unionType]
-//             // let sumType = LLVMStructCreateNamed(llvm.context, name)
-//             // LLVMStructSetBody(sumType, sumTypeElements, 2, 0)
-//         }
-//     }
-// }
