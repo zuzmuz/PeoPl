@@ -5,7 +5,6 @@ import Utils
 
 extension Peopl {
     struct LspComand: AsyncParsableCommand {
-
         enum LogLevel: String, ExpressibleByArgument {
             case verbose
             case debug
@@ -28,70 +27,187 @@ extension Peopl {
         static let configuration = CommandConfiguration(
             commandName: "lsp",
             abstract: "Run the PeoPl language server protocol server",
+            subcommands: [
+                InplaceCommand.self,
+                SocketCommand.self,
+                ProxyCommand.self,
+            ],
+            defaultSubcommand: InplaceCommand.self
         )
 
-        enum ModeOption: String, ExpressibleByArgument {
-            case inplace
-            case proxy
-            case socket
+        struct InplaceCommand: AsyncParsableCommand {
+            static let configuration = CommandConfiguration(
+                commandName: "inplace",
+                abstract:
+                    "Run the PeoPl language server protocol server in place"
+            )
+
+            enum Logger: String, ExpressibleByArgument {
+                case stderr
+                case file
+            }
+
+            @Option(name: .long, help: "logging level")
+            var logLevel: LogLevel = .error
+
+            @Option(name: .long, help: "logger")
+            var logger: Logger = .stderr
+
+            @Option(name: .long, help: "log file path")
+            var filePath: String?
+
+            func run() async throws {
+                switch self.logger {
+                case .stderr:
+                    let logger = Utils.StdErrLogger(
+                        level: self.logLevel.level)
+                    let server = Lsp.Server(
+                        handler: PpLsp.Handler(
+                            moduleParser: TreeSitterModulParser.self,
+                            logger: logger),
+                        transport: Lsp.standardTransport,
+                        logger: logger)
+                    try await server.run()
+                case .file:
+                    guard let filePath = self.filePath else {
+                        throw ValidationError(
+                            "File path is required when using file logger")
+                    }
+                    let logger = try Utils.FileLogger(
+                        filePath: URL(filePath: filePath),
+                        level: self.logLevel.level)
+                    let server = Lsp.Server(
+                        handler: PpLsp.Handler(
+                            moduleParser: TreeSitterModulParser.self,
+                            logger: logger),
+                        transport: Lsp.standardTransport,
+                        logger: logger)
+                    try await server.run()
+                }
+            }
         }
 
-        @Argument(help: "server mode")
-        var mode: ModeOption = .inplace
+        struct SocketCommand: AsyncParsableCommand {
+            static let configuration = CommandConfiguration(
+                commandName: "socket",
+                abstract:
+                    // swiftlint:disable:next line_length
+                    "Run the PeoPl language server protocol server over a socket"
+            )
 
-        @Argument(help: "port")
-        var port: UInt16 = 8765
+            enum Logger: String, ExpressibleByArgument {
+                case stdout
+                case file
+            }
 
-        @Option(name: .long, help: "logging level")
-        var logLevel: LogLevel = .info
+            @Option(name: .long, help: "port")
+            var port: UInt16 = 8765
 
-        func run() async throws {
+            @Option(name: .long, help: "logging level")
+            var logLevel: LogLevel = .info
 
-            switch self.mode {
-            case .inplace:
-                let logger = try Utils.FileLogger(
-                    filePath: FileManager
-                        .default
-                        .homeDirectoryForCurrentUser
-                        .appending(path: ".peopl/log/")
-                        .appending(path: "lsp.log"),
-                    level: self.logLevel.level)
-                let server = Lsp.Server(
-                    handler: PpLsp.Handler(
-                        moduleParser: TreeSitterModulParser.self,
-                        logger: logger),
-                    transport: Lsp.standardTransport,
-                    logger: logger)
-                try await server.run()
-            case .socket:
-                let logger = Utils.ConsoleLogger(level: self.logLevel.level)
-                let tcpServer = try Socket.TcpServer(
-                    port: self.port, logger: logger)
-                let server = Lsp.Server(
-                    handler: PpLsp.Handler(
-                        moduleParser: TreeSitterModulParser.self,
-                        logger: logger),
-                    transport: tcpServer,
-                    logger: logger)
-                try await tcpServer.start()
-                try await server.run()
-            case .proxy:
-                let logger = try Utils.FileLogger(
-                    filePath: FileManager
-                        .default
-                        .homeDirectoryForCurrentUser
-                        .appending(path: ".peopl/log/")
-                        .appending(path: "lsp.log"),
-                    level: self.logLevel.level)
-                let tcpClient = try Socket.TcpClient(
-                    port: self.port, host: "localhost", logger: logger)
-                let server = Lsp.Server(
-                    handler: try Lsp.ProxyHandler(
-                        client: tcpClient, logger: logger),
-                    transport: Lsp.standardTransport,
-                    logger: logger)
-                try await tcpClient.start()
-                try await server.run()
+            @Option(name: .long, help: "logger")
+            var logger: Logger = .stdout
+
+            @Option(name: .long, help: "log file path")
+            var filePath: String?
+
+            func run() async throws {
+                switch self.logger {
+                case .stdout:
+                    let logger = Utils.ConsoleLogger(level: self.logLevel.level)
+                    let tcpServer = try Socket.TcpServer(
+                        port: self.port, logger: logger)
+                    let server = Lsp.Server(
+                        handler: PpLsp.Handler(
+                            moduleParser: TreeSitterModulParser.self,
+                            logger: logger),
+                        transport: tcpServer,
+                        logger: logger)
+                    try await tcpServer.start()
+                    try await server.run()
+                case .file:
+                    guard let filePath = self.filePath else {
+                        throw ValidationError(
+                            "File path is required when using file logger")
+                    }
+                    let logger = try Utils.FileLogger(
+                        filePath: URL(filePath: filePath),
+                        level: self.logLevel.level)
+                    let tcpServer = try Socket.TcpServer(
+                        port: self.port, logger: logger)
+                    let server = Lsp.Server(
+                        handler: PpLsp.Handler(
+                            moduleParser: TreeSitterModulParser.self,
+                            logger: logger),
+                        transport: tcpServer,
+                        logger: logger)
+                    try await tcpServer.start()
+                    try await server.run()
+                }
+            }
+        }
+
+        struct ProxyCommand: AsyncParsableCommand {
+            static let configuration = CommandConfiguration(
+                commandName: "proxy",
+                abstract:
+                    "Run the PeoPl language server protocol server as a proxy"
+            )
+
+            enum Logger: String, ExpressibleByArgument {
+                case stderr
+                case file
+            }
+
+            @Option(name: .long, help: "port")
+            var port: UInt16 = 8765
+
+            @Option(name: .long, help: "host")
+            var host: String = "localhost"
+
+            @Option(name: .long, help: "logging level")
+            var logLevel: LogLevel = .error
+
+            @Option(name: .long, help: "logger")
+            var logger: Logger = .stderr
+
+            @Option(name: .long, help: "log file path")
+            var filePath: String?
+
+            func run() async throws {
+                switch self.logger {
+                case .stderr:
+                    let logger = Utils.StdErrLogger(level: self.logLevel.level)
+                    let tcpServer = try Socket.TcpServer(
+                        port: self.port, logger: logger)
+                    let server = Lsp.Server(
+                        handler: PpLsp.Handler(
+                            moduleParser: TreeSitterModulParser.self,
+                            logger: logger),
+                        transport: tcpServer,
+                        logger: logger)
+                    try await tcpServer.start()
+                    try await server.run()
+                case .file:
+                    guard let filePath = self.filePath else {
+                        throw ValidationError(
+                            "File path is required when using file logger")
+                    }
+                    let logger = try Utils.FileLogger(
+                        filePath: URL(filePath: filePath),
+                        level: self.logLevel.level)
+                    let tcpServer = try Socket.TcpServer(
+                        port: self.port, logger: logger)
+                    let server = Lsp.Server(
+                        handler: PpLsp.Handler(
+                            moduleParser: TreeSitterModulParser.self,
+                            logger: logger),
+                        transport: tcpServer,
+                        logger: logger)
+                    try await tcpServer.start()
+                    try await server.run()
+                }
             }
         }
     }
