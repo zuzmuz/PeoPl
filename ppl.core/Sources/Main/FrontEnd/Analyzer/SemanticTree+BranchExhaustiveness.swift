@@ -21,7 +21,6 @@ extension Syntax.Expression {
                         localScope: localScope,
                         context: context))
             }
-            
         case let .unary(unary):
             if unary.op == .plus
                 || unary.op == .minus
@@ -97,7 +96,7 @@ extension [Syntax.Expression] {
 }
 
 extension Semantic.Pattern {
-    func typeCheck(
+    func getTypedCheckBindings(
         with input: Semantic.Expression,
         localScope: borrowing Semantic.LocalScope,
         context: borrowing Semantic.DeclarationsContext
