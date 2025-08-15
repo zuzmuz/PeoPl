@@ -140,8 +140,7 @@ extension Semantic.Pattern {
                     let oldBindingsCount = bindings.count
                     bindings.merge(patternBindings) { $1 }
 
-                    if bindings.count <
-                        oldBindingsCount + patternBindings.count
+                    if bindings.count < oldBindingsCount + patternBindings.count
                     {
                         throw .duplicateBindings
                     }
@@ -161,7 +160,6 @@ extension Semantic.Pattern {
         }
     }
 }
-
 
 extension Syntax.Branched {
     func checkType(
@@ -216,7 +214,6 @@ extension Syntax.Branched {
                     guardExpression: guardExpression,
                     body: bodyExpression)
             }
-        print("Branches: \(branches)")
 
         // removing duplicate types while keeping order
         let branchesType: [Semantic.TypeSpecifier] =
@@ -257,4 +254,3 @@ extension Syntax.Branched {
     //
     // }
 }
-

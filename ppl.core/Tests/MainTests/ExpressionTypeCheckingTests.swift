@@ -75,25 +75,24 @@ extension Semantic.Expression: Testable {
         ):
             XCTAssertEqual(selfField, withField)
             XCTAssertEqual(selfType, withType)
-        // case let (
-        //     .branching(selfBranches, selfType),
-        //     .branching(withBranches, withType)
-        // ):
-        //     XCTAssertEqual(selfType, withType)
-        //     XCTAssertEqual(selfBranches.count, withBranches.count)
-        //     for (selfBranch, withBranch) in zip(selfBranches, withBranches) {
-        //         XCTAssertEqual(
-        //             selfBranch.matchExpression.condition.type,
-        //             withBranch.matchExpression.condition.type)
-        //         selfBranch.matchExpression.condition.assertEqual(
-        //             with: withBranch.matchExpression.condition)
-        //         XCTAssertEqual(
-        //             selfBranch.guardExpression.type,
-        //             withBranch.guardExpression.type)
-        //         selfBranch.guardExpression.assertEqual(
-        //             with: withBranch.guardExpression)
-        //         selfBranch.body.assertEqual(with: withBranch.body)
-        //     }
+        case let (
+            .branched(selfMatrix, selfType),
+            .branched(withMatrix, withType)
+        ):
+            XCTAssertEqual(selfType, withType)
+            XCTAssertEqual(
+                selfMatrix.rows.count,
+                withMatrix.rows.count)
+            for (selfRow, withRow) in zip(selfMatrix.rows, withMatrix.rows) {
+                selfRow.pattern.assertEqual(
+                    with: withRow.pattern)
+                XCTAssertEqual(
+                    selfRow.guardExpression.type,
+                    withRow.guardExpression.type)
+                selfRow.guardExpression.assertEqual(
+                    with: withRow.guardExpression)
+                selfRow.body.assertEqual(with: withRow.body)
+            }
         default:
             fatalError("can't compare \(self) with \(with)")
         }

@@ -75,34 +75,52 @@ extension Semantic.RawTypeSpecifier {
         }
     }
 }
-//
-// extension Semantic.Expression {
-//     func display() -> String {
-//         switch self.expressionType {
-//         case let .intLiteral(value):
-//             return "\(value)"
-//         case let .floatLiteral(value):
-//             return "\(value)"
-//         case let .boolLiteral(value):
-//             return "\(value)"
-//         case let .input:
-//             return "\(self.type.display())(in)"
-//         case let .fieldInScope(tag):
-//             return "\(tag.display())"
-//         case let .unary(op, expression):
-//             return
-//                 "\(self.type.display())(\(op.rawValue) \(expression.display()))"
-//         case let .binary(op, left, right):
-//             return
-//                 "\(self.type.display())(\(left.display()) \(op.rawValue) \(right.display()))"
-//         case let .call(signature, input, arguments):
-//             return "\(signature.display())(in: \(input.display()), )"
-//         case let .branching(branches: branches):
-//             return branches.map { "guard: \($0.guard.display()), body: \($0.body.display())" }
-//                 .joined(separator: "\n")
-//         default:
-//             print(self.expressionType)
-//             return ""
-//         }
-//     }
-// }
+
+extension Semantic.Expression {
+    func display() -> String {
+        switch self {
+        case let .intLiteral(value):
+            return "\(value)"
+        case let .floatLiteral(value):
+            return "\(value)"
+        case let .boolLiteral(value):
+            return "\(value)"
+        case let .input:
+            return "\(self.type.display())(in)"
+        case let .fieldInScope(tag, _):
+            return "\(tag.display())"
+        case let .unary(op, expression, _):
+            return
+                "\(self.type.display())(\(op.rawValue) \(expression.display()))"
+        case let .binary(op, left, right, _):
+            return
+                "\(self.type.display())(\(left.display()) \(op.rawValue) \(right.display()))"
+        case let .call(signature, input, arguments, _):
+            return "\(signature.display())(in: \(input.display()), )"
+        case let .branched(matrix, _):
+            return matrix.rows.map { row in
+                "\(row.pattern.display()) -> \(row.body.display())"
+            }.joined(separator: "\n")
+        default:
+            print(self)
+            return ""
+        }
+    }
+}
+
+extension Semantic.Pattern {
+    func display() -> String {
+        switch self {
+        case let .value(value):
+            return value.display()
+        case let .constructor(tag, pattern):
+            return "\(tag.display())(\(pattern.display()))"
+        case let .destructor(fields):
+            return "{" + fields.map { "\($0.key.display()): \($0.value.display())" }.joined(separator: ", ") + "}"
+        case let .binding(name):
+            return "$\(name.display())"
+        case .wildcard:
+            return "_"
+        }
+    }
+}

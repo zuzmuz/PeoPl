@@ -2,6 +2,36 @@ import XCTest
 
 @testable import Main
 
+extension Semantic.Pattern: Testable {
+    func assertEqual(with: Self) {
+        switch (self, with) {
+        case (.wildcard, .wildcard):
+            break
+        case let (.binding(selfBinding), .binding(withBinding)):
+            XCTAssertEqual(selfBinding, withBinding)
+        case let (.value(selfValue), .value(withValue)):
+            selfValue.assertEqual(with: withValue)
+        case let (
+            .constructor(selfTag, selfPattern),
+            .constructor(withTag, withPattern)
+        ):
+            XCTAssertEqual(selfTag, withTag)
+            selfPattern.assertEqual(with: withPattern)
+        case let (.destructor(selfFields), .destructor(withFields)):
+            XCTAssertEqual(selfFields.count, withFields.count)
+            for (selfTag, selfPattern) in selfFields {
+                guard let withPattern = withFields[selfTag] else {
+                    XCTFail("missing field \(selfTag) in \(withFields)")
+                    return
+                }
+                selfPattern.assertEqual(with: withPattern)
+            }
+        default:
+            XCTFail("comparing incompatable patterns \(self) and \(with)")
+        }
+    }
+}
+
 final class BranchingExpressionTypeCheckingTests: XCTestCase {
     let fileNames:
         [String: (
@@ -14,7 +44,44 @@ final class BranchingExpressionTypeCheckingTests: XCTestCase {
                         identifier: .chain(["pattern"]),
                         inputType: (.input, .nominal(.chain(["Struct"]))),
                         arguments: [:]):
-                        .nothing
+                        .branched(
+                            matrix: .init(rows: [
+                                .init(
+                                    pattern: .destructor([
+                                        .named("a"): .value(.intLiteral(0)),
+                                        .named("b"): .value(.intLiteral(0))
+                                    ]),
+                                    bindings: [:],
+                                    guardExpression: .boolLiteral(true),
+                                    body: .intLiteral(0)
+                                ),
+                                .init(
+                                    pattern: .destructor([
+                                        .named("a"): .value(.intLiteral(0)),
+                                        .named("b"): .binding(.named("b"))
+                                    ]),
+                                    bindings: [:],
+                                    guardExpression: .boolLiteral(true),
+                                    body: .intLiteral(1)
+                                ),
+                                .init(
+                                    pattern: .destructor([
+                                        .named("a"): .wildcard,
+                                        .named("b"): .binding(.named("b"))
+                                    ]),
+                                    bindings: [:],
+                                    guardExpression: .boolLiteral(true),
+                                    body: .intLiteral(2)
+                                ),
+                                .init(
+                                    pattern: .binding(.named("s")),
+                                    bindings: [:],
+                                    guardExpression: .boolLiteral(true),
+                                    body: .intLiteral(3)
+                                ),
+                            ]),
+                            type: .int,
+                        )
                 ],
                 expressionErrors: []
             )
@@ -73,7 +140,18 @@ final class BranchingExpressionTypeCheckingTests: XCTestCase {
                 }
             }
 
-            print("expressionDefinitions: \(expressionDefinitions)")
+            XCTAssertEqual(
+                expressionDefinitions.count,
+                reference.expressionDefinitions.count)
+
+            for (signature, expression) in expressionDefinitions {
+                XCTAssertNotNil(reference.expressionDefinitions[signature])
+                if let referenceExpression =
+                    reference.expressionDefinitions[signature]
+                {
+                    expression.assertEqual(with: referenceExpression)
+                }
+            }
         }
     }
 }
