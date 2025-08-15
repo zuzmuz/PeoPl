@@ -5,12 +5,23 @@ extension Syntax.Expression {
     ) throws(Semantic.Error) -> Semantic.Pattern {
 
         switch self {
-        case .literal, .binary, .nominal:
+        case .literal, .binary:
             return try .value(
                 self.checkType(
                     with: .nothing,
                     localScope: localScope,
                     context: context))
+        case let .nominal(nominal):
+            if nominal.identifier.chain == ["_"] {
+                return .wildcard
+            } else {
+                return try .value(
+                    self.checkType(
+                        with: .nothing,
+                        localScope: localScope,
+                        context: context))
+            }
+            
         case let .unary(unary):
             if unary.op == .plus
                 || unary.op == .minus
@@ -131,4 +142,3 @@ extension Semantic.Pattern {
         }
     }
 }
-

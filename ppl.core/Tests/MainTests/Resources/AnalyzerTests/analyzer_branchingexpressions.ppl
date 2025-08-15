@@ -1,0 +1,12 @@
+Struct: [
+    a' Int,
+    b' Int
+]
+
+
+pattern: (Struct)[] -> Int {
+    |(a: 0, b: 0)| 0
+    |(a: 0, b: $b)| 1
+    |(a: _, b: $b)| 2
+    |$s| 3
+}

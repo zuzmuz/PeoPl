@@ -350,7 +350,19 @@ extension Syntax.Branched {
         localScope: Semantic.LocalScope,
         context: borrowing Semantic.DeclarationsContext,
     ) throws(Semantic.Error) -> Semantic.Expression {
-        fatalError()
+        let branches =
+            try self.branches.map { branch throws(Semantic.Error) in
+                try branch.matchExpression.getPattern(
+                    localScope: localScope, context: context
+                )
+            }
+        print("Branches: \(branches)")
+
+
+        throw .init(
+            location: .nowhere,
+            errorChoice: .notImplemented(
+                "pattern matching is not implemented yet"))
         // let branches =
         //     try self.branches.map { branch throws(Semantic.Error) in
         //         let pattern =

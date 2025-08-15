@@ -191,11 +191,18 @@ public enum Semantic {
         let patterns: [Pattern]
     }
 
+    /// Match expression patterns
+    /// This represents constructors of pattern in a match expression
     public enum Pattern: Sendable {
+        /// the wildcard case, the pattern that matches any expression
         case wildcard
+        /// matches any expression while binding the expression to a tag
         case binding(Tag)
+        /// matches to an expression, usually a literal value or a constant
         case value(Expression)
+        /// destructs records into multiple patterns
         case destructor([Tag: Pattern])
+        /// to match for tags in choice types
         indirect case constructor(tag: Tag, pattern: Pattern)
     }
 

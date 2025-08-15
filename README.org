@@ -5,10 +5,12 @@
 - [[#the-language-overview][The Language Overview]]
 - [[#the-manifesto][The Manifesto]]
 - [[#why][Why]]
+  - [[#why-pipeline-oriented][Why pipeline oriented]]
+  - [[#why-low-level][Why low level]]
+  - [[#so][So]]
 - [[#installation][Installation]]
   - [[#build-it][Build it]]
 - [[#whats-available][What's available]]
-- [[#state][State]]
 
 * The Language Overview
 This is a [[file:docs/small_overview.org][small overview]], a more [[file:docs/overview.org][comprehensive overview]] is not complete
@@ -17,10 +19,45 @@ This is a [[file:docs/small_overview.org][small overview]], a more [[file:docs/o
 Check the  [[file:docs/TheManifesto.org][the manifesto]] , AI helped me write it
 
 * Why
-Just for fun.
 
-But also a thought experiment.
-An opinionated programming language that fits my programming style.
+A low level pipeline oriented programming language
+
+** Why pipeline oriented
+Pipeline-oriented programming isn't just a syntactic preference, it's a fundamental design choice that enables three critical guarantees:
+*** Safety
+Pipeline orientation creates a linear, predictable control flow that dramatically simplifies complex compiler analysis.
+- simple type inference
+- lifetime and ownership clarity
+- resource management
+Traditional imperative code where resources, ownership, and control flow are scattered across multiple statements, makes analysis exponentially more complex.
+*** Performance
+Pipeline orientation naturally encourages pure functions and data immutability, unlocking aggressive compiler optimizations.
+- memory layout optimization
+- memory release and reuse
+- automatic parallelization
+*** Readability
+This might be subjective,
+Pipeline orientation mirrors human thought processes and data transformation workflows
+#+BEGIN_SRC
+// Read left-to-right, top-to-bottom like prose
+user_input
+|> sanitize()
+|> parse()
+|> validate()
+|> process()
+|> format_response()
+
+// vs. traditional nested calls (read inside-out)
+format_response(process(validate(parse(sanitize(user_input)))))
+#+END_SRC
+
+** Why low level
+I love control and performance. I always loved functional programming languages but hated their syntax or the lack of low level features.
+Manual memory management does not need to be this complicated, and sometime the cost of a garbage collector is much bigger than the reward.
+
+** So
+PeoPl is pipeline oriented at its core. Pipeline oriented programming is not necessarily functional, it can be performed in OOP through object method chaining.
+However, PeoPl provides the clever syntax to enable powerful features that do not sacrifice performance for expressibility
 
 * Installation
 You can't install it right now
@@ -32,41 +69,3 @@ Make sure you have swift installed. Compile it with spm.
 - A tree sitter grammar for syntax highlighting in your editor (needs manual configuration)
 - An lsp (that doesn't work)
 - Compiler with LLVM as backend (still WIP)
-
-* State
-Ok nothing is ready, if you find this repo by mistake, just know that nothing is ready.
-And by the way I'm not even following this todo list
-
-Todo list:
-- [-] Treesitter grammar version 0.1.0.0
-  - [-] Type system
-    - [X] Tuples
-    - [X] Choices
-    - [ ] Subsets
-    - [ ] Generics
-    - [X] Functions
-  - [X] Expressions
-    - [X] Arithmetic expressions
-    - [X] Function calls
-    - [X] Initializers
-    - [X] Branching
-    - [X] Pattern Matching
-  - [ ] Namespaces
-    - [ ] Definining namespaces
-    - [ ] Importing scopes
-- [X] Parser based on Treesitter
-- [-] Semantic Analyzer
-  - [-] Type definitions check
-    - [X] Checking invalid definitions
-    - [X] Checking redefinitions
-    - [ ] Checking shadowing
-    - [X] Checking cyclical definitions
-  - [-] Expressions type checking
-    - [X] Basic piping type checking
-    - [X] Function call type checking
-    - [ ] Branching type checking
-      - [ ] Exhaustive branching
-    - [ ] Lambdas type checking
-    - [ ] Type checking with generics
-- [ ] Backend
-  - [ ] LLVM
