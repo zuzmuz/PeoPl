@@ -137,6 +137,8 @@ public enum Semantic {
         case boolLiteral(Bool)
 
         case input(type: TypeSpecifier)
+        // NOTE: I might need this or not
+        // case argument(tag: Tag, type: TypeSpecifier)
         case unary(Operator, expression: Expression, type: TypeSpecifier)
         case binary(
             Operator,
@@ -164,7 +166,7 @@ public enum Semantic {
             type: TypeSpecifier)
 
         case branched(
-            matirx: DecompositionMatrix,
+            matrix: DecompositionMatrix,
             type: TypeSpecifier)
 
         var type: TypeSpecifier {
@@ -188,7 +190,13 @@ public enum Semantic {
     }
 
     public struct DecompositionMatrix: Sendable {
-        let patterns: [Pattern]
+        struct Row: Sendable {
+            let pattern: Pattern
+            let bindings: [Tag: Expression]
+            let guardExpression: Expression
+            let body: Expression
+        }
+        let rows: [Row]
     }
 
     /// Match expression patterns

@@ -7,6 +7,7 @@ extension Semantic {
         case numberOfPatternMismatch(
             expected: Int,
             received: Int)
+        case recordFieldMissing(tag: Semantic.Tag)
     }
 
     public struct Error: LocalizedError {
@@ -47,7 +48,7 @@ extension Semantic {
             case duplicatedExpressionFieldName
             case consecutiveUnary
             case bindingNotAllowed
-            case bindingMismatch
+            case bindingPatternError(PatternError)
             case illegalUnaryInMatch(op: Operator)
             case duplicateBindings
             case guardShouldReturnBool(
