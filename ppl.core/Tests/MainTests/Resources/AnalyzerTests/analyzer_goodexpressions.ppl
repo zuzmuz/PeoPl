@@ -5,14 +5,14 @@
 //     |$n| n * factorial(n: n-1)
 // }
 
-arithmetic: (Int)[a' Int, b' Int] -> Bool {
+arithmetic: func (Int)[a' Int, b' Int] -> Bool {
     * (a + b)
     |> - 3
     |> > (a - b)
 
 }
 
-functionCall: [a' Int, b' Int, c' Int] -> Bool {
+functionCall: func [a' Int, b' Int, c' Int] -> Bool {
     a + b
     |> arithmetic(a: b, b: c)
 }

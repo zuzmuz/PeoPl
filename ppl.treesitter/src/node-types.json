@@ -871,7 +871,7 @@
       },
       "output_type": {
         "multiple": false,
-        "required": true,
+        "required": false,
         "types": [
           {
             "type": "choice_type",
@@ -1870,6 +1870,10 @@
   {
     "type": "float_literal",
     "named": true
+  },
+  {
+    "type": "func",
+    "named": false
   },
   {
     "type": "identifier",

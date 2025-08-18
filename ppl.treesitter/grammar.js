@@ -21,7 +21,7 @@ module.exports = grammar({
   ],
 
   conflicts: $ => [
-    [$.type_field, $._simple_expression]
+    // [$.type_field, $._simple_expression]
   ],
 
   rules: {
@@ -101,11 +101,15 @@ module.exports = grammar({
     ),
 
     function_type: $ => seq(
-      // "func",
+      "func",
       optional(seq('(', field('input_type', $.type_field), ')')),
       field("arguments", $.type_field_list),
-      "->",
-      field("output_type", $._type_specifier)
+      optional(
+        seq(
+          "->",
+          field("output_type", $._type_specifier)
+        )
+      )
     ),
 
     function_arguments: $ => choice(

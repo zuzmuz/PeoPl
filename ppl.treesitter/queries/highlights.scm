@@ -1,8 +1,8 @@
 [
  "choice"
- ; "func"
- "local"
- "public"
+ "func"
+ ; "local"
+ ; "public"
 ] @keyword.type
 
 (tagged_type_specifier
@@ -38,11 +38,11 @@
 (pipe_operator) @operator
 (optional_pipe_operator) @operator
 
-; [
+[
 ;   ; "^"
-;   "**"
+  "**"
 ;   "and"
-; ] @keyword.operator
+] @keyword.operator
 
 [
   "("

@@ -283,113 +283,13 @@ extension Semantic.Expression: LLVM.ValueBuilder {
     }
 
     func llvmBuildBranches(
-        branches: [(
-            match: Semantic.BindingExpression,
-            guard: Semantic.Expression,
-            body: Semantic.Expression
-        )],
+        matrix: Semantic.DecompositionMatrix,
         llvm: inout LLVM.Builder,
         scope: borrowing [LLVM.ParamTag: LLVMValueRef?]
     ) throws(LLVM.Error) -> LLVMValueRef? {
-        // TODO: each branch should be tagged (0 ..< n)
-        // the switch expression input should evaluate the tag based on the the branches conditions and the input
 
-        let branchingType = try self.type.llvmGetType(llvm: &llvm)
-        let function = LLVMGetBasicBlockParent(
-            LLVMGetInsertBlock(llvm.builder))
-
-        let defaultBlock = LLVMAppendBasicBlockInContext(
-            llvm.context, function, "default")
-        // TODO: add unique identifiers to branches
-
-        let resultValue = LLVMBuildAlloca(
-            llvm.builder,
-            branchingType,
-            "branch_result")
-
-        // this is convoluted and I think can be improved but is a general solution
-        let switchCondition: LLVMValueRef =
-            try branches.map { branch throws(LLVM.Error) in
-                let matchCondition = try branch.match.condition.llvmBuildValue(
-                    llvm: &llvm, scope: scope)
-                let guardCondition = try branch.guard.llvmBuildValue(
-                    llvm: &llvm, scope: scope)
-                let combinedCondition = LLVMBuildAnd(
-                    llvm.builder, matchCondition, guardCondition, "combined")
-
-                return LLVMBuildIntCast2(
-                    llvm.builder,
-                    combinedCondition,
-                    LLVMInt32TypeInContext(llvm.context),
-                    0,
-                    "cast")
-            }.enumerated().reduce(
-                LLVMConstInt(
-                    LLVMInt32TypeInContext(llvm.context),
-                    0,
-                    0)
-            ) { llvmValue, enumeratedValue in
-                LLVMBuildAdd(
-                    llvm.builder,
-                    llvmValue,
-                    LLVMBuildMul(
-                        llvm.builder,
-                        enumeratedValue.element,
-                        LLVMConstInt(
-                            LLVMInt32TypeInContext(llvm.context),
-                            UInt64(enumeratedValue.offset),
-                            0),
-                        "mul"),
-                    "added")
-            }
-
-        let switchExpression = LLVMBuildSwitch(
-            llvm.builder,
-            switchCondition,
-            defaultBlock,
-            UInt32(branches.count) - 1)
-
-        let continueBlock = LLVMAppendBasicBlockInContext(
-            llvm.context,
-            function,
-            "continue")
-
-        for (index, branch) in branches.dropLast().enumerated() {
-            let block = LLVMAppendBasicBlockInContext(
-                llvm.context, function, "b_\(index)")
-            // let matchValue = try branch.match.condition.llvmBuildValue(
-            //     llvm: &llvm, scope: scope)
-            let matchValue = LLVMConstInt(
-                LLVMInt32TypeInContext(llvm.context), UInt64(index), 0)
-            LLVMAddCase(switchExpression, matchValue, block)
-            LLVMPositionBuilderAtEnd(llvm.builder, block)
-
-            // TODO: add values to the scope based on bindings
-            // bindings can be
-            // - simple pure binding (capturing the whole input)
-            // - complex pattern matching (capturing inner members of structures)
-            // - tagged expressions (for sum types)
-
-            LLVMBuildStore(
-                llvm.builder,
-                try branch.body.llvmBuildValue(llvm: &llvm, scope: scope),
-                resultValue)
-
-            LLVMBuildBr(llvm.builder, continueBlock)
-        }
-
-        LLVMPositionBuilderAtEnd(llvm.builder, defaultBlock)
-        LLVMBuildStore(
-            llvm.builder,
-            try branches.last?.body.llvmBuildValue(
-                llvm: &llvm, scope: scope),
-            resultValue)
-        LLVMBuildBr(llvm.builder, continueBlock)
-
-        LLVMPositionBuilderAtEnd(llvm.builder, continueBlock)
-
-        return LLVMBuildLoad2(
-            llvm.builder, branchingType, resultValue, "result")
+        throw .notImplemented(
+            "branching expressions are not implemented yet")
     }
 
     func llvmBuildValue(
@@ -458,11 +358,11 @@ extension Semantic.Expression: LLVM.ValueBuilder {
                 arguments: arguments,
                 llvm: &llvm,
                 scope: scope)
-        // case let .branching(branches):
-        //     return try self.llvmBuildBranches(
-        //         branches: branches,
-        //         llvm: &llvm,
-        //         scope: scope)
+        case let .branched(matrix, _):
+            return try self.llvmBuildBranches(
+                matrix: matrix,
+                llvm: &llvm,
+                scope: scope)
         default:
             throw .notImplemented(
                 "other expressions \(self) are not implemented yet")

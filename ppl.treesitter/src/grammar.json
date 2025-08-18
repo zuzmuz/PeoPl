@@ -242,6 +242,10 @@
       "type": "SEQ",
       "members": [
         {
+          "type": "STRING",
+          "value": "func"
+        },
+        {
           "type": "CHOICE",
           "members": [
             {
@@ -279,16 +283,29 @@
           }
         },
         {
-          "type": "STRING",
-          "value": "->"
-        },
-        {
-          "type": "FIELD",
-          "name": "output_type",
-          "content": {
-            "type": "SYMBOL",
-            "name": "_type_specifier"
-          }
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "SEQ",
+              "members": [
+                {
+                  "type": "STRING",
+                  "value": "->"
+                },
+                {
+                  "type": "FIELD",
+                  "name": "output_type",
+                  "content": {
+                    "type": "SYMBOL",
+                    "name": "_type_specifier"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
         }
       ]
     },
@@ -1446,12 +1463,7 @@
       "value": "\\s|\\\\\\r?\\n"
     }
   ],
-  "conflicts": [
-    [
-      "type_field",
-      "_simple_expression"
-    ]
-  ],
+  "conflicts": [],
   "precedences": [],
   "externals": [],
   "inline": [],

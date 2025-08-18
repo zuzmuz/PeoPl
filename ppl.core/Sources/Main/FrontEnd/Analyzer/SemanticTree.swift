@@ -213,16 +213,4 @@ public enum Semantic {
         /// to match for tags in choice types
         indirect case constructor(tag: Tag, pattern: Pattern)
     }
-
-    public struct Branch: Sendable {
-        let matchExpression: BindingExpression
-        let guardExpression: Expression
-        let body: Expression
-    }
-
-    public struct BindingExpression: Sendable {
-        let condition: Expression
-        let bindings: [Tag: TypeSpecifier]
-        // TODO: figure out how to capture complicated expressions
-    }
 }

@@ -13,7 +13,6 @@ trueValue: true // a boolean value
 falseValue: false // another boolean value
 
 nothingValue: nothing // a nothing value, used to indicate absence of value
-nothingValue2: _ // alias for nothing
 
 // main a function that takes no input and returns an integer
 main: func [] -> Int {
@@ -117,12 +116,13 @@ Number: choice [
 
 // tagged unions
 Geometry\Shape: choice [
-    circle' Geometry\Circle,
-    triangle' [Geometry\Point, Geometry\Point, Geometry\Point],
-    rectangle' [
-        center' Geometry\Point,
-        width' Float, height' Float,
-        orientation' Float
+    circle    'Geometry\Circle,
+    triangle  '[Geometry\Point, Geometry\Point, Geometry\Point],
+    rectangle '[
+        center      'Geometry\Point,
+        width       'Float,
+        height      'Float,
+        orientation 'Float
     ],
 ]
 

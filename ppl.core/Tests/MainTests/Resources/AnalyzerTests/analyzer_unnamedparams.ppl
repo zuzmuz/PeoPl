@@ -1,0 +1,19 @@
+Pos: [
+    Int,
+    a: Float,
+    Float,
+    b: Bool
+]
+
+
+pos: [Int, a: Float, Float, b: Bool] -> Int {
+    2
+}
+
+
+main: [] -> Int {
+    Pos(a: 1.0, b: false, 1, 2.0)
+    |>
+    |$b| pos(1, 2.0, b: true, a: 2.0)
+}
+
