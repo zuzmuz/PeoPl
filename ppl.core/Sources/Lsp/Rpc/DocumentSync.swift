@@ -1,86 +1,87 @@
-extension Lsp {
-    public enum TextDocumentParams {
-        public struct DidOpen: Codable, Sendable {
-            public let textDocument: TextDocumentItem
-        }
+public extension Lsp {
+	enum TextDocumentParams {
+		public struct DidOpen: Codable, Sendable {
+			public let textDocument: TextDocumentItem
+		}
 
-        public struct DidChange: Codable, Sendable {
-            public let textDocument: VersionedTextDocumentIdentifier
-            public let contentChanges: [TextDocumentContentChangeEvent]
-        }
+		public struct DidChange: Codable, Sendable {
+			public let textDocument: VersionedTextDocumentIdentifier
+			public let contentChanges: [TextDocumentContentChangeEvent]
+		}
 
-        public struct DidSave: Codable, Sendable {
-            public let textDocument: TextDocumentIdentifier
-            public let text: String?
-        }
-    }
-    public struct TextDocumentIdentifier: Codable, Sendable {
-        public let uri: String
-    }
+		public struct DidSave: Codable, Sendable {
+			public let textDocument: TextDocumentIdentifier
+			public let text: String?
+		}
+	}
 
-    public struct TextDocumentItem: Codable, Sendable {
-        public let uri: String
-        public let languageId: String
-        public let version: Int
-        public let text: String
-    }
+	struct TextDocumentIdentifier: Codable, Sendable {
+		public let uri: String
+	}
 
-    public struct VersionedTextDocumentIdentifier: Codable, Sendable {
-        public let uri: String
-        public let version: Int
-    }
+	struct TextDocumentItem: Codable, Sendable {
+		public let uri: String
+		public let languageId: String
+		public let version: Int
+		public let text: String
+	}
 
-    public enum TextDocumentContentChangeEvent: Codable, Sendable {
-        case full(text: String)
-        case range(range: Range, text: String)
+	struct VersionedTextDocumentIdentifier: Codable, Sendable {
+		public let uri: String
+		public let version: Int
+	}
 
-        enum CodingKeys: String, CodingKey {
-            case range
-            case text
-        }
+	enum TextDocumentContentChangeEvent: Codable, Sendable {
+		case full(text: String)
+		case range(range: Range, text: String)
 
-        public init(from decoder: Decoder) throws {
-            let container = try decoder.container(keyedBy: CodingKeys.self)
+		enum CodingKeys: String, CodingKey {
+			case range
+			case text
+		}
 
-            if let range = try? container.decode(Range.self, forKey: .range) {
-                let text = try container.decode(String.self, forKey: .text)
-                self = .range(range: range, text: text)
-            } else {
-                let text = try container.decode(String.self, forKey: .text)
-                self = .full(text: text)
-            }
-        }
+		public init(from decoder: Decoder) throws {
+			let container = try decoder.container(keyedBy: CodingKeys.self)
 
-        public func encode(to encoder: any Encoder) throws {
-            var container = encoder.container(keyedBy: CodingKeys.self)
+			if let range = try? container.decode(Range.self, forKey: .range) {
+				let text = try container.decode(String.self, forKey: .text)
+				self = .range(range: range, text: text)
+			} else {
+				let text = try container.decode(String.self, forKey: .text)
+				self = .full(text: text)
+			}
+		}
 
-            switch self {
-            case let .full(text):
-                try container.encode(text, forKey: .text)
-            case let .range(range, text):
-                try container.encode(range, forKey: .range)
-                try container.encode(text, forKey: .text)
-            }
-        }
-    }
+		public func encode(to encoder: any Encoder) throws {
+			var container = encoder.container(keyedBy: CodingKeys.self)
 
-    public struct Range: Codable, Sendable {
-        public let start: Position
-        public let end: Position
+			switch self {
+			case let .full(text):
+				try container.encode(text, forKey: .text)
+			case let .range(range, text):
+				try container.encode(range, forKey: .range)
+				try container.encode(text, forKey: .text)
+			}
+		}
+	}
 
-        public init(start: Position, end: Position) {
-            self.start = start
-            self.end = end
-        }
-    }
+	struct Range: Codable, Sendable {
+		public let start: Position
+		public let end: Position
 
-    public struct Position: Codable, Sendable {
-        public let line: Int
-        public let character: Int
+		public init(start: Position, end: Position) {
+			self.start = start
+			self.end = end
+		}
+	}
 
-        public init(line: Int, character: Int) {
-            self.line = line
-            self.character = character
-        }
-    }
+	struct Position: Codable, Sendable {
+		public let line: Int
+		public let character: Int
+
+		public init(line: Int, character: Int) {
+			self.line = line
+			self.character = character
+		}
+	}
 }

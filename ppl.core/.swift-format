@@ -1,6 +1,6 @@
 {
     "lineLength": 80,
     "indentation": {
-        "spaces": 4
+        "tabs": 1
     }
 }
