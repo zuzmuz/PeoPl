@@ -112,7 +112,7 @@ struct TreeSitterModulParser: Syntax.ModuleParser {
 							node: node, in: source
 						)
 					)
-					print("this is the doc string: \(docString)")
+					// print("this is the doc string: \(docString)")
 					docString = ""
 				} catch {
 					errors.append(error)
