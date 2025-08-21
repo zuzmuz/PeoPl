@@ -41,7 +41,7 @@ extension Syntax.Error {
 				end: .init(line: 0, character: 0)
 			)
 		case let .notImplemented(_, location),
-		     let .errorParsing(_, location):
+			let .errorParsing(_, location):
 			return location.lspRange
 		}
 	}
@@ -128,7 +128,7 @@ enum PpLsp {
 						level: .error,
 						tag: "LspHandler",
 						message:
-						"Failed to enumerate workspace folder: \(folder.uri)"
+							"Failed to enumerate workspace folder: \(folder.uri)"
 					)
 					return
 				}
@@ -136,9 +136,9 @@ enum PpLsp {
 				modulesContent =
 					urls.reduce(into: [:]) { acc, file in
 						guard let file = file as? URL,
-						      file.isFileURL,
-						      file.pathExtension == "ppl",
-						      let source = try? Syntax.Source(url: file)
+							file.isFileURL,
+							file.pathExtension == "ppl",
+							let source = try? Syntax.Source(url: file)
 						else { return }
 						acc[file.absoluteString] = source
 					}

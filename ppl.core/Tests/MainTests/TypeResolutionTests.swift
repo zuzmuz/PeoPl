@@ -29,7 +29,7 @@ final class TypeResoltionTests: XCTestCase {
 								.record([
 									.named("radius"): .nominal(
 										.chain(["Float"])
-									),
+									)
 								])
 							),
 							.named("rectangle"): .raw(
@@ -101,7 +101,7 @@ final class TypeResoltionTests: XCTestCase {
 					),
 					.chain(["declared"]): .raw(
 						.record([
-							.unnamed(0): .nominal(.chain(["redeclared"])),
+							.unnamed(0): .nominal(.chain(["redeclared"]))
 						])
 					),
 				],
@@ -111,7 +111,7 @@ final class TypeResoltionTests: XCTestCase {
 						errorChoice: .typeRedeclaration(
 							identifier: .chain(["redeclared"]),
 							otherLocations: [
-								.nowhere, // FIX: add correct locations
+								.nowhere,  // FIX: add correct locations
 								.nowhere,
 							]
 						)
@@ -121,7 +121,7 @@ final class TypeResoltionTests: XCTestCase {
 						errorChoice: .typeRedeclaration(
 							identifier: .chain(["redeclared"]),
 							otherLocations: [
-								.nowhere, // FIX: add correct locations
+								.nowhere,  // FIX: add correct locations
 								.nowhere,
 							]
 						)
@@ -132,17 +132,17 @@ final class TypeResoltionTests: XCTestCase {
 				typeDeclarations: [
 					.chain(["A"]): .raw(
 						.record([
-							.unnamed(0): .nominal(.chain(["B"])),
+							.unnamed(0): .nominal(.chain(["B"]))
 						])
 					),
 					.chain(["B"]): .raw(
 						.record([
-							.unnamed(0): .nominal(.chain(["C"])),
+							.unnamed(0): .nominal(.chain(["C"]))
 						])
 					),
 					.chain(["C"]): .raw(
 						.record([
-							.unnamed(0): .nominal(.chain(["D"])),
+							.unnamed(0): .nominal(.chain(["D"]))
 						])
 					),
 					.chain(["D"]): .raw(
@@ -151,11 +151,11 @@ final class TypeResoltionTests: XCTestCase {
 								.record([
 									.named("x"): .raw(
 										.record([
-											.unnamed(0): .nominal(.chain(["A"])),
+											.unnamed(0): .nominal(.chain(["A"]))
 										])
-									),
+									)
 								])
-							),
+							)
 						])
 					),
 				],
@@ -171,7 +171,7 @@ final class TypeResoltionTests: XCTestCase {
 											typeSpecifier: .nominalType(
 												.chain(["B"])
 											)
-										),
+										)
 									])
 								),
 								.init(
@@ -181,7 +181,7 @@ final class TypeResoltionTests: XCTestCase {
 											typeSpecifier: .nominalType(
 												.chain(["C"])
 											)
-										),
+										)
 									])
 								),
 								.init(
@@ -191,7 +191,7 @@ final class TypeResoltionTests: XCTestCase {
 											typeSpecifier: .nominalType(
 												.chain(["D"])
 											)
-										),
+										)
 									])
 								),
 								.init(
@@ -205,14 +205,14 @@ final class TypeResoltionTests: XCTestCase {
 													typeSpecifier: .record([
 														.untagged(
 															typeSpecifier:
-															.nominalType(
-																.chain(["A"])
-															)
-														),
+																.nominalType(
+																	.chain(["A"])
+																)
+														)
 													])
-												),
+												)
 											])
-										),
+										)
 									])
 								),
 							]
@@ -229,7 +229,7 @@ final class TypeResoltionTests: XCTestCase {
 											typeSpecifier: .nominalType(
 												.chain(["B"])
 											)
-										),
+										)
 									])
 								),
 								.init(
@@ -239,7 +239,7 @@ final class TypeResoltionTests: XCTestCase {
 											typeSpecifier: .nominalType(
 												.chain(["C"])
 											)
-										),
+										)
 									])
 								),
 								.init(
@@ -249,7 +249,7 @@ final class TypeResoltionTests: XCTestCase {
 											typeSpecifier: .nominalType(
 												.chain(["D"])
 											)
-										),
+										)
 									])
 								),
 								.init(
@@ -263,14 +263,14 @@ final class TypeResoltionTests: XCTestCase {
 													typeSpecifier: .record([
 														.untagged(
 															typeSpecifier:
-															.nominalType(
-																.chain(["A"])
-															)
-														),
+																.nominalType(
+																	.chain(["A"])
+																)
+														)
 													])
-												),
+												)
 											])
-										),
+										)
 									])
 								),
 							]
@@ -287,7 +287,7 @@ final class TypeResoltionTests: XCTestCase {
 											typeSpecifier: .nominalType(
 												.chain(["B"])
 											)
-										),
+										)
 									])
 								),
 								.init(
@@ -297,7 +297,7 @@ final class TypeResoltionTests: XCTestCase {
 											typeSpecifier: .nominalType(
 												.chain(["C"])
 											)
-										),
+										)
 									])
 								),
 								.init(
@@ -307,7 +307,7 @@ final class TypeResoltionTests: XCTestCase {
 											typeSpecifier: .nominalType(
 												.chain(["D"])
 											)
-										),
+										)
 									])
 								),
 								.init(
@@ -321,14 +321,14 @@ final class TypeResoltionTests: XCTestCase {
 													typeSpecifier: .record([
 														.untagged(
 															typeSpecifier:
-															.nominalType(
-																.chain(["A"])
-															)
-														),
+																.nominalType(
+																	.chain(["A"])
+																)
+														)
 													])
-												),
+												)
 											])
-										),
+										)
 									])
 								),
 							]
@@ -345,7 +345,7 @@ final class TypeResoltionTests: XCTestCase {
 											typeSpecifier: .nominalType(
 												.chain(["B"])
 											)
-										),
+										)
 									])
 								),
 								.init(
@@ -355,7 +355,7 @@ final class TypeResoltionTests: XCTestCase {
 											typeSpecifier: .nominalType(
 												.chain(["C"])
 											)
-										),
+										)
 									])
 								),
 								.init(
@@ -365,7 +365,7 @@ final class TypeResoltionTests: XCTestCase {
 											typeSpecifier: .nominalType(
 												.chain(["D"])
 											)
-										),
+										)
 									])
 								),
 								.init(
@@ -379,14 +379,14 @@ final class TypeResoltionTests: XCTestCase {
 													typeSpecifier: .record([
 														.untagged(
 															typeSpecifier:
-															.nominalType(
-																.chain(["A"])
-															)
-														),
+																.nominalType(
+																	.chain(["A"])
+																)
+														)
 													])
-												),
+												)
 											])
-										),
+										)
 									])
 								),
 							]

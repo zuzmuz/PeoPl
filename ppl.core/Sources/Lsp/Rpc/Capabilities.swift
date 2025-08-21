@@ -1,13 +1,13 @@
 import Foundation
 
-public extension Lsp {
-	enum PositionEncoding: String, Codable, Sendable {
+extension Lsp {
+	public enum PositionEncoding: String, Codable, Sendable {
 		case utf8 = "utf-8"
 		case utf16 = "utf-16"
 		case utf32 = "utf-32"
 	}
 
-	struct InitializeParams: RpcMessageItem, Sendable {
+	public struct InitializeParams: RpcMessageItem, Sendable {
 		public let processId: Int
 		public let capabilities: ClientCapabilities
 		public let clientInfo: ClientInfo?
@@ -15,31 +15,31 @@ public extension Lsp {
 		public let locale: String?
 	}
 
-	struct WorkspaceFolder: Codable, Sendable {
+	public struct WorkspaceFolder: Codable, Sendable {
 		public let uri: String
 		public let name: String
 	}
 
-	struct ClientCapabilities: Codable, Sendable {
+	public struct ClientCapabilities: Codable, Sendable {
 		public let workspace: WorkspaceClientCapabilities?
 		public let textDocument: TextDocumentClientCapabilities?
 		public let general: GeneralClientCapabilities?
 	}
 
-	struct ClientInfo: Codable, Sendable {
+	public struct ClientInfo: Codable, Sendable {
 		public let name: String
 		public let version: String
 	}
 
-	struct ValueSetClientCapabilities<T: Codable>: Codable {
+	public struct ValueSetClientCapabilities<T: Codable>: Codable {
 		public let valueSet: [T]?
 	}
 
-	struct GeneralClientCapabilities: Codable, Sendable {
+	public struct GeneralClientCapabilities: Codable, Sendable {
 		public let positionEncodings: [PositionEncoding]?
 	}
 
-	struct WorkspaceClientCapabilities: Codable, Sendable {
+	public struct WorkspaceClientCapabilities: Codable, Sendable {
 		public let applyEdit: Bool?
 		// let workspaceEdit: WorkspaceEditClientCapabilities?
 		// let didChangeConfiguration: DidChangeConfigurationClientCapabilities?
@@ -50,14 +50,14 @@ public extension Lsp {
 		// let configuration: Bool?
 	}
 
-	struct TextDocumentSyncClientCapabilities: Codable, Sendable {
+	public struct TextDocumentSyncClientCapabilities: Codable, Sendable {
 		public let dynamicRegistration: Bool?
 		public let willSave: Bool?
 		public let willSaveWaitUntil: Bool?
 		public let didSave: Bool?
 	}
 
-	struct TextDocumentClientCapabilities: Codable, Sendable {
+	public struct TextDocumentClientCapabilities: Codable, Sendable {
 		public let synchronization: TextDocumentSyncClientCapabilities?
 		// let completion: CompletionClientCapabilities?
 		// let hover: HoverClientCapabilities?
@@ -119,7 +119,7 @@ public extension Lsp {
 		// struct DiagnosticClientCapabilities: Codable {}
 	}
 
-	struct InitializeResult: Codable, Sendable {
+	public struct InitializeResult: Codable, Sendable {
 		public let capabilities: ServerCapabilities
 		public let serverInfo: ServerInfo?
 
@@ -132,7 +132,7 @@ public extension Lsp {
 		}
 	}
 
-	struct ServerCapabilities: Codable, Sendable {
+	public struct ServerCapabilities: Codable, Sendable {
 		public enum TextDocumentSync: Int, Codable, Sendable {
 			/// Documents are not synced
 			case none = 0
@@ -179,7 +179,7 @@ public extension Lsp {
 		}
 	}
 
-	struct ServerInfo: Codable, Sendable {
+	public struct ServerInfo: Codable, Sendable {
 		public let name: String
 		public let version: String?
 

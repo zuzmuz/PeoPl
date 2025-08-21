@@ -7,8 +7,8 @@ public protocol SemanticChecker:
 	>
 }
 
-public extension SemanticChecker {
-	func semanticCheck() -> Result<
+extension SemanticChecker {
+	public func semanticCheck() -> Result<
 		Semantic.DefinitionsContext, Semantic.ErrorList
 	> {
 		let intrinsicDeclarations = Semantic.getIntrinsicDeclarations()
@@ -33,7 +33,7 @@ public extension SemanticChecker {
 				typeLookup: typeLookup,
 				typeDeclarations: allTypeDeclarations,
 				contextFunctionDeclarations:
-				intrinsicDeclarations.functionDeclarations
+					intrinsicDeclarations.functionDeclarations
 			)
 
 		let allFunctionDeclarations = intrinsicDeclarations.functionDeclarations
@@ -88,12 +88,12 @@ public extension SemanticChecker {
 		let functionDefinitions: Semantic.FunctionDefinitionsMap =
 			Dictionary(
 				uniqueKeysWithValues:
-				expressionDefinitions.compactMap { result in
-					if case let .success((signature, expression)) = result {
-						return (signature, expression)
+					expressionDefinitions.compactMap { result in
+						if case let .success((signature, expression)) = result {
+							return (signature, expression)
+						}
+						return nil
 					}
-					return nil
-				}
 			)
 		// NOTE: I might need to send only function to code gen
 		return .success(

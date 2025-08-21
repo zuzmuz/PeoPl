@@ -116,7 +116,8 @@ extension Semantic.Pattern {
 		case let .constructor(tag, pattern):
 			return "\(tag.display())(\(pattern.display()))"
 		case let .destructor(fields):
-			return "{" + fields.map { "\($0.key.display()): \($0.value.display())" }
+			return "{"
+				+ fields.map { "\($0.key.display()): \($0.value.display())" }
 				.joined(separator: ", ") + "}"
 		case let .binding(name):
 			return "$\(name.display())"

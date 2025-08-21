@@ -107,7 +107,7 @@ public enum Lsp {
 							level: .info,
 							tag: "LspProxyHandler",
 							message:
-							"request id(\(request.id)) \(request.method.name)"
+								"request id(\(request.id)) \(request.method.name)"
 						)
 					// TODO: the proxy needs to send the request to the client
 					case let .response(response):
@@ -115,12 +115,12 @@ public enum Lsp {
 							level: .info,
 							tag: "LspProxyHandler",
 							message:
-							"response id(\(String(describing: response.id))"
+								"response id(\(String(describing: response.id))"
 						)
 						if let id = response.id,
-						   let continuation = self.pendingRequests.removeValue(
-						   	forKey: id
-						   )
+							let continuation = self.pendingRequests.removeValue(
+								forKey: id
+							)
 						{
 							continuation.resume(returning: response)
 						} else {
@@ -128,7 +128,7 @@ public enum Lsp {
 								level: .warning,
 								tag: "LspProxyHandler",
 								message:
-								"no pending request for response id \(String(describing: response.id))"
+									"no pending request for response id \(String(describing: response.id))"
 							)
 						}
 					case let .error(error):
@@ -168,7 +168,7 @@ public enum Lsp {
 							level: .error,
 							tag: "LspProxyHandler",
 							message:
-							"Failed to write request to tcp server: \(error.localizedDescription)"
+								"Failed to write request to tcp server: \(error.localizedDescription)"
 						)
 					}
 				}
@@ -192,7 +192,7 @@ public enum Lsp {
 							level: .error,
 							tag: "LspProxyHandler",
 							message:
-							"Failed to write notification to client: \(error.localizedDescription)"
+								"Failed to write notification to client: \(error.localizedDescription)"
 						)
 					}
 					continuation.resume()
@@ -298,7 +298,7 @@ public enum Lsp {
 						level: .info,
 						tag: "LspServer",
 						message:
-						"Request id(\(request.id)) \(request.method.name)"
+							"Request id(\(request.id)) \(request.method.name)"
 					)
 
 					let response = await handler.handle(request: request)
@@ -307,7 +307,7 @@ public enum Lsp {
 						level: .info,
 						tag: "LspServer",
 						message:
-						"Response id(\(String(describing: response.id))"
+							"Response id(\(String(describing: response.id))"
 					)
 					if let encodedResponse = coder.encode(
 						message: response
@@ -335,7 +335,7 @@ public enum Lsp {
 						level: .info,
 						tag: "LspServer",
 						message:
-						"Response id(\(String(describing: response.id))"
+							"Response id(\(String(describing: response.id))"
 					)
 				// TODO: handle responses from client based on server requests
 				case let .error(message):

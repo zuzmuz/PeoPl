@@ -60,10 +60,10 @@ public enum Syntax {
 		static let nowhere = NodeLocation(
 			pointRange: Point(
 				line: 0, column: 0
-			) ..< Point(
+			)..<Point(
 				line: 0, column: 0
 			),
-			range: 0 ..< 0
+			range: 0..<0
 		)
 
 		public init(from decoder: any Decoder) throws {

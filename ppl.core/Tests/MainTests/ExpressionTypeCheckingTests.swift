@@ -191,7 +191,7 @@ final class ExpressionTypeCheckingTests: XCTestCase {
 						identifier: .chain(["access"]),
 						inputType: (.input, .nothing),
 						arguments: [
-							.named("r"): .nominal(.chain(["Record"])),
+							.named("r"): .nominal(.chain(["Record"]))
 						]
 					):
 						.call(
@@ -225,7 +225,7 @@ final class ExpressionTypeCheckingTests: XCTestCase {
 						),
 				],
 				expressionErrors: []
-			),
+			)
 		]
 
 	func testFiles() throws {

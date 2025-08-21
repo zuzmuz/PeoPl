@@ -98,7 +98,7 @@ extension Syntax.FunctionType {
 							[
 								Syntax.TypeField.homogeneousTypeProduct(
 									homogeneousTypeProduct
-								),
+								)
 							].getProductSemanticTypes()
 						)
 					)
@@ -112,7 +112,7 @@ extension Syntax.FunctionType {
 		let arguments = try self.arguments.getProductSemanticTypes()
 
 		if let inputTypeField = self.inputType,
-		   arguments[inputType.tag] != nil
+			arguments[inputType.tag] != nil
 		{
 			throw .init(
 				location: inputTypeField.location,
@@ -127,8 +127,8 @@ extension Syntax.FunctionType {
 	}
 }
 
-public extension FunctionDefinitionsChecker {
-	func resolveFunctionSymbols(
+extension FunctionDefinitionsChecker {
+	public func resolveFunctionSymbols(
 		typeLookup: borrowing Semantic.TypeLookupMap,
 		typeDeclarations: borrowing Semantic.TypeDeclarationsMap,
 		contextFunctionDeclarations _: borrowing Semantic.FunctionDeclarationsMap
@@ -146,7 +146,7 @@ public extension FunctionDefinitionsChecker {
 		// detecting invalid type identifiers
 		let typesNotInScope = declarations.flatMap { definition in
 			if case let .function(function) = definition.definition,
-			   let signature = function.signature
+				let signature = function.signature
 			{
 				let undefinedInputTypes =
 					signature.inputType?.undefinedTypes(
@@ -245,8 +245,9 @@ public extension FunctionDefinitionsChecker {
 			}
 
 		var functionDeclarations: Semantic.FunctionDeclarationsMap = [:]
-		var functionBodyExpressions: [Semantic.FunctionSignature: Syntax
-			.Expression] = [:]
+		var functionBodyExpressions:
+			[Semantic.FunctionSignature: Syntax
+				.Expression] = [:]
 		var typeSpecifierErrors: [Semantic.Error] = []
 
 		for (signature, definition) in functionLookup {

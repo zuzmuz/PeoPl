@@ -37,7 +37,8 @@ extension Semantic.TypeSpecifier: LLVM.TypeBuilder {
 			return llvm.types[identifier.llvmName]!
 		default:
 			throw LLVM.Error
-				.notImplemented("Only nominal types can be converted to struct types")
+				.notImplemented(
+					"Only nominal types can be converted to struct types")
 		}
 	}
 }

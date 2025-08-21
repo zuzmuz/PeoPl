@@ -1,7 +1,7 @@
 import Foundation
 
-public extension Semantic {
-	enum PatternError: LocalizedError {
+extension Semantic {
+	public enum PatternError: LocalizedError {
 		case duplicateBindings
 		case bindingTypeMismatch
 		case numberOfPatternMismatch(
@@ -11,7 +11,7 @@ public extension Semantic {
 		case recordFieldMissing(tag: Semantic.Tag)
 	}
 
-	struct Error: LocalizedError {
+	public struct Error: LocalizedError {
 		let location: Syntax.NodeLocation
 		let errorChoice: ErrorType
 
@@ -76,7 +76,7 @@ public extension Semantic {
 		}
 	}
 
-	struct ErrorList: LocalizedError {
+	public struct ErrorList: LocalizedError {
 		public let errors: [Error]
 	}
 }

@@ -1,5 +1,5 @@
-import cllvm
 import Foundation
+import cllvm
 
 public enum LLVM {}
 
@@ -68,7 +68,7 @@ extension LLVM {
 		case unreachable
 	}
 
-	struct TypeDefinition { // TODO: what about choice types
+	struct TypeDefinition {  // TODO: what about choice types
 		let name: String
 		let paramTypes: [LLVMTypeRef?]
 		let paramNames: [LLVM.ParamTag: UInt32]

@@ -47,7 +47,7 @@ struct TreeSitterModulParser: Syntax.ModuleParser {
 			collectedErrors.append(
 				.errorParsing(
 					element:
-					"MISSING \(node.nodeType ?? "unknown")",
+						"MISSING \(node.nodeType ?? "unknown")",
 					location: node.getLocation(in: source)
 				)
 			)
@@ -135,7 +135,7 @@ extension Node {
 	func compactMapChildren<T, E>(
 		block: (Node) throws(E) -> T?
 	) throws(E) -> [T] where E: Error {
-		let optionalMap: [T?] = try (0 ..< childCount).map {
+		let optionalMap: [T?] = try (0..<childCount).map {
 			i throws(E) in
 			guard let child = child(at: i) else { return nil }
 			return try block(child)
@@ -147,7 +147,7 @@ extension Node {
 	func compactMapChildrenEnumerated<T, E>(
 		block: (Int, Node) throws(E) -> T?
 	) throws(E) -> [T] where E: Error {
-		let optionalMap: [T?] = try (0 ..< childCount).map {
+		let optionalMap: [T?] = try (0..<childCount).map {
 			i throws(E) in
 			guard let child = child(at: i) else { return nil }
 			return try block(i, child)
@@ -166,12 +166,12 @@ extension Node {
 	}
 
 	func getLocation(in _: Syntax.Source) -> Syntax.NodeLocation {
-		let range = self.range.lowerBound ..< self.range.upperBound
+		let range = self.range.lowerBound..<self.range.upperBound
 		let pointRange =
 			Syntax.NodeLocation.Point(
 				line: Int(self.pointRange.lowerBound.row),
 				column: Int(self.pointRange.lowerBound.column)
-			) ..< Syntax.NodeLocation.Point(
+			)..<Syntax.NodeLocation.Point(
 				line: Int(self.pointRange.upperBound.row),
 				column: Int(self.pointRange.upperBound.column)
 			)
@@ -259,18 +259,18 @@ extension Syntax.Definition: TreeSitterNode {
 		if let argumentsNode = node.child(byFieldName: "type_arguments") {
 			arguments =
 				try argumentsNode
-					.compactMapChildren {
-						child throws(Syntax.Error) in
-						if child.nodeType == "type_field" {
-							return try Syntax.TypeField
-								.from(
-									node: child,
-									in: source
-								)
-						} else {
-							return nil
-						}
+				.compactMapChildren {
+					child throws(Syntax.Error) in
+					if child.nodeType == "type_field" {
+						return try Syntax.TypeField
+							.from(
+								node: child,
+								in: source
+							)
+					} else {
+						return nil
 					}
+				}
 		} else {
 			arguments = []
 		}
@@ -585,18 +585,18 @@ extension Syntax.FunctionType: TreeSitterNode {
 		if let argumentsNode = node.child(byFieldName: "arguments") {
 			arguments =
 				try argumentsNode
-					.compactMapChildren {
-						child throws(Syntax.Error) in
-						if child.nodeType == "type_field" {
-							return try Syntax.TypeField
-								.from(
-									node: child,
-									in: source
-								)
-						} else {
-							return nil
-						}
+				.compactMapChildren {
+					child throws(Syntax.Error) in
+					if child.nodeType == "type_field" {
+						return try Syntax.TypeField
+							.from(
+								node: child,
+								in: source
+							)
+					} else {
+						return nil
 					}
+				}
 		} else {
 			arguments = []
 		}
@@ -806,7 +806,7 @@ extension Syntax.Unary: TreeSitterNode {
 		in source: Syntax.Source
 	) throws(Syntax.Error) -> Self {
 		guard let operatorNode = node.child(byFieldName: "operator"),
-		      let operandNode = node.child(byFieldName: "operand")
+			let operandNode = node.child(byFieldName: "operand")
 		else {
 			throw .errorParsing(
 				element: "UnaryExpression",
@@ -835,8 +835,8 @@ extension Syntax.Binary: TreeSitterNode {
 		in source: Syntax.Source
 	) throws(Syntax.Error) -> Self {
 		guard let leftNode = node.child(byFieldName: "left"),
-		      let operatorNode = node.child(byFieldName: "operator"),
-		      let rightNode = node.child(byFieldName: "right")
+			let operatorNode = node.child(byFieldName: "operator"),
+			let rightNode = node.child(byFieldName: "right")
 		else {
 			throw .errorParsing(
 				element: "BinaryExpression",
@@ -899,7 +899,7 @@ extension Syntax.Access: TreeSitterNode {
 		in source: Syntax.Source
 	) throws(Syntax.Error) -> Self {
 		guard let prefixNode = node.child(byFieldName: "prefix"),
-		      let fieldNode = node.child(byFieldName: "field")
+			let fieldNode = node.child(byFieldName: "field")
 		else {
 			throw .errorParsing(
 				element: "AccessExpression",
@@ -935,7 +935,7 @@ extension Syntax.Function: TreeSitterNode {
 		in source: Syntax.Source
 	) throws(Syntax.Error) -> Self {
 		guard let bodyNode = node.child(byFieldName: "body"),
-		      let bodyExpressionNode = bodyNode.child(at: 1)
+			let bodyExpressionNode = bodyNode.child(at: 1)
 		else {
 			throw .errorParsing(
 				element: "FunctionDefinition",
@@ -963,7 +963,7 @@ extension Syntax.Pipe: TreeSitterNode {
 		in source: Syntax.Source
 	) throws(Syntax.Error) -> Self {
 		guard let leftNode = node.child(byFieldName: "left"),
-		      let rightNode = node.child(byFieldName: "right")
+			let rightNode = node.child(byFieldName: "right")
 		else {
 			throw .errorParsing(
 				element: "PipedExpression",
@@ -985,7 +985,7 @@ extension Syntax.Branched: TreeSitterNode {
 	) throws(Syntax.Error) -> Self {
 		return try .init(
 			branches:
-			node
+				node
 				.compactMapChildren {
 					child throws(Syntax.Error) in
 					if child.nodeType == "branch" {

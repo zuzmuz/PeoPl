@@ -7,7 +7,7 @@ import PackageDescription
 let package = Package(
 	name: "peoplcore",
 	platforms: [
-		.macOS(.v13),
+		.macOS(.v13)
 	],
 
 	dependencies: [
@@ -32,7 +32,7 @@ let package = Package(
 			name: "cllvm",
 			pkgConfig: "cllvm",
 			providers: [
-				.brew(["llvm"]),
+				.brew(["llvm"])
 			]
 		),
 		.target(
@@ -64,7 +64,7 @@ let package = Package(
 			name: "MainTests",
 			dependencies: ["Main"],
 			resources: [
-				.process("Resources"),
+				.process("Resources")
 			]
 		),
 	],

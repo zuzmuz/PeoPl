@@ -7,13 +7,13 @@ extension Syntax.NodeLocation: CustomDebugStringConvertible {
 	}
 }
 
-public extension Syntax.Source {
-	init(path: String) throws(Syntax.Error) {
+extension Syntax.Source {
+	public init(path: String) throws(Syntax.Error) {
 		let fileHandle = FileHandle(forReadingAtPath: path)
 		guard let outputData = try? fileHandle?.read(upToCount: Int.max),
-		      let outputString = String(
-		      	data: outputData, encoding: .utf8
-		      )
+			let outputString = String(
+				data: outputData, encoding: .utf8
+			)
 		else {
 			throw .sourceUnreadable
 		}
@@ -21,9 +21,9 @@ public extension Syntax.Source {
 		name = path
 	}
 
-	init(url: URL) throws(Syntax.Error) {
+	public init(url: URL) throws(Syntax.Error) {
 		guard let data = try? Data(contentsOf: url),
-		      let source = String(data: data, encoding: .utf8)
+			let source = String(data: data, encoding: .utf8)
 		else {
 			throw .sourceUnreadable
 		}

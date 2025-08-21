@@ -49,7 +49,7 @@ extension Peopl {
 			static let configuration = CommandConfiguration(
 				commandName: "inplace",
 				abstract:
-				"Run the PeoPl language server protocol server in place"
+					"Run the PeoPl language server protocol server in place"
 			)
 
 			enum Logger: String, ExpressibleByArgument {
@@ -109,8 +109,8 @@ extension Peopl {
 				static let configuration = CommandConfiguration(
 					commandName: "socket",
 					abstract:
-					// swiftlint:disable:next line_length
-					"Run the PeoPl language server protocol server over a socket"
+						// swiftlint:disable:next line_length
+						"Run the PeoPl language server protocol server over a socket"
 				)
 
 				enum Logger: String, ExpressibleByArgument {
@@ -180,7 +180,7 @@ extension Peopl {
 				static let configuration = CommandConfiguration(
 					commandName: "proxy",
 					abstract:
-					"Run the PeoPl language server protocol server as a proxy"
+						"Run the PeoPl language server protocol server as a proxy"
 				)
 
 				enum Logger: String, ExpressibleByArgument {

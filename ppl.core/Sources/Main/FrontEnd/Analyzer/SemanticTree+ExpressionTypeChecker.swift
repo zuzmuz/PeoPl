@@ -1,5 +1,5 @@
-public extension Semantic.FunctionSignature {
-	func checkBody(
+extension Semantic.FunctionSignature {
+	public func checkBody(
 		body: Syntax.Expression,
 		outputType: Semantic.TypeSpecifier,
 		context: borrowing Semantic.DeclarationsContext
@@ -42,7 +42,7 @@ public extension Semantic.FunctionSignature {
 	}
 }
 
-public extension [Syntax.Expression] {
+extension [Syntax.Expression] {
 	/// Transforms a list of syntax expressions to a tagged list of semantic
 	/// expressions.
 	/// If an expression of the list is a tagged expressions,
@@ -61,7 +61,7 @@ public extension [Syntax.Expression] {
 	/// # throws
 	/// ``Semantic.Error`` if there is a duplicated expression field name or if the
 	/// type checking fails
-	func checkType(
+	public func checkType(
 		with input: Semantic.Expression,
 		localScope: borrowing Semantic.LocalScope,
 		context: borrowing Semantic.DeclarationsContext
@@ -481,12 +481,12 @@ extension Syntax.Expression {
 			)
 		case let (_, .nominal(nominal)):
 			if nominal.identifier.chain.count == 1,
-			   let field = nominal.identifier.chain.first
+				let field = nominal.identifier.chain.first
 			{
 				// NOTE: named and unnamed are equivalent, but I should figure out how to
 				// switch between the two
 				if input.type == .nothing,
-				   let fieldTypeInScope = localScope[.named(field)]
+					let fieldTypeInScope = localScope[.named(field)]
 				{
 					return .fieldInScope(
 						tag: .named(field), type: fieldTypeInScope

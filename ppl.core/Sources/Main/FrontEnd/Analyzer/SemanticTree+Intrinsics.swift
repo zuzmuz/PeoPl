@@ -11,8 +11,8 @@ extension Semantic.TypeSpecifier {
 }
 
 extension Semantic {
-	public static func getIntrinsicDeclarations(
-	) -> Semantic.DeclarationsContext {
+	public static func getIntrinsicDeclarations() -> Semantic.DeclarationsContext
+	{
 		return .init(
 			typeDeclarations: [
 				.init(chain: ["UInt"]): .uint,

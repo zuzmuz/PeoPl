@@ -1,6 +1,6 @@
 import Foundation
 
-public extension Lsp {
+extension Lsp {
 	protocol RpcMessageItem: Codable, CustomDebugStringConvertible {}
 
 	internal enum DecodingResult {
@@ -34,7 +34,7 @@ public extension Lsp {
 			}
 
 			let bodyRange =
-				separatorRange.upperBound ..< separatorRange.upperBound + bodySize
+				separatorRange.upperBound..<separatorRange.upperBound + bodySize
 			if bodyRange.upperBound > data.endIndex {
 				return (.incomplete, data)
 			}
@@ -79,7 +79,7 @@ public extension Lsp {
 	}
 
 	// swiftlint:disable:next type_name
-	enum Id: Codable, Sendable, Hashable {
+	public enum Id: Codable, Sendable, Hashable {
 		case int(Int)
 		case string(String)
 
@@ -108,7 +108,7 @@ public extension Lsp {
 		}
 	}
 
-	struct RequestMessage: Codable, Sendable {
+	public struct RequestMessage: Codable, Sendable {
 		public let jsonrpc: String
 		public let id: Id
 		public let method: Method
@@ -129,12 +129,12 @@ public extension Lsp {
 					return .shutdown
 				case .diagnostic:
 					return .diagnostic
-					// case .completion:
-					//     return .completion
-					// case .foldingRange:
-					//     return .foldingRange
-					// case .semanticTokensFull:
-					//     return .semanticTokensFull
+				// case .completion:
+				//     return .completion
+				// case .foldingRange:
+				//     return .foldingRange
+				// case .semanticTokensFull:
+				//     return .semanticTokensFull
 				}
 			}
 
@@ -216,7 +216,7 @@ public extension Lsp {
 		}
 	}
 
-	struct NotificationMessage: Codable, Sendable {
+	public struct NotificationMessage: Codable, Sendable {
 		let jsonrpc: String
 		public let method: Method
 
@@ -331,7 +331,7 @@ public extension Lsp {
 		}
 	}
 
-	struct ResponseMessage: Codable, Sendable {
+	public struct ResponseMessage: Codable, Sendable {
 		let jsonrpc: String
 		public let id: Id?
 		public let result: Result<ResponseSuccess, ResponseError>?
@@ -390,11 +390,11 @@ public extension Lsp {
 		}
 	}
 
-	struct UnknownMessage: Codable {
+	public struct UnknownMessage: Codable {
 		let method: String
 	}
 
-	enum ResponseSuccess: Codable, Sendable {
+	public enum ResponseSuccess: Codable, Sendable {
 		case initialize(InitializeResult)
 		case diagnostic(DocumentDiagnosticReport)
 
@@ -425,7 +425,7 @@ public extension Lsp {
 		}
 	}
 
-	enum ResponseError: Codable, Error {
+	public enum ResponseError: Codable, Error {
 		case uriNotFound
 
 		enum CodingKeys: String, CodingKey {
@@ -464,8 +464,8 @@ public extension Lsp {
 	}
 }
 
-public extension Lsp.RpcMessageItem {
-	var debugDescription: String {
+extension Lsp.RpcMessageItem {
+	public var debugDescription: String {
 		let jsonEncoder = JSONEncoder()
 		jsonEncoder.outputFormatting = .prettyPrinted
 

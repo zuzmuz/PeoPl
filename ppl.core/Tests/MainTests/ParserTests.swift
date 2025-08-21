@@ -437,17 +437,19 @@ extension Syntax.Expression {
 	static func record(
 		_ typeFields: [Syntax.TypeField]
 	) -> Syntax.Expression {
-		return .typeSpecifier(.recordType(
-			.init(typeFields: typeFields)
-		))
+		return .typeSpecifier(
+			.recordType(
+				.init(typeFields: typeFields)
+			))
 	}
 
 	static func choice(
 		_ typeFields: [Syntax.TypeField]
 	) -> Syntax.Expression {
-		return .typeSpecifier(.choiceType(
-			.init(typeFields: typeFields)
-		))
+		return .typeSpecifier(
+			.choiceType(
+				.init(typeFields: typeFields)
+			))
 	}
 
 	static func nominal(
@@ -540,7 +542,7 @@ final class ParserTests: XCTestCase {
 								typeSpecifier: .nominalType(
 									.chain(["Int"])
 								)
-							),
+							)
 						]
 					)
 				),
@@ -596,12 +598,12 @@ final class ParserTests: XCTestCase {
 													.tagged(
 														tag: "c",
 														typeSpecifier:
-														.nominalType(
-															.chain([
-																"String",
-															])
-														)
-													),
+															.nominalType(
+																.chain([
+																	"String"
+																])
+															)
+													)
 												]
 											)
 										),
@@ -620,7 +622,7 @@ final class ParserTests: XCTestCase {
 								typeSpecifier: .nominalType(
 									.chain(["Int"])
 								)
-							),
+							)
 						]
 					)
 				),
@@ -798,7 +800,7 @@ final class ParserTests: XCTestCase {
 									typeSpecifier: .nominalType(
 										.chain(["Float"])
 									)
-								),
+								)
 							])
 						),
 						.tagged(

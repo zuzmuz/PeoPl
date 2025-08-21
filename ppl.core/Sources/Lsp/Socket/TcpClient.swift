@@ -2,12 +2,12 @@ import Foundation
 import Network
 import Utils
 
-public extension Socket {
+extension Socket {
 	/// An implementation of the ``Lsp.Transport`` which uses a tcp connection as
 	/// the interface.
 	/// The TcpClient requires a ``TcpServer`` to be listening on the host and port
 	/// defined otherwise it fails
-	actor TcpClient<L: Utils.Logger>: Lsp.Transport {
+	public actor TcpClient<L: Utils.Logger>: Lsp.Transport {
 		private let host: NWEndpoint.Host
 		private let port: NWEndpoint.Port
 		private var connection: NWConnection?
@@ -108,7 +108,7 @@ public extension Socket {
 								level: .error,
 								tag: Socket.clientTag,
 								message:
-								"connection failed with error: \(error)"
+									"connection failed with error: \(error)"
 							)
 							Task {
 								await self.cancelConnection()
@@ -138,14 +138,14 @@ public extension Socket {
 								level: .warning,
 								tag: Socket.clientTag,
 								message:
-								"client connection waiting with error: \(error)"
+									"client connection waiting with error: \(error)"
 							)
 						default:
 							self.logger.log(
 								level: .warning,
 								tag: Socket.clientTag,
 								message:
-								"client connection unknown state \(state)"
+									"client connection unknown state \(state)"
 							)
 						}
 					}

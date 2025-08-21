@@ -89,7 +89,7 @@ extension [Syntax.TypeField] {
 				}
 				guard
 					let typeSpecifier =
-					taggedTypeSpecifier.typeSpecifier
+						taggedTypeSpecifier.typeSpecifier
 				else {
 					throw .init(
 						location: typeField.location,
@@ -104,7 +104,7 @@ extension [Syntax.TypeField] {
 					.getSemanticType()
 				switch homogeneousTypeProduct.count {
 				case let .literal(value):
-					for index in 0 ..< value {
+					for index in 0..<value {
 						let fieldTag = Semantic.Tag.unnamed(
 							fieldCounter + index
 						)
@@ -145,7 +145,7 @@ extension [Syntax.TypeField] {
 			case let .taggedTypeSpecifier(taggedTypeSpecifier):
 				recordFields[.named(taggedTypeSpecifier.tag)] =
 					try taggedTypeSpecifier.typeSpecifier?.getSemanticType()
-						?? .nothing
+					?? .nothing
 				fieldCounter += 1
 			case .homogeneousTypeProduct:
 				throw .init(
@@ -248,8 +248,7 @@ extension TypeDeclarationsChecker {
 	) {
 		let declarations = getTypeDeclarations()
 
-		let typesLocations:
-			[Semantic.QualifiedIdentifier: [Syntax.Definition]] =
+		let typesLocations: [Semantic.QualifiedIdentifier: [Syntax.Definition]] =
 			declarations.reduce(into: [:]) { acc, type in
 				let semanticIdentifer =
 					type.identifier.getSemanticIdentifier()

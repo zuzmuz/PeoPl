@@ -27,7 +27,7 @@ final class FunctionResolutionTests: XCTestCase {
 						identifier: .chain(["overload"]),
 						inputType: (.input, .nothing),
 						arguments: [
-							.named("a"): .nominal(.chain(["Int"])),
+							.named("a"): .nominal(.chain(["Int"]))
 						]
 					): .nominal(.chain(["Int"])),
 					.init(
@@ -70,49 +70,16 @@ final class FunctionResolutionTests: XCTestCase {
 						location: .nowhere,
 						errorChoice: .functionRedeclaration(
 							signature:
-							.init(
-								identifier: .chain(["first"]),
-								inputType: (.input, .nothing),
-								arguments: [
-									.named("a"): .nominal(.chain(["Int"])),
-									.named("b"): .nominal(.chain(["Bool"])),
-								]
-							),
-							otherLocations: [
-								.nowhere, .nowhere, // FIX: put correct locations
-							]
-						)
-					),
-					.init(
-						location: .nowhere,
-						errorChoice: .functionRedeclaration(
-							signature:
-							.init(
-								identifier: .chain(["first"]),
-								inputType: (.input, .nothing),
-								arguments: [
-									.named("a"): .nominal(.chain(["Int"])),
-									.named("b"): .nominal(.chain(["Bool"])),
-								]
-							),
-							otherLocations: [
-								.nowhere, .nowhere, // FIX: put correct locations
-							]
-						)
-					),
-					.init(
-						location: .nowhere,
-						errorChoice: .functionRedeclaration(
-							signature:
-							.init(
-								identifier: .chain(["with", "input"]),
-								inputType: (
-									.input, .nominal(.chain(["Float"]))
+								.init(
+									identifier: .chain(["first"]),
+									inputType: (.input, .nothing),
+									arguments: [
+										.named("a"): .nominal(.chain(["Int"])),
+										.named("b"): .nominal(.chain(["Bool"])),
+									]
 								),
-								arguments: [:]
-							),
 							otherLocations: [
-								.nowhere, .nowhere, // FIX: put correct locations
+								.nowhere, .nowhere,  // FIX: put correct locations
 							]
 						)
 					),
@@ -120,15 +87,48 @@ final class FunctionResolutionTests: XCTestCase {
 						location: .nowhere,
 						errorChoice: .functionRedeclaration(
 							signature:
-							.init(
-								identifier: .chain(["with", "input"]),
-								inputType: (
-									.input, .nominal(.chain(["Float"]))
+								.init(
+									identifier: .chain(["first"]),
+									inputType: (.input, .nothing),
+									arguments: [
+										.named("a"): .nominal(.chain(["Int"])),
+										.named("b"): .nominal(.chain(["Bool"])),
+									]
 								),
-								arguments: [:]
-							),
 							otherLocations: [
-								.nowhere, .nowhere, // FIX: put correct locations
+								.nowhere, .nowhere,  // FIX: put correct locations
+							]
+						)
+					),
+					.init(
+						location: .nowhere,
+						errorChoice: .functionRedeclaration(
+							signature:
+								.init(
+									identifier: .chain(["with", "input"]),
+									inputType: (
+										.input, .nominal(.chain(["Float"]))
+									),
+									arguments: [:]
+								),
+							otherLocations: [
+								.nowhere, .nowhere,  // FIX: put correct locations
+							]
+						)
+					),
+					.init(
+						location: .nowhere,
+						errorChoice: .functionRedeclaration(
+							signature:
+								.init(
+									identifier: .chain(["with", "input"]),
+									inputType: (
+										.input, .nominal(.chain(["Float"]))
+									),
+									arguments: [:]
+								),
+							otherLocations: [
+								.nowhere, .nowhere,  // FIX: put correct locations
 							]
 						)
 					),

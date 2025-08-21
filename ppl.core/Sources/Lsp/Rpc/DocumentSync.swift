@@ -1,5 +1,5 @@
-public extension Lsp {
-	enum TextDocumentParams {
+extension Lsp {
+	public enum TextDocumentParams {
 		public struct DidOpen: Codable, Sendable {
 			public let textDocument: TextDocumentItem
 		}
@@ -15,23 +15,23 @@ public extension Lsp {
 		}
 	}
 
-	struct TextDocumentIdentifier: Codable, Sendable {
+	public struct TextDocumentIdentifier: Codable, Sendable {
 		public let uri: String
 	}
 
-	struct TextDocumentItem: Codable, Sendable {
+	public struct TextDocumentItem: Codable, Sendable {
 		public let uri: String
 		public let languageId: String
 		public let version: Int
 		public let text: String
 	}
 
-	struct VersionedTextDocumentIdentifier: Codable, Sendable {
+	public struct VersionedTextDocumentIdentifier: Codable, Sendable {
 		public let uri: String
 		public let version: Int
 	}
 
-	enum TextDocumentContentChangeEvent: Codable, Sendable {
+	public enum TextDocumentContentChangeEvent: Codable, Sendable {
 		case full(text: String)
 		case range(range: Range, text: String)
 
@@ -65,7 +65,7 @@ public extension Lsp {
 		}
 	}
 
-	struct Range: Codable, Sendable {
+	public struct Range: Codable, Sendable {
 		public let start: Position
 		public let end: Position
 
@@ -75,7 +75,7 @@ public extension Lsp {
 		}
 	}
 
-	struct Position: Codable, Sendable {
+	public struct Position: Codable, Sendable {
 		public let line: Int
 		public let character: Int
 

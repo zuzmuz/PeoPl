@@ -82,10 +82,10 @@ final class BranchingExpressionTypeCheckingTests: XCTestCase {
 								),
 							]),
 							type: .int,
-						),
+						)
 				],
 				expressionErrors: []
-			),
+			)
 		]
 
 	func testFiles() throws {

@@ -177,9 +177,9 @@ extension Semantic.Pattern {
 			}
 		case let .constructor(tag, pattern):
 			fatalError()
-			// patterns.reduce(into: [:]) { pattern in
-			//     pattern.type
-			// }
+		// patterns.reduce(into: [:]) { pattern in
+		//     pattern.type
+		// }
 		}
 	}
 }

@@ -2,14 +2,14 @@ import Foundation
 import Network
 import Utils
 
-public extension Socket {
+extension Socket {
 	/// An implementation of the ``Lsp.Transport`` which uses a tcp connection as
 	/// the interface.
 	/// The TcpServer sets up a listener on a defined port and waits for a
 	/// connection from a tcp client.
 	/// The server only supports one tcp connection and will cancel all subsequent
 	/// connetion attempts
-	actor TcpServer<L: Utils.Logger>: Lsp.Transport {
+	public actor TcpServer<L: Utils.Logger>: Lsp.Transport {
 		private let port: NWEndpoint.Port
 		private var listener: NWListener?
 		private var connection: NWConnection?

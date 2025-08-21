@@ -1,11 +1,11 @@
-public extension Lsp {
-	struct DocumentDiagnosticParams: RpcMessageItem, Sendable {
+extension Lsp {
+	public struct DocumentDiagnosticParams: RpcMessageItem, Sendable {
 		public let textDocument: TextDocumentIdentifier
 		public let identifier: String?
 		public let previousResultId: String?
 	}
 
-	enum DocumentDiagnosticReport: Codable, Sendable {
+	public enum DocumentDiagnosticReport: Codable, Sendable {
 		case full(
 			resultId: String?,
 			items: [Diagnostic],
@@ -85,7 +85,7 @@ public extension Lsp {
 		}
 	}
 
-	struct Diagnostic: Codable, Sendable {
+	public struct Diagnostic: Codable, Sendable {
 		public let range: Range
 		public let severity: DiagnosticSeverity?
 		public let code: DiagnosticCode?
@@ -116,14 +116,14 @@ public extension Lsp {
 		}
 	}
 
-	enum DiagnosticSeverity: Int, Codable, Sendable {
+	public enum DiagnosticSeverity: Int, Codable, Sendable {
 		case error = 1
 		case warning = 2
 		case information = 3
 		case hint = 4
 	}
 
-	enum DiagnosticCode: Codable, Sendable {
+	public enum DiagnosticCode: Codable, Sendable {
 		case integer(Int)
 		case string(String)
 
@@ -137,21 +137,21 @@ public extension Lsp {
 		}
 	}
 
-	struct DiagnosticCodeDescription: Codable, Sendable {
+	public struct DiagnosticCodeDescription: Codable, Sendable {
 		let href: String
 	}
 
-	enum DiagnosticTag: Int, Codable, Sendable {
+	public enum DiagnosticTag: Int, Codable, Sendable {
 		case unnecessary = 1
 		case deprecated = 2
 	}
 
-	struct DiagnosticRelatedInformation: Codable, Sendable {
+	public struct DiagnosticRelatedInformation: Codable, Sendable {
 		public let location: Location
 		public let message: String
 	}
 
-	struct Location: Codable, Sendable {
+	public struct Location: Codable, Sendable {
 		public let uri: String
 		public let range: Range
 	}
