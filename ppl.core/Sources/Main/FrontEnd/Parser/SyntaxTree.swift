@@ -374,6 +374,11 @@ public enum Syntax {
 		}
 	}
 
+	public struct DocString: Codable, Sendable, SyntaxNode {
+		let content: String
+		public let location: Syntax.NodeLocation
+	}
+
 	/// Core expression node representing all computations and values in the
 	/// language
 	public indirect enum Expression: Codable, Sendable, SyntaxNode {

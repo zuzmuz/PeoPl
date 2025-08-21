@@ -2,7 +2,7 @@ import XCTest
 
 @testable import Main
 
-final class TypeResoltionTests: XCTestCase {
+final class TypeResolutionTests: XCTestCase {
 	let fileNames:
 		[String: (
 			typeDeclarations: Semantic.TypeDeclarationsMap,

@@ -91,8 +91,20 @@ struct TreeSitterModulParser: Syntax.ModuleParser {
 		)
 
 		var definitions: [Syntax.Definition] = []
+		var docString = ""
 
-		rootNode.enumerateChildren { node in
+		for index in 0..<rootNode.childCount {
+			guard let node = rootNode.child(at: index) else { break }
+			if node.nodeType == "comment" {
+				do {
+					let comment = try node.getString(in: source)
+					if comment.hasPrefix("///") {
+						docString += comment.dropFirst(3)
+					}
+				} catch {
+					errors.append(error)
+				}
+			}
 			if node.nodeType == "definition" {
 				do throws(Syntax.Error) {
 					try definitions.append(
@@ -100,11 +112,14 @@ struct TreeSitterModulParser: Syntax.ModuleParser {
 							node: node, in: source
 						)
 					)
+					print("this is the doc string: \(docString)")
+					docString = ""
 				} catch {
 					errors.append(error)
 				}
 			}
 		}
+
 		return .init(
 			sourceName: source.name,
 			definitions: definitions,

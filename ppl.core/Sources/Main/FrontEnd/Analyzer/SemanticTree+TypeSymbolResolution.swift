@@ -346,7 +346,7 @@ extension TypeDeclarationsChecker {
 	}
 
 	private func checkCyclicalDependencies(
-		localTypeLookup: borrowing Semantic.TypeLookupMap
+		localTypeLookup: Semantic.TypeLookupMap
 	) -> [Semantic.Error] {
 		var nodeStates: [Syntax.QualifiedIdentifier: NodeState] = [:]
 		var errors: [Semantic.Error] = []
