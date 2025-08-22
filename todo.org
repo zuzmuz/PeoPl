@@ -1,3 +1,92 @@
+#+TITLE: PeoPl Language Development Todo List
+#+DATE: 2025
+#+STARTUP: overview
+#+TODO: TODO IN-PROGRESS | DONE
+
 * Parser
-- [ ] access modifiers
-- [ ] 
+** TODO handle generics and typesets
+- [ ] add typeset, existential and universal types to treesitter grammar
+- [ ] parse treesitter tree with typeset, existential and universal types
+** TODO handle unsafe references
+- [ ] parse unsafe reference syntax
+** TODO better error messaging
+- [ ] create better error messaging for parsing errors
+
+* Analyzer
+** TODO exhaustive pattern matching
+- [ ] implement completeness checking for the decomposition matrix
+- [ ] generate errors for missing possible branches
+- [ ] generate warnings for useless branches
+** TODO structural type checking
+- [ ] Implement structural equivalence checking
+- [ ] Handle record and tuple type compatibility
+  - can return an equivalent structural type for a nominal type
+** TODO fix unary expressions
+- [ ] Fix unary operator type checking
+- [ ] Handle pipeline input for unary expressions
+- [ ] Add proper precedence handling
+** TODO check for builtin shadowings
+- [ ] Detect when user definitions shadow builtins
+- [ ] Generate appropriate warnings/errors
+- [ ] Handle builtin function protection
+** TODO compile time constants
+- [ ] implement compile time expression evaluation
+- [ ] detect compile time recursive referencing
+** TODO generics
+- [ ] Implement generic type instantiation
+- [ ] add type parameter constraint checking
+- [ ] handle generic function monomorphization
+** TODO handle typesets and existential types
+- [ ] implement typeset constraint checking
+** TODO handle universal types (unbounded unions)
+- [ ] Implement universal type checking
+- [ ] Add unbounded union type support
+- [ ] Handle type variance for universals
+** TODO closures
+- [ ] Implement closure capture analysis
+- [ ] Handle closure type inference
+- [ ] Add closure environment management
+** TODO unsafe references lifetimes
+- [ ] implement lifetime analysis
+- [ ] add borrow checking for unsafe references
+- [ ] handle lifetime inference and validation
+** TODO handle namespacing and module
+- [ ] implement module resolution
+- [ ] add qualified identifier lookup
+- [ ] handle import/export analysis
+** TODO handle typealiases
+- [ ] Implement type alias resolution
+- [ ] Add recursive type alias detection
+- [ ] Handle type alias expansion
+
+* LLVM
+** TODO implement pattern matching
+- [ ] Generate LLVM IR for pattern match trees
+- [ ] Implement efficient pattern compilation
+- [ ] Add jump table optimization for enums
+** TODO implement choice types
+- [ ] Generate tagged union representations
+- [ ] Implement choice type constructors
+- [ ] Add choice type destructuring
+** TODO implement builtin string types
+- [ ] Handle static strings and dynamic strings
+  - [ ] Implement compile-time string literals
+  - [ ] Add runtime string allocation
+  - [ ] Handle string encoding (UTF-8 vs C strings)
+  - [ ] Implement string operations and methods
+
+* LSP (Language Server Protocol)
+** TODO diagnostics
+- [ ] Implement real-time error reporting
+- [ ] Add syntax error diagnostics
+- [ ] Handle semantic analysis errors
+- [ ] Add warning generation
+** TODO go to definitions
+- [ ] Implement symbol resolution for definitions
+- [ ] Add cross-module definition lookup
+- [ ] Handle function and type definition navigation
+** TODO completions
+- [ ] Implement context-aware completions
+- [ ] Add function signature help
+- [ ] Handle pipeline completion suggestions
+- [ ] Add type-based completion filtering

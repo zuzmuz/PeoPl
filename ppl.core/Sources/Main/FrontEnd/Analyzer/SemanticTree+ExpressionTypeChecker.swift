@@ -554,7 +554,7 @@ extension Syntax.Expression {
 				errorChoice: .bindingNotAllowed
 			)
 		case let (input, .function(function)):
-			// NOTE: here I shoul infer signature if not present
+			// NOTE: here I should infer signature if not present
 			throw .init(
 				location: location,
 				errorChoice: .notImplemented(
