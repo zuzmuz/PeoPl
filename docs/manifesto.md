@@ -1,151 +1,164 @@
-#+TITLE: PeoPl Design Principles
-#+SUBTITLE: Foundational principles governing the design and evolution of the /Pipeline Expression Oriented Programming Language/
-#+AUTHOR: Zaher Hamadeh
-#+DATE: 2025
+# 🏛️ Core Philosophy
 
-* Table Of Content :toc:
-- [[#️-core-philosophy][🏛️ Core Philosophy]]
-- [[#i--programmer-empowerment][I. 💪 Programmer Empowerment]]
-  - [[#-the-dictatorship-of-the-programmer][⚡ The Dictatorship of the Programmer]]
-  - [[#-no-hidden-conspiracy][🔍 No Hidden Conspiracy]]
-  - [[#️-arm-the-programmer-with-sharp-tools][🗡️ Arm the Programmer with Sharp Tools]]
-- [[#ii--design-priorities][II. 🎯 Design Priorities]]
-  - [[#-the-primary-hierarchy][📊 The Primary Hierarchy]]
-  - [[#️-prohibited-trade-offs][⚖️ Prohibited Trade-offs]]
-  - [[#-accessibility-priorities][🌐 Accessibility Priorities]]
-- [[#iii--technical-decisions][III. 🔧 Technical Decisions]]
-  - [[#-the-compiler-as-ally][🤝 The Compiler as Ally]]
-  - [[#-be-opinionated][💎 Be Opinionated]]
-  - [[#-things-that-are-different-should-look-different][🎭 Things That are Different Should Look Different]]
-  - [[#-things-that-are-similar-should-look-similar][🪞 Things That are Similar Should Look Similar]]
-- [[#iv-️-the-critique-of-existing-systems][IV. ⚔️ The Critique of Existing Systems]]
-  - [[#-the-inheritance-bourgeoisie][👑 The Inheritance Bourgeoisie]]
-  - [[#️-the-garbage-collection-oligarchy][🗑️ The Garbage Collection Oligarchy]]
-- [[#v--goals][V. 🥅 Goals]]
-  - [[#️-separation-of-data-and-processing][🗡️ Separation of Data and Processing]]
-  - [[#-structure-program-behavior][🛕 Structure program behavior]]
-  - [[#️-lightweight-type-system][🕊️ Lightweight Type system]]
-- [[#-call-to-action][📢 Call to Action]]
-  - [[#status][Status]]
 
-* 🏛️ Core Philosophy
-
-/The history of all hitherto existing programming languages is the history of struggle between those who control the machine and those who are controlled by it./
+_The history of all hitherto existing programming languages is the history of struggle between those who control the machine and those who are controlled by it._
 
 Programming languages have long struggled with the tension between abstraction and control, safety and performance, simplicity and power.
 
 **PeoPl rejects these false dichotomies** and establishes clear principles that guide every design decision. These principles represent lessons learned from decades of programming language evolution and a commitment to empowering programmers rather than constraining them.
 
-#+BEGIN_QUOTE
-Programmers of all languages, unite! You have nothing to lose but your technical debt. 🚩
-#+END_QUOTE
+
+> Programmers of all languages, unite! You have nothing to lose but your technical debt. 🚩
 
 
-* I. 💪 Programmer Empowerment
 
-** ⚡ The Dictatorship of the Programmer
+# I. 💪 Programmer Empowerment
+
+
+
+## ⚡ The Dictatorship of the Programmer
+
 Programmers must have explicit control over program behavior. The language provides clear, direct mechanisms for expressing intent without hidden abstractions that obscure execution.
 
-** 🔍 No Hidden Conspiracy
+
+## 🔍 No Hidden Conspiracy
+
 All language behaviors, transformations, and runtime actions are explicit and visible. Implicit conversions, hidden allocations, and magical transformations are **prohibited**.
 
-/What you write is what executes./
+_What you write is what executes._
 
-** 🗡️ Arm the Programmer with Sharp Tools
+
+## 🗡️ Arm the Programmer with Sharp Tools
+
 Powerful capabilities shall not be withheld from programmers. The language provides expressive, efficient tools even when they require expertise to use safely. We trust programmers to handle powerful abstractions responsibly.
 
-* II. 🎯 Design Priorities
 
-** 📊 The Primary Hierarchy
+# II. 🎯 Design Priorities
+
+
+
+## 📊 The Primary Hierarchy
+
 When design decisions conflict, prioritize in strict order:
 
 1. **Expressiveness** - The ability to clearly communicate programmer intent
 2. **Safety** - Prevention of undefined behavior and runtime errors
 3. **Efficiency** - Optimal resource utilization and performance
 
-** ⚖️ Prohibited Trade-offs
+
+## ⚖️ Prohibited Trade-offs
+
 The following compromises are rejected:
 
-*** 🚫 /Never/ sacrifice /ergonomics/ for safety
+
+### 🚫 _Never_ sacrifice _ergonomics_ for safety
+
 Safety must be achieved through good design, not by making the language difficult to use
 
-*** 🛡️ /Never/ sacrifice /safety/ for performance
+
+### 🛡️ _Never_ sacrifice _safety_ for performance
+
 - Programs must be safe by default
 - No undefined behavior
 - No easy foot guns
 - Correct behavior takes precedence over raw speed
 
-*** ⚡ /Never/ sacrifice /performance/ for ergonomics
+
+### ⚡ _Never_ sacrifice _performance_ for ergonomics
+
 Language features must not intentionally produce inefficient code for the sake of convenience. Performance characteristics should be predictable and optimal
 
-#+BEGIN_NOTE
-These 3 rules provide checks and balances between the 3 branches of PeoPl's core design principles. ⚖️
-#+END_NOTE
+> These 3 rules provide checks and balances between the 3 branches of PeoPl's core design principles. ⚖️
 
-** 🌐 Accessibility Priorities
+
+## 🌐 Accessibility Priorities
+
 For developer adoption and experience:
 
 - **Accessible** - Easy to learn and approach
 - **Discoverable** - Features and capabilities are findable
 - **Available** - Tooling and resources are readily accessible
 
-* III. 🔧 Technical Decisions
 
-** 🤝 The Compiler as Ally
+# III. 🔧 Technical Decisions
+
+
+
+## 🤝 The Compiler as Ally
+
 The compiler serves the programmer. Error messages are helpful, diagnostics are actionable, and the toolchain guides rather than obstructs development.
 
 - The grammar should stay simple with orthogonal concepts
 - The semantics can be progressively complex as long as the syntax is simple
 - This reduces cognitive load and parsing ambiguity
 
-** 💎 Be Opinionated
+
+## 💎 Be Opinionated
+
 The language makes principled decisions rather than trying to accommodate every possible approach. We choose:
 
 - Clarity over universality
 - Coherence over compatibility
 - Consistent design over backward compatibility
 
-** 🎭 Things That are Different Should Look Different
+
+## 🎭 Things That are Different Should Look Different
+
 Different concepts should look different to avoid ambiguity.
 
-** 🪞 Things That are Similar Should Look Similar
+
+## 🪞 Things That are Similar Should Look Similar
+
 There should not be drastically different ways to express similar concepts.
 
-* IV. ⚔️ The Critique of Existing Systems
 
-** 👑 The Inheritance Bourgeoisie
-/The ruling classes of object-oriented programming have imposed upon us a system where complex hierarchies obscure simple relationships./
+# IV. ⚔️ The Critique of Existing Systems
+
+
+
+## 👑 The Inheritance Bourgeoisie
+
+_The ruling classes of object-oriented programming have imposed upon us a system where complex hierarchies obscure simple relationships._
 
 Inheritance is the opium of the programmer! It promises easy code reuse but delivers only tangled dependencies and brittle architectures that crumble under the weight of their own contradictions.
 
 **Inheritance is prohibited.** Composition, interfaces, and algebraic types provide superior abstraction mechanisms. Code reuse is achieved through explicit composition and generic programming.
 
-** 🗑️ The Garbage Collection Oligarchy
+
+## 🗑️ The Garbage Collection Oligarchy
+
 The memory management elite have convinced the masses that automatic collection is liberation, when in truth it is the most insidious form of control. It leaves us powerless to predict when our systems will stumble under their invisible hand.
 
 **Automatic memory management is prohibited.** Memory allocation and deallocation remain under explicit programmer control through deterministic, predictable mechanisms.
 
-* V. 🥅 Goals
-** 🗡️ Separation of Data and Processing
+
+# V. 🥅 Goals
+
+## 🗡️ Separation of Data and Processing
+
 Provide a healty and clear divide between what represents data and what represents behavior.
 
-** 🛕 Structure program behavior
+
+## 🛕 Structure program behavior
+
 Programs are designed as a structured pipeline of nodes, where data flow is clear and predictable.
 Complex systems with concurency and reactivity becomes simpler to design and understand.
 
-** 🕊️ Lightweight Type system
+
+## 🕊️ Lightweight Type system
+
 Expressing a domain model should be light weight and simple, extensible and modifiable
 
-* 📢 Call to Action
 
-#+BEGIN_QUOTE
-/The functional programming bros have only interpreted computation in various ways; the point is to change it!/ 🔄
-#+END_QUOTE
+# 📢 Call to Action
 
-** Status
 
-#+BEGIN_EXAMPLE
-Constitutional - These principles define the fundamental character of PeoPl
-and should only be modified through careful consideration of their
-implications for the entire language ecosystem. 📜
-#+END_EXAMPLE
+> _The functional programming bros have only interpreted computation in various ways; the point is to change it!_ 🔄
+
+
+## Status
+
+
+> Constitutional - These principles define the fundamental character of PeoPl
+> and should only be modified through careful consideration of their
+> implications for the entire language ecosystem. 📜

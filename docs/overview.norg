@@ -38,7 +38,7 @@
 
   @code peopl
   main: [] -> Int {
-  0
+      0
   }
   @end
 
@@ -57,7 +57,7 @@
   @code peopl
   // this is a comment
   main: [] -> Int { // this is also a comment
-  0
+      0
   }
   @end
 
@@ -82,9 +82,9 @@
    Let's first imagine expressions as blocks:
 
    @code
-    ╭───────╮
-   ─┤a block├─
-    ╰───────╯
+   //   ╭───────╮
+   //  ─┤a block├─
+   //   ╰───────╯
    @end
 
 
@@ -92,19 +92,19 @@
    It takes an input, maybe some extra arguments, and produces an output.
 
    @code
-   extra arguments
-   ╭┴──────╮
-   input ─┤a block├─ output
-   ╰───────╯
+   //      extra arguments
+   //         ╭┴──────╮
+   //  input ─┤a block├─ output
+   //         ╰───────╯
    @end
 
    Let's chain a bunch of these:
 
    @code
-   extra arguments    extra arguments 
-   ╭┴──────╮          ╭┴──────╮
-   input ─┤block 1├─ output ─┤block 2├─ output
-   ╰───────╯          ╰───────╯
+   //        extra arguments    extra arguments 
+   //         ╭┴──────╮          ╭┴──────╮
+   //  input ─┤block 1├─ output ─┤block 2├─ output
+   //         ╰───────╯          ╰───────╯
    @end
 
    In code, piping is performed using the pipe operator known in functional programming languages:
@@ -116,23 +116,23 @@
 
    PeoPl's expression-only design eliminates the statement/expression dichotomy found in many languages.
 
-   We'll get into more details about [[#how-piping-works][piping]] later.
+   We'll get into more details about {# How Piping Works}[piping] later.
 
 * Operations
 ** Operations and Operators
    The second building blocks are operations.
    This is a list of all operators:
-   - Multiplicative operators: =*=, =/=, =%=
-   - Additive operators: =+=, =-=
-   - Comparative operators: ==​=, =>=, =>=​=, =<=, =<=​=
-   - Logic operators: =and=, =or=, =not=
+   - Multiplicative operators: `*`, `/`, `%`
+   - Additive operators: `+`, `-`
+   - Comparative operators: `=`, `>`, `>=`, `<`, `<=`
+   - Logic operators: `and`, `or`, `not`
 
    This is a list of legal operations in PeoPl:
-   - Unary: =operator operand= — if the unary expression has a valid input, it will apply the operation
-   - Binary: =lhs operator rhs=
+   - Unary: `operator operand`, if the unary expression has a valid input, it will apply the operation
+   - Binary: `lhs operator rhs`
 
    PeoPl interestingly allows a unary expression to be formed by any type of operator, not just the additive ones.
-   For example, =*3= is a valid expression and it represents an expression where its input should be an integer
+   For example, `*3` is a valid expression and it represents an expression where its input should be an integer
    and it returns the result of the multiplication of the input and 3.
 
 * Expressions (Detailed)
@@ -144,18 +144,20 @@
    They are not exposed to the user of the language.
    Instead, wrapper nominal types are available that can be used as regular types:
 
+   @table
    | Type | Intrinsic  |
-  |------+------------|
-  | I8   | int8/byte  |
-  | I16  | int16      |
-  | I32  | int32      |
-  | I64  | int64      |
-  | U8   | uint8/char |
-  | U16  | uint16     |
-  | U32  | uint32     |
-  | U64  | uint64     |
-  | F32  | float32    |
-  | F64  | float64    |
+   |------+------------|
+   | I8   | int8/byte  |
+   | I16  | int16      |
+   | I32  | int32      |
+   | I64  | int64      |
+   | U8   | uint8/char |
+   | U16  | uint16     |
+   | U32  | uint32     |
+   | U64  | uint64     |
+   | F32  | float32    |
+   | F64  | float64    |
+   @end
 
   The idea behind hiding primitives away from users is that primitives are treated like every other type.
   They can be extended and used like every other type; the difference lies in how the eventual compiled program behaves.
@@ -212,7 +214,7 @@
 ** Unary Expressions
 
    An expression with an operator prefix.
-   Due to PeoPl's pipeline approach, all [[#operations-and-operators][operators]] can be used as prefix operators.
+   Due to PeoPl's pipeline approach, all {# Operations and Operators}[operators] can be used as prefix operators.
 
    @code peopl
    +42
@@ -247,7 +249,7 @@
    Any expression can be a callable, if it is defined as a callable.
    A call expression is defined by a prefix (which can be an expression) followed by =()=.
    A call expression can get extra arguments inside the =()=.
-   More on call expressions [[#functions][here]].
+   More on call expressions {# functions}[here].
 
    @code peopl
    whatever() // calling whatever
@@ -431,7 +433,7 @@
   Similar to bash programs, each function has an input, extra arguments, and returns an output.
   In bash, the input and output are usually text, coming from stdin and going to stdout.
   However, in PeoPl, inputs and outputs are structured types.
-  More on [[#types][types]] later.
+  More on {# types}[types] later.
 
   @code peopl
   thisReturns42: [] -> Int {
@@ -530,10 +532,10 @@
 
    // Function definitions
    factorial: [n' Int] -> Int {
-   n
-   |>
-   |1| 1
-   |$x| x * factorial(x - 1)
+       n
+       |>
+       |1| 1
+       |$x| x * factorial(x - 1)
    }
    @end
 
@@ -545,10 +547,10 @@
    UserId: Int
    Point: [x' Float, y' Float]
    Color: choice [
-   red',
-   green',
-   blue',
-   custom' [r' Int, g' Int, b' Int]
+       red',
+       green',
+       blue',
+       custom' [r' Int, g' Int, b' Int]
    ]
    @end
 
@@ -598,8 +600,8 @@
    ShapeTaggedChoice: choice [circle' Circle, rectangle' Rectangle] // enums with associated values, or tagged unions
 
    ShapeTaggedChoiceAlt: choice [
-   circle' [center' Point, radius' Float],
-   rectangle' [a' Point, b' Point, width' Float, height' Float]
+       circle' [center' Point, radius' Float],
+       rectangle' [a' Point, b' Point, width' Float, height' Float]
    ]
    // Definitions can be nested, preventing the proliferation of small types that are only used in one place
    @end
@@ -610,8 +612,8 @@
 
     @code peopl
     processShape: (Shape)[] -> Float {
-    |circle: (center: _, radius: $r)| PI * r * r,
-    |rectangle: (a: _, b: _, width: $w, height: $h)| w * h
+        |circle: (center: _, radius: $r)| PI * r * r,
+        |rectangle: (a: _, b: _, width: $w, height: $h)| w * h
     }
     @end
 
@@ -627,7 +629,7 @@
 
    // Using function types
    applyTwice: (Int)[transform' Transformer] -> String {
-   |$input| input |> transform() |> transform()
+       |$input| input |> transform() |> transform()
    }
    @end
 
