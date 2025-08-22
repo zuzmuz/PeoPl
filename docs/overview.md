@@ -161,6 +161,18 @@ They are not exposed to the user of the language.
 Instead, wrapper nominal types are available that can be used as regular types:
 
 
+| Type | Intrinsic  |
+|------+------------|
+| I8   | int8/byte  |
+| I16  | int16      |
+| I32  | int32      |
+| I64  | int64      |
+| U8   | uint8/char |
+| U16  | uint16     |
+| U32  | uint32     |
+| U64  | uint64     |
+| F32  | float32    |
+| F64  | float64    |
 
 
 The idea behind hiding primitives away from users is that primitives are treated like every other type.

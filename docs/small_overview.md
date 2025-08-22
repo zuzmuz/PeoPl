@@ -2,7 +2,7 @@
 
 This is a small introduction to PeoPl.
 Knowledge of programming languages and concepts is assumed.
-To get a more in-depth tour over PeoPl's features and specifications, read the [comprehensive overview](#overviewnorgmd).
+To get a more in-depth tour over PeoPl's features and specifications, read the [comprehensive overview](overview.md).
 
 
 # What is PeoPl
