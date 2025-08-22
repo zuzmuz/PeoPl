@@ -1,0 +1,683 @@
+* What is PeoPl
+
+  *PeoPl* is a /Pipeline Expression Oriented Programming Language/.
+
+  It is a general-purpose, compiled, statically typed programming language.
+  Here are the feature highlights:
+  - Expressive pipeline-oriented programming style 
+  - Powerful and expressive type system for domain modeling
+  - Low-level control
+  - Expressive generics system
+
+  Programs are constructed as pipelines of operations,
+  where each operation receives data, transforms it, and passes it forward.
+
+  Check the comprehensive examples file for a complete list of PeoPl features.
+
+* A PeoPl File
+
+  A PeoPl source file ends with the file extension `.ppl`.
+  It contains top-level definitions.
+  Definitions define compile-time constructs, like values, expressions, types, and functions.
+
+  If running in single-file mode, one definition must exist in the file, and it is the main function.
+
+  @code peopl
+  main: 0
+  @end
+
+  This is the simplest PeoPl file.
+  Here =main= is defined as the value 0.
+  Running this file will call =main=, and the program will then terminate with the value of =main=,
+  which is 0.
+
+  `main` should be, or should return, an 8-bit integer.
+
+  `main` can be a function that runs at runtime and calculates its output value.
+  This is how functions are defined:
+
+  @code peopl
+  main: [] -> Int {
+  0
+  }
+  @end
+
+  More on {# functions}[functions] later.
+
+* Comments
+
+  Let's get this out of the way: start a comment by writing two forward slashes.
+  Multiline comments are not supported because I didn't bother implementing them.
+  The actual reason is an opinionated one. I don't use them, and I don't think anyone should.
+  They introduce the problem of nesting multiline comment blocks. In C, this is not possible.
+  A language designer might decide to support nested multiline comments, why bother?
+  They're only useful when commenting a small region or part of a line. Even in this case,
+  this doesn't justify their existence.
+
+  @code peopl
+  // this is a comment
+  main: [] -> Int { // this is also a comment
+  0
+  }
+  @end
+
+* Expressions (Introduction)
+
+  Before dealing with functions, we need to cover expressions.
+  A function body is comprised of and only expressions.
+  Expressions are like functions, in the sense that they can take an input and always return an output.
+
+  @code peopl
+  "hello"                    // A string literal expression returning "hello"
+  42                         // An integer literal expression returning 42
+  2 + 3                      // A binary operation expression returning 5
+  @end
+
+  Therefore, a function is basically a composition of expressions, a pipeline of computational nodes.
+  It's technically a bunch of expressions bundled together with a name associated with them.
+
+** Pipes
+
+   To do anything useful with expressions, we need an interesting piping mechanism.
+   Let's first imagine expressions as blocks:
+
+   @code
+    ╭───────╮
+   ─┤a block├─
+    ╰───────╯
+   @end
+
+
+
+   It takes an input, maybe some extra arguments, and produces an output.
+
+   @code
+   extra arguments
+   ╭┴──────╮
+   input ─┤a block├─ output
+   ╰───────╯
+   @end
+
+   Let's chain a bunch of these:
+
+   @code
+   extra arguments    extra arguments 
+   ╭┴──────╮          ╭┴──────╮
+   input ─┤block 1├─ output ─┤block 2├─ output
+   ╰───────╯          ╰───────╯
+   @end
+
+   In code, piping is performed using the pipe operator known in functional programming languages:
+
+   @code peopl
+   // Piping a string through functions
+   "hello world" |> reverse()            // Returns "dlrow olleh"
+   @end
+
+   PeoPl's expression-only design eliminates the statement/expression dichotomy found in many languages.
+
+   We'll get into more details about [[#how-piping-works][piping]] later.
+
+* Operations
+** Operations and Operators
+   The second building blocks are operations.
+   This is a list of all operators:
+   - Multiplicative operators: =*=, =/=, =%=
+   - Additive operators: =+=, =-=
+   - Comparative operators: ==​=, =>=, =>=​=, =<=, =<=​=
+   - Logic operators: =and=, =or=, =not=
+
+   This is a list of legal operations in PeoPl:
+   - Unary: =operator operand= — if the unary expression has a valid input, it will apply the operation
+   - Binary: =lhs operator rhs=
+
+   PeoPl interestingly allows a unary expression to be formed by any type of operator, not just the additive ones.
+   For example, =*3= is a valid expression and it represents an expression where its input should be an integer
+   and it returns the result of the multiplication of the input and 3.
+
+* Expressions (Detailed)
+
+  Before getting into expressions and pipelines, let's discuss expressions and values.
+
+** Primitives
+   PeoPl's primitives are intrinsic, part of the inner logic of the compiler.
+   They are not exposed to the user of the language.
+   Instead, wrapper nominal types are available that can be used as regular types:
+
+   | Type | Intrinsic  |
+  |------+------------|
+  | I8   | int8/byte  |
+  | I16  | int16      |
+  | I32  | int32      |
+  | I64  | int64      |
+  | U8   | uint8/char |
+  | U16  | uint16     |
+  | U32  | uint32     |
+  | U64  | uint64     |
+  | F32  | float32    |
+  | F64  | float64    |
+
+  The idea behind hiding primitives away from users is that primitives are treated like every other type.
+  They can be extended and used like every other type; the difference lies in how the eventual compiled program behaves.
+
+** Literals
+   The first example of values are literals.
+   Literals are expressions that take no input (their input should be =nothing=) and return themselves as output.
+
+*** Nothing
+
+    The empty tuple, representing the unit type:
+
+    @code peopl
+    nothing
+    @end
+
+*** Boolean Literals
+
+    @code peopl
+    true
+    false
+    @end
+
+*** Number Literals
+
+    @code peopl
+    // integers
+    42
+    690
+    0xFF468A                // hex integer literal
+    0xABCD_1234_AFDE_0987   // hex also supports _
+    0b1010_1010_1110        // binary
+    0o1727432               // octal
+    0o777_123_123           // all integer number formats support _
+
+    // floats
+    3.1415
+    @end
+
+*** String Literals
+
+    Multiline string literals are not supported:
+
+    @code peopl
+    "hi"
+    @end
+
+**** TODO String literals are not fully covered yet
+
+     String literals are not fully covered yet because I haven't figured out how to implement them yet.
+     By that I mean that strings can either be a C string (a pointer to a null-terminated byte array), or a struct of a pointer to a byte array and a size.
+     Also, encoding should be taken into consideration.
+
+** Unary Expressions
+
+   An expression with an operator prefix.
+   Due to PeoPl's pipeline approach, all [[#operations-and-operators][operators]] can be used as prefix operators.
+
+   @code peopl
+   +42
+   -3.14
+   *2
+   > x
+   <= y
+   not true
+   @end
+
+   A unary expression can work on an input.
+
+** Binary Expressions
+
+   Two expressions with an infix operator.
+   All operators excluding the =not= operator are infix operators.
+
+   @code peopl
+   690+42
+   2.8-3.14
+   5*2
+   3 > 1
+   @end
+
+** Parenthesized Expressions
+
+   It's just an expression inside parentheses.
+
+** Call Expressions
+
+   Function call is a value; depending on the context, a function call can run at compile time or runtime.
+   Any expression can be a callable, if it is defined as a callable.
+   A call expression is defined by a prefix (which can be an expression) followed by =()=.
+   A call expression can get extra arguments inside the =()=.
+   More on call expressions [[#functions][here]].
+
+   @code peopl
+   whatever() // calling whatever
+   @end
+
+** Tagged Expression
+
+   A tagged expression is basically just an expression with a label.
+   I admit it's a convoluted way of explainging the concept of *assignment*,
+   but there is a technical difference: a tagged expression is a value with a label,
+   it is in itself an expression. They look like top level definitions, in a way they are,
+   but they are supposed to be local, and they cannot be generic.
+
+   The cool thing about tagged expressions as a concept is that they can be applied in a lot of different context,
+   with an expected behavior.
+
+   For example, calling a function with named arguments is like passing tagged expressions to the function body.
+
+
+   @code peopl
+   label: expression // this a tagged expression
+   @end
+
+   Usually the type of an expression is infered, but a tagged expression can be type annotated.
+
+
+   @code peopl
+   label' ExpressionType: expression // this a tagged expression with a type
+   @end
+
+   This syntax is integral to defining expressions and values in PeoPl and it appears in a lot of places.
+   Whenever defining the type of a label is necessary, the label is suffixed by a ='=.
+   To define the value of a label, the label is suffixed by a =:=.
+   The label's value always comes after the type.
+
+* Symbols
+  Each symbol in PeoPl has generaly one and only one purpose, this makes reading and understanding PeoPl code easy and predictable.
+  If you see a symbol you've never seen before, it's possibly a special feature.
+  If you see a symbol you've seen before, it will most probaby behave in a very predictable way.
+  There should not be special cases.
+
+*** The sqare brackets `[]`
+    Used to define compile time constructs, most comonly types.
+*** The round brackets `()`
+    Used to define runtime initializations. Like function arguments, literal tuples.
+    They are also used as regular parenthesis for grouping expressions.
+*** The curly brackets `{}`
+    Used to define function blocks.
+*** The colon `:`
+    Used in tagged expressions. Generaly after a label or a qualified identifier
+    @code peopl
+    qualified_identifier: expression
+    @end
+    The colon will behave predictably inside argument list of function calls and tuple literal definitions.
+*** The apostorphe `'`
+    Used to define identifiers types. Most comonly in type definitions, or in tagged expressions to disambiguate types.
+*** The vertical line `|`
+    Used to define capture expressions with match and guard expressions.
+*** The dollar sign `$`
+    Used for bindings. An identifier prefixed by a =$= is usually used inside match expressions to bind input to a certain identifier.
+*** Quotation mark `"`
+    For string literals
+
+* How Piping Works
+
+** Data Flow
+
+   Data flows through nodes. PeoPl is designed to have a powerful piping system.
+   It utilizes simple and friendly syntax to enable powerful features:
+   - Piping
+   - Pattern matching
+   - Destructuring
+   - Branching
+
+** Piping
+
+   Piping is first-class in PeoPl and behaves a little bit like extension methods (in Go, Kotlin, Swift, Rust),
+   or regular functions in functional programming languages.
+   The distinction between functions in PeoPl and other functional programming languages is that
+   a function input is treated in a special way over other function arguments.
+
+** Input Capturing in Pipelines
+
+   PeoPl doesn't support assignments. It's crazy, right?
+   Well, it is not technically needed. To have a name for the input of an expression,
+   capture it by binding it to local identifiers. You might like to call this a "local variable" (but it's not).
+   This is done using the input capture syntax with the vertical bar notation =|$name|=.
+
+   @code peopl
+   // Input capturing using |$name| syntax
+   12321
+   |> toString()
+   |> |$value| value = value.reverse() // Returns true (palindrome check)
+   @end
+
+** Pattern Matching
+
+   Input capturing is pattern matching.
+   In the previous example, the output of =toString()= is matched with the label =value=.
+   The =$= sign is used to bind inputs to labels. Think of it like assignment, but backwards.
+
+*** Branching
+
+    Pattern matching is not only for binding values.
+    It also allows for branching.
+    Input can be matched to exact values, or bound to labels but with guard expressions.
+
+    @code peopl
+    // Basic pattern matching on values
+    value
+    |>
+    |0| "Zero",
+    |1| "One",
+    |$n if n < 0| "Negative",
+    |$n if n % 2 = 0| "Even",
+    |_| "Other"
+    @end
+
+*** Destructuring
+
+    Pattern matching can be complex; it also can be performed on [[#tuples][tuples]] and [[#choices-enums-tagged-unions][tagged unions]],
+    which will be covered later.
+
+** Piping Complex Data Structures
+
+   PeoPl uses product types (tuples, records) to pass complex data structures.
+
+   Records (objects with named fields) can be passed through pipelines and accessed directly within transformation nodes.
+
+*** Tuples
+
+    Tuples (ordered collections of values) can be processed efficiently:
+
+    @code peopl
+    // Piping a tuple through a transformation
+    (10, 5)
+    |> |$dimensions| dimensions._0 * dimensions._1  // Returns 50
+    @end
+
+*** Records
+
+    Records are tuples with named members:
+
+    @code peopl
+    // Piping a record
+    (width: 10, height: 5)
+    |> |$in| in.width * in.height  // Returns 50
+
+    // Piping a record with anonymous capture
+    (width: 10, height: 5)
+    |> |$| width * height  // Returns 50
+    @end
+
+*** Nested Structures
+
+    Pattern matching and bindings can be performed on nested structures, used for destructuring.
+
+    @code peopl
+    // Processing nested data
+    (
+    user: (name: "Abdulla", birthyear: 1934),
+    role: "admin"
+    )
+    |> |$data| (
+    username: data.user.name,
+    age: 2025 - data.user.birthyear,
+    canEdit: data.role = "admin"
+    )
+
+    // Nested pattern matching
+    (
+    user: (name: "Abdulla", birthyear: 1934),
+    role: "admin"
+    )
+    |> |(user: (name: "Hanine", birthyear: $year), role: $role)| "Hanin is born in $year"
+    @end
+
+* Functions
+
+  Functions are blocks of expressions that most commonly run at runtime.
+  Similar to bash programs, each function has an input, extra arguments, and returns an output.
+  In bash, the input and output are usually text, coming from stdin and going to stdout.
+  However, in PeoPl, inputs and outputs are structured types.
+  More on [[#types][types]] later.
+
+  @code peopl
+  thisReturns42: [] -> Int {
+  42
+  }
+  @end
+
+  This syntax creates a function that takes nothing as input and returns 42.
+  Return statements do not exist because they are not necessary.
+
+** Functions with Inputs
+
+   Function inputs are different from regular function arguments.
+   Similar to how shell commands take their input from stdin.
+   They're analogous to =self= or =this= in languages with object methods.
+   Inputs are usually anonymous, which means they can be pipelined directly into other functions.
+   However, if needed, they can also be captured.
+
+   @code peopl
+   square: (Int)[] -> Int {
+   |$in| in*in
+   }
+   @end
+
+** Function Arguments
+
+   In addition to function input, functions also take extra arguments.
+   Extra arguments are always named.
+
+   @code peopl
+   add: [a' Int, b' Int] -> Int {
+   a + b
+   }
+   @end
+
+   If `()` are omitted, it means the function takes nothing as input.
+   By nothing, I mean the type =nothing=.
+
+** Calling Functions
+
+   Functions with inputs need to be called on an object:
+
+   @code peopl
+   5.square() // returns 25
+   // or
+   5 |> square()
+   @end
+
+   Functions with nothing as input can't receive a value as input:
+
+   @code peopl
+   5 |>
+   add(a: 1, b: 2) // Error: add expects nothing as input
+   @end
+
+   Functions with nothing as input can be considered as static functions.
+
+* Definitions
+
+  Expressions are not allowed at the file top level.
+  They need to be bound to a label.
+
+  @code peopl
+  a: 3 // creating the constant a with the value 3
+
+  main: [] -> nothing { // main function
+  _
+  }
+  @end
+
+  The main function is the entry point of the program.
+  Other definitions can exist alongside it.
+
+  Define a value using this syntax:
+
+  @code peopl
+  label' OptionalType: Expression
+  @end
+
+  Expressions can be 3 things:
+  - Computable values
+  - Types
+  - Callables
+
+** Value Definitions
+
+   Value definitions bind compile-time expressions to labels. These can be:
+   - Constants (computed at compile time)
+   - Functions (callable at runtime)
+   - Complex expressions
+
+   @code peopl
+   pi: 3.14159
+   MAX_SIZE: 1024
+   greeting: "Hello, World!"
+
+   // Function definitions
+   factorial: [n' Int] -> Int {
+   n
+   |>
+   |1| 1
+   |$x| x * factorial(x - 1)
+   }
+   @end
+
+** Type Definitions
+
+   Type definitions create aliases for structural types:
+
+   @code peopl
+   UserId: Int
+   Point: [x' Float, y' Float]
+   Color: choice [
+   red',
+   green',
+   blue',
+   custom' [r' Int, g' Int, b' Int]
+   ]
+   @end
+
+* Types
+
+  PeoPl has an expressive and powerful type system.
+  The goal of PeoPl's type system is to grant simplicity to the activity of defining domain models,
+  reduce boilerplate for defining constructs, and use consistent syntax for definitions everywhere.
+
+** Records and Tuples
+
+   The simplest type is the record/struct/tuple, whatever you want to call it. It is the product type.
+
+   @code peopl
+   Person: [name' String, age' Int]
+   Point: [Float, Float]
+   Circle: [center' Point, radius' Float]
+   Rectangle: [a' Point, b' Point, width' Float, height' Float]
+   @end
+
+*** Anonymous vs Named Fields
+
+    Tuples use positional access (=._0=, =._1=), while records use named access (=.name=, =.age=).
+
+    @code peopl
+    // Tuple access
+    coordinates: (3.14, 2.71)
+    x: coordinates._0  // 3.14
+    y: coordinates._1  // 2.71
+
+    // Record access
+    person: (name: "Alice", age: 30)
+    name: person.name  // "Alice"
+    age: person.age    // 30
+    @end
+
+** Choices, Enums, Tagged Unions
+
+   A useful construct for defining choices or option enumerations.
+   They are sum types. Similar to Rust enums, but with nicer syntax, I guarantee.
+
+   @code peopl
+   Color: choice [red', blue', green', yellow'] // basic enums
+
+   ShapeUnion: choice [Circle, Rectangle] // unions (they are secretly tagged)
+
+   ShapeTaggedChoice: choice [circle' Circle, rectangle' Rectangle] // enums with associated values, or tagged unions
+
+   ShapeTaggedChoiceAlt: choice [
+   circle' [center' Point, radius' Float],
+   rectangle' [a' Point, b' Point, width' Float, height' Float]
+   ]
+   // Definitions can be nested, preventing the proliferation of small types that are only used in one place
+   @end
+
+*** Pattern Matching on Choice Types
+
+    Choice types work seamlessly with pattern matching:
+
+    @code peopl
+    processShape: (Shape)[] -> Float {
+    |circle: (center: _, radius: $r)| PI * r * r,
+    |rectangle: (a: _, b: _, width: $w, height: $h)| w * h
+    }
+    @end
+
+** Function Types
+
+   Functions are also types and can be used as first-class values:
+
+   @code peopl
+   // Function type definitions
+   Transformer: (String)[] -> String
+   Predicate: (Int)[] -> Bool
+   BinaryOp: [a Int, b Int] -> Int
+
+   // Using function types
+   applyTwice: (Int)[transform' Transformer] -> String {
+   |$input| input |> transform() |> transform()
+   }
+   @end
+
+** Generic Types
+
+   PeoPl supports generic types for writing reusable code:
+
+   @code peopl
+   // Generic container
+   Container: [T'] => [value T, timestamp Int]
+
+   // Generic function
+   map: [T', U'] => (List[T])[transform' (T)[] -> U] -> List[U] {
+   // implementation
+   }
+   @end
+
+   Generic
+** Type Inference
+
+   PeoPl has strong type inference, reducing the need for explicit type annotations:
+
+   @code peopl
+   // Type inferred as Int
+   count: 42
+
+   // Complex inference in pipelines
+   result: ("hello world"
+   |> split(" ")
+   |> map(capitalize)
+   |> join(", "))
+   // Type inferred as String
+   @end
+
+* TODO Error Handling
+
+* TODO Memory Management
+
+* TODO Modules and Imports
+
+* Advanced Features
+
+** Compile-Time Evaluation
+
+   Many expressions can be evaluated at compile time:
+
+   @code peopl
+   // Compile-time constants
+   TABLE_SIZE: 2^10  // Computed at compile time
+
+   // Compile-time function calls
+   factorial5: factorial(5)  // Computed at compile time if factorial is pure
+   @end
