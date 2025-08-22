@@ -162,7 +162,7 @@ Instead, wrapper nominal types are available that can be used as regular types:
 
 
 | Type | Intrinsic  |
-|------+------------|
+|------|------------|
 | I8   | int8/byte  |
 | I16  | int16      |
 | I32  | int32      |
