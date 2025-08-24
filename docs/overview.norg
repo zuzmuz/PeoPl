@@ -306,10 +306,10 @@
     The colon will behave predictably inside argument list of function calls and tuple literal definitions.
 *** The apostorphe `'`
     Used to define identifiers types. Most comonly in type definitions, or in tagged expressions to disambiguate types.
-*** The vertical line `|`
+*** The vertical line `\|`
     Used to define capture expressions with match and guard expressions.
 *** The dollar sign `$`
-    Used for bindings. An identifier prefixed by a =$= is usually used inside match expressions to bind input to a certain identifier.
+    Used for bindings. An identifier prefixed by a `$` is usually used inside match expressions to bind input to a certain identifier.
 *** Quotation mark `"`
     For string literals
 
@@ -336,7 +336,7 @@
    PeoPl doesn't support assignments. It's crazy, right?
    Well, it is not technically needed. To have a name for the input of an expression,
    capture it by binding it to local identifiers. You might like to call this a "local variable" (but it's not).
-   This is done using the input capture syntax with the vertical bar notation =|$name|=.
+   This is done using the input capture syntax with the vertical bar notation `|$name|`.
 
    @code peopl
    // Input capturing using |$name| syntax
