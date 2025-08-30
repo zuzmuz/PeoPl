@@ -22,6 +22,6 @@ Record: [
     b' Int
 ]
 
-access: [r' Record] -> Bool {
+access: func [r' Record] -> Bool {
     1.arithmetic(a: r.a, b: r.b)
 }
