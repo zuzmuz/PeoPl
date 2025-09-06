@@ -9,9 +9,7 @@ struct Peopl: AsyncParsableCommand {
 			abstract: "The PeoPl's Lang",
 			version: "0.0.0.0",
 			subcommands: [
-				LspComand.self,
-				// AnalyzeCommand.self,
-				BuildCommand.self,
+				LspComand.self
 			]
 		)
 	#else
@@ -20,7 +18,9 @@ struct Peopl: AsyncParsableCommand {
 			abstract: "The PeoPl's Lang",
 			version: "0.0.0.0",
 			subcommands: [
-				LspComand.self
+				LspComand.self,
+				Semantic.AnalyzeCommand.self,
+				BuildCommand.self,
 			]
 		)
 	#endif

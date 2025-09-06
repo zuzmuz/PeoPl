@@ -27,6 +27,30 @@
 //
 
 #if !RELEASE
+	import ArgumentParser
+	import Utils
+
+	extension Semantic {
+		struct AnalyzeCommand: ParsableCommand {
+			static let configuration = CommandConfiguration(
+				commandName: "analyze",
+				abstract: "Analyze the semantic tree")
+			// TODO: add argument for parsing single file
+			func run() throws {
+				let logger = Utils.ConsoleLogger(level: .debug)
+				logger.log(
+					level: .debug, tag: "Analyzer", message: "starting analysis")
+				let project = try SourceManager.readCurrentDirectory()
+				let result = project.semanticCheck()
+				switch result {
+				case let .failure(error):
+					print("there was an error")
+				case let .success(context):
+					print(context.display(indent: 0))
+				}
+			}
+		}
+	}
 
 	extension Int {
 		fileprivate func indentString() -> String {
@@ -113,35 +137,36 @@
 				return
 					"\(type.display())(\(left.display(indent: indent)) \(op.rawValue) \(right.display(indent: indent)))"
 			case let .call(signature, input, arguments, _):
-				return "\(signature.display(indent: indent))(in: \(input.display(indent: indent)), )"
+				return
+					"\(signature.display(indent: indent))(in: \(input.display(indent: indent)), )"
 			// case let .branched(matrix, _):
 			// 	return matrix.rows.map { row in
 			// 		"\(row.pattern.display()) -> \(row.body.display(indent: indent))"
 			// 	}.joined(separator: "\n")
 			default:
 				// print(self)
-				fatalError("not implemented")
-				// return ""
+				fatalError("\(self) not implemented")
+			// return ""
 			}
 		}
 	}
 
-	// extension Semantic.Pattern {
-	// 	func display() -> String {
-	// 		switch self {
-	// 		case let .value(value):
-	// 			return value.display()
-	// 		case let .constructor(tag, pattern):
-	// 			return "\(tag.display())(\(pattern.display()))"
-	// 		case let .destructor(fields):
-	// 			return "{"
-	// 				+ fields.map { "\($0.key.display()): \($0.value.display())" }
-	// 				.joined(separator: ", ") + "}"
-	// 		case let .binding(name):
-	// 			return "$\(name.display())"
-	// 		case .wildcard:
-	// 			return "_"
-	// 		}
-	// 	}
-	// }
+// extension Semantic.Pattern {
+// 	func display() -> String {
+// 		switch self {
+// 		case let .value(value):
+// 			return value.display()
+// 		case let .constructor(tag, pattern):
+// 			return "\(tag.display())(\(pattern.display()))"
+// 		case let .destructor(fields):
+// 			return "{"
+// 				+ fields.map { "\($0.key.display()): \($0.value.display())" }
+// 				.joined(separator: ", ") + "}"
+// 		case let .binding(name):
+// 			return "$\(name.display())"
+// 		case .wildcard:
+// 			return "_"
+// 		}
+// 	}
+// }
 #endif

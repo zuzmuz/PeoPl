@@ -2,7 +2,7 @@ import Foundation
 
 public enum Utils {
 	// ANSI color codes
-	enum TerminalColor: String {
+	public enum TerminalColor: String {
 		case black = "\u{001B}[30m"
 		case red = "\u{001B}[31m"
 		case green = "\u{001B}[32m"
