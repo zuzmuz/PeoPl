@@ -3,10 +3,25 @@ import Foundation
 
 @main
 struct Peopl: AsyncParsableCommand {
-	static let configuration = CommandConfiguration(
-		commandName: "peopl",
-		abstract: "The PeoPl's Lang",
-		version: "0.0.0.0",
-		subcommands: [LspComand.self, BuildCommand.self]
-	)
+	#if RELEASE
+		static let configuration = CommandConfiguration(
+			commandName: "peopl",
+			abstract: "The PeoPl's Lang",
+			version: "0.0.0.0",
+			subcommands: [
+				LspComand.self,
+				// AnalyzeCommand.self,
+				BuildCommand.self,
+			]
+		)
+	#else
+		static let configuration = CommandConfiguration(
+			commandName: "peopl",
+			abstract: "The PeoPl's Lang",
+			version: "0.0.0.0",
+			subcommands: [
+				LspComand.self
+			]
+		)
+	#endif
 }
