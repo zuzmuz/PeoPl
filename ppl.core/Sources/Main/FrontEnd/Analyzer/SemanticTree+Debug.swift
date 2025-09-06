@@ -27,9 +27,24 @@
 //
 
 #if !RELEASE
+
+	extension Int {
+		fileprivate func indentString() -> String {
+			String(repeating: " ", count: self * 4)
+		}
+	}
+
+	extension Semantic.DefinitionsContext {
+		public func display(indent: Int) -> String {
+			self.functionDefinitions.map { (signature, expression) in
+				"\(indent.indentString())\(signature.display(indent: indent)) {\n\(expression.display(indent: indent+1))\n}"
+			}.joined(separator: "\n\n")
+		}
+	}
+
 	extension Semantic.FunctionSignature {
-		func display() -> String {
-			"\(inputType.type.display()).\(identifier.display())(\(arguments.map { "\($0.key.display()):_" }.joined(separator: ", "))"
+		func display(indent: Int) -> String {
+			"\(indent.indentString())\(inputType.type.display()).\(identifier.display())(\(arguments.map { "\($0.key.display()):_" }.joined(separator: ", "))"
 		}
 	}
 
@@ -67,7 +82,7 @@
 		func display() -> String {
 			switch self {
 			case let .record(fields):
-				"record(\(fields.map { "\($0.key.display()): \($0.value.display())" }.joined(separator: ", ")))"
+				"record [(\(fields.map { "\($0.key.display()): \($0.value.display())" }.joined(separator: ", "))])"
 			case let .function(function):
 				"funcion not implemented yet"
 			case let .choice(fields):
@@ -79,7 +94,7 @@
 	}
 
 	extension Semantic.Expression {
-		func display() -> String {
+		func display(indent: Int) -> String {
 			switch self {
 			case let .intLiteral(value):
 				return "\(value)"
@@ -93,39 +108,40 @@
 				return "\(tag.display())"
 			case let .unary(op, expression, _):
 				return
-					"\(type.display())(\(op.rawValue) \(expression.display()))"
+					"\(type.display())(\(op.rawValue) \(expression.display(indent: indent)))"
 			case let .binary(op, left, right, _):
 				return
-					"\(type.display())(\(left.display()) \(op.rawValue) \(right.display()))"
+					"\(type.display())(\(left.display(indent: indent)) \(op.rawValue) \(right.display(indent: indent)))"
 			case let .call(signature, input, arguments, _):
-				return "\(signature.display())(in: \(input.display()), )"
-			case let .branched(matrix, _):
-				return matrix.rows.map { row in
-					"\(row.pattern.display()) -> \(row.body.display())"
-				}.joined(separator: "\n")
+				return "\(signature.display(indent: indent))(in: \(input.display(indent: indent)), )"
+			// case let .branched(matrix, _):
+			// 	return matrix.rows.map { row in
+			// 		"\(row.pattern.display()) -> \(row.body.display(indent: indent))"
+			// 	}.joined(separator: "\n")
 			default:
-				print(self)
-				return ""
+				// print(self)
+				fatalError("not implemented")
+				// return ""
 			}
 		}
 	}
 
-	extension Semantic.Pattern {
-		func display() -> String {
-			switch self {
-			case let .value(value):
-				return value.display()
-			case let .constructor(tag, pattern):
-				return "\(tag.display())(\(pattern.display()))"
-			case let .destructor(fields):
-				return "{"
-					+ fields.map { "\($0.key.display()): \($0.value.display())" }
-					.joined(separator: ", ") + "}"
-			case let .binding(name):
-				return "$\(name.display())"
-			case .wildcard:
-				return "_"
-			}
-		}
-	}
+	// extension Semantic.Pattern {
+	// 	func display() -> String {
+	// 		switch self {
+	// 		case let .value(value):
+	// 			return value.display()
+	// 		case let .constructor(tag, pattern):
+	// 			return "\(tag.display())(\(pattern.display()))"
+	// 		case let .destructor(fields):
+	// 			return "{"
+	// 				+ fields.map { "\($0.key.display()): \($0.value.display())" }
+	// 				.joined(separator: ", ") + "}"
+	// 		case let .binding(name):
+	// 			return "$\(name.display())"
+	// 		case .wildcard:
+	// 			return "_"
+	// 		}
+	// 	}
+	// }
 #endif

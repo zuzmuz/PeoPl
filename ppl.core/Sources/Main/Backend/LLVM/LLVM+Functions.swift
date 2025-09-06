@@ -19,7 +19,7 @@ extension Semantic.FunctionSignature {
 		if identifier.chain == ["main"] {
 			"main"
 		} else {
-			display()
+			"\(identifier.chain.joined())+\(self.hashValue)"
 		}
 	}
 }
