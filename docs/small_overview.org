@@ -1,3 +1,29 @@
+#+title: Small Overview
+#+author: Zaher Hamadeh
+
+* Table Of Content :toc:
+- [[#what-is-this][What is this]]
+- [[#what-is-peopl][What is PeoPl]]
+- [[#a-peopl-file][A PeoPl File]]
+- [[#main][Main]]
+- [[#definitions][Definitions]]
+- [[#qualified-identifiers][Qualified Identifiers]]
+- [[#expressions][Expressions]]
+  - [[#literals][Literals]]
+  - [[#unary-and-binary-expressions][Unary and Binary Expressions]]
+  - [[#pipeline-expressions][Pipeline Expressions]]
+  - [[#input-capturing-and-pattern-matching][Input Capturing and Pattern Matching]]
+- [[#function-definitions][Function Definitions]]
+  - [[#input][Input]]
+  - [[#function-examples][Function Examples]]
+  - [[#function-overloading][Function Overloading]]
+- [[#type-definitions][Type Definitions]]
+  - [[#records-and-tuples][Records and Tuples]]
+  - [[#choices-enums-tagged-unions][Choices, Enums, Tagged Unions]]
+  - [[#type-aliases][Type Aliases]]
+- [[#call-expressions][Call Expressions]]
+- [[#comments][Comments]]
+
 * What is this
   This is a small introduction to PeoPl.
   Knowledge of programming languages and concepts is assumed.
@@ -15,48 +41,48 @@
   Programs are constructed as pipelines of operations, where each operation receives data, transforms it, and passes it forward.
 
 * A PeoPl File
-  A PeoPl source file ends with the file extension `.ppl`.
+  A PeoPl source file ends with the file extension =.ppl=.
   It contains top-level definitions.
   Definitions define compile-time constructs: values, expressions, types, and functions.
 
 * Main
   If running in single-file mode, one definition must exist in the file, and it is the main function.
 
-  @code peopl
+  #+begin_src peopl
   main: 0
-  @end
+  #+end_src
 
   This is the simplest PeoPl file.
-  Here `main` is defined as the value 0.
-  Running this file will call `main`, and the program will then terminate with the value of `main`, which is 0.
+  Here =main= is defined as the value 0.
+  Running this file will call `main`, and the program will then terminate with the value of =main=, which is 0.
 
-  `main` should be, or should return, an 8-bit integer.
+  =main= should be, or should return, an 8-bit integer.
 
-  `main` can be a function that runs at runtime and calculates its output value.
+  =main= can be a function that runs at runtime and calculates its output value.
   This is how functions are defined:
 
-  @code peopl
-  main: [] -> Int {
+  #+begin_src peopl
+  main: func [] -> Int {
   0
   }
-  @end
+  #+end_src
 
 * Definitions
   A PeoPl file is basically a list of definitions. We covered the main definition; here's the format of custom definitions:
 
-  @code peopl
+  #+begin_src peopl
   qualifiedIdentifier OptionalType: expression
-  @end
+  #+end_src
 
   Note: There's no apostrophe after the identifier.
 
 * Qualified Identifiers
   A qualified identifier is a scoped identifier. Scoping an identifier with a namespace or prefix is performed using the =\= symbol:
 
-  @code peopl
+  #+begin_src peopl
   aBasicIdentifier
   A\Scoped\Identifier
-  @end
+  #+end_src
 
   This is used for namespacing.
 
@@ -74,10 +100,9 @@
 
 ** Literals
 
-   @code peopl
+   #+begin_src peopl
    // The empty tuple, the unit type
    nothing
-   _
 
    // Boolean literals
    true
@@ -98,25 +123,25 @@
 
    // String literal
    "hi"
-   @end
+   #+end_src
 
 ** Unary and Binary Expressions
    This is a list of all operators:
-   - Multiplicative operators: `*`, `/`, `%`  (they overflow)
-   - Additive operators: `+`, `-` (they also overflow)
-   - Comparative operators: `=`, `>`, `>=`, `<`, `<=`
-   - Logic operators: `and`, `or`, `not`
+   - Multiplicative operators: ~*~, ~/~, ~%~  (they overflow)
+   - Additive operators: ~+~, ~-~ (they also overflow)
+   - Comparative operators: ~=~, ~>~, ~>=~, ~<~, ~<=~
+   - Logic operators: ~and~, ~or~, ~not~
 
    This is a list of legal operations in PeoPl:
-   - Unary: `operator operand` - if the unary expression has a valid input, it will apply the operation
-   - Binary: `lhs operator rhs`
+   - Unary: =operator operand= - if the unary expression has a valid input, it will apply the operation
+   - Binary: =lhs operator rhs=
 
-   PeoPl allows any operator to be used as a unary operator. For example, `*3` represents an expression that multiplies its input by 3.
+   PeoPl allows any operator to be used as a unary operator. For example, =*3= represents an expression that multiplies its input by 3.
 
 ** Pipeline Expressions
-   The core feature of PeoPl is pipeline-oriented programming using the `|>` operator:
+   The core feature of PeoPl is pipeline-oriented programming using the =|>= operator:
 
-   @code peopl
+   #+begin_src peopl
    // Basic piping
    "hello world" |> reverse()  // Returns "dlrow olleh"
 
@@ -132,12 +157,12 @@
    |> map(transform: parseInt)
    |> filter {|$x| x > 2}
    |> sum()                      // Returns 12
-   @end
+   #+end_src
 
 ** Input Capturing and Pattern Matching
    Capture pipeline inputs using the vertical bar notation =|$name|=:
 
-   @code peopl
+   #+begin_src peopl
    // Input capturing
    12321
    |> toString()
@@ -151,18 +176,18 @@
    |$n if n < 0| "Negative"
    |$n if n % 2 = 0| "Even"
    |_| "Other"
-   @end
+   #+end_src
 
 * Function Definitions
   Functions in PeoPl are pure expressions.
 
   To define a function:
 
-  @code peopl
-  qualifiedIdentifier: (OptionalInputType)[arg1' ArgType1, arg2' ArgType2] -> OutputType {
+  #+begin_src peopl
+  qualifiedIdentifier: func (OptionalInputType)[arg1' ArgType1, arg2' ArgType2] -> OutputType {
   // function body
   }
-  @end
+  #+end_src
 
 ** Input
    PeoPl doesn't have classes, but you can emulate methods using functions with inputs.
@@ -171,9 +196,9 @@
 
 ** Function Examples
 
-   @code peopl
+   #+begin_src peopl
    // Function with no input (static function)
-   thisReturns42: [] -> Int {
+   thisReturns42: func [] -> Int {
    42
    }
 
@@ -191,7 +216,7 @@
    5.square()      // returns 25
    5 |> square()   // equivalent
    add(a: 2, b: 3) // returns 5
-   @end
+   #+end_src
 
 ** Function Overloading
    Function overloading is supported on the name of the arguments, (not the types).
@@ -203,7 +228,7 @@
 ** Records and Tuples
    Product types for structured data:
 
-   @code peopl
+   #+begin_src peopl
    // Tuples (positional access)
    Point: [Float, Float]
    coordinates: Point(3.14, 2.71)
@@ -213,12 +238,12 @@
    Person: [name' String, age' Int]
    person: Person(name: "Alice", age: 30)
    name: person.name  // "Alice"
-   @end
+   #+end_src
 
 ** Choices, Enums, Tagged Unions
    Sum types for representing alternatives:
 
-   @code peopl
+   #+begin_src peopl
    // Basic enums
    Color: choice [red', green', blue', yellow']
 
@@ -233,23 +258,23 @@
    |circle: (radius: $r)| PI * r * r
    |rectangle: (width: $w, height: $h)| w * h
    }
-   @end
+   #+end_src
 
 ** Type Aliases
    Create meaningful names for existing types:
 
-   @code peopl
+   #+begin_src peopl
    UserId: Int
    Email: String
    Point2D: [x' Float, y' Float]
-   @end
+   #+end_src
 
    TypeAliases are distinct, and =Int= can be used as a =UserId= but a =UserId= can not be used as an =Int=
 
 * Call Expressions
   Function calls are expressions that can run at compile time or runtime:
 
-  @code peopl
+  #+begin_src peopl
   // Simple function call
   myFunction()
 
@@ -261,14 +286,14 @@
 
   // Method-style calls
   "hello".reverse().toUpperCase()
-  @end
+  #+end_src
 
 * Comments
   Start a comment with two forward slashes. Multiline comments are not supported:
 
-  @code peopl
+  #+begin_src peopl
   // This is a comment
-  main: [] -> Int { // This is also a comment
+  main: func [] -> Int { // This is also a comment
       0
   }
-  @end
+  #+end_src

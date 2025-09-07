@@ -1,3 +1,48 @@
+#+title: Overview
+#+author: Zaher Hamadeh
+
+* Table of Contents :toc:
+- [[#what-is-peopl][What is PeoPl]]
+- [[#a-peopl-file][A PeoPl File]]
+- [[#comments][Comments]]
+- [[#expressions-introduction][Expressions (Introduction)]]
+  - [[#pipes][Pipes]]
+- [[#operations][Operations]]
+  - [[#operations-and-operators][Operations and Operators]]
+- [[#expressions-detailed][Expressions (Detailed)]]
+  - [[#primitives][Primitives]]
+  - [[#literals][Literals]]
+  - [[#unary-expressions][Unary Expressions]]
+  - [[#binary-expressions][Binary Expressions]]
+  - [[#parenthesized-expressions][Parenthesized Expressions]]
+  - [[#call-expressions][Call Expressions]]
+  - [[#tagged-expression][Tagged Expression]]
+- [[#symbols][Symbols]]
+- [[#how-piping-works][How Piping Works]]
+  - [[#data-flow][Data Flow]]
+  - [[#piping][Piping]]
+  - [[#input-capturing-in-pipelines][Input Capturing in Pipelines]]
+  - [[#pattern-matching][Pattern Matching]]
+  - [[#piping-complex-data-structures][Piping Complex Data Structures]]
+- [[#functions][Functions]]
+  - [[#functions-with-inputs][Functions with Inputs]]
+  - [[#function-arguments][Function Arguments]]
+  - [[#calling-functions][Calling Functions]]
+- [[#definitions][Definitions]]
+  - [[#value-definitions][Value Definitions]]
+  - [[#type-definitions][Type Definitions]]
+- [[#types][Types]]
+  - [[#records-and-tuples][Records and Tuples]]
+  - [[#choices-enums-tagged-unions][Choices, Enums, Tagged Unions]]
+  - [[#function-types][Function Types]]
+  - [[#generic-types][Generic Types]]
+  - [[#type-inference][Type Inference]]
+- [[#error-handling][Error Handling]]
+- [[#memory-management][Memory Management]]
+- [[#modules-and-imports][Modules and Imports]]
+- [[#advanced-features][Advanced Features]]
+  - [[#compile-time-evaluation][Compile-Time Evaluation]]
+
 * What is PeoPl
 
   *PeoPl* is a /Pipeline Expression Oriented Programming Language/.
@@ -16,33 +61,33 @@
 
 * A PeoPl File
 
-  A PeoPl source file ends with the file extension `.ppl`.
+  A PeoPl source file ends with the file extension =.ppl=.
   It contains top-level definitions.
   Definitions define compile-time constructs, like values, expressions, types, and functions.
 
   If running in single-file mode, one definition must exist in the file, and it is the main function.
 
-  @code peopl
+  #+begin_src peopl
   main: 0
-  @end
+  #+end_src
 
   This is the simplest PeoPl file.
   Here =main= is defined as the value 0.
   Running this file will call =main=, and the program will then terminate with the value of =main=,
   which is 0.
 
-  `main` should be, or should return, an 8-bit integer.
+  =main= should be, or should return, an 8-bit integer.
 
-  `main` can be a function that runs at runtime and calculates its output value.
+  =main= can be a function that runs at runtime and calculates its output value.
   This is how functions are defined:
 
-  @code peopl
-  main: [] -> Int {
+  #+begin_src peopl
+  main: func [] -> Int {
       0
   }
-  @end
+  #+end_src
 
-  More on {# functions}[functions] later.
+  More on [[#functions][functions]] later.
 
 * Comments
 
@@ -54,12 +99,12 @@
   They're only useful when commenting a small region or part of a line. Even in this case,
   this doesn't justify their existence.
 
-  @code peopl
+  #+begin_src peopl
   // this is a comment
-  main: [] -> Int { // this is also a comment
+  main: func [] -> Int { // this is also a comment
       0
   }
-  @end
+  #+end_src
 
 * Expressions (Introduction)
 
@@ -67,11 +112,11 @@
   A function body is comprised of and only expressions.
   Expressions are like functions, in the sense that they can take an input and always return an output.
 
-  @code peopl
+  #+begin_src peopl
   "hello"                    // A string literal expression returning "hello"
   42                         // An integer literal expression returning 42
   2 + 3                      // A binary operation expression returning 5
-  @end
+  #+end_src
 
   Therefore, a function is basically a composition of expressions, a pipeline of computational nodes.
   It's technically a bunch of expressions bundled together with a name associated with them.
@@ -81,58 +126,58 @@
    To do anything useful with expressions, we need an interesting piping mechanism.
    Let's first imagine expressions as blocks:
 
-   @code
+   #+begin_src
    //   ╭───────╮
    //  ─┤a block├─
    //   ╰───────╯
-   @end
+   #+end_src
 
 
 
    It takes an input, maybe some extra arguments, and produces an output.
 
-   @code
+   #+begin_src
    //      extra arguments
    //         ╭┴──────╮
    //  input ─┤a block├─ output
    //         ╰───────╯
-   @end
+   #+end_src
 
    Let's chain a bunch of these:
 
-   @code
+   #+begin_src
    //        extra arguments    extra arguments 
    //         ╭┴──────╮          ╭┴──────╮
    //  input ─┤block 1├─ output ─┤block 2├─ output
    //         ╰───────╯          ╰───────╯
-   @end
+   #+end_src
 
    In code, piping is performed using the pipe operator known in functional programming languages:
 
-   @code peopl
+   #+begin_src peopl
    // Piping a string through functions
    "hello world" |> reverse()            // Returns "dlrow olleh"
-   @end
+   #+end_src
 
    PeoPl's expression-only design eliminates the statement/expression dichotomy found in many languages.
 
-   We'll get into more details about {# How Piping Works}[piping] later.
+   We'll get into more details about [[#how-piping-works][piping]] later.
 
 * Operations
 ** Operations and Operators
    The second building blocks are operations.
    This is a list of all operators:
-   - Multiplicative operators: `*`, `/`, `%`
-   - Additive operators: `+`, `-`
-   - Comparative operators: `=`, `>`, `>=`, `<`, `<=`
-   - Logic operators: `and`, `or`, `not`
+   - Multiplicative operators: ~*~, ~/~, ~%~
+   - Additive operators: ~+~, ~-~
+   - Comparative operators: ~=~, ~>~, ~>=~, ~<~, ~<=~
+   - Logic operators: ~and~, ~or~, ~not~
 
    This is a list of legal operations in PeoPl:
-   - Unary: `operator operand`, if the unary expression has a valid input, it will apply the operation
-   - Binary: `lhs operator rhs`
+   - Unary: =operator operand=, if the unary expression has a valid input, it will apply the operation
+   - Binary: =lhs operator rhs=
 
    PeoPl interestingly allows a unary expression to be formed by any type of operator, not just the additive ones.
-   For example, `*3` is a valid expression and it represents an expression where its input should be an integer
+   For example, =*3= is a valid expression and it represents an expression where its input should be an integer
    and it returns the result of the multiplication of the input and 3.
 
 * Expressions (Detailed)
@@ -144,7 +189,6 @@
    They are not exposed to the user of the language.
    Instead, wrapper nominal types are available that can be used as regular types:
 
-   @table
    | Type | Intrinsic  |
    | ---- | ---------- |
    | I8   | int8/byte  |
@@ -157,7 +201,6 @@
    | U64  | uint64     |
    | F32  | float32    |
    | F64  | float64    |
-   @end
 
   The idea behind hiding primitives away from users is that primitives are treated like every other type.
   They can be extended and used like every other type; the difference lies in how the eventual compiled program behaves.
@@ -170,20 +213,20 @@
 
     The empty tuple, representing the unit type:
 
-    @code peopl
+    #+begin_src peopl
     nothing
-    @end
+    #+end_src
 
 *** Boolean Literals
 
-    @code peopl
+    #+begin_src peopl
     true
     false
-    @end
+    #+end_src
 
 *** Number Literals
 
-    @code peopl
+    #+begin_src peopl
     // integers
     42
     690
@@ -195,15 +238,15 @@
 
     // floats
     3.1415
-    @end
+    #+end_src
 
 *** String Literals
 
     Multiline string literals are not supported:
 
-    @code peopl
+    #+begin_src peopl
     "hi"
-    @end
+    #+end_src
 
 **** TODO String literals are not fully covered yet
 
@@ -214,16 +257,16 @@
 ** Unary Expressions
 
    An expression with an operator prefix.
-   Due to PeoPl's pipeline approach, all {# Operations and Operators}[operators] can be used as prefix operators.
+   Due to PeoPl's pipeline approach, all [[#operations-and-operators][operators]] can be used as prefix operators.
 
-   @code peopl
+   #+begin_src peopl
    +42
    -3.14
    *2
    > x
    <= y
    not true
-   @end
+   #+end_src
 
    A unary expression can work on an input.
 
@@ -232,12 +275,12 @@
    Two expressions with an infix operator.
    All operators excluding the =not= operator are infix operators.
 
-   @code peopl
+   #+begin_src peopl
    690+42
    2.8-3.14
    5*2
    3 > 1
-   @end
+   #+end_src
 
 ** Parenthesized Expressions
 
@@ -249,11 +292,11 @@
    Any expression can be a callable, if it is defined as a callable.
    A call expression is defined by a prefix (which can be an expression) followed by =()=.
    A call expression can get extra arguments inside the =()=.
-   More on call expressions {# functions}[here].
+   More on call expressions [[#functions][here]].
 
-   @code peopl
+   #+begin_src peopl
    whatever() // calling whatever
-   @end
+   #+end_src
 
 ** Tagged Expression
 
@@ -269,16 +312,16 @@
    For example, calling a function with named arguments is like passing tagged expressions to the function body.
 
 
-   @code peopl
+   #+begin_src peopl
    label: expression // this a tagged expression
-   @end
+   #+end_src
 
    Usually the type of an expression is infered, but a tagged expression can be type annotated.
 
 
-   @code peopl
+   #+begin_src peopl
    label' ExpressionType: expression // this a tagged expression with a type
-   @end
+   #+end_src
 
    This syntax is integral to defining expressions and values in PeoPl and it appears in a lot of places.
    Whenever defining the type of a label is necessary, the label is suffixed by a ='=.
@@ -291,26 +334,26 @@
   If you see a symbol you've seen before, it will most probaby behave in a very predictable way.
   There should not be special cases.
 
-*** The sqare brackets `[]`
+*** The sqare brackets =[]=
     Used to define compile time constructs, most comonly types.
-*** The round brackets `()`
+*** The round brackets =()=
     Used to define runtime initializations. Like function arguments, literal tuples.
     They are also used as regular parenthesis for grouping expressions.
-*** The curly brackets `{}`
+*** The curly brackets ={}=
     Used to define function blocks.
-*** The colon `:`
+*** The colon =:=
     Used in tagged expressions. Generaly after a label or a qualified identifier
-    @code peopl
+    #+begin_src peopl
     qualified_identifier: expression
-    @end
+    #+end_src
     The colon will behave predictably inside argument list of function calls and tuple literal definitions.
-*** The apostorphe `'`
+*** The apostorphe ='=
     Used to define identifiers types. Most comonly in type definitions, or in tagged expressions to disambiguate types.
-*** The vertical line `\|`
+*** The vertical line =|=
     Used to define capture expressions with match and guard expressions.
-*** The dollar sign `$`
+*** The dollar sign =$=
     Used for bindings. An identifier prefixed by a `$` is usually used inside match expressions to bind input to a certain identifier.
-*** Quotation mark `"`
+*** Quotation mark ="=
     For string literals
 
 * How Piping Works
@@ -336,14 +379,14 @@
    PeoPl doesn't support assignments. It's crazy, right?
    Well, it is not technically needed. To have a name for the input of an expression,
    capture it by binding it to local identifiers. You might like to call this a "local variable" (but it's not).
-   This is done using the input capture syntax with the vertical bar notation `|$name|`.
+   This is done using the input capture syntax with the vertical bar notation =|$name|=.
 
-   @code peopl
+   #+begin_src peopl
    // Input capturing using |$name| syntax
    12321
    |> toString()
    |> |$value| value = value.reverse() // Returns true (palindrome check)
-   @end
+   #+end_src
 
 ** Pattern Matching
 
@@ -357,7 +400,7 @@
     It also allows for branching.
     Input can be matched to exact values, or bound to labels but with guard expressions.
 
-    @code peopl
+    #+begin_src peopl
     // Basic pattern matching on values
     value
     |>
@@ -366,7 +409,7 @@
     |$n if n < 0| "Negative",
     |$n if n % 2 = 0| "Even",
     |_| "Other"
-    @end
+    #+end_src
 
 *** Destructuring
 
@@ -383,17 +426,17 @@
 
     Tuples (ordered collections of values) can be processed efficiently:
 
-    @code peopl
+    #+begin_src peopl
     // Piping a tuple through a transformation
     (10, 5)
     |> |$dimensions| dimensions._0 * dimensions._1  // Returns 50
-    @end
+    #+end_src
 
 *** Records
 
     Records are tuples with named members:
 
-    @code peopl
+    #+begin_src peopl
     // Piping a record
     (width: 10, height: 5)
     |> |$in| in.width * in.height  // Returns 50
@@ -401,13 +444,13 @@
     // Piping a record with anonymous capture
     (width: 10, height: 5)
     |> |$| width * height  // Returns 50
-    @end
+    #+end_src
 
 *** Nested Structures
 
     Pattern matching and bindings can be performed on nested structures, used for destructuring.
 
-    @code peopl
+    #+begin_src peopl
     // Processing nested data
     (
     user: (name: "Abdulla", birthyear: 1934),
@@ -425,7 +468,7 @@
     role: "admin"
     )
     |> |(user: (name: "Hanine", birthyear: $year), role: $role)| "Hanin is born in $year"
-    @end
+    #+end_src
 
 * Functions
 
@@ -433,13 +476,13 @@
   Similar to bash programs, each function has an input, extra arguments, and returns an output.
   In bash, the input and output are usually text, coming from stdin and going to stdout.
   However, in PeoPl, inputs and outputs are structured types.
-  More on {# types}[types] later.
+  More on [[#types][types]] later.
 
-  @code peopl
+  #+begin_src peopl
   thisReturns42: [] -> Int {
   42
   }
-  @end
+  #+end_src
 
   This syntax creates a function that takes nothing as input and returns 42.
   Return statements do not exist because they are not necessary.
@@ -452,42 +495,42 @@
    Inputs are usually anonymous, which means they can be pipelined directly into other functions.
    However, if needed, they can also be captured.
 
-   @code peopl
+   #+begin_src peopl
    square: (Int)[] -> Int {
    |$in| in*in
    }
-   @end
+   #+end_src
 
 ** Function Arguments
 
    In addition to function input, functions also take extra arguments.
    Extra arguments are always named.
 
-   @code peopl
+   #+begin_src peopl
    add: [a' Int, b' Int] -> Int {
    a + b
    }
-   @end
+   #+end_src
 
-   If `()` are omitted, it means the function takes nothing as input.
+   If =()= are omitted, it means the function takes nothing as input.
    By nothing, I mean the type =nothing=.
 
 ** Calling Functions
 
    Functions with inputs need to be called on an object:
 
-   @code peopl
+   #+begin_src peopl
    5.square() // returns 25
    // or
    5 |> square()
-   @end
+   #+end_src
 
    Functions with nothing as input can't receive a value as input:
 
-   @code peopl
+   #+begin_src peopl
    5 |>
    add(a: 1, b: 2) // Error: add expects nothing as input
-   @end
+   #+end_src
 
    Functions with nothing as input can be considered as static functions.
 
@@ -496,22 +539,22 @@
   Expressions are not allowed at the file top level.
   They need to be bound to a label.
 
-  @code peopl
+  #+begin_src peopl
   a: 3 // creating the constant a with the value 3
 
-  main: [] -> nothing { // main function
+  main: func [] -> nothing { // main function
   _
   }
-  @end
+  #+end_src
 
   The main function is the entry point of the program.
   Other definitions can exist alongside it.
 
   Define a value using this syntax:
 
-  @code peopl
+  #+begin_src peopl
   label' OptionalType: Expression
-  @end
+  #+end_src
 
   Expressions can be 3 things:
   - Computable values
@@ -525,25 +568,25 @@
    - Functions (callable at runtime)
    - Complex expressions
 
-   @code peopl
+   #+begin_src peopl
    pi: 3.14159
    MAX_SIZE: 1024
    greeting: "Hello, World!"
 
    // Function definitions
-   factorial: [n' Int] -> Int {
+   factorial: func [n' Int] -> Int {
        n
        |>
        |1| 1
        |$x| x * factorial(x - 1)
    }
-   @end
+   #+end_src
 
 ** Type Definitions
 
    Type definitions create aliases for structural types:
 
-   @code peopl
+   #+begin_src peopl
    UserId: Int
    Point: [x' Float, y' Float]
    Color: choice [
@@ -552,7 +595,7 @@
        blue',
        custom' [r' Int, g' Int, b' Int]
    ]
-   @end
+   #+end_src
 
 * Types
 
@@ -564,18 +607,18 @@
 
    The simplest type is the record/struct/tuple, whatever you want to call it. It is the product type.
 
-   @code peopl
+   #+begin_src peopl
    Person: [name' String, age' Int]
    Point: [Float, Float]
    Circle: [center' Point, radius' Float]
    Rectangle: [a' Point, b' Point, width' Float, height' Float]
-   @end
+   #+end_src
 
 *** Anonymous vs Named Fields
 
     Tuples use positional access (=._0=, =._1=), while records use named access (=.name=, =.age=).
 
-    @code peopl
+    #+begin_src peopl
     // Tuple access
     coordinates: (3.14, 2.71)
     x: coordinates._0  // 3.14
@@ -585,14 +628,14 @@
     person: (name: "Alice", age: 30)
     name: person.name  // "Alice"
     age: person.age    // 30
-    @end
+    #+end_src
 
 ** Choices, Enums, Tagged Unions
 
    A useful construct for defining choices or option enumerations.
    They are sum types. Similar to Rust enums, but with nicer syntax, I guarantee.
 
-   @code peopl
+   #+begin_src peopl
    Color: choice [red', blue', green', yellow'] // basic enums
 
    ShapeUnion: choice [Circle, Rectangle] // unions (they are secretly tagged)
@@ -604,24 +647,24 @@
        rectangle' [a' Point, b' Point, width' Float, height' Float]
    ]
    // Definitions can be nested, preventing the proliferation of small types that are only used in one place
-   @end
+   #+end_src
 
 *** Pattern Matching on Choice Types
 
     Choice types work seamlessly with pattern matching:
 
-    @code peopl
+    #+begin_src peopl
     processShape: (Shape)[] -> Float {
         |circle: (center: _, radius: $r)| PI * r * r,
         |rectangle: (a: _, b: _, width: $w, height: $h)| w * h
     }
-    @end
+    #+end_src
 
 ** Function Types
 
    Functions are also types and can be used as first-class values:
 
-   @code peopl
+   #+begin_src peopl
    // Function type definitions
    Transformer: (String)[] -> String
    Predicate: (Int)[] -> Bool
@@ -631,13 +674,13 @@
    applyTwice: (Int)[transform' Transformer] -> String {
        |$input| input |> transform() |> transform()
    }
-   @end
+   #+end_src
 
 ** Generic Types
 
    PeoPl supports generic types for writing reusable code:
 
-   @code peopl
+   #+begin_src peopl
    // Generic container
    Container: [T'] => [value T, timestamp Int]
 
@@ -645,14 +688,14 @@
    map: [T', U'] => (List[T])[transform' (T)[] -> U] -> List[U] {
    // implementation
    }
-   @end
+   #+end_src
 
    Generic
 ** Type Inference
 
    PeoPl has strong type inference, reducing the need for explicit type annotations:
 
-   @code peopl
+   #+begin_src peopl
    // Type inferred as Int
    count: 42
 
@@ -662,7 +705,7 @@
    |> map(capitalize)
    |> join(", "))
    // Type inferred as String
-   @end
+   #+end_src
 
 * TODO Error Handling
 
@@ -676,10 +719,10 @@
 
    Many expressions can be evaluated at compile time:
 
-   @code peopl
+   #+begin_src peopl
    // Compile-time constants
    TABLE_SIZE: 2^10  // Computed at compile time
 
    // Compile-time function calls
    factorial5: factorial(5)  // Computed at compile time if factorial is pure
-   @end
+   #+end_src

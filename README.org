@@ -1,84 +1,74 @@
+#+title: README
+#+author: Zaher Hamadeh
 
-# The Language Overview
+* Table of Contents :toc:
+- [[#the-language-overview][The Language Overview]]
+- [[#the-manifesto][The Manifesto]]
+- [[#why][Why]]
+  - [[#why-pipeline-oriented][Why pipeline oriented]]
+  - [[#why-low-level][Why low level]]
+  - [[#so][So]]
+- [[#installation][Installation]]
+  - [[#build-it][Build it]]
+- [[#whats-available][What's available]]
 
-This is a [small overview](docs/small_overview.md), a more [comprehensive overview](docs/overview.md) is not complete
+* The Language Overview
+This is a [[file:docs/small_overview.org][small overview]], a more [[file:docs/overview.org][comprehensive overview]] is not complete
 
+* The Manifesto
+Check the [[file:docs/manifesto.org][the manifesto]], AI helped me write it
 
-# The Manifesto
-
-Check the [the manifesto](docs/manifesto.md), AI helped me write it
-
-
-# Why
-
+* Why
 
 A low level pipeline oriented programming language
 
-
-## Why pipeline oriented
-
+** Why pipeline oriented
 Pipeline-oriented programming isn't just a syntactic preference, it's a fundamental design choice that enables three critical guarantees:
-
-### Safety
-
+*** Safety
 Pipeline orientation creates a linear, predictable control flow that dramatically simplifies complex compiler analysis.
-- simple type inference
-- lifetime and ownership clarity
-- resource management
+  - simple type inference
+  - lifetime and ownership clarity
+  - resource management
 
-Traditional imperative code where resources, ownership, and control flow are scattered across multiple statements, makes analysis exponentially more complex.
+    Traditional imperative code where resources, ownership, and control flow are scattered across multiple statements, makes analysis exponentially more complex.
 
-
-### Performance
-
+*** Performance
 Pipeline orientation naturally encourages pure functions and data immutability, unlocking aggressive compiler optimizations.
 - memory layout optimization
 - memory release and reuse
 - automatic parallelization
 
-
-### Readability
-
+*** Readability
 This might be subjective,
 Pipeline orientation mirrors human thought processes and data transformation workflows
-```peopl
-// Read left-to-right, top-to-bottom like prose
-user_input
-|> sanitize()
-|> parse()
-|> validate()
-|> process()
-|> format_response()
+#+begin_src peopl
+    // Read left-to-right, top-to-bottom like prose
+    user_input
+    |> sanitize()
+    |> parse()
+    |> validate()
+    |> process()
+    |> format_response()
 
-// vs. traditional nested calls (read inside-out)
-format_response(process(validate(parse(sanitize(user_input)))))
-```
+    // vs. traditional nested calls (read inside-out)
+    format_response(process(validate(parse(sanitize(user_input)))))
+#+end_src
 
-
-## Why low level
-
+** Why low level
 I love control and performance. I always loved functional programming languages but hated their syntax or the lack of low level features.
 Manual memory management does not need to be this complicated, and sometime the cost of a garbage collector is much bigger than the reward.
 
-
-## So
-
+** So
 PeoPl is pipeline oriented at its core. Pipeline oriented programming is not necessarily functional, it can be performed in OOP through object method chaining.
 However, PeoPl provides the clever syntax to enable powerful features that do not sacrifice performance for expressibility
 
-
-# Installation
-
+* Installation
 You can't install it right now
 
-
-## Build it
-
+** Build it
 Make sure you have swift installed. Compile it with spm.
 
-
-# What's available
-
+* What's available
 - A tree sitter grammar for syntax highlighting in your editor (needs manual configuration)
 - An lsp (that doesn't work)
 - Compiler with LLVM as backend (still WIP)
