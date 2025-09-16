@@ -47,8 +47,7 @@ extension Socket {
 			if let connection = connection {
 				connection.cancel()
 				self.connection = nil
-				logger.log(
-					level: .info,
+				logger.info(
 					tag: Socket.serverTag,
 					message: "cancelling connection"
 				)
@@ -61,8 +60,7 @@ extension Socket {
 		) {
 			if self.connection != nil {
 				connection.cancel()
-				logger.log(
-					level: .warning,
+				logger.warning(
 					tag: Socket.serverTag,
 					message: "connection already existing"
 				)
@@ -73,47 +71,40 @@ extension Socket {
 			self.connection?.stateUpdateHandler = { [weak self] state in
 				switch state {
 				case .ready:
-					self?.logger.log(
-						level: .info,
+					self?.logger.info(
 						tag: Socket.serverTag,
 						message: "connection ready"
 					)
 					completion(.success(()))
 				case let .failed(error):
-					self?.logger.log(
-						level: .error,
+					self?.logger.error(
 						tag: Socket.serverTag,
 						message: "connection failed with error: \(error)"
 					)
 					completion(.failure(.connectionFailed))
 				case let .waiting(error):
-					self?.logger.log(
-						level: .error,
+					self?.logger.error(
 						tag: Socket.serverTag,
 						message: "connection waiting with error: \(error)"
 					)
 				case .cancelled:
-					self?.logger.log(
-						level: .warning,
+					self?.logger.warning(
 						tag: Socket.serverTag,
 						message: "connection cancelled"
 					)
 					completion(.failure(.connectionCancelled))
 				case .setup:
-					self?.logger.log(
-						level: .verbose,
+					self?.logger.verbose(
 						tag: Socket.serverTag,
 						message: "connection is setting up"
 					)
 				case .preparing:
-					self?.logger.log(
-						level: .verbose,
+					self?.logger.verbose(
 						tag: Socket.serverTag,
 						message: "connection preparing"
 					)
 				default:
-					self?.logger.log(
-						level: .warning,
+					self?.logger.warning(
 						tag: Socket.serverTag,
 						message: "connection unknown state \(state)"
 					)
@@ -163,40 +154,34 @@ extension Socket {
 				}
 				switch state {
 				case .ready:
-					self.logger.log(
-						level: .info,
+					self.logger.info(
 						tag: Socket.serverTag,
 						message: "server is ready on port \(self.port)"
 					)
 				case let .failed(error):
-					self.logger.log(
-						level: .error,
+					self.logger.error(
 						tag: Socket.serverTag,
 						message: "server failed with error: \(error)"
 					)
 					completion(.failure(.listenerNotSet))
 				case let .waiting(error):
-					self.logger.log(
-						level: .warning,
+					self.logger.warning(
 						tag: Socket.serverTag,
 						message: "server waiting with error: \(error)"
 					)
 				case .cancelled:
-					self.logger.log(
-						level: .warning,
+					self.logger.warning(
 						tag: Socket.serverTag,
 						message: "server cancelled"
 					)
 					completion(.failure(.listenerNotSet))
 				case .setup:
-					self.logger.log(
-						level: .verbose,
+					self.logger.verbose(
 						tag: Socket.serverTag,
 						message: "server is setting up"
 					)
 				default:
-					self.logger.log(
-						level: .warning,
+					self.logger.warning(
 						tag: Socket.serverTag,
 						message: "server unknown state \(state)"
 					)
@@ -253,15 +238,13 @@ extension Socket {
 						minimumIncompleteLength: 1,
 						maximumLength: 1024
 					) { data, _, isComplete, error in
-						self.logger.log(
-							level: .verbose,
+						self.logger.verbose(
 							tag: Socket.serverTag,
 							message: "data received"
 						)
 
 						if let error = error {
-							self.logger.log(
-								level: .error,
+							self.logger.error(
 								tag: Socket.serverTag,
 								message: "data received error: \(error)"
 							)
@@ -274,8 +257,7 @@ extension Socket {
 						}
 
 						guard !isComplete, let data else {
-							self.logger.log(
-								level: .notice,
+							self.logger.notice(
 								tag: Socket.serverTag,
 								message: "stream complete"
 							)
@@ -290,13 +272,11 @@ extension Socket {
 							return
 						}
 
-						self.logger.log(
-							level: .verbose,
+						self.logger.verbose(
 							tag: Socket.serverTag,
 							message: "data received size: \(data.count)"
 						)
-						self.logger.log(
-							level: .verbose,
+						self.logger.verbose(
 							tag: Socket.serverTag,
 							message: data
 						)
@@ -312,20 +292,17 @@ extension Socket {
 		}
 
 		public func write(_ data: Data) async throws(Socket.Error) {
-			logger.log(
-				level: .verbose,
+			logger.verbose(
 				tag: serverTag,
 				message: "sending data"
 			)
-			logger.log(
-				level: .verbose,
+			logger.verbose(
 				tag: serverTag,
 				message: data
 			)
 
 			guard let connection = connection else {
-				logger.log(
-					level: .error,
+				logger.error(
 					tag: serverTag,
 					message: "why is the connection not set"
 				)
@@ -338,8 +315,7 @@ extension Socket {
 						content: data,
 						completion: .contentProcessed { error in
 							if let error {
-								self.logger.log(
-									level: .verbose,
+								self.logger.verbose(
 									tag: serverTag,
 									message: "data sent"
 								)

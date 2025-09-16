@@ -99,6 +99,21 @@ public enum Utils {
 			tag: String,
 			message: Data
 		)
+
+		func verbose(tag: String, message: String)
+		func debug(tag: String, message: String)
+		func info(tag: String, message: String)
+		func notice(tag: String, message: String)
+		func warning(tag: String, message: String)
+		func error(tag: String, message: String)
+		func critical(tag: String, message: String)
+		func verbose(tag: String, message: Data)
+		func debug(tag: String, message: Data)
+		func info(tag: String, message: Data)
+		func notice(tag: String, message: Data)
+		func warning(tag: String, message: Data)
+		func error(tag: String, message: Data)
+		func critical(tag: String, message: Data)
 	}
 
 	/// A logger that does nothing
@@ -268,5 +283,50 @@ public enum Utils {
 				level: level, tag: tag,
 				message: message.data(using: .utf8)!)
 		}
+	}
+}
+
+extension Utils.Logger {
+	public func verbose(tag: String, message: String) {
+		log(level: .verbose, tag: tag, message: message)
+	}
+	public func debug(tag: String, message: String) {
+		log(level: .debug, tag: tag, message: message)
+	}
+	public func info(tag: String, message: String) {
+		log(level: .info, tag: tag, message: message)
+	}
+	public func notice(tag: String, message: String) {
+		log(level: .notice, tag: tag, message: message)
+	}
+	public func warning(tag: String, message: String) {
+		log(level: .warning, tag: tag, message: message)
+	}
+	public func error(tag: String, message: String) {
+		log(level: .error, tag: tag, message: message)
+	}
+	public func critical(tag: String, message: String) {
+		log(level: .critical, tag: tag, message: message)
+	}
+	public func verbose(tag: String, message: Data) {
+		log(level: .verbose, tag: tag, message: message)
+	}
+	public func debug(tag: String, message: Data) {
+		log(level: .debug, tag: tag, message: message)
+	}
+	public func info(tag: String, message: Data) {
+		log(level: .info, tag: tag, message: message)
+	}
+	public func notice(tag: String, message: Data) {
+		log(level: .notice, tag: tag, message: message)
+	}
+	public func warning(tag: String, message: Data) {
+		log(level: .warning, tag: tag, message: message)
+	}
+	public func error(tag: String, message: Data) {
+		log(level: .error, tag: tag, message: message)
+	}
+	public func critical(tag: String, message: Data) {
+		log(level: .critical, tag: tag, message: message)
 	}
 }

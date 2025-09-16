@@ -38,8 +38,7 @@
 			// TODO: add argument for parsing single file
 			func run() throws {
 				let logger = Utils.ConsoleLogger(level: .debug)
-				logger.log(
-					level: .debug, tag: "Analyzer", message: "starting analysis")
+				logger.debug(tag: "Analyzer", message: "starting analysis")
 				let project = try SourceManager.readCurrentDirectory()
 				let result = project.semanticCheck()
 				switch result {
@@ -58,17 +57,38 @@
 		}
 	}
 
+	extension String {
+		fileprivate func withColor(
+			_ colors: Utils.TerminalColor...
+		) -> String {
+			let colorCodes = colors.map { $0.rawValue }.joined()
+			return "\(colorCodes)\(self)\(Utils.TerminalColor.reset.rawValue)"
+		}
+	}
+
 	extension Semantic.DefinitionsContext {
 		public func display(indent: Int) -> String {
-			self.functionDefinitions.map { (signature, expression) in
-				"\(indent.indentString())\(signature.display(indent: indent)) {\n\(expression.display(indent: indent+1))\n}"
+			self.functionDefinitions.map { (signature, expression) -> String in
+				indent.indentString()
+					+ signature.display(indent: indent)
+					+ " {\n".withColor(.dim, .brightBlack)
+					+ expression.display(indent: indent + 1)
+					+ "\n}".withColor(.dim)
 			}.joined(separator: "\n\n")
 		}
 	}
 
 	extension Semantic.FunctionSignature {
 		func display(indent: Int) -> String {
-			"\(indent.indentString())\(inputType.type.display()).\(identifier.display())(\(arguments.map { "\($0.key.display()):_" }.joined(separator: ", "))"
+			indent.indentString()
+				+ inputType.type.display().withColor(.bgRed, .bold)
+				+ ".".withColor(.dim, .brightBlack)
+				+ identifier.display()
+				+ "(".withColor(.dim, .brightBlack)
+				+ arguments.map {
+					"\($0.key.display()):_"
+				}.joined(separator: ", ")
+				+ ")".withColor(.dim, .brightBlack)
 		}
 	}
 
@@ -95,9 +115,13 @@
 		func display() -> String {
 			switch self {
 			case let .nominal(nominal):
-				nominal.display()
+				return nominal.display()
 			case let .raw(raw):
-				raw.display()
+				if raw == .record([:]) {
+					return ""
+					// input is nothing and can be omitted
+				}
+				return raw.display()
 			}
 		}
 	}

@@ -81,13 +81,11 @@ public enum Lsp {
 				while true {
 					data += try await client.read()
 
-					logger.log(
-						level: .verbose,
+					logger.verbose(
 						tag: "LspProxyHandler",
 						message: "message received"
 					)
-					logger.log(
-						level: .verbose,
+					logger.verbose(
 						tag: "LspProxyHandler",
 						message: data
 					)
@@ -96,23 +94,20 @@ public enum Lsp {
 
 					switch decodedMessage.result {
 					case let .notification(notification):
-						logger.log(
-							level: .info,
+						logger.info(
 							tag: "LspProxyHandler",
 							message: "notification \(notification.method.name)"
 						)
 					// TODO: the proxy needs to send the notification to the client
 					case let .request(request):
-						logger.log(
-							level: .info,
+						logger.info(
 							tag: "LspProxyHandler",
 							message:
 								"request id(\(request.id)) \(request.method.name)"
 						)
 					// TODO: the proxy needs to send the request to the client
 					case let .response(response):
-						logger.log(
-							level: .info,
+						logger.info(
 							tag: "LspProxyHandler",
 							message:
 								"response id(\(String(describing: response.id))"
@@ -124,22 +119,19 @@ public enum Lsp {
 						{
 							continuation.resume(returning: response)
 						} else {
-							logger.log(
-								level: .warning,
+							logger.warning(
 								tag: "LspProxyHandler",
 								message:
 									"no pending request for response id \(String(describing: response.id))"
 							)
 						}
 					case let .error(error):
-						logger.log(
-							level: .error,
+						logger.error(
 							tag: "LspProxyHandler",
 							message: error
 						)
 					case .incomplete:
-						logger.log(
-							level: .debug,
+						logger.debug(
 							tag: "LspProxyHandler",
 							message: "Incomplete message"
 						)
@@ -164,8 +156,7 @@ public enum Lsp {
 						}
 						try await client.write(data)
 					} catch {
-						logger.log(
-							level: .error,
+						logger.error(
 							tag: "LspProxyHandler",
 							message:
 								"Failed to write request to tcp server: \(error.localizedDescription)"
@@ -188,8 +179,7 @@ public enum Lsp {
 						}
 						try await client.write(data)
 					} catch {
-						logger.log(
-							level: .error,
+						logger.error(
 							tag: "LspProxyHandler",
 							message:
 								"Failed to write notification to client: \(error.localizedDescription)"
@@ -264,13 +254,11 @@ public enum Lsp {
 			while true {
 				data += try await transport.read()
 
-				logger.log(
-					level: .verbose,
+				logger.verbose(
 					tag: "LspServer",
 					message: "data received from transport"
 				)
-				logger.log(
-					level: .verbose,
+				logger.verbose(
 					tag: "LspServer",
 					message: data
 				)
@@ -279,23 +267,20 @@ public enum Lsp {
 
 				switch decodedMessage.result {
 				case let .notification(notification):
-					logger.log(
-						level: .info,
+					logger.info(
 						tag: "LspServer",
 						message: "Notification \(notification.method.name)"
 					)
 					await handler.handle(notification: notification)
 					if case .exit = notification.method {
-						logger.log(
-							level: .notice,
+						logger.notice(
 							tag: "LspServer",
 							message: "Exiting"
 						)
 						return
 					}
 				case let .request(request):
-					logger.log(
-						level: .info,
+					logger.info(
 						tag: "LspServer",
 						message:
 							"Request id(\(request.id)) \(request.method.name)"
@@ -303,8 +288,7 @@ public enum Lsp {
 
 					let response = await handler.handle(request: request)
 
-					logger.log(
-						level: .info,
+					logger.info(
 						tag: "LspServer",
 						message:
 							"Response id(\(String(describing: response.id))"
@@ -312,27 +296,23 @@ public enum Lsp {
 					if let encodedResponse = coder.encode(
 						message: response
 					) {
-						logger.log(
-							level: .verbose,
+						logger.verbose(
 							tag: "LspServer",
 							message: "data sent to transport"
 						)
-						logger.log(
-							level: .verbose,
+						logger.verbose(
 							tag: "LspServer",
 							message: encodedResponse
 						)
 						try await transport.write(encodedResponse)
 					} else {
-						logger.log(
-							level: .error,
+						logger.error(
 							tag: "LspServer",
 							message: "Failed to encode response"
 						)
 					}
 				case let .response(response):
-					logger.log(
-						level: .info,
+					logger.info(
 						tag: "LspServer",
 						message:
 							"Response id(\(String(describing: response.id))"
@@ -340,21 +320,18 @@ public enum Lsp {
 				// TODO: handle responses from client based on server requests
 				case let .error(message):
 					if message == "Unknown method exit" {
-						logger.log(
-							level: .error,
+						logger.error(
 							tag: "LspServer",
 							message: "Exiting cause error"
 						)
 						return
 					}
-					logger.log(
-						level: .error,
+					logger.error(
 						tag: "LspServer",
 						message: message
 					)
 				case .incomplete:
-					logger.log(
-						level: .debug,
+					logger.debug(
 						tag: "LspServer",
 						message: "Incomplete message"
 					)

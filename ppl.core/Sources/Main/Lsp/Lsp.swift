@@ -104,14 +104,12 @@ enum PpLsp {
 
 		private func scanWorkspaceFolders(folders: [Lsp.WorkspaceFolder]) {
 			for folder in folders {
-				logger.log(
-					level: .debug,
+				logger.debug(
 					tag: "LspHandler",
 					message: "Scanning workspace folder: \(folder.uri)"
 				)
 				guard let folderURL = URL(string: folder.uri) else {
-					logger.log(
-						level: .error,
+					logger.error(
 						tag: "LspHandler",
 						message: "Invalid workspace folder URI: \(folder.uri)"
 					)
@@ -125,8 +123,7 @@ enum PpLsp {
 						]
 					)
 				else {
-					logger.log(
-						level: .error,
+					logger.error(
 						tag: "LspHandler",
 						message:
 							"Failed to enumerate workspace folder: \(folder.uri)"
@@ -144,8 +141,7 @@ enum PpLsp {
 						acc[file.absoluteString] = source
 					}
 
-				logger.log(
-					level: .debug,
+				logger.debug(
 					tag: "LspHandler",
 					message: "modules content: \(modulesContent)"
 				)
@@ -206,8 +202,7 @@ enum PpLsp {
 		func handle(request: Lsp.RequestMessage) -> Lsp.ResponseMessage {
 			switch request.method {
 			case let .initialize(params):
-				logger.log(
-					level: .info,
+				logger.info(
 					tag: "LspHandler",
 					message: "Initialize request with params: \(params)"
 				)
@@ -238,8 +233,7 @@ enum PpLsp {
 					)
 				)
 			case let .diagnostic(params):
-				logger.log(
-					level: .info,
+				logger.info(
 					tag: "LspHanler",
 					message: "Diagnostic request with params: \(params)"
 				)
@@ -275,8 +269,7 @@ enum PpLsp {
 						content: params.textDocument.text,
 						name: params.textDocument.uri
 					)
-				logger.log(
-					level: .debug,
+				logger.debug(
 					tag: "LspHandler",
 					message: "modules content: \(modulesContent)"
 				)
@@ -290,8 +283,7 @@ enum PpLsp {
 							)
 					}
 				}
-				logger.log(
-					level: .debug,
+				logger.debug(
 					tag: "LspHandler",
 					message: "modules content: \(modulesContent)"
 				)
