@@ -29,15 +29,17 @@ module.exports = grammar({
       $.definition,
     ),
 
+    // --------------------------------------------
     // Comments
-    // --------
+    // --------------------------------------------
 
     comment: _ => token(
       seq('//', /(\\+(.|\r?\n)|[^\\\n])*/),
     ),
 
+    // --------------------------------------------
     // Identifiers
-    // -----------
+    // --------------------------------------------
 
     identifier: $ => /[a-zA-Z_][a-zA-Z0-9_]*/,
 
@@ -54,157 +56,50 @@ module.exports = grammar({
       )
     ),
 
+    // -------------------------------------------
     // Definitions
-    // -----------
+    // Top level definitions are treated specially,
+    // - they can be qualified
+    // - they can be generic
+    // -------------------------------------------
     
-    access_modifier: $ => choice(
-      "local",
-      "public"
-    ),
+    // access_modifier: $ => choice(
+    //   "local",
+    //   "public"
+    // ),
 
     definition: $ => seq(
       // optional(field("access_modifier", $.access_modifier)),
       field("identifier", $.qualified_identifier),
-      optional(field("type_specifier", $._type_specifier)),
+      optional(seq("'", field("type_specifier", $._basic_expression))),
       ':',
-      optional(
-        seq(
-          field("type_arguments", $.type_field_list),
-          "=>",
-        )
-      ),
+      // optional(
+      //   seq(
+      //     field("type_arguments", $.type_field_list),
+      //     "=>",
+      //   )
+      // ),
       field("definition", $._expression)
     ),
 
+    // -----------------------------------------
+    // Expressions
+    // everything is an expression
+    // -----------------------------------------
 
-    _type_specifier: $ => choice(
-      $.record_type,
-      $.choice_type,
-      $.nominal,
-      $.function_type,
-      $.nothing,
-      $.never
-    ),
-
+    // A nominal expression is technically a label, that can reference anything
+    // that is already defined
     nominal: $ => seq(
       field('identifier', $.qualified_identifier),
-      optional(field('type_arguments', $.square_expression_list)),
     ),
 
-    record_type: $ => seq(
-      field("type_field_list", $.type_field_list),
-    ),
-
-    choice_type: $ => seq(
-      "choice",
-      field("type_field_list", $.type_field_list),
-    ),
-
-    function_type: $ => seq(
-      "func",
-      optional(seq('(', field('input_type', $.type_field), ')')),
-      field("arguments", $.type_field_list),
-      optional(
-        seq(
-          "->",
-          field("output_type", $._type_specifier)
-        )
-      )
-    ),
-
-    function_arguments: $ => choice(
-      field('arguments', $.type_field_list),
-      prec.left(
-        seq(
-          field("argument_list", $.function_arguments),
-          field("arguments", $.type_field_list),
-        )
-      )
-    ),
-
-    type_field_list: $ => seq(
-      '[',
-        optional(
-          seq(
-            $.type_field,
-            repeat(
-              seq(',', $.type_field)
-            ),
-            optional(','),
-          ),
-        ),
-      ']'
-    ),
-
-    homogeneous_product: $ => seq(
-      field('type_specifier', $._type_specifier),
-      '**',
-      field('exponent', choice(
-        $.int_literal,
-        $.qualified_identifier
-      ))
-    ),
-
-    tagged_type_specifier: $ => seq(
-      // optional(field('hidden', '_')),
-      field("identifier", $.identifier),
-      "'",
-      optional(field("type_specifier", $._type_specifier)),
-    ),
-
-    type_field: $ => seq(
-      // optional(field('access_modifier', $.access_modifier)),
-      choice(
-        $.tagged_type_specifier,
-        $._type_specifier,
-        $.homogeneous_product
-      )
-    ),
-
-    _expression: $ => choice(
-      $._simple_expression,
-      $.tagged_expression,
-      $.branched_expression,
-      $.piped_expression
-    ),
-
-    tagged_expression: $ => prec.right(PREC.TAGGED, seq(
-      field("identifier", $.identifier),
-      optional(
-        seq(
-          "'",
-          field("type_specifier", $._type_specifier)),
-      ),
-      ":",
-      field("expression", $._expression)
-    )),
-
-    _simple_expression: $ => choice(
-      $.literal,
-      $.unary_expression,
-      $.binary_expression,
-      $._type_specifier,
-      $.parenthisized_expression,
-      $.binding,
-      $.function_value,
-      $.call_expression,
-      $.access_expression,
-    ),
-
-    access_expression: $ => prec.right(PREC.ACCESS, seq(
-      field("prefix", $._simple_expression),
-      '.',
-      field("field", $.identifier),
-    )),
-
-
-    expression_list: $ => seq(
+    round_expression_list: $ => seq(
       '(',
         optional(
           seq(
-            $._expression,
+            $._complex_expression,
             repeat(
-              seq(',', $._expression)
+              seq(',', $._complex_expression)
             ),
             optional(','),
           ),
@@ -212,91 +107,191 @@ module.exports = grammar({
       ')'
     ),
 
-    square_expression_list: $ => seq(
-      '[',
-        optional(
-          seq(
-            $._expression,
-            repeat(
-              seq(',', $._expression)
-            ),
-            optional(','),
-          ),
-        ),
-      ']'
+    // record_type: $ => seq(
+    //   field("type_field_list", $.square_expression_list),
+    // ),
+
+    // choice_type: $ => seq(
+    //   "choice",
+    //   field("type_field_list", $.square_expression_list),
+    // ),
+
+    // function_type: $ => seq(
+    //   "func",
+    //   optional(seq('(', field('input_type', $._simple_expression), ')')),
+    //   field("arguments", $.square_expression_list),
+    //   optional(
+    //     seq(
+    //       "->",
+    //       field("output_type", $._simple_expression)
+    //     )
+    //   )
+    // ),
+
+    // homogeneous_product: $ => seq(
+    //   field('type_specifier', $._simple_expression),
+    //   '**',
+    //   field('exponent', choice(
+    //     $.int_literal,
+    //     $.qualified_identifier
+    //   ))
+    // ),
+
+    // _expression: $ => choice(
+    //   $._simple_expression,
+    //   $.tagged_expression,
+    //   $.branched_expression,
+    //   $.piped_expression
+    // ),
+
+    tagged_expression: $ => prec.right(PREC.TAGGED, seq(
+      field("identifier", $.identifier),
+      optional(
+        seq(
+          "'",
+          field("type_specifier", $._basic_expression)),
+      ),
+      ":",
+      optional(field("expression", $._expression))
+    )),
+
+    // _simple_expression: $ => choice(
+    //   $.literal,
+    //   $.unary_expression,
+    //   $.binary_expression,
+    //   $.record_type,
+    //   $.choice_type,
+    //   $.nominal,
+    //   $.function_type,
+    //   $.nothing,
+    //   $.never,
+    //   $.parenthisized_expression,
+    //   $.binding,
+    //   $.function_value,
+    //   $.call_expression,
+    //   $.access_expression,
+    // ),
+    //
+    _basic_expression: $ => choice(
+      $.literal,
+      $.nothing,
+      $.never,
+      $.unary_expression,
+      $.binary_expression,
+      $.nominal,
+      $.access_expression,
+      $.call_expression,
+      $.round_expression_list,
     ),
+
+    _expression: $ => choice(
+      $._basic_expression,
+    ),
+
+    // a complex expression is a superset of expressions that can't be parsed in specific contexts
+    // therefore they need to be parenthisized
+    _complex_expression: $ => choice(
+      $._expression,
+      $.tagged_expression,
+    ),
+
+    access_expression: $ => prec.right(PREC.ACCESS, seq(
+      field("prefix", $._basic_expression),
+      '.',
+      field("field", $.identifier),
+    )),
 
     call_expression: $ => prec.right(PREC.FUNCTION, seq(
-      optional(field("prefix", $._simple_expression)),
-      field("arguments", $.expression_list),
+      optional(field("prefix", $._basic_expression)),
+      field("arguments", $.round_expression_list),
     )),
 
-    // TODO: call expression with trailing closures need more constraints
 
-    trailing_closure_list: $ => prec.right(seq(
-      $.function_body,
-      repeat(
-        seq(
-          field("identifier", $.identifier),
-          ":",
-          $.function_body,
-        )
-      )
-    )),
+    // square_expression_list: $ => seq(
+    //   '[',
+    //     optional(
+    //       seq(
+    //         $._expression,
+    //         repeat(
+    //           seq(',', $._expression)
+    //         ),
+    //         optional(','),
+    //       ),
+    //     ),
+    //   ']'
+    // ),
 
-    function_value: $ => prec.left(seq(
-      optional(field("signature", $.function_type)),
-      field("body", $.function_body)
-    )),
+    // generic_expression_list: $ => seq(
+    //   '<',
+    //   optional(
+    //     seq(
+    //       $._expression,
+    //       repeat(
+    //         seq(',', $._expression)
+    //       ),
+    //       optional(','),
+    //     ),
+    //   ),
+    //   '>'
+    // ),
 
-    function_body: $ => seq(
-      "{",
-      $._expression,
-      "}"
-    ),
+    //
+    // function_value: $ => prec.left(seq(
+    //   optional(field("signature", $.function_type)),
+    //   field("body", $.function_body)
+    // )),
+    //
+    // function_body: $ => seq(
+    //   "{",
+    //   $._expression,
+    //   "}"
+    // ),
+    //
+    //
+    // parenthisized_expression: $ => prec.left(PREC.PARENTHESIS, seq(
+    //   '(',
+    //   $._expression,
+    //   ')',
+    // )),
+    //
+    // binding: $ => /\$[a-zA-Z_][a-zA-Z0-9_]*/,
+    //
+    // branched_expression: $ => prec.left(seq(
+    //   repeat1($.branch),
+    // )),
+    //
+    // branch: $ => seq(
+    //   $._branch_capture_group,
+    //   field("body", choice($._simple_expression, $.tagged_expression))
+    // ),
+    //
+    // _branch_capture_group: $ => seq(
+    //   '|', 
+    //   choice(
+    //     field("match_expression", choice($._simple_expression, $.tagged_expression)),
+    //     seq('if', field("guard_expression", $._simple_expression)),
+    //     seq(
+    //       field("match_expression", choice($._simple_expression, $.tagged_expression)),
+    //       'if', field("guard_expression", $._simple_expression)
+    //     ),
+    //   ),
+    //   '|',
+    // ),
+    //
+    // piped_expression: $ => prec.left(PREC.PIPE, seq(
+    //     field("left", $._expression),
+    //     field("operator", choice($.pipe_operator, $.optional_pipe_operator)),
+    //     field("right", $._expression),
+    // )),
+    //
+    // pipe_operator: $ => '|>',
+    // optional_pipe_operator: $ => seq('?', '|>'),
 
 
-    parenthisized_expression: $ => prec.left(PREC.PARENTHESIS, seq(
-      '(',
-      $._expression,
-      ')',
-    )),
-
-    binding: $ => /\$[a-zA-Z_][a-zA-Z0-9_]*/,
-
-    branched_expression: $ => prec.left(seq(
-      repeat1($.branch),
-    )),
-
-    branch: $ => seq(
-      $._branch_capture_group,
-      field("body", choice($._simple_expression, $.tagged_expression))
-    ),
-
-    _branch_capture_group: $ => seq(
-      '|', 
-      choice(
-        field("match_expression", choice($._simple_expression, $.tagged_expression)),
-        seq('if', field("guard_expression", $._simple_expression)),
-        seq(
-          field("match_expression", choice($._simple_expression, $.tagged_expression)),
-          'if', field("guard_expression", $._simple_expression)
-        ),
-      ),
-      '|',
-    ),
-
-    piped_expression: $ => prec.left(PREC.PIPE, seq(
-        field("left", $._expression),
-        field("operator", choice($.pipe_operator, $.optional_pipe_operator)),
-        field("right", $._expression),
-    )),
-
-    pipe_operator: $ => '|>',
-    optional_pipe_operator: $ => seq('?', '|>'),
-
+    // -------------------------------------
     // Literals
-    // --------
+    // literals are the simplest expressions
+    // -------------------------------------
 
     literal: $ => choice(
       $.int_literal,
@@ -319,62 +314,67 @@ module.exports = grammar({
     string_literal: $ => /"([^"\\\r\n]|\\.)*"/,
     bool_literal: $ => choice("true", "false"),
 
+    // ----------------------------------------
     // Operators
-    // ---------
+    // for unary and binary operations
+    // ----------------------------------------
 
     // a unary operator followed by a simple expression 
+    // TODO: unary operators should 
     unary_expression: $ => prec.left(PREC.UNARY,
       seq(
         field("operator", choice(
-          $.multiplicative_operator,
+          // $.multiplicative_operator,
           $.additive_operator,
-          $.comparative_operator,
-          $.and_operator,
-          $.or_operator,
+          // $.comparative_operator,
+          // $.and_operator,
+          // $.or_operator,
           $.not_operator,
         )),
-        field("operand", $._simple_expression),
+        field("operand", $._basic_expression),
       )
     ),
     // two simple expressions surrounding a arithmetic or logic operator
     binary_expression: $ => choice(
       prec.left(PREC.MULT,
         seq(
-          field("left", $._simple_expression),
+          field("left", $._basic_expression),
           field("operator", $.multiplicative_operator),
-          field("right", $._simple_expression),
+          field("right", $._basic_expression),
         )
       ),
       prec.left(PREC.ADD,
         seq(
-          field("left", $._simple_expression),
+          field("left", $._basic_expression),
           field("operator", $.additive_operator),
-          field("right", $._simple_expression),
+          field("right", $._basic_expression),
         )
       ),
       prec.left(PREC.COMP,
         seq(
-          field("left", $._simple_expression),
+          field("left", $._basic_expression),
           field("operator", $.comparative_operator),
-          field("right", $._simple_expression),
+          field("right", $._basic_expression),
         )
       ),
       prec.left(PREC.AND,
         seq(
-          field("left", $._simple_expression),
+          field("left", $._basic_expression),
           field("operator", $.and_operator),
-          field("right", $._simple_expression),
+          field("right", $._basic_expression),
         )
       ),
       prec.left(PREC.OR,
         seq(
-          field("left", $._simple_expression),
+          field("left", $._basic_expression),
           field("operator", $.or_operator),
-          field("right", $._simple_expression),
+          field("right", $._basic_expression),
         )
       )
     ),
 
+
+    // TODO: bitwise operators
     multiplicative_operator: $ => choice('*', '/', '%'),
     additive_operator: $ => choice('+', '-'),
     comparative_operator: $ => choice('=', '!=', '>', '>=', '<', '<='),

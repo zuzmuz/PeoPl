@@ -1,0 +1,21 @@
+
+* TreeSitter
+** TODO Tasks [0/5]
+*** TODO decide on unary operator
+currently all operators can be unary operators, and when used in a
+pipe expression they will behave as binary expressions with the pipe
+left expression, this leads to confusing parsing precedence, and the
+feature is questionable
+*** TODO add bitwize operator [0/2]
+- [ ] bitshift operators
+- [ ] bitwize and, or and xor
+*** TODO add multiline strings
+a la zig (leading character on every line) similar to how comments work
+*** TODO figure out trailing closure syntax
+*** TODO figure out generics systax
+might consier using different syntax for definition and calling convention
+** notes
+- destinction between =[]= and =()=
+  - =[]= create types, while =()= create tuples
+    while compound types are technically a tuple of types, the
+    distinction is in how the object is treated
