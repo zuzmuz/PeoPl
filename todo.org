@@ -19,3 +19,8 @@ might consier using different syntax for definition and calling convention
   - =[]= create types, while =()= create tuples
     while compound types are technically a tuple of types, the
     distinction is in how the object is treated
+    #+begin_example
+    the type of (T, V) is [Type, Type] if T and V are types
+    while
+    the type of [T, V] is Type
+    #+end_example

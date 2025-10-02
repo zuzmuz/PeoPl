@@ -106,27 +106,20 @@ module.exports = grammar({
         ),
       ')'
     ),
+    square_expression_list: $ => seq(
+      '[',
+        optional(
+          seq(
+            $._complex_expression,
+            repeat(
+              seq(',', $._complex_expression)
+            ),
+            optional(','),
+          ),
+        ),
+      ']'
+    ),
 
-    // record_type: $ => seq(
-    //   field("type_field_list", $.square_expression_list),
-    // ),
-
-    // choice_type: $ => seq(
-    //   "choice",
-    //   field("type_field_list", $.square_expression_list),
-    // ),
-
-    // function_type: $ => seq(
-    //   "func",
-    //   optional(seq('(', field('input_type', $._simple_expression), ')')),
-    //   field("arguments", $.square_expression_list),
-    //   optional(
-    //     seq(
-    //       "->",
-    //       field("output_type", $._simple_expression)
-    //     )
-    //   )
-    // ),
 
     // homogeneous_product: $ => seq(
     //   field('type_specifier', $._simple_expression),
@@ -135,13 +128,6 @@ module.exports = grammar({
     //     $.int_literal,
     //     $.qualified_identifier
     //   ))
-    // ),
-
-    // _expression: $ => choice(
-    //   $._simple_expression,
-    //   $.tagged_expression,
-    //   $.branched_expression,
-    //   $.piped_expression
     // ),
 
     tagged_expression: $ => prec.right(PREC.TAGGED, seq(
@@ -180,12 +166,13 @@ module.exports = grammar({
       $.binary_expression,
       $.nominal,
       $.access_expression,
-      $.call_expression,
-      $.round_expression_list,
+      $.round_call_expression,
+      $.square_call_expression,
     ),
 
     _expression: $ => choice(
       $._basic_expression,
+      $.function_value
     ),
 
     // a complex expression is a superset of expressions that can't be parsed in specific contexts
@@ -195,64 +182,52 @@ module.exports = grammar({
       $.tagged_expression,
     ),
 
-    access_expression: $ => prec.right(PREC.ACCESS, seq(
+    access_expression: $ => seq(
       field("prefix", $._basic_expression),
       '.',
       field("field", $.identifier),
-    )),
+    ),
 
-    call_expression: $ => prec.right(PREC.FUNCTION, seq(
+    round_call_expression: $ => seq(
       optional(field("prefix", $._basic_expression)),
       field("arguments", $.round_expression_list),
+    ),
+
+    square_call_expression: $ => seq(
+      optional(field("prefix", $._basic_expression)),
+      field("arguments", $.square_expression_list),
+    ),
+    
+
+
+    // -------------------------------------
+    // Function literals
+    // Used to define function definitions and expressions
+    // -------------------------------------
+    function_value: $ => prec.left(seq(
+      optional(field("signature", $.function_type)),
+      field("body", $.function_body)
     )),
+    
+    function_type: $ => seq(
+      "func",
+      optional(seq('(', field('input_type', $._basic_expression), ')')),
+      field("arguments", $.square_expression_list),
+      optional(
+        seq(
+          "->",
+          field("output_type", $._basic_expression)
+        )
+      )
+    ),
+
+    function_body: $ => seq(
+      "{",
+      $._complex_expression,
+      "}"
+    ),
 
 
-    // square_expression_list: $ => seq(
-    //   '[',
-    //     optional(
-    //       seq(
-    //         $._expression,
-    //         repeat(
-    //           seq(',', $._expression)
-    //         ),
-    //         optional(','),
-    //       ),
-    //     ),
-    //   ']'
-    // ),
-
-    // generic_expression_list: $ => seq(
-    //   '<',
-    //   optional(
-    //     seq(
-    //       $._expression,
-    //       repeat(
-    //         seq(',', $._expression)
-    //       ),
-    //       optional(','),
-    //     ),
-    //   ),
-    //   '>'
-    // ),
-
-    //
-    // function_value: $ => prec.left(seq(
-    //   optional(field("signature", $.function_type)),
-    //   field("body", $.function_body)
-    // )),
-    //
-    // function_body: $ => seq(
-    //   "{",
-    //   $._expression,
-    //   "}"
-    // ),
-    //
-    //
-    // parenthisized_expression: $ => prec.left(PREC.PARENTHESIS, seq(
-    //   '(',
-    //   $._expression,
-    //   ')',
-    // )),
     //
     // binding: $ => /\$[a-zA-Z_][a-zA-Z0-9_]*/,
     //
