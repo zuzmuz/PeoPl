@@ -43,8 +43,6 @@ module.exports = grammar({
 
     identifier: $ => /[a-zA-Z_][a-zA-Z0-9_]*/,
 
-    // wildcard: $ => '_',
-    //
     qualified_identifier: $ => choice(
       field("identifier", $.identifier),
       prec.left(
@@ -63,22 +61,10 @@ module.exports = grammar({
     // - they can be generic
     // -------------------------------------------
     
-    // access_modifier: $ => choice(
-    //   "local",
-    //   "public"
-    // ),
-
     definition: $ => seq(
-      // optional(field("access_modifier", $.access_modifier)),
       field("identifier", $.qualified_identifier),
       optional(seq("'", field("type_specifier", $._basic_expression))),
       ':',
-      // optional(
-      //   seq(
-      //     field("type_arguments", $.type_field_list),
-      //     "=>",
-      //   )
-      // ),
       field("definition", $._expression)
     ),
 
@@ -121,15 +107,6 @@ module.exports = grammar({
     ),
 
 
-    // homogeneous_product: $ => seq(
-    //   field('type_specifier', $._simple_expression),
-    //   '**',
-    //   field('exponent', choice(
-    //     $.int_literal,
-    //     $.qualified_identifier
-    //   ))
-    // ),
-
     tagged_expression: $ => prec.right(PREC.TAGGED, seq(
       field("identifier", $.identifier),
       optional(
@@ -141,23 +118,6 @@ module.exports = grammar({
       optional(field("expression", $._expression))
     )),
 
-    // _simple_expression: $ => choice(
-    //   $.literal,
-    //   $.unary_expression,
-    //   $.binary_expression,
-    //   $.record_type,
-    //   $.choice_type,
-    //   $.nominal,
-    //   $.function_type,
-    //   $.nothing,
-    //   $.never,
-    //   $.parenthisized_expression,
-    //   $.binding,
-    //   $.function_value,
-    //   $.call_expression,
-    //   $.access_expression,
-    // ),
-    //
     _basic_expression: $ => choice(
       $.literal,
       $.nothing,
@@ -168,11 +128,14 @@ module.exports = grammar({
       $.access_expression,
       $.round_call_expression,
       $.square_call_expression,
+      $.binding
     ),
 
     _expression: $ => choice(
       $._basic_expression,
-      $.function_value
+      $.function_definition,
+      $.piped_expression,
+      $.branched_expression,
     ),
 
     // a complex expression is a superset of expressions that can't be parsed in specific contexts
@@ -180,6 +143,7 @@ module.exports = grammar({
     _complex_expression: $ => choice(
       $._expression,
       $.tagged_expression,
+      $.partial_function_value
     ),
 
     access_expression: $ => seq(
@@ -204,8 +168,13 @@ module.exports = grammar({
     // Function literals
     // Used to define function definitions and expressions
     // -------------------------------------
-    function_value: $ => prec.left(seq(
-      optional(field("signature", $.function_type)),
+    function_definition: $ => prec.left(seq(
+      field("signature", $.function_type),
+      field("body", $.function_body)
+    )),
+
+    partial_function_value: $ => prec.left(seq(
+      optional(field("arguments", $.square_expression_list)),
       field("body", $.function_body)
     )),
     
@@ -228,39 +197,40 @@ module.exports = grammar({
     ),
 
 
-    //
-    // binding: $ => /\$[a-zA-Z_][a-zA-Z0-9_]*/,
-    //
-    // branched_expression: $ => prec.left(seq(
-    //   repeat1($.branch),
-    // )),
-    //
-    // branch: $ => seq(
-    //   $._branch_capture_group,
-    //   field("body", choice($._simple_expression, $.tagged_expression))
-    // ),
-    //
-    // _branch_capture_group: $ => seq(
-    //   '|', 
-    //   choice(
-    //     field("match_expression", choice($._simple_expression, $.tagged_expression)),
-    //     seq('if', field("guard_expression", $._simple_expression)),
-    //     seq(
-    //       field("match_expression", choice($._simple_expression, $.tagged_expression)),
-    //       'if', field("guard_expression", $._simple_expression)
-    //     ),
-    //   ),
-    //   '|',
-    // ),
-    //
-    // piped_expression: $ => prec.left(PREC.PIPE, seq(
-    //     field("left", $._expression),
-    //     field("operator", choice($.pipe_operator, $.optional_pipe_operator)),
-    //     field("right", $._expression),
-    // )),
-    //
-    // pipe_operator: $ => '|>',
-    // optional_pipe_operator: $ => seq('?', '|>'),
+    
+    binding: $ => /\$[a-zA-Z_][a-zA-Z0-9_]*/,
+
+
+    branched_expression: $ => prec.left(seq(
+      repeat1($.branch),
+    )),
+
+    branch: $ => seq(
+      $._branch_capture_group,
+      field("body", choice($._basic_expression, $.tagged_expression))
+    ),
+
+    _branch_capture_group: $ => seq(
+      '|', 
+      choice(
+        field("match_expression", choice($._basic_expression, $.tagged_expression)),
+        seq('if', field("guard_expression", $._basic_expression)),
+        seq(
+          field("match_expression", choice($._basic_expression, $.tagged_expression)),
+          'if', field("guard_expression", $._basic_expression)
+        ),
+      ),
+      '|',
+    ),
+
+    piped_expression: $ => prec.left(PREC.PIPE, seq(
+        field("left", $._expression),
+        field("operator", choice($.pipe_operator, $.optional_pipe_operator)),
+        field("right", $._expression),
+    )),
+
+    pipe_operator: $ => '|>',
+    optional_pipe_operator: $ => seq('?', '|>'),
 
 
     // -------------------------------------

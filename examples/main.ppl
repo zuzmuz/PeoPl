@@ -20,7 +20,7 @@ main: func [] -> Int {
 }
 
 // functions can take parameters
-Math\multiply: [a' Int, b' Int] -> Int {
+Math\multiply: func [a: Int, b: Int] -> Int {
     a * b
 }
 
@@ -29,7 +29,7 @@ multuply2and4: Math\multiply(a: 2, b: 4) // functin arguments are named by defau
 // multiplyResult is a compile time Int with the value 8
 
 // function with inputs
-Math\square: (Int)[] -> Int {
+Math\square: func (Int)[] -> Int {
     *2
 }
 
@@ -39,7 +39,7 @@ squareOf5: 5.square() // squareOf5 is a compile time Int with the value 25
 // piping is also possible
 squareOf6: 6 |> Math\square() // squareOf6 is a compile time Int with the value 36
 
-fullFunction: (InputType) [arg1' ArgType1, arg2' ArgType2] -> OutputType {
+fullFunction: func (InputType) [arg1: ArgType1, arg2: ArgType2] -> OutputType {
     // function body
     // can use arg1, arg2, and InputType
     // return OutputType
@@ -70,22 +70,12 @@ Logic\operations: (
 )
 
 // All operators can be used as binary and unary operators
-// beside not (which is only a unary operator)
 
 thisIsLegal: (
     3
     |> + 2
     |> - 3
-    |> * 5
-    |> / 6
-    |> % 2
-    |> = 1
-    |> or (
-        3
-        |> > 5
-        |> and (
-            not (2 = 2)
-        )
+    |> not (2 = 2)
     )
 )
 
@@ -116,22 +106,22 @@ Number: choice [
 
 // tagged unions
 Geometry\Shape: choice [
-    circle    'Geometry\Circle,
-    triangle  '[Geometry\Point, Geometry\Point, Geometry\Point],
-    rectangle '[
-        center      'Geometry\Point,
-        width       'Float,
-        height      'Float,
-        orientation 'Float
+    circle    :Geometry\Circle,
+    triangle  :[Geometry\Point, Geometry\Point, Geometry\Point],
+    rectangle :[
+        center      :Geometry\Point,
+        width       :Float,
+        height      :Float,
+        orientation :Float
     ],
 ]
 
 // generic types
-Result: [S', E' Error] => choice [
-    sucess' S,
-    error' E
-]
-
-Optional: [T'] => choice [T, nothing]
-
+//Result: [S', E' Error] => choice [
+//    sucess' S,
+//    error' E
+//]
+//
+//Optional: [T'] => choice [T, nothing]
+//
 

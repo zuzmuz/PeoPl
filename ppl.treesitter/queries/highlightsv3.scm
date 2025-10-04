@@ -12,14 +12,14 @@
 ; ;   type_specifier: (nominal
 ; ;                     identifier: (qualified_identifier
 ; ;                                   identifier: (identifier) @type.definition)))
-(tagged_expression
-  identifier: (identifier) @variable.member)
+; (tagged_expression
+;   identifier: (identifier) @variable.member)
 ;
-(qualified_identifier
-  identifier: (identifier) @type.definition)
+; (qualified_identifier
+;   identifier: (identifier) @type.definition)
 ;
-(access_expression
-  field: (identifier) @function.call)
+; (access_expression
+;   field: (identifier) @function.call)
 ;
 ; ; (trailing_closure_list
 ; ;   identifier: (identifier) @variable.member)
@@ -35,8 +35,8 @@
 (not_operator) @operator
 (and_operator) @operator
 (or_operator) @operator
-(pipe_operator) @operator
-(optional_pipe_operator) @operator
+; (pipe_operator) @operator
+; (optional_pipe_operator) @operator
 ;
 ; [
 ; ;   ; "^"
@@ -44,24 +44,24 @@
 ; ;   "and"
 ; ] @keyword.operator
 ;
-[
-  "("
-  ")"
-  "["
-  "]"
-  "{"
-  "}"
-  "|"
-] @punctuation.bracket
+; [
+;   "("
+;   ")"
+;   "["
+;   "]"
+;   "{"
+;   "}"
+;   "|"
+; ] @punctuation.bracket
 ;
-[
- ":"
- "."
- "\\"
- ","
- "->"
- ; "=>"
-] @punctuation.delimiter
+; [
+;  ":"
+;  "."
+;  "\\"
+;  ","
+;  "->"
+;  "=>"
+; ] @punctuation.delimiter
 ;
 ; ; [
 ; ;  "_"
@@ -70,7 +70,7 @@
 (nothing) @constant.builtin
 (never) @constant.builtin
 
-(binding) @function.call
-"if" @keyword.control
+; (binding) @function.call
+; "if" @keyword.control
 
 (comment) @comment
