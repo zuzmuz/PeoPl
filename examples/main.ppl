@@ -125,3 +125,11 @@ Geometry\Shape: choice [
 //Optional: [T'] => choice [T, nothing]
 //
 
+
+
+Result: [S: Type, E: Error] -> Type {
+    choice[
+        success: S,
+        error: E
+    ]
+}

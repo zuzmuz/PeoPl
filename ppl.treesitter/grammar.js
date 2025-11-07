@@ -269,11 +269,7 @@ module.exports = grammar({
     unary_expression: $ => prec.left(PREC.UNARY,
       seq(
         field("operator", choice(
-          // $.multiplicative_operator,
           $.additive_operator,
-          // $.comparative_operator,
-          // $.and_operator,
-          // $.or_operator,
           $.not_operator,
         )),
         field("operand", $._basic_expression),
