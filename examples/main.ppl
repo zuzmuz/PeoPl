@@ -15,12 +15,12 @@ falseValue: false // another boolean value
 nothingValue: nothing // a nothing value, used to indicate absence of value
 
 // main a function that takes no input and returns an integer
-main: func [] -> Int {
+main: fn [] -> Int {
     0
 }
 
 // functions can take parameters
-Math\multiply: func [a: Int, b: Int] -> Int {
+Math\multiply: fn [a: Int, b: Int] -> Int {
     a * b
 }
 
@@ -29,8 +29,8 @@ multuply2and4: Math\multiply(a: 2, b: 4) // functin arguments are named by defau
 // multiplyResult is a compile time Int with the value 8
 
 // function with inputs
-Math\square: func (Int)[] -> Int {
-    *2
+Math\square: fn (Int)[] -> Int {
+    2
 }
 
 // calling a function with an input
@@ -39,7 +39,7 @@ squareOf5: 5.square() // squareOf5 is a compile time Int with the value 25
 // piping is also possible
 squareOf6: 6 |> Math\square() // squareOf6 is a compile time Int with the value 36
 
-fullFunction: func (InputType) [arg1: ArgType1, arg2: ArgType2] -> OutputType {
+fullFunction: fn (InputType) [arg1: ArgType1, arg2: ArgType2] -> OutputType {
     // function body
     // can use arg1, arg2, and InputType
     // return OutputType
@@ -76,7 +76,6 @@ thisIsLegal: (
     |> + 2
     |> - 3
     |> not (2 = 2)
-    )
 )
 
 // this is a stupid example
@@ -127,7 +126,7 @@ Geometry\Shape: choice [
 
 
 
-Result: [S: Type, E: Error] -> Type {
+Result: fn [S: Type, E: Error] -> Type {
     choice[
         success: S,
         error: E

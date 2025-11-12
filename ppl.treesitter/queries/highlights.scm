@@ -1,9 +1,7 @@
-; [
-;  "choice"
-;  "func"
-;  ; "local"
-;  ; "public"
-; ] @keyword.type
+[
+ "comp"
+ "fn"
+] @keyword.type
 ;
 ; (tagged_type_specifier
 ;   identifier: (identifier) @variable.member)

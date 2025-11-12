@@ -58,7 +58,6 @@ module.exports = grammar({
     // Definitions
     // Top level definitions are treated specially,
     // - they can be qualified
-    // - they can be generic
     // -------------------------------------------
     
     definition: $ => seq(
@@ -79,6 +78,7 @@ module.exports = grammar({
       field('identifier', $.qualified_identifier),
     ),
 
+    // An expression list is used in function calls
     round_expression_list: $ => seq(
       '(',
         optional(
@@ -92,6 +92,8 @@ module.exports = grammar({
         ),
       ')'
     ),
+
+    // a square expression list returns a tuple
     square_expression_list: $ => seq(
       '[',
         optional(
@@ -179,7 +181,8 @@ module.exports = grammar({
     )),
     
     function_type: $ => seq(
-      "func",
+      optional("comp"),
+      "fn",
       optional(seq('(', field('input_type', $._basic_expression), ')')),
       field("arguments", $.square_expression_list),
       optional(

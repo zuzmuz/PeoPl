@@ -1507,6 +1507,10 @@
     "named": true
   },
   {
+    "type": "comp",
+    "named": false
+  },
+  {
     "type": "false",
     "named": false
   },
@@ -1515,7 +1519,7 @@
     "named": true
   },
   {
-    "type": "func",
+    "type": "fn",
     "named": false
   },
   {
