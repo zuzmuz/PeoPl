@@ -156,13 +156,13 @@ public enum Syntax {
 	/// - definition: The expression that defines the value or type
 	public struct Definition: SyntaxNode, Sendable {
 		let identifier: QualifiedIdentifier
-		let typeSpecifier: TypeSpecifier?
+		let typeSpecifier: Expression?
 		let definition: Expression
 		public let location: NodeLocation
 
 		init(
 			identifier: QualifiedIdentifier,
-			typeSpecifier: TypeSpecifier? = nil,
+			typeSpecifier: Expression? = nil,
 			definition: Expression,
 			location: NodeLocation = .nowhere
 		) {
@@ -174,7 +174,7 @@ public enum Syntax {
 	}
 
 	/// Represents a potentially qualified identifier (e.g.,
-	/// Module::SubModule::identifier)
+	/// Module\SubModule\identifier)
 	/// Used for referencing definitions across module boundaries
 	/// Examples:
 	/// - Simple identifier: ["foo"] represents `foo`
@@ -193,203 +193,18 @@ public enum Syntax {
 		}
 	}
 
-	// MARK: - Type System
-
-	// -------------------
-
-	/// The core type specification language
-	/// This represents the full spectrum of types available in the language
-	public enum TypeSpecifier: SyntaxNode, Sendable {
-		/// Unit type (empty tuple)
-		case nothing(location: NodeLocation)
-		/// Unreachable type
-		case never(location: NodeLocation)
-		/// Tuples/Records
-		case recordType(RecordType)
-		/// Named types with type arguments
-		case nominal(Nominal)
-		/// Function types
-		indirect case function(FunctionType)
-
-		public var location: NodeLocation {
-			return switch self {
-			case let .nothing(location): location
-			case let .never(location): location
-			case let .recordType(product): product.location
-			case let .nominal(nominal): nominal.location
-			case let .function(function): function.location
-			}
-		}
-	}
-
-	/// A type field with a label/tag for record types and function parameters
-	public struct TaggedTypeSpecifier: SyntaxNode, Sendable {
-		let tag: String
-		let typeSpecifier: TypeSpecifier?
-		public let location: NodeLocation
-
-		init(
-			tag: String,
-			typeSpecifier: TypeSpecifier?,
-			location: NodeLocation = .nowhere
-		) {
-			self.tag = tag
-			self.typeSpecifier = typeSpecifier
-			self.location = location
-		}
-	}
-
-	/// Represents homogeneous collections with a compile-time known size
-	/// Used for arrays, vectors, or other fixed-size collections
-	public struct HomogeneousTypeProduct: SyntaxNode, Sendable {
-		/// The size/count can be either a literal number or a type-level identifier
-		enum Exponent: Codable {
-			case literal(UInt64)
-			case identifier(QualifiedIdentifier)
-		}
-
-		let typeSpecifier: TypeSpecifier
-		let count: Exponent
-		public let location: NodeLocation
-
-		init(
-			typeSpecifier: TypeSpecifier,
-			count: Exponent,
-			location: NodeLocation = .nowhere
-		) {
-			self.typeSpecifier = typeSpecifier
-			self.count = count
-			self.location = location
-		}
-	}
-
-	/// Flexible container for different kinds of type fields in compound types
-	/// A type field can either be an untagged type specifier, a tagged specifier
-	/// or a homogeneous product.
-	/// Useful for defining composible types
-	public enum TypeField: SyntaxNode, Sendable {
-		case typeSpecifier(TypeSpecifier)
-		case taggedTypeSpecifier(TaggedTypeSpecifier)
-		case homogeneousTypeProduct(HomogeneousTypeProduct)
-
-		public var location: NodeLocation {
-			return switch self {
-			case let .typeSpecifier(typeSpecifier):
-				typeSpecifier.location
-			case let .homogeneousTypeProduct(homogeneousTypeProduct):
-				homogeneousTypeProduct.location
-			case let .taggedTypeSpecifier(taggedTypeSpecifier):
-				taggedTypeSpecifier.location
-			}
-		}
-	}
-
-	// MARK: - Algebraic Data Types
-
-	// ----------------------------
-
-	/// Represents tuples, records, and struct-like types
-	public struct RecordType: SyntaxNode, Sendable {
-		let typeFields: [TypeField]
-		public let location: NodeLocation
-
-		init(
-			typeFields: [TypeField] = [],
-			location: NodeLocation = .nowhere
-		) {
-			self.typeFields = typeFields
-			self.location = location
-		}
-	}
-
-	/// Represents tagged unions
-	public struct ChoiceType: SyntaxNode, Sendable {
-		let typeFields: [TypeField]
-		public let location: NodeLocation
-
-		init(
-			typeFields: [TypeField] = [],
-			location: NodeLocation = .nowhere
-		) {
-			self.typeFields = typeFields
-			self.location = location
-		}
-	}
-
-	/// Nominal type: a named type with optional type arguments
-	/// References user-defined types, built-in types, or generic instantiations
-	public struct Nominal: SyntaxNode, Sendable {
-		let identifier: QualifiedIdentifier
-		let typeArguments: [Expression]
-		public let location: NodeLocation
-
-		init(
-			identifier: QualifiedIdentifier,
-			typeArguments: [Expression] = [],
-			location: NodeLocation = .nowhere
-		) {
-			self.identifier = identifier
-			self.typeArguments = typeArguments
-			self.location = location
-		}
-	}
-
-	/// Function type: represents the type of functions
-	/// Supports both traditional and dependently-typed function signatures
-	/// - inputType: Optional input type for the function
-	public struct FunctionType: SyntaxNode, Sendable {
-		let inputType: TypeField?
-		let arguments: [TypeField]
-		let outputType: TypeSpecifier
-		public let location: NodeLocation
-
-		init(
-			inputType: TypeField? = nil,
-			arguments: [TypeField] = [],
-			outputType: TypeSpecifier,
-			location: NodeLocation = .nowhere
-		) {
-			self.inputType = inputType
-			self.arguments = arguments
-			self.outputType = outputType
-			self.location = location
-		}
-	}
-
 	// MARK: - Expressions
 
-	// -------------------
+	// -------------------------
 
-	/// An expression with a label/tag for pattern matching and named parameters
-	public struct TaggedExpression: SyntaxNode, Sendable {
-		let tag: String
-		let expression: Expression
-		public let location: NodeLocation
-
-		init(
-			identifier: String,
-			expression: Expression,
-			location: NodeLocation = .nowhere
-		) {
-			tag = identifier
-			self.expression = expression
-			self.location = location
-		}
-	}
-
-	public struct DocString: Codable, Sendable, SyntaxNode {
-		let content: String
-		public let location: Syntax.NodeLocation
-	}
-
-	/// Core expression node representing all computations and values in the
-	/// language
+	/// Core expression node representing
+	/// all computations and values in the language
 	public indirect enum Expression: Codable, Sendable, SyntaxNode {
 		case literal(Literal)
 		case unary(Unary)
 		case binary(Binary)
 		case nominal(Nominal)
-		case recordLiteral(RecordLiteral)
+		case record(Record)
 		case function(Function)
 		case call(Call)
 		case access(Access)
@@ -400,41 +215,49 @@ public enum Syntax {
 
 		public var location: Syntax.NodeLocation {
 			switch self {
-			case let .literal(literal):
+			case .literal(let literal):
 				literal.location
-			case let .unary(unary):
+			case .unary(let unary):
 				unary.location
-			case let .binary(binary):
+			case .binary(let binary):
 				binary.location
-			case let .nominal(nominal):
+			case .nominal(let nominal):
 				nominal.location
-			case let .typeSpecifier(typeSpecifier):
-				typeSpecifier.location
-			case let .function(function):
+			case .record(let record):
+				record.location
+			case .function(let function):
 				function.location
-			case let .call(call):
+			case .call(let call):
 				call.location
-			case let .access(access):
+			case .access(let access):
 				access.location
-			case let .binding(binding):
+			case .binding(let binding):
 				binding.location
-			case let .taggedExpression(taggedExpression):
+			case .taggedExpression(let taggedExpression):
 				taggedExpression.location
-			case let .branched(branched):
+			case .branched(let branched):
 				branched.location
-			case let .piped(piped):
+			case .piped(let piped):
 				piped.location
 			}
 		}
 	}
 
+	/// Literals representing literal compile time constants
 	public struct Literal: SyntaxNode, Sendable {
+		/// Different literal options
 		public enum Value: Equatable, Codable, Sendable {
+			/// Nothing representing the unit type
 			case nothing
+			/// Type representing the empty set, used for fatal errors, panics, and unreachable states
 			case never
+			/// Integer literals
 			case intLiteral(UInt64)
+			/// Float literals
 			case floatLiteral(Double)
+			/// String literals
 			case stringLiteral(String)
+			/// Boolean literals
 			case boolLiteral(Bool)
 		}
 
@@ -447,6 +270,7 @@ public enum Syntax {
 		}
 	}
 
+	/// Expression with prefix operator
 	public struct Unary: SyntaxNode, Sendable {
 		let op: Operator
 		let expression: Expression
@@ -463,6 +287,7 @@ public enum Syntax {
 		}
 	}
 
+	/// Epxression with infix operator
 	public struct Binary: SyntaxNode, Sendable {
 		let op: Operator
 		let left: Expression
@@ -482,6 +307,45 @@ public enum Syntax {
 		}
 	}
 
+	/// Nominal: a named expression
+	/// References user-defined types, built-in types,
+	/// or compile time constants and other expressions
+	public struct Nominal: SyntaxNode, Sendable {
+		let identifier: QualifiedIdentifier
+		public let location: NodeLocation
+
+		init(
+			identifier: QualifiedIdentifier,
+			location: NodeLocation = .nowhere
+		) {
+			self.identifier = identifier
+			self.location = location
+		}
+	}
+
+	/// Record literal,
+	/// Represents the building block of algebraic data structures
+	public struct Record: SyntaxNode, Sendable {
+		let expressions: [Expression]
+		public let location: NodeLocation
+
+		init(
+			expressions: [Expression],
+			location: NodeLocation = .nowhere
+		) {
+			self.expressions = expressions
+			self.location = location
+		}
+	}
+
+	// MARK: - Function Definitions and Function Values
+
+	/// Function expression
+	/// Functions are the main data type, everything is a function.
+	/// There is mainly two types of functions,
+	/// compile time functions and runtime functions.
+	/// Compile time functions represents generics and can be used for macros and code gen.
+	/// TODO: get into compile time functions
 	public struct Function: SyntaxNode, Sendable {
 		let signature: FunctionType?
 		let body: Expression
@@ -498,6 +362,30 @@ public enum Syntax {
 		}
 	}
 
+	/// Function type: represents the type of functions
+	/// Supports both traditional and dependently-typed function signatures
+	/// - inputType: Optional input type for the function
+	public struct FunctionType: SyntaxNode, Sendable {
+		let inputType: Expression?
+		let arguments: [Expression]
+		let outputType: Expression
+		public let location: NodeLocation
+
+		init(
+			inputType: Expression? = nil,
+			arguments: [Expression] = [],
+			outputType: Expression,
+			location: NodeLocation = .nowhere
+		) {
+			self.inputType = inputType
+			self.arguments = arguments
+			self.outputType = outputType
+			self.location = location
+		}
+	}
+
+	/// Call expressions representing function calls,
+	/// type initializers, and generic realizations
 	public struct Call: SyntaxNode, Sendable {
 		let prefix: Expression?
 		let arguments: [Expression]
@@ -514,6 +402,8 @@ public enum Syntax {
 		}
 	}
 
+	/// Record field access
+	/// Represents access to internal field of a product type
 	public struct Access: SyntaxNode, Sendable {
 		let prefix: Expression
 		let field: String
@@ -530,6 +420,7 @@ public enum Syntax {
 		}
 	}
 
+	/// Binding expression inside a branch capture group
 	public struct Binding: SyntaxNode, Sendable {
 		let identifier: String
 		public let location: NodeLocation
@@ -541,6 +432,27 @@ public enum Syntax {
 			self.identifier = identifier
 			self.location = location
 		}
+	}
+
+	/// An expression with a label/tag for pattern matching and named parameters
+	public struct TaggedExpression: SyntaxNode, Sendable {
+		let tag: String
+		let expression: Expression
+		public let location: NodeLocation
+
+		init(
+			identifier: String,
+			expression: Expression,
+			location: NodeLocation = .nowhere
+		) {
+			tag = identifier
+			self.expression = expression
+			self.location = location
+		}
+	}
+	public struct DocString: Codable, Sendable, SyntaxNode {
+		let content: String
+		public let location: Syntax.NodeLocation
 	}
 
 	public struct Branched: SyntaxNode, Sendable {
