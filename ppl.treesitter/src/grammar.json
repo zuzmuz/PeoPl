@@ -903,7 +903,7 @@
     },
     "unary_expression": {
       "type": "PREC_LEFT",
-      "value": 10,
+      "value": 15,
       "content": {
         "type": "SEQ",
         "members": [
@@ -920,6 +920,10 @@
                 {
                   "type": "SYMBOL",
                   "name": "not_operator"
+                },
+                {
+                  "type": "SYMBOL",
+                  "name": "bitwise_not_operator"
                 }
               ]
             }
@@ -940,7 +944,40 @@
       "members": [
         {
           "type": "PREC_LEFT",
-          "value": 8,
+          "value": 12,
+          "content": {
+            "type": "SEQ",
+            "members": [
+              {
+                "type": "FIELD",
+                "name": "left",
+                "content": {
+                  "type": "SYMBOL",
+                  "name": "_basic_expression"
+                }
+              },
+              {
+                "type": "FIELD",
+                "name": "operator",
+                "content": {
+                  "type": "SYMBOL",
+                  "name": "exponential_operator"
+                }
+              },
+              {
+                "type": "FIELD",
+                "name": "right",
+                "content": {
+                  "type": "SYMBOL",
+                  "name": "_basic_expression"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "PREC_LEFT",
+          "value": 10,
           "content": {
             "type": "SEQ",
             "members": [
@@ -973,7 +1010,7 @@
         },
         {
           "type": "PREC_LEFT",
-          "value": 6,
+          "value": 9,
           "content": {
             "type": "SEQ",
             "members": [
@@ -991,6 +1028,105 @@
                 "content": {
                   "type": "SYMBOL",
                   "name": "additive_operator"
+                }
+              },
+              {
+                "type": "FIELD",
+                "name": "right",
+                "content": {
+                  "type": "SYMBOL",
+                  "name": "_basic_expression"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "PREC_LEFT",
+          "value": 8,
+          "content": {
+            "type": "SEQ",
+            "members": [
+              {
+                "type": "FIELD",
+                "name": "left",
+                "content": {
+                  "type": "SYMBOL",
+                  "name": "_basic_expression"
+                }
+              },
+              {
+                "type": "FIELD",
+                "name": "operator",
+                "content": {
+                  "type": "SYMBOL",
+                  "name": "bitwise_shift_operator"
+                }
+              },
+              {
+                "type": "FIELD",
+                "name": "right",
+                "content": {
+                  "type": "SYMBOL",
+                  "name": "_basic_expression"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "PREC_LEFT",
+          "value": 7,
+          "content": {
+            "type": "SEQ",
+            "members": [
+              {
+                "type": "FIELD",
+                "name": "left",
+                "content": {
+                  "type": "SYMBOL",
+                  "name": "_basic_expression"
+                }
+              },
+              {
+                "type": "FIELD",
+                "name": "operator",
+                "content": {
+                  "type": "SYMBOL",
+                  "name": "bitwise_and_operator"
+                }
+              },
+              {
+                "type": "FIELD",
+                "name": "right",
+                "content": {
+                  "type": "SYMBOL",
+                  "name": "_basic_expression"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "PREC_LEFT",
+          "value": 6,
+          "content": {
+            "type": "SEQ",
+            "members": [
+              {
+                "type": "FIELD",
+                "name": "left",
+                "content": {
+                  "type": "SYMBOL",
+                  "name": "_basic_expression"
+                }
+              },
+              {
+                "type": "FIELD",
+                "name": "operator",
+                "content": {
+                  "type": "SYMBOL",
+                  "name": "bitwise_or_operator"
                 }
               },
               {
@@ -1105,6 +1241,10 @@
         }
       ]
     },
+    "exponential_operator": {
+      "type": "STRING",
+      "value": "^"
+    },
     "multiplicative_operator": {
       "type": "CHOICE",
       "members": [
@@ -1134,6 +1274,31 @@
           "value": "-"
         }
       ]
+    },
+    "bitwise_shift_operator": {
+      "type": "CHOICE",
+      "members": [
+        {
+          "type": "STRING",
+          "value": "<<"
+        },
+        {
+          "type": "STRING",
+          "value": ">>"
+        }
+      ]
+    },
+    "bitwise_not_operator": {
+      "type": "STRING",
+      "value": "~"
+    },
+    "bitwise_and_operator": {
+      "type": "STRING",
+      "value": "&"
+    },
+    "bitwise_or_operator": {
+      "type": "STRING",
+      "value": "|"
     },
     "comparative_operator": {
       "type": "CHOICE",
@@ -1187,7 +1352,12 @@
       "value": "\\s|\\\\\\r?\\n"
     }
   ],
-  "conflicts": [],
+  "conflicts": [
+    [
+      "bitwise_or_operator",
+      "_branch_capture_group"
+    ]
+  ],
   "precedences": [],
   "externals": [],
   "inline": [],

@@ -129,7 +129,23 @@
             "named": true
           },
           {
+            "type": "bitwise_and_operator",
+            "named": true
+          },
+          {
+            "type": "bitwise_or_operator",
+            "named": true
+          },
+          {
+            "type": "bitwise_shift_operator",
+            "named": true
+          },
+          {
             "type": "comparative_operator",
+            "named": true
+          },
+          {
+            "type": "exponential_operator",
             "named": true
           },
           {
@@ -189,6 +205,16 @@
         ]
       }
     }
+  },
+  {
+    "type": "bitwise_or_operator",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "bitwise_shift_operator",
+    "named": true,
+    "fields": {}
   },
   {
     "type": "bool_literal",
@@ -1399,6 +1425,10 @@
             "named": true
           },
           {
+            "type": "bitwise_not_operator",
+            "named": true
+          },
+          {
             "type": "not_operator",
             "named": true
           }
@@ -1463,6 +1493,10 @@
     "named": false
   },
   {
+    "type": "<<",
+    "named": false
+  },
+  {
     "type": "<=",
     "named": false
   },
@@ -1476,6 +1510,10 @@
   },
   {
     "type": ">=",
+    "named": false
+  },
+  {
+    "type": ">>",
     "named": false
   },
   {
@@ -1503,12 +1541,24 @@
     "named": true
   },
   {
+    "type": "bitwise_and_operator",
+    "named": true
+  },
+  {
+    "type": "bitwise_not_operator",
+    "named": true
+  },
+  {
     "type": "comment",
     "named": true
   },
   {
     "type": "comp",
     "named": false
+  },
+  {
+    "type": "exponential_operator",
+    "named": true
   },
   {
     "type": "false",

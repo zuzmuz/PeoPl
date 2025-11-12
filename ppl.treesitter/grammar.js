@@ -2,9 +2,13 @@ const PREC = {
   ACCESS: 50,
   FUNCTION: 30,
   PARENTHESIS: 20,
-  UNARY: 10,
-  MULT: 8,
-  ADD: 6,
+  UNARY: 15,
+  EXP: 12,
+  MULT: 10,
+  ADD: 9,
+  BSHFT: 8,
+  BAND: 7,
+  BOR: 6,
   COMP: 5,
   AND: 4,
   OR: 3,
@@ -21,7 +25,7 @@ module.exports = grammar({
   ],
 
   conflicts: $ => [
-    // [$.type_field, $._simple_expression]
+    [$.bitwise_or_operator, $._branch_capture_group],
   ],
 
   rules: {
@@ -274,53 +278,45 @@ module.exports = grammar({
         field("operator", choice(
           $.additive_operator,
           $.not_operator,
+          $.bitwise_not_operator,
         )),
         field("operand", $._basic_expression),
       )
     ),
     // two simple expressions surrounding a arithmetic or logic operator
-    binary_expression: $ => choice(
-      prec.left(PREC.MULT,
-        seq(
-          field("left", $._basic_expression),
-          field("operator", $.multiplicative_operator),
-          field("right", $._basic_expression),
-        )
-      ),
-      prec.left(PREC.ADD,
-        seq(
-          field("left", $._basic_expression),
-          field("operator", $.additive_operator),
-          field("right", $._basic_expression),
-        )
-      ),
-      prec.left(PREC.COMP,
-        seq(
-          field("left", $._basic_expression),
-          field("operator", $.comparative_operator),
-          field("right", $._basic_expression),
-        )
-      ),
-      prec.left(PREC.AND,
-        seq(
-          field("left", $._basic_expression),
-          field("operator", $.and_operator),
-          field("right", $._basic_expression),
-        )
-      ),
-      prec.left(PREC.OR,
-        seq(
-          field("left", $._basic_expression),
-          field("operator", $.or_operator),
-          field("right", $._basic_expression),
-        )
-      )
-    ),
+    binary_expression: $ => {
+      const binary_operators = [
+        [PREC.EXP, $.exponential_operator],
+        [PREC.MULT, $.multiplicative_operator],
+        [PREC.ADD, $.additive_operator],
+        [PREC.BSHFT, $.bitwise_shift_operator],
+        [PREC.BAND, $.bitwise_and_operator],
+        [PREC.BOR, $.bitwise_or_operator],
+        [PREC.COMP, $.comparative_operator],
+        [PREC.AND, $.and_operator],
+        [PREC.OR, $.or_operator],
+      ];
 
+      return choice(
+        ...binary_operators.map(([precedence, operator]) =>
+          prec.left(precedence,
+            seq(
+              field("left", $._basic_expression),
+              field("operator", operator),
+              field("right", $._basic_expression),
+            )
+          )
+        )
+      );
+    },
 
-    // TODO: bitwise operators
+    exponential_operator: $ => '^',
     multiplicative_operator: $ => choice('*', '/', '%'),
     additive_operator: $ => choice('+', '-'),
+    bitwise_shift_operator: $ => choice('<<', '>>'),
+    bitwise_not_operator: $ => '~',
+    bitwise_and_operator: $ => '&',
+    bitwise_or_operator: $ => '|',
     comparative_operator: $ => choice('=', '!=', '>', '>=', '<', '<='),
     not_operator: $ => 'not',
     and_operator: $ => 'and',

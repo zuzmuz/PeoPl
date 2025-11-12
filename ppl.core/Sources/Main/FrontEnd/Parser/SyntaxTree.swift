@@ -16,9 +16,18 @@ public enum Operator: String, Codable, Sendable {
 	case by = "/"
 	case modulo = "%"
 
+	case exponent = "^"
+
 	case not
 	case and
 	case or
+
+	case bshl = "<<"
+	case bshr = ">>"
+
+	case bnot = "~"
+	case band = "&"
+	case bor = "|"
 
 	case equal = "="
 	case different = "!="
@@ -148,20 +157,17 @@ public enum Syntax {
 	public struct Definition: SyntaxNode, Sendable {
 		let identifier: QualifiedIdentifier
 		let typeSpecifier: TypeSpecifier?
-		let typeArguments: [TypeField]
 		let definition: Expression
 		public let location: NodeLocation
 
 		init(
 			identifier: QualifiedIdentifier,
 			typeSpecifier: TypeSpecifier? = nil,
-			typeArguments: [TypeField] = [],
 			definition: Expression,
 			location: NodeLocation = .nowhere
 		) {
 			self.identifier = identifier
 			self.typeSpecifier = typeSpecifier
-			self.typeArguments = typeArguments
 			self.definition = definition
 			self.location = location
 		}
@@ -200,8 +206,6 @@ public enum Syntax {
 		case never(location: NodeLocation)
 		/// Tuples/Records
 		case recordType(RecordType)
-		/// Tagged unions
-		case choiceType(ChoiceType)
 		/// Named types with type arguments
 		case nominal(Nominal)
 		/// Function types
@@ -212,7 +216,6 @@ public enum Syntax {
 			case let .nothing(location): location
 			case let .never(location): location
 			case let .recordType(product): product.location
-			case let .choiceType(sum): sum.location
 			case let .nominal(nominal): nominal.location
 			case let .function(function): function.location
 			}
