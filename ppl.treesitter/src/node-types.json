@@ -34,15 +34,7 @@
             "named": true
           },
           {
-            "type": "never",
-            "named": true
-          },
-          {
             "type": "nominal",
-            "named": true
-          },
-          {
-            "type": "nothing",
             "named": true
           },
           {
@@ -91,15 +83,7 @@
             "named": true
           },
           {
-            "type": "never",
-            "named": true
-          },
-          {
             "type": "nominal",
-            "named": true
-          },
-          {
-            "type": "nothing",
             "named": true
           },
           {
@@ -179,15 +163,7 @@
             "named": true
           },
           {
-            "type": "never",
-            "named": true
-          },
-          {
             "type": "nominal",
-            "named": true
-          },
-          {
-            "type": "nothing",
             "named": true
           },
           {
@@ -246,15 +222,7 @@
             "named": true
           },
           {
-            "type": "never",
-            "named": true
-          },
-          {
             "type": "nominal",
-            "named": true
-          },
-          {
-            "type": "nothing",
             "named": true
           },
           {
@@ -296,15 +264,7 @@
             "named": true
           },
           {
-            "type": "never",
-            "named": true
-          },
-          {
             "type": "nominal",
-            "named": true
-          },
-          {
-            "type": "nothing",
             "named": true
           },
           {
@@ -342,15 +302,7 @@
             "named": true
           },
           {
-            "type": "never",
-            "named": true
-          },
-          {
             "type": "nominal",
-            "named": true
-          },
-          {
-            "type": "nothing",
             "named": true
           },
           {
@@ -426,15 +378,7 @@
             "named": true
           },
           {
-            "type": "never",
-            "named": true
-          },
-          {
             "type": "nominal",
-            "named": true
-          },
-          {
-            "type": "nothing",
             "named": true
           },
           {
@@ -486,15 +430,7 @@
             "named": true
           },
           {
-            "type": "never",
-            "named": true
-          },
-          {
             "type": "nominal",
-            "named": true
-          },
-          {
-            "type": "nothing",
             "named": true
           },
           {
@@ -546,15 +482,7 @@
           "named": true
         },
         {
-          "type": "never",
-          "named": true
-        },
-        {
           "type": "nominal",
-          "named": true
-        },
-        {
-          "type": "nothing",
           "named": true
         },
         {
@@ -645,15 +573,7 @@
             "named": true
           },
           {
-            "type": "never",
-            "named": true
-          },
-          {
             "type": "nominal",
-            "named": true
-          },
-          {
-            "type": "nothing",
             "named": true
           },
           {
@@ -691,15 +611,7 @@
             "named": true
           },
           {
-            "type": "never",
-            "named": true
-          },
-          {
             "type": "nominal",
-            "named": true
-          },
-          {
-            "type": "nothing",
             "named": true
           },
           {
@@ -736,6 +648,14 @@
         },
         {
           "type": "int_literal",
+          "named": true
+        },
+        {
+          "type": "never",
+          "named": true
+        },
+        {
+          "type": "nothing",
           "named": true
         },
         {
@@ -835,15 +755,7 @@
             "named": true
           },
           {
-            "type": "never",
-            "named": true
-          },
-          {
             "type": "nominal",
-            "named": true
-          },
-          {
-            "type": "nothing",
             "named": true
           },
           {
@@ -907,15 +819,7 @@
             "named": true
           },
           {
-            "type": "never",
-            "named": true
-          },
-          {
             "type": "nominal",
-            "named": true
-          },
-          {
-            "type": "nothing",
             "named": true
           },
           {
@@ -999,15 +903,7 @@
             "named": true
           },
           {
-            "type": "never",
-            "named": true
-          },
-          {
             "type": "nominal",
-            "named": true
-          },
-          {
-            "type": "nothing",
             "named": true
           },
           {
@@ -1059,15 +955,7 @@
           "named": true
         },
         {
-          "type": "never",
-          "named": true
-        },
-        {
           "type": "nominal",
-          "named": true
-        },
-        {
-          "type": "nothing",
           "named": true
         },
         {
@@ -1148,15 +1036,7 @@
             "named": true
           },
           {
-            "type": "never",
-            "named": true
-          },
-          {
             "type": "nominal",
-            "named": true
-          },
-          {
-            "type": "nothing",
             "named": true
           },
           {
@@ -1208,15 +1088,7 @@
           "named": true
         },
         {
-          "type": "never",
-          "named": true
-        },
-        {
           "type": "nominal",
-          "named": true
-        },
-        {
-          "type": "nothing",
           "named": true
         },
         {
@@ -1279,15 +1151,7 @@
             "named": true
           },
           {
-            "type": "never",
-            "named": true
-          },
-          {
             "type": "nominal",
-            "named": true
-          },
-          {
-            "type": "nothing",
             "named": true
           },
           {
@@ -1339,15 +1203,7 @@
             "named": true
           },
           {
-            "type": "never",
-            "named": true
-          },
-          {
             "type": "nominal",
-            "named": true
-          },
-          {
-            "type": "nothing",
             "named": true
           },
           {
@@ -1391,15 +1247,7 @@
             "named": true
           },
           {
-            "type": "never",
-            "named": true
-          },
-          {
             "type": "nominal",
-            "named": true
-          },
-          {
-            "type": "nothing",
             "named": true
           },
           {

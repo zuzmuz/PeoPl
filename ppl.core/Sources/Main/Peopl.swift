@@ -18,8 +18,8 @@ struct Peopl: AsyncParsableCommand {
 			abstract: "The PeoPl's Lang",
 			version: "0.0.0.0",
 			subcommands: [
-				LspComand.self,
-				Semantic.AnalyzeCommand.self,
+				// LspComand.self,
+				// Semantic.AnalyzeCommand.self,
 				BuildCommand.self,
 			]
 		)

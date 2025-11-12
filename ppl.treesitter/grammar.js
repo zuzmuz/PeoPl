@@ -126,8 +126,6 @@ module.exports = grammar({
 
     _basic_expression: $ => choice(
       $.literal,
-      $.nothing,
-      $.never,
       $.unary_expression,
       $.binary_expression,
       $.nominal,
@@ -246,6 +244,8 @@ module.exports = grammar({
     // -------------------------------------
 
     literal: $ => choice(
+      $.nothing,
+      $.never,
       $.int_literal,
       $.float_literal,
       $.string_literal,

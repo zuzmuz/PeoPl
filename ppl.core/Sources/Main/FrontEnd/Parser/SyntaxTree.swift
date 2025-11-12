@@ -389,7 +389,7 @@ public enum Syntax {
 		case unary(Unary)
 		case binary(Binary)
 		case nominal(Nominal)
-		case typeSpecifier(TypeSpecifier)
+		case recordLiteral(RecordLiteral)
 		case function(Function)
 		case call(Call)
 		case access(Access)

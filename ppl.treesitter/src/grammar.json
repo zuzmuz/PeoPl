@@ -321,14 +321,6 @@
         },
         {
           "type": "SYMBOL",
-          "name": "nothing"
-        },
-        {
-          "type": "SYMBOL",
-          "name": "never"
-        },
-        {
-          "type": "SYMBOL",
           "name": "unary_expression"
         },
         {
@@ -830,6 +822,14 @@
     "literal": {
       "type": "CHOICE",
       "members": [
+        {
+          "type": "SYMBOL",
+          "name": "nothing"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "never"
+        },
         {
           "type": "SYMBOL",
           "name": "int_literal"

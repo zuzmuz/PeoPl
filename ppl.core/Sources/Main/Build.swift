@@ -39,23 +39,23 @@ extension Peopl {
 				modules: modules
 			)
 
-			let context = try project.semanticCheck().get()
-
-			print("\nResult of the semantic check:\n")
-
-			print(context)
-
-			print("\n-----------------------------\n")
-
-			var llvmBuilder = LLVM.Builder(name: "PeoPl")
-
-			try context.llvmBuild(llvm: &llvmBuilder)
-			if llvm {
-				llvmBuilder.save(to: output ?? "output.ll")
-			} else {
-				print("\nGenerated LLVM IR:\n")
-				print(llvmBuilder.generate())
-			}
+			// let context = try project.semanticCheck().get()
+			//
+			// print("\nResult of the semantic check:\n")
+			//
+			// print(context)
+			//
+			// print("\n-----------------------------\n")
+			//
+			// var llvmBuilder = LLVM.Builder(name: "PeoPl")
+			//
+			// try context.llvmBuild(llvm: &llvmBuilder)
+			// if llvm {
+			// 	llvmBuilder.save(to: output ?? "output.ll")
+			// } else {
+			// 	print("\nGenerated LLVM IR:\n")
+			// 	print(llvmBuilder.generate())
+			// }
 		}
 	}
 }
