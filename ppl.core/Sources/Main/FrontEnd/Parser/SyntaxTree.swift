@@ -200,10 +200,15 @@ public enum Syntax {
 	/// Core expression node representing
 	/// all computations and values in the language
 	public indirect enum Expression: Codable, Sendable, SyntaxNode {
+		/// Compile time constant literals
 		case literal(Literal)
+		/// Expression with prefix operator
 		case unary(Unary)
+		/// Expression with infix operator
 		case binary(Binary)
-		case nominal(Nominal)
+		/// Nominal expression, represented by a ``QualifiedIdentifier``
+		/// Represents user defined and builtin construct
+		case nominal(QualifiedIdentifier)
 		case record(Record)
 		case function(Function)
 		case call(Call)
@@ -303,22 +308,6 @@ public enum Syntax {
 			self.op = op
 			self.left = left
 			self.right = right
-			self.location = location
-		}
-	}
-
-	/// Nominal: a named expression
-	/// References user-defined types, built-in types,
-	/// or compile time constants and other expressions
-	public struct Nominal: SyntaxNode, Sendable {
-		let identifier: QualifiedIdentifier
-		public let location: NodeLocation
-
-		init(
-			identifier: QualifiedIdentifier,
-			location: NodeLocation = .nowhere
-		) {
-			self.identifier = identifier
 			self.location = location
 		}
 	}

@@ -201,6 +201,46 @@ extension Node {
 
 // -------------------------
 
+extension Syntax.Definition: TreeSitterNode {
+	static func from(
+		node: Node,
+		in source: Syntax.Source
+	) throws(Syntax.Error) -> Self {
+		guard
+			let identifierNode = node.child(
+				byFieldName: "identifier"
+			),
+			let definitionNode = node.child(
+				byFieldName: "definition"
+			)
+		else {
+			throw .errorParsing(
+				element: "TypeDefinition",
+				location: node.getLocation(in: source)
+			)
+		}
+
+		let typeSpecifier: Syntax.Expression?
+		if let typeSpecifierNode = node.child(
+			byFieldName: "type_specifier"
+		) {
+			typeSpecifier = try .from(
+				node: typeSpecifierNode,
+				in: source
+			)
+		} else {
+			typeSpecifier = nil
+		}
+
+		return try .init(
+			identifier: .from(node: identifierNode, in: source),
+			typeSpecifier: typeSpecifier,
+			definition: .from(node: definitionNode, in: source),
+			location: node.getLocation(in: source)
+		)
+	}
+}
+
 extension Syntax.QualifiedIdentifier: TreeSitterNode {
 	static func getScopedIdentifier(
 		node: Node,
@@ -239,101 +279,7 @@ extension Syntax.QualifiedIdentifier: TreeSitterNode {
 	}
 }
 
-extension Syntax.Definition: TreeSitterNode {
-	static func from(
-		node: Node,
-		in source: Syntax.Source
-	) throws(Syntax.Error) -> Self {
-		guard
-			let identifierNode = node.child(
-				byFieldName: "identifier"
-			),
-			let definitionNode = node.child(
-				byFieldName: "definition"
-			)
-		else {
-			throw .errorParsing(
-				element: "TypeDefinition",
-				location: node.getLocation(in: source)
-			)
-		}
-
-		let typeSpecifier: Syntax.TypeSpecifier?
-		if let typeSpecifierNode = node.child(
-			byFieldName: "type_specifier"
-		) {
-			typeSpecifier = try .from(
-				node: typeSpecifierNode,
-				in: source
-			)
-		} else {
-			typeSpecifier = nil
-		}
-
-		let arguments: [Syntax.TypeField]
-		if let argumentsNode = node.child(byFieldName: "type_arguments") {
-			arguments =
-				try argumentsNode
-				.compactMapChildren {
-					child throws(Syntax.Error) in
-					if child.nodeType == "type_field" {
-						return try Syntax.TypeField
-							.from(
-								node: child,
-								in: source
-							)
-					} else {
-						return nil
-					}
-				}
-		} else {
-			arguments = []
-		}
-
-		return try .init(
-			identifier: .from(node: identifierNode, in: source),
-			typeSpecifier: typeSpecifier,
-			typeArguments: arguments,
-			definition: .from(node: definitionNode, in: source),
-			location: node.getLocation(in: source)
-		)
-	}
-}
-
-// MARK: - Type System
-
-// -------------------
-
-extension Syntax.TypeSpecifier {
-	// TODO: some types are not supported yet
-	static func from(
-		node: Node,
-		in source: Syntax.Source
-	) throws(Syntax.Error) -> Self {
-		let location = node.getLocation(in: source)
-		switch node.nodeType {
-		case "nothing":
-			return .nothing(location: location)
-		case "never":
-			return .never(location: location)
-		case "record_type":
-			return try .recordType(.from(node: node, in: source))
-		case "choice_type":
-			return try .choiceType(.from(node: node, in: source))
-		case "nominal":
-			return try .nominal(.from(node: node, in: source))
-		case "function":
-			return try .function(.from(node: node, in: source))
-		default:
-			throw .errorParsing(
-				element: "TypeSpecifier \(node.nodeType ?? "")",
-				location: location
-			)
-		}
-	}
-}
-
-extension Syntax.TaggedTypeSpecifier: TreeSitterNode {
+extension Syntax.Nominal: TreeSitterNode {
 	static func from(
 		node: Node,
 		in source: Syntax.Source
@@ -341,129 +287,18 @@ extension Syntax.TaggedTypeSpecifier: TreeSitterNode {
 		guard let identifierNode = node.child(byFieldName: "identifier")
 		else {
 			throw .errorParsing(
-				element: "TaggedTypeSpecifier",
-				location: node.getLocation(in: source)
+				element: "Nominal", location: .nowhere
 			)
 		}
 
-		let definitionNode = node.child(byFieldName: "type_specifier")
-		let typeSpecifier: Syntax.TypeSpecifier?
-		if let definitionNode {
-			typeSpecifier = try .from(
-				node: definitionNode, in: source
-			)
-		} else {
-			typeSpecifier = nil
-		}
 		return try .init(
-			tag: identifierNode.getString(in: source),
-			typeSpecifier: typeSpecifier,
+			identifier: .from(node: identifierNode, in: source),
 			location: node.getLocation(in: source)
 		)
 	}
 }
 
-extension Syntax.HomogeneousTypeProduct: TreeSitterNode {
-	static func from(
-		node: Node,
-		in source: Syntax.Source
-	) throws(Syntax.Error) -> Self {
-		guard
-			let typeSpecifierNode = node.child(
-				byFieldName: "type_specifier"
-			),
-			let exponentNode = node.child(byFieldName: "exponent")
-		else {
-			throw .errorParsing(
-				element: "HomogeneousTypeProduct",
-				location: node.getLocation(in: source)
-			)
-		}
-
-		let count: Exponent
-		switch exponentNode.nodeType {
-		case "int_literal":
-			guard
-				let intValue = try parseInteger(
-					from: node.getString(in: source)
-				)
-			else {
-				throw .errorParsing(
-					element: "int_literal",
-					location: node.getLocation(in: source)
-				)
-			}
-			count = .literal(intValue)
-		case "scoped_identifier":
-			count = try .identifier(
-				.from(node: exponentNode, in: source)
-			)
-		default:
-			throw .errorParsing(
-				element: "count",
-				location: node.getLocation(in: source)
-			)
-		}
-
-		return try .init(
-			typeSpecifier: .from(
-				node: typeSpecifierNode, in: source
-			),
-			count: count,
-			location: node.getLocation(in: source)
-		)
-	}
-}
-
-extension Syntax.TypeField: TreeSitterNode {
-	static func from(
-		node: Node,
-		in source: Syntax.Source
-	) throws(Syntax.Error) -> Self {
-		guard let child = node.child(at: 0) else {
-			throw .errorParsing(
-				element: "TypeField",
-				location: node.getLocation(in: source)
-			)
-		}
-		switch child.nodeType {
-		case "tagged_type_specifier":
-			return try .taggedTypeSpecifier(
-				.from(node: child, in: source)
-			)
-		case "homogeneous_product":
-			return try .homogeneousTypeProduct(
-				.from(node: child, in: source)
-			)
-		default:
-			return try .typeSpecifier(
-				.from(node: child, in: source)
-			)
-		}
-	}
-}
-
-// MARK: - Algebraic Data Types
-
-// ----------------------------
-
-extension [Syntax.TypeField] {
-	static func from(
-		node: Node,
-		in source: Syntax.Source
-	) throws(Syntax.Error) -> [Syntax.TypeField] {
-		return try node.compactMapChildren {
-			child throws(Syntax.Error) in
-			if child.nodeType == "type_field" {
-				try .from(node: child, in: source)
-			} else {
-				nil
-			}
-		}
-	}
-}
-
-extension Syntax.RecordType: TreeSitterNode {
+extension Syntax.Record: TreeSitterNode {
 	static func from(
 		node: Node,
 		in source: Syntax.Source
@@ -475,32 +310,6 @@ extension Syntax.RecordType: TreeSitterNode {
 		else {
 			throw .errorParsing(
 				element: "RecordType",
-				location: node.getLocation(in: source)
-			)
-		}
-
-		let typeFields: [Syntax.TypeField] =
-			try .from(node: typeFieldsNode, in: source)
-
-		return .init(
-			typeFields: typeFields,
-			location: node.getLocation(in: source)
-		)
-	}
-}
-
-extension Syntax.ChoiceType: TreeSitterNode {
-	static func from(
-		node: Node,
-		in source: Syntax.Source
-	) throws(Syntax.Error) -> Self {
-		guard
-			let typeFieldsNode = node.child(
-				byFieldName: "type_field_list"
-			)
-		else {
-			throw .errorParsing(
-				element: "ChoiceType",
 				location: node.getLocation(in: source)
 			)
 		}
@@ -550,37 +359,6 @@ extension [Syntax.Expression] {
 				nil
 			}
 		}
-	}
-}
-
-extension Syntax.Nominal: TreeSitterNode {
-	static func from(
-		node: Node,
-		in source: Syntax.Source
-	) throws(Syntax.Error) -> Self {
-		guard let identifierNode = node.child(byFieldName: "identifier")
-		else {
-			throw .errorParsing(
-				element: "Nominal", location: .nowhere
-			)
-		}
-
-		let typeArguments: [Syntax.Expression]
-		if let typeArgumentsNode = node.child(
-			byFieldName: "type_arguments"
-		) {
-			typeArguments = try .from(
-				node: typeArgumentsNode, in: source
-			)
-		} else {
-			typeArguments = []
-		}
-
-		return try .init(
-			identifier: .from(node: identifierNode, in: source),
-			typeArguments: typeArguments,
-			location: node.getLocation(in: source)
-		)
 	}
 }
 
@@ -678,21 +456,10 @@ extension Syntax.Expression: TreeSitterNode {
 			return try .unary(.from(node: node, in: source))
 		case "binary_expression":
 			return try .binary(.from(node: node, in: source))
-		case "parenthisized_expression":
-			guard
-				let parenthesizedExpressionNode = node.child(
-					at: 1
-				)
-			else {
-				throw .errorParsing(
-					element: "parenthisized_expression",
-					location: node.getLocation(in: source)
-				)
-			}
-			return try .from(
-				node: parenthesizedExpressionNode,
-				in: source
-			)
+		case "square_call_expression":
+			return try .record(.from(node: node, in: source))
+		case "round_call_expression":
+			return try .call(.from(node: node, in: source))
 		case "binding":
 			return try .binding(.from(node: node, in: source))
 		case "function_value":
@@ -709,35 +476,6 @@ extension Syntax.Expression: TreeSitterNode {
 			return try .branched(.from(node: node, in: source))
 		case "piped_expression":
 			return try .piped(.from(node: node, in: source))
-		// types:
-		case "record_type":
-			return try .typeSpecifier(
-				.recordType(.from(node: node, in: source))
-			)
-		case "choice_type":
-			return try .typeSpecifier(
-				.choiceType(.from(node: node, in: source))
-			)
-		case "nominal":
-			return try .nominal(.from(node: node, in: source))
-		case "function_type":
-			return try .typeSpecifier(
-				.function(.from(node: node, in: source))
-			)
-		case "nothing":
-			return .literal(
-				.init(
-					value: .nothing,
-					location: node.getLocation(in: source)
-				)
-			)
-		case "never":
-			return .literal(
-				.init(
-					value: .never,
-					location: node.getLocation(in: source)
-				)
-			)
 		default:
 			throw .notImplemented(
 				element: node.nodeType ?? "nil",
