@@ -1294,11 +1294,11 @@
     },
     "bitwise_and_operator": {
       "type": "STRING",
-      "value": "&"
+      "value": ".&"
     },
     "bitwise_or_operator": {
       "type": "STRING",
-      "value": "|"
+      "value": ".|"
     },
     "comparative_operator": {
       "type": "CHOICE",

@@ -183,11 +183,6 @@
     }
   },
   {
-    "type": "bitwise_or_operator",
-    "named": true,
-    "fields": {}
-  },
-  {
     "type": "bitwise_shift_operator",
     "named": true,
     "fields": {}
@@ -1394,6 +1389,10 @@
   },
   {
     "type": "bitwise_not_operator",
+    "named": true
+  },
+  {
+    "type": "bitwise_or_operator",
     "named": true
   },
   {

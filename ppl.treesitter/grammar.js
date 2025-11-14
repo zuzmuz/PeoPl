@@ -25,7 +25,7 @@ module.exports = grammar({
   ],
 
   conflicts: $ => [
-    [$.bitwise_or_operator, $._branch_capture_group],
+    // [$.bitwise_or_operator, $._branch_capture_group],
   ],
 
   rules: {
@@ -315,8 +315,8 @@ module.exports = grammar({
     additive_operator: $ => choice('+', '-'),
     bitwise_shift_operator: $ => choice('<<', '>>'),
     bitwise_not_operator: $ => '~',
-    bitwise_and_operator: $ => '&',
-    bitwise_or_operator: $ => '|',
+    bitwise_and_operator: $ => '.&',
+    bitwise_or_operator: $ => '.|',
     comparative_operator: $ => choice('=', '!=', '>', '>=', '<', '<='),
     not_operator: $ => 'not',
     and_operator: $ => 'and',
