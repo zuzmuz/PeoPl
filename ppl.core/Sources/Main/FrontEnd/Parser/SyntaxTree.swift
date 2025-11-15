@@ -216,6 +216,7 @@ public enum Syntax {
 		/// Nominal expression, represented by a ``QualifiedIdentifier``
 		/// Represents user defined and builtin construct
 		case nominal(QualifiedIdentifier)
+		/// A Basic Product type definition
 		case typeDefinition(TypeDefinition)
 		case function(Function)
 		case call(Call)

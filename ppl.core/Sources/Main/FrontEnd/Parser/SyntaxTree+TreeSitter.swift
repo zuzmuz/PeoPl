@@ -237,7 +237,7 @@ extension Syntax.Definition: TreeSitterNode {
 			)
 		else {
 			throw .errorParsing(
-				element: "TypeDefinition",
+				element: "Definition",
 				location: node.getLocation(in: source)
 			)
 		}
@@ -575,7 +575,7 @@ extension Syntax.TypeDefinition: TreeSitterNode {
 		in source: Syntax.Source
 	) throws(Syntax.Error) -> Self {
 		return .init(
-			expressions: [],
+			expressions: try .from(node: node, in: source),
 			location: node.getLocation(in: source)
 		)
 	}

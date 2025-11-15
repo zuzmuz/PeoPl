@@ -53,6 +53,8 @@ extension Syntax.Expression: Testable {
 			lhs.assertEqual(with: rhs)
 		case (.nominal(let lhs), .nominal(let rhs)):
 			XCTAssertEqual(lhs, rhs)
+		case (.typeDefinition(let lhs), .typeDefinition(let rhs)):
+			lhs.assertEqual(with: rhs)
 		case (.function(let lhs), .function(let rhs)):
 			lhs.assertEqual(with: rhs)
 		case (.call(let lhs), .call(let rhs)):
@@ -68,7 +70,7 @@ extension Syntax.Expression: Testable {
 		case (.piped(let lhs), .piped(let rhs)):
 			lhs.assertEqual(with: rhs)
 		default:
-			XCTFail("Expressions do not match")
+			XCTFail("Expressions \(self) do not match \(with)")
 		}
 	}
 }
@@ -113,6 +115,14 @@ extension Syntax.Function: Testable {
 			XCTAssertNil(signature)
 		}
 		body.assertEqual(with: with.body)
+	}
+}
+
+extension Syntax.TypeDefinition: Testable {
+	func assertEqual(with: Syntax.TypeDefinition) {
+		zip(self.expressions, with.expressions).forEach { selfExpression, withExpression in
+			selfExpression.assertEqual(with: withExpression)
+		}
 	}
 }
 
@@ -265,6 +275,12 @@ extension Syntax.Expression {
 			.init(op: op, left: lhs, right: rhs)
 		)
 	}
+	
+	static func typeDefinition(
+		_ expressions: [Syntax.Expression]
+	) -> Syntax.Expression {
+		return .typeDefinition(.init(expressions: expressions))
+	}
 
 	static func call(
 		_ identifier: Syntax.QualifiedIdentifier,
@@ -327,8 +343,8 @@ extension Syntax.Expression {
 
 	static func tagged(
 		_ tag: String,
-		_ typeSpecifier: Syntax.Expression? = nil,
-		_ expression: Syntax.Expression
+		_ expression: Syntax.Expression,
+		_ typeSpecifier: Syntax.Expression? = nil
 	) -> Syntax.Expression {
 		return .taggedExpression(
 			.init(
@@ -345,19 +361,12 @@ final class ParserTests: XCTestCase {
 		"types": .init(
 			sourceName: "types",
 			definitions: [
-				// 		.init(
-				// 			identifier: .chain(["Basic"]),
-				// 			definition: .typeDefinition(
-				// 				[
-				// 					.tagged(
-				// 						tag: "a",
-				// 						expression: .nominal(
-				// 							.chain(["Int"])
-				// 						)
-				// 					)
-				// 				]
-				// 			)
-				// 		)
+				.init(
+					identifier: .chain(["Basic"]),
+					definition: .typeDefinition([
+						.tagged("a", .nominal(.chain(["Int"])))
+					])
+				)
 			]
 		)
 		// 		.init(
