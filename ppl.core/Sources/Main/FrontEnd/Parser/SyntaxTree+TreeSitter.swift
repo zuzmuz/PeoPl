@@ -1,3 +1,5 @@
+#if TREE_SITTER_PARSER 
+
 import Foundation
 import SwiftTreeSitter
 import TreeSitterPeoPl
@@ -566,33 +568,13 @@ extension Syntax.TypeDefinition: TreeSitterNode {
 }
 
 extension [Syntax.Expression] {
-	static let expressionNodeTypes = Set([
-		"literal",
-		"unary_expression",
-		"binary_expression",
-		"parenthisized_expression",
-		"binding",
-		"function_value",
-		"call_expression",
-		"access_expression",
-		"tagged_expression",
-		"branched_expression",
-		"piped_expression",
-		// types
-		"record_type",
-		"choice_type",
-		"nominal",
-		"function_type",
-		"nothing",
-		"never",
-	])
 	static func from(
 		node: Node,
 		in source: Syntax.Source
 	) throws(Syntax.Error) -> [Syntax.Expression] {
 		return try node.compactMapChildren {
 			child throws(Syntax.Error) in
-			if expressionNodeTypes.contains(child.nodeType ?? "") {
+			if child.expressionNodeType != nil {
 				try Syntax.Expression.from(
 					node: child, in: source
 				)
@@ -801,3 +783,5 @@ extension Syntax.Branched.Branch {
 		)
 	}
 }
+
+#endif

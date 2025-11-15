@@ -55,9 +55,13 @@ let package = Package(
 					name: "TreeSitterPeoPl", package: "ppl.treesitter"
 				),
 			],
-			// swiftSettings: [
-			//     .define("RELEASE"),
-			// ]
+			swiftSettings: [
+			    // .define("RELEASE"),
+				 .define("TREE_SITTER_PARSER"),
+				 // .define("ANALYZER"),
+				 .define("LSP"),
+				 .define("LLVM_BACKEND")
+			]
 
 		),
 		.testTarget(

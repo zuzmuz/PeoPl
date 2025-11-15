@@ -125,7 +125,14 @@ public enum Syntax {
 		let modules: [String: Module]
 	}
 
+	/// Generic module parser protocol, implemented by specific parser.
 	public protocol ModuleParser {
+		/// Parser function to parse a source into a Module.
+		/// The Module contains the AST representation of the source code
+		/// # Params:
+		///	- source: ``Syntax.Source`` The source code to be parsed, representing a file's name and its content
+		/// # Returns:
+		///	``Syntax.Module`` The parsed module containing the AST
 		static func parseModule(source: Source) -> Module
 	}
 
