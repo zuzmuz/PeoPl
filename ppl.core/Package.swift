@@ -60,7 +60,7 @@ let package = Package(
 				 .define("TREE_SITTER_PARSER"),
 				 // .define("ANALYZER"),
 				 .define("LSP"),
-				 .define("LLVM_BACKEND")
+				 // .define("LLVM_BACKEND")
 			]
 
 		),
