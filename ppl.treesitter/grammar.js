@@ -76,12 +76,6 @@ module.exports = grammar({
     // everything is an expression
     // -----------------------------------------
 
-    // A nominal expression is technically a label, that can reference anything
-    // that is already defined
-    nominal: $ => seq(
-      field('identifier', $.qualified_identifier),
-    ),
-
     // An expression list is used in function calls
     round_expression_list: $ => seq(
       '(',
@@ -128,10 +122,11 @@ module.exports = grammar({
       $.literal,
       $.unary_expression,
       $.binary_expression,
-      $.nominal,
+      $.qualified_identifier,
       $.access_expression,
       $.round_call_expression,
       $.square_call_expression,
+      $.square_expression_list,
       $.binding
     ),
 
@@ -162,7 +157,7 @@ module.exports = grammar({
     ),
 
     square_call_expression: $ => seq(
-      optional(field("prefix", $._basic_expression)),
+      field("prefix", $._basic_expression),
       field("arguments", $.square_expression_list),
     ),
     

@@ -22,12 +22,12 @@ public enum Operator: String, Codable, Sendable {
 	case and
 	case or
 
-	case bshl = "<<"
-	case bshr = ">>"
+	case bitwiseShiftLeft = "<<"
+	case bitwiseShiftRight = ">>"
 
-	case bnot = "~"
-	case band = "&"
-	case bor = "|"
+	case bitwiseNot = "~"
+	case bitwiseAnd = "&"
+	case bitwiseOr = "|"
 
 	case equal = "="
 	case different = "!="
@@ -209,7 +209,7 @@ public enum Syntax {
 		/// Nominal expression, represented by a ``QualifiedIdentifier``
 		/// Represents user defined and builtin construct
 		case nominal(QualifiedIdentifier)
-		case record(Record)
+		case typeDefinition(TypeDefinition)
 		case function(Function)
 		case call(Call)
 		case access(Access)
@@ -228,7 +228,7 @@ public enum Syntax {
 				binary.location
 			case .nominal(let nominal):
 				nominal.location
-			case .record(let record):
+			case .typeDefinition(let record):
 				record.location
 			case .function(let function):
 				function.location
@@ -314,7 +314,7 @@ public enum Syntax {
 
 	/// Record literal,
 	/// Represents the building block of algebraic data structures
-	public struct Record: SyntaxNode, Sendable {
+	public struct TypeDefinition: SyntaxNode, Sendable {
 		let expressions: [Expression]
 		public let location: NodeLocation
 
