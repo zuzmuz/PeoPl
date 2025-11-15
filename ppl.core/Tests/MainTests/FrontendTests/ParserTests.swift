@@ -120,8 +120,8 @@ extension Syntax.Function: Testable {
 
 extension Syntax.TypeDefinition: Testable {
 	func assertEqual(with: Syntax.TypeDefinition) {
-		zip(self.expressions, with.expressions).forEach { selfExpression, withExpression in
-			selfExpression.assertEqual(with: withExpression)
+		zip(self.expressions, with.expressions).forEach {
+			$0.assertEqual(with: $1)
 		}
 	}
 }
