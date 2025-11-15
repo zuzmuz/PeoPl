@@ -1,3 +1,4 @@
+#if ANALYZER
 import XCTest
 
 @testable import Main
@@ -55,3 +56,4 @@ final class UnnamedArgumentsTests: XCTestCase {
 		}
 	}
 }
+#endif

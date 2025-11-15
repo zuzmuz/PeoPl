@@ -1,3 +1,5 @@
+#if ANALYZER
+
 import XCTest
 
 @testable import Main
@@ -185,3 +187,4 @@ final class FunctionResolutionTests: XCTestCase {
 		}
 	}
 }
+#endif

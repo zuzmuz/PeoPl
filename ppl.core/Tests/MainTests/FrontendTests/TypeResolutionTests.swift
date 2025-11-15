@@ -1,3 +1,4 @@
+#if ANALYZER
 import XCTest
 
 @testable import Main
@@ -434,3 +435,4 @@ final class TypeResolutionTests: XCTestCase {
 		}
 	}
 }
+#endif

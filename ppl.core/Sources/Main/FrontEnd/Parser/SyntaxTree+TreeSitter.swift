@@ -157,7 +157,7 @@ extension Node {
 		case accessExpression = "access_expression"
 		case roundCallExpression = "round_call_expression"
 		case squareCallExpression = "square_call_expression"
-		case squareExpressionList = "sqare_expression_list"
+		case squareExpressionList = "square_expression_list"
 		case binding = "binding"
 		case functionDefinition = "function_definition"
 		case taggedExpression = "tagged_expression"
@@ -375,8 +375,22 @@ extension Syntax.TaggedExpression: TreeSitterNode {
 				location: node.getLocation(in: source)
 			)
 		}
+
+		let typeSpecifier: Syntax.Expression?
+		if let typeSpecifierNode = node.child(
+			byFieldName: "type_specifier"
+		) {
+			typeSpecifier = try .from(
+				node: typeSpecifierNode,
+				in: source
+			)
+		} else {
+			typeSpecifier = nil
+		}
+
 		return try .init(
 			identifier: identifierNode.getString(in: source),
+			typeSpecifier: typeSpecifier,
 			expression: .from(node: expressionNode, in: source),
 			location: node.getLocation(in: source)
 		)

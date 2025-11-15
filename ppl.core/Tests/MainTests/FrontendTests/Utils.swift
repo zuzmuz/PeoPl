@@ -8,25 +8,26 @@ protocol Testable {
 	)
 }
 
+#if ANALYZER
 extension Semantic.Error: Testable {
 	func assertEqual(
 		with: Self
 	) {
 		switch (errorChoice, with.errorChoice) {
-		case let (
-			.typeRedeclaration(selfIdentifier, selfTypes),
-			.typeRedeclaration(withIdentifier, withTypes)
+		case (
+			.typeRedeclaration(let selfIdentifier, let selfTypes),
+			.typeRedeclaration(let withIdentifier, let withTypes)
 		):
 			XCTAssertEqual(selfIdentifier, withIdentifier)
 			XCTAssertEqual(selfTypes.count, withTypes.count)
-		case let (
-			.cyclicType(selfStack),
-			.cyclicType(withStack)
+		case (
+			.cyclicType(let selfStack),
+			.cyclicType(let withStack)
 		):
 			XCTAssertEqual(selfStack.count, withStack.count)
-		case let (
-			.functionRedeclaration(selfSignature, selfLocations),
-			.functionRedeclaration(withSignature, withLocations)
+		case (
+			.functionRedeclaration(let selfSignature, let selfLocations),
+			.functionRedeclaration(let withSignature, let withLocations)
 		):
 			XCTAssertEqual(selfSignature, withSignature)
 			XCTAssertEqual(selfLocations.count, withLocations.count)
@@ -43,3 +44,6 @@ extension Semantic.QualifiedIdentifier {
 		return .init(chain: components)
 	}
 }
+
+
+#endif

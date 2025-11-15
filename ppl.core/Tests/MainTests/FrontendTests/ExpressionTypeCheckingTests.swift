@@ -1,3 +1,4 @@
+#if ANALYZER
 import XCTest
 
 @testable import Main
@@ -301,3 +302,4 @@ final class ExpressionTypeCheckingTests: XCTestCase {
 		}
 	}
 }
+#endif

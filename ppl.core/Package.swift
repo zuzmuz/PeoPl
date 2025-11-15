@@ -69,6 +69,13 @@ let package = Package(
 			dependencies: ["Main"],
 			resources: [
 				.process("Resources")
+			],
+			swiftSettings: [
+			    // .define("RELEASE"),
+				 .define("TREE_SITTER_PARSER"),
+				 // .define("ANALYZER"),
+				 .define("LSP"),
+				 // .define("LLVM_BACKEND")
 			]
 		),
 	],

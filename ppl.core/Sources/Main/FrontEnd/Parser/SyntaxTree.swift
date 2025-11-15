@@ -433,15 +433,18 @@ public enum Syntax {
 	/// An expression with a label/tag for pattern matching and named parameters
 	public struct TaggedExpression: SyntaxNode, Sendable {
 		let tag: String
+		let typeSpecifier: Expression?
 		let expression: Expression
 		public let location: NodeLocation
 
 		init(
 			identifier: String,
+			typeSpecifier: Expression?,
 			expression: Expression,
 			location: NodeLocation = .nowhere
 		) {
 			tag = identifier
+			self.typeSpecifier = typeSpecifier
 			self.expression = expression
 			self.location = location
 		}

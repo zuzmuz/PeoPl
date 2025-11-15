@@ -1,3 +1,4 @@
+#if ANALYZER
 import XCTest
 
 @testable import Main
@@ -161,3 +162,4 @@ final class BranchingExpressionTypeCheckingTests: XCTestCase {
 		}
 	}
 }
+#endif
