@@ -1,4 +1,4 @@
-// swift-tools-version: 6.1
+// swift-tools-version: 6.2.1
 // The swift-tools-version declares the minimum version of Swift required to
 // build this package.
 
@@ -28,13 +28,13 @@ let package = Package(
 		// test suite.
 		// Targets can depend on other targets in this package and products from
 		// dependencies.
-		.systemLibrary(
-			name: "cllvm",
-			pkgConfig: "cllvm",
-			providers: [
-				.brew(["llvm"])
-			]
-		),
+		// .systemLibrary(
+		// 	name: "cllvm",
+		// 	pkgConfig: "cllvm",
+		// 	providers: [
+		// 		.brew(["llvm"])
+		// 	]
+		// ),
 		.target(
 			name: "Utils"
 		),
@@ -46,7 +46,7 @@ let package = Package(
 			name: "Main",
 			dependencies: [
 				"SwiftTreeSitter",
-				"cllvm",
+				// "cllvm",
 				"Lsp",
 				.product(
 					name: "ArgumentParser", package: "swift-argument-parser"
@@ -68,5 +68,5 @@ let package = Package(
 			]
 		),
 	],
-	cxxLanguageStandard: .cxx17
+	// cxxLanguageStandard: .cxx17
 )
