@@ -2,41 +2,41 @@ Basic: [
     a: Int
 ]
 
-// Multiple: [
-//     a: Int,
-//     b: Float,
-//     c: String
-// ]
-// 
-// Nested: [
-//     a: Int,
-//     d: [
-//         b: Float,
-//         e: [
-//             c: String
-//         ]
-//     ]
-// ]
-// 
-// Scoped\Basic: [
-//     a: Int
-// ]
-// 
-// Scoped\Multiple\Times: [
-//     a: Int,
-//     e: Bool
-// ]
-// 
-// ScopedTypes: [
-//     x: CG\Float,
-//     y: CG\Vector
-// ]
-// 
-// TypeWithNothing: [
-//     m: nothing,
-//     n: nothing
-// ]
-// 
+Multiple: [
+    a: Int,
+    b: Float,
+    c: String
+]
+
+Nested: [
+    a: Int,
+    d: [
+        b: Float,
+        e: [
+            c: String
+        ]
+    ]
+]
+ 
+ Scoped\Basic: [
+     a: Int
+ ]
+ 
+ Scoped\Multiple\Times: [
+     a: Int,
+     e: Bool
+ ]
+ 
+ ScopedTypes: [
+     x: CG\Float,
+     y: CG\Vector
+ ]
+ 
+ TypeWithNothing: [
+     m: nothing,
+     n: nothing
+ ]
+ 
 // Numbered: [
 //     _1: One,
 //     _2: Two,

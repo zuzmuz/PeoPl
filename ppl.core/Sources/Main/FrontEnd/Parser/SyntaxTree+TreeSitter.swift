@@ -165,8 +165,21 @@ extension Node {
 		case pipedExpression = "piped_expression"
 	}
 
+	enum LiteralNodeType: String, CaseIterable {
+		case nothing = "nothing"
+		case never = "never"
+		case intLiteral = "int_literal"
+		case floatLiteral = "float_literal"
+		case stringLiteral = "string_literal"
+		case boolLiteral = "bool_literal"
+	}
+
 	var expressionNodeType: ExpressionNodeType? {
 		return ExpressionNodeType(rawValue: self.nodeType ?? "")
+	}
+
+	var literalNodeType: LiteralNodeType? {
+		return LiteralNodeType(rawValue: self.nodeType ?? "")
 	}
 
 	func compactMapChildren<T, E>(
@@ -446,54 +459,58 @@ extension Syntax.Literal {
 	) throws(Syntax.Error) -> Self {
 		guard let child = node.child(at: 0) else {
 			throw .errorParsing(
-				element: "Literal",
+				element: "literal no child",
 				location: node.getLocation(in: source)
 			)
 		}
 		let value: Syntax.Literal.Value
-		switch child.nodeType {
-		case "int_literal":
+		switch child.literalNodeType {
+		case .nothing:
+			value = .nothing
+		case .never:
+			value = .never
+		case .intLiteral:
 			guard
 				let intValue = try parseInteger(
-					from: node.getString(in: source)
+					from: child.getString(in: source)
 				)
 			else {
 				throw .errorParsing(
-					element: "Int_literal",
+					element: "int literal failed to parse",
 					location: node.getLocation(in: source)
 				)
 			}
 			value = .intLiteral(intValue)
-		case "float_literal":
+		case .floatLiteral:
 			guard
 				let floatValue = try Double(
 					node.getString(in: source)
 				)
 			else {
 				throw .errorParsing(
-					element: "Float_literal",
+					element: "float literal failed to parse",
 					location: node.getLocation(in: source)
 				)
 			}
 			value = .floatLiteral(floatValue)
-		case "string_literal":
+		case .stringLiteral:
 			let stringValue = try node.getString(in: source)
 			value = .stringLiteral(
 				String(stringValue.dropFirst().dropLast())
 			)
-		case "bool_literal":
+		case .boolLiteral:
 			guard
 				let boolValue = try Bool(
 					node.getString(in: source)
 				)
 			else {
 				throw .errorParsing(
-					element: "Bool_literal",
+					element: "bool literal failed to parse",
 					location: node.getLocation(in: source)
 				)
 			}
 			value = .boolLiteral(boolValue)
-		default:
+		case .none:
 			throw .errorParsing(
 				element: "literal",
 				location: node.getLocation(in: source)

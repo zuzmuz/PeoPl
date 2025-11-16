@@ -275,7 +275,7 @@ extension Syntax.Expression {
 			.init(op: op, left: lhs, right: rhs)
 		)
 	}
-	
+
 	static func typeDefinition(
 		_ expressions: [Syntax.Expression]
 	) -> Syntax.Expression {
@@ -366,457 +366,375 @@ final class ParserTests: XCTestCase {
 					definition: .typeDefinition([
 						.tagged("a", .nominal(.chain(["Int"])))
 					])
-				)
+				),
+				.init(
+					identifier: .chain(["Multiple"]),
+					definition: .typeDefinition([
+						.tagged("a", .nominal(.chain(["Int"]))),
+						.tagged("b", .nominal(.chain(["Float"]))),
+						.tagged("c", .nominal(.chain(["String"]))),
+					])
+				),
+				.init(
+					identifier: .chain(["Nested"]),
+					definition: .typeDefinition([
+						.tagged("a", .nominal(.chain(["Int"]))),
+						.tagged(
+							"d",
+							.typeDefinition([
+								.tagged("b", .nominal(.chain(["Float"]))),
+								.tagged(
+									"e",
+									.typeDefinition([
+										.tagged("c", .nominal(.chain(["String"])))
+									])
+								),
+							])
+						),
+					])
+				),
+				.init(
+					identifier: .chain(["Scoped", "Basic"]),
+					definition: .typeDefinition([
+						.tagged("a", .nominal(.chain(["Int"])))
+					])
+				),
+				.init(
+					identifier: .chain(["Scoped", "Multiple", "Times"]),
+					definition: .typeDefinition([
+						.tagged("a", .nominal(.chain(["Int"]))),
+						.tagged("e", .nominal(.chain(["Bool"]))),
+					])
+				),
+				.init(
+					identifier: .chain(["ScopedTypes"]),
+					definition: .typeDefinition([
+						.tagged("x", .nominal(.chain(["CG", "Float"]))),
+						.tagged("y", .nominal(.chain(["CG", "Vector"]))),
+					])
+				),
+				.init(
+					identifier: .chain(["TypeWithNothing"]),
+					definition: .typeDefinition([
+						.tagged("m", .nothing),
+						.tagged("n", .nothing),
+					])
+				),
+				// 		.init(
+				// 			identifier: .chain(["Numbered"]),
+				// 			definition: .record(
+				// 				[
+				// 					.tagged(
+				// 						tag: "_1",
+				// 						typeSpecifier: .nominalType(
+				// 							.chain(["One"])
+				// 						)
+				// 					),
+				// 					.tagged(
+				// 						tag: "_2",
+				// 						typeSpecifier: .nominalType(
+				// 							.chain(["Two"])
+				// 						)
+				// 					),
+				// 					.tagged(
+				// 						tag: "_3",
+				// 						typeSpecifier: .nominalType(
+				// 							.chain(["Three"])
+				// 						)
+				// 					),
+				// 				]
+				// 			)
+				// 		),
+				// 		.init(
+				// 			identifier: .chain(["Tuple"]),
+				// 			definition: .record(
+				// 				[
+				// 					.untagged(
+				// 						typeSpecifier: .nominalType(
+				// 							.chain(["Int"])
+				// 						)
+				// 					),
+				// 					.untagged(
+				// 						typeSpecifier: .nominalType(
+				// 							.chain(["Float"])
+				// 						)
+				// 					),
+				// 					.untagged(
+				// 						typeSpecifier: .nominalType(
+				// 							.chain(["String"])
+				// 						)
+				// 					),
+				// 					.untagged(
+				// 						typeSpecifier: .nominalType(
+				// 							.chain(["Bool"])
+				// 						)
+				// 					),
+				// 					.untagged(
+				// 						typeSpecifier: .nominalType(
+				// 							.chain(["Nested", "Scope"])
+				// 						)
+				// 					),
+				// 					.untagged(
+				// 						typeSpecifier: .nominalType(
+				// 							.chain([
+				// 								"Multiple",
+				// 								"Nested",
+				// 								"Scope",
+				// 							])
+				// 						)
+				// 					),
+				// 				]
+				// 			)
+				// 		),
+				// 		.init(
+				// 			identifier: .chain(["Mix"]),
+				// 			definition: .record([
+				// 				.untagged(
+				// 					typeSpecifier: .nominalType(
+				// 						.chain(["Int"])
+				// 					)
+				// 				),
+				// 				.tagged(
+				// 					tag: "named",
+				// 					typeSpecifier: .nominalType(
+				// 						.chain(["Int"])
+				// 					)
+				// 				),
+				// 				.untagged(
+				// 					typeSpecifier: .nominalType(
+				// 						.chain(["Float"])
+				// 					)
+				// 				),
+				// 				.tagged(
+				// 					tag: "other",
+				// 					typeSpecifier: .nominalType(
+				// 						.chain(["Float"])
+				// 					)
+				// 				),
+				// 			])
+				// 		),
+				// 		.init(
+				// 			identifier: .chain(["Choice"]),
+				// 			definition: .choice([
+				// 				.tagged(
+				// 					tag: "first",
+				// 					typeSpecifier: nil
+				// 				),
+				// 				.tagged(
+				// 					tag: "second",
+				// 					typeSpecifier: nil
+				// 				),
+				// 				.tagged(
+				// 					tag: "third",
+				// 					typeSpecifier: nil
+				// 				),
+				// 			])
+				// 		),
+				// 		.init(
+				// 			identifier: .chain(["Shape"]),
+				// 			definition: .choice([
+				// 				.tagged(
+				// 					tag: "circle",
+				// 					typeSpecifier: .record([
+				// 						.tagged(
+				// 							tag: "radius",
+				// 							typeSpecifier: .nominalType(
+				// 								.chain(["Float"])
+				// 							)
+				// 						)
+				// 					])
+				// 				),
+				// 				.tagged(
+				// 					tag: "rectangle",
+				// 					typeSpecifier: .record([
+				// 						.tagged(
+				// 							tag: "width",
+				// 							typeSpecifier: .nominalType(
+				// 								.chain(["Float"])
+				// 							)
+				// 						),
+				// 						.tagged(
+				// 							tag: "height",
+				// 							typeSpecifier: .nominalType(
+				// 								.chain(["Float"])
+				// 							)
+				// 						),
+				// 					])
+				// 				),
+				// 				.tagged(
+				// 					tag: "triangle",
+				// 					typeSpecifier: .record([
+				// 						.tagged(
+				// 							tag: "base",
+				// 							typeSpecifier: .nominalType(
+				// 								.chain(["Float"])
+				// 							)
+				// 						),
+				// 						.tagged(
+				// 							tag: "height",
+				// 							typeSpecifier: .nominalType(
+				// 								.chain(["Float"])
+				// 							)
+				// 						),
+				// 					])
+				// 				),
+				// 			])
+				// 		),
+				// 		.init(
+				// 			identifier: .chain(["Graphix", "Color"]),
+				// 			definition: .choice([
+				// 				.tagged(
+				// 					tag: "rgb",
+				// 					typeSpecifier: .record([
+				// 						.tagged(
+				// 							tag: "red",
+				// 							typeSpecifier: .nominalType(
+				// 								.chain(["Float"])
+				// 							)
+				// 						),
+				// 						.tagged(
+				// 							tag: "green",
+				// 							typeSpecifier: .nominalType(
+				// 								.chain(["Float"])
+				// 							)
+				// 						),
+				// 						.tagged(
+				// 							tag: "blue",
+				// 							typeSpecifier: .nominalType(
+				// 								.chain(["Float"])
+				// 							)
+				// 						),
+				// 					])
+				// 				),
+				// 				.tagged(
+				// 					tag: "named",
+				// 					typeSpecifier: .nominalType(
+				// 						.chain(["Graphix", "ColorName"])
+				// 					)
+				// 				),
+				// 				.tagged(
+				// 					tag: "hsv",
+				// 					typeSpecifier: .record([
+				// 						.tagged(
+				// 							tag: "hue",
+				// 							typeSpecifier: .nominalType(
+				// 								.chain(["Float"])
+				// 							)
+				// 						),
+				// 						.tagged(
+				// 							tag: "saturation",
+				// 							typeSpecifier: .nominalType(
+				// 								.chain(["Float"])
+				// 							)
+				// 						),
+				// 						.tagged(
+				// 							tag: "value",
+				// 							typeSpecifier: .nominalType(
+				// 								.chain(["Float"])
+				// 							)
+				// 						),
+				// 					])
+				// 				),
+				// 			])
+				// 		),
+				// 		.init(
+				// 			identifier: .chain(["Union"]),
+				// 			definition: .choice([
+				// 				.untagged(
+				// 					typeSpecifier: .nominalType(
+				// 						.chain(["Int"])
+				// 					)
+				// 				),
+				// 				.untagged(
+				// 					typeSpecifier: .nominalType(
+				// 						.chain(["Float"])
+				// 					)
+				// 				),
+				// 				.untagged(
+				// 					typeSpecifier: .nominalType(
+				// 						.chain(["String"])
+				// 					)
+				// 				),
+				// 			])
+				// 		),
+				// 		.init(
+				// 			identifier: .chain(["Nested", "Stuff"]),
+				// 			definition: .record([
+				// 				.tagged(
+				// 					tag: "first",
+				// 					typeSpecifier: .choice([
+				// 						.untagged(
+				// 							typeSpecifier: .nominalType(
+				// 								.chain(["A"])
+				// 							)
+				// 						),
+				// 						.untagged(
+				// 							typeSpecifier: .nominalType(
+				// 								.chain(["B"])
+				// 							)
+				// 						),
+				// 						.untagged(
+				// 							typeSpecifier: .nominalType(
+				// 								.chain(["C"])
+				// 							)
+				// 						),
+				// 					])
+				// 				),
+				// 				.tagged(
+				// 					tag: "second",
+				// 					typeSpecifier: .choice([
+				// 						.tagged(
+				// 							tag: "a",
+				// 							typeSpecifier: nil,
+				// 						),
+				// 						.tagged(
+				// 							tag: "b",
+				// 							typeSpecifier: nil,
+				// 						),
+				// 						.tagged(
+				// 							tag: "c",
+				// 							typeSpecifier: nil,
+				// 						),
+				// 					])
+				// 				),
+				// 				.tagged(
+				// 					tag: "mix",
+				// 					typeSpecifier: .choice([
+				// 						.untagged(
+				// 							typeSpecifier: .nominalType(
+				// 								.chain(["First"])
+				// 							)
+				// 						),
+				// 						.tagged(
+				// 							tag: "second",
+				// 							typeSpecifier: .nominalType(
+				// 								.chain(["Second"])
+				// 							)
+				// 						),
+				// 						.tagged(
+				// 							tag: "third",
+				// 							typeSpecifier: .choice([
+				// 								.tagged(
+				// 									tag: "_1",
+				// 									typeSpecifier: nil
+				// 								),
+				// 								.tagged(
+				// 									tag: "_2",
+				// 									typeSpecifier: nil
+				// 								),
+				// 								.tagged(
+				// 									tag: "_3",
+				// 									typeSpecifier: nil
+				// 								),
+				//
+				// 							])
+				// 						),
+				// 					])
+				// 				),
+				// 			])
+				// 		),
 			]
 		)
-		// 		.init(
-		// 			identifier: .chain(["Multiple"]),
-		// 			definition: .record(
-		// 				[
-		// 					.tagged(
-		// 						tag: "a",
-		// 						typeSpecifier: .nominalType(
-		// 							.chain(["Int"])
-		// 						)
-		// 					),
-		// 					.tagged(
-		// 						tag: "b",
-		// 						typeSpecifier: .nominalType(
-		// 							.chain(["Float"])
-		// 						)
-		// 					),
-		// 					.tagged(
-		// 						tag: "c",
-		// 						typeSpecifier: .nominalType(
-		// 							.chain(["String"])
-		// 						)
-		// 					),
-		// 				]
-		// 			)
-		// 		),
-		// 		.init(
-		// 			identifier: .chain(["Nested"]),
-		// 			definition: .record(
-		// 				[
-		// 					.tagged(
-		// 						tag: "a",
-		// 						typeSpecifier: .nominalType(
-		// 							.chain(["Int"])
-		// 						)
-		// 					),
-		// 					.tagged(
-		// 						tag: "d",
-		// 						typeSpecifier: .record(
-		// 							[
-		// 								.tagged(
-		// 									tag: "b",
-		// 									typeSpecifier: .nominalType(
-		// 										.chain(["Float"])
-		// 									)
-		// 								),
-		// 								.tagged(
-		// 									tag: "e",
-		// 									typeSpecifier: .record(
-		// 										[
-		// 											.tagged(
-		// 												tag: "c",
-		// 												typeSpecifier:
-		// 													.nominalType(
-		// 														.chain([
-		// 															"String"
-		// 														])
-		// 													)
-		// 											)
-		// 										]
-		// 									)
-		// 								),
-		// 							]
-		// 						)
-		// 					),
-		// 				]
-		// 			)
-		// 		),
-		// 		.init(
-		// 			identifier: .chain(["Scoped", "Basic"]),
-		// 			definition: .record(
-		// 				[
-		// 					.tagged(
-		// 						tag: "a",
-		// 						typeSpecifier: .nominalType(
-		// 							.chain(["Int"])
-		// 						)
-		// 					)
-		// 				]
-		// 			)
-		// 		),
-		// 		.init(
-		// 			identifier: .chain(["Scoped", "Multiple", "Times"]),
-		// 			definition: .record(
-		// 				[
-		// 					.tagged(
-		// 						tag: "a",
-		// 						typeSpecifier: .nominalType(
-		// 							.chain(["Int"])
-		// 						)
-		// 					),
-		// 					.tagged(
-		// 						tag: "e",
-		// 						typeSpecifier: .nominalType(
-		// 							.chain(["Bool"])
-		// 						)
-		// 					),
-		// 				]
-		// 			)
-		// 		),
-		// 		.init(
-		// 			identifier: .chain(["ScopedTypes"]),
-		// 			definition: .record(
-		// 				[
-		// 					.tagged(
-		// 						tag: "x",
-		// 						typeSpecifier: .nominalType(
-		// 							.chain(["CG", "Float"])
-		// 						)
-		// 					),
-		// 					.tagged(
-		// 						tag: "y",
-		// 						typeSpecifier: .nominalType(
-		// 							.chain(["CG", "Vector"])
-		// 						)
-		// 					),
-		// 				]
-		// 			)
-		// 		),
-		// 		.init(
-		// 			identifier: .chain(["TypeWithNothing"]),
-		// 			definition: .record(
-		// 				[
-		// 					.tagged(
-		// 						tag: "m",
-		// 						typeSpecifier: .nothing(location: .nowhere)
-		// 					),
-		// 					.tagged(
-		// 						tag: "n",
-		// 						typeSpecifier: .nothing(location: .nowhere)
-		// 					),
-		// 				]
-		// 			)
-		// 		),
-		// 		.init(
-		// 			identifier: .chain(["Numbered"]),
-		// 			definition: .record(
-		// 				[
-		// 					.tagged(
-		// 						tag: "_1",
-		// 						typeSpecifier: .nominalType(
-		// 							.chain(["One"])
-		// 						)
-		// 					),
-		// 					.tagged(
-		// 						tag: "_2",
-		// 						typeSpecifier: .nominalType(
-		// 							.chain(["Two"])
-		// 						)
-		// 					),
-		// 					.tagged(
-		// 						tag: "_3",
-		// 						typeSpecifier: .nominalType(
-		// 							.chain(["Three"])
-		// 						)
-		// 					),
-		// 				]
-		// 			)
-		// 		),
-		// 		.init(
-		// 			identifier: .chain(["Tuple"]),
-		// 			definition: .record(
-		// 				[
-		// 					.untagged(
-		// 						typeSpecifier: .nominalType(
-		// 							.chain(["Int"])
-		// 						)
-		// 					),
-		// 					.untagged(
-		// 						typeSpecifier: .nominalType(
-		// 							.chain(["Float"])
-		// 						)
-		// 					),
-		// 					.untagged(
-		// 						typeSpecifier: .nominalType(
-		// 							.chain(["String"])
-		// 						)
-		// 					),
-		// 					.untagged(
-		// 						typeSpecifier: .nominalType(
-		// 							.chain(["Bool"])
-		// 						)
-		// 					),
-		// 					.untagged(
-		// 						typeSpecifier: .nominalType(
-		// 							.chain(["Nested", "Scope"])
-		// 						)
-		// 					),
-		// 					.untagged(
-		// 						typeSpecifier: .nominalType(
-		// 							.chain([
-		// 								"Multiple",
-		// 								"Nested",
-		// 								"Scope",
-		// 							])
-		// 						)
-		// 					),
-		// 				]
-		// 			)
-		// 		),
-		// 		.init(
-		// 			identifier: .chain(["Mix"]),
-		// 			definition: .record([
-		// 				.untagged(
-		// 					typeSpecifier: .nominalType(
-		// 						.chain(["Int"])
-		// 					)
-		// 				),
-		// 				.tagged(
-		// 					tag: "named",
-		// 					typeSpecifier: .nominalType(
-		// 						.chain(["Int"])
-		// 					)
-		// 				),
-		// 				.untagged(
-		// 					typeSpecifier: .nominalType(
-		// 						.chain(["Float"])
-		// 					)
-		// 				),
-		// 				.tagged(
-		// 					tag: "other",
-		// 					typeSpecifier: .nominalType(
-		// 						.chain(["Float"])
-		// 					)
-		// 				),
-		// 			])
-		// 		),
-		// 		.init(
-		// 			identifier: .chain(["Choice"]),
-		// 			definition: .choice([
-		// 				.tagged(
-		// 					tag: "first",
-		// 					typeSpecifier: nil
-		// 				),
-		// 				.tagged(
-		// 					tag: "second",
-		// 					typeSpecifier: nil
-		// 				),
-		// 				.tagged(
-		// 					tag: "third",
-		// 					typeSpecifier: nil
-		// 				),
-		// 			])
-		// 		),
-		// 		.init(
-		// 			identifier: .chain(["Shape"]),
-		// 			definition: .choice([
-		// 				.tagged(
-		// 					tag: "circle",
-		// 					typeSpecifier: .record([
-		// 						.tagged(
-		// 							tag: "radius",
-		// 							typeSpecifier: .nominalType(
-		// 								.chain(["Float"])
-		// 							)
-		// 						)
-		// 					])
-		// 				),
-		// 				.tagged(
-		// 					tag: "rectangle",
-		// 					typeSpecifier: .record([
-		// 						.tagged(
-		// 							tag: "width",
-		// 							typeSpecifier: .nominalType(
-		// 								.chain(["Float"])
-		// 							)
-		// 						),
-		// 						.tagged(
-		// 							tag: "height",
-		// 							typeSpecifier: .nominalType(
-		// 								.chain(["Float"])
-		// 							)
-		// 						),
-		// 					])
-		// 				),
-		// 				.tagged(
-		// 					tag: "triangle",
-		// 					typeSpecifier: .record([
-		// 						.tagged(
-		// 							tag: "base",
-		// 							typeSpecifier: .nominalType(
-		// 								.chain(["Float"])
-		// 							)
-		// 						),
-		// 						.tagged(
-		// 							tag: "height",
-		// 							typeSpecifier: .nominalType(
-		// 								.chain(["Float"])
-		// 							)
-		// 						),
-		// 					])
-		// 				),
-		// 			])
-		// 		),
-		// 		.init(
-		// 			identifier: .chain(["Graphix", "Color"]),
-		// 			definition: .choice([
-		// 				.tagged(
-		// 					tag: "rgb",
-		// 					typeSpecifier: .record([
-		// 						.tagged(
-		// 							tag: "red",
-		// 							typeSpecifier: .nominalType(
-		// 								.chain(["Float"])
-		// 							)
-		// 						),
-		// 						.tagged(
-		// 							tag: "green",
-		// 							typeSpecifier: .nominalType(
-		// 								.chain(["Float"])
-		// 							)
-		// 						),
-		// 						.tagged(
-		// 							tag: "blue",
-		// 							typeSpecifier: .nominalType(
-		// 								.chain(["Float"])
-		// 							)
-		// 						),
-		// 					])
-		// 				),
-		// 				.tagged(
-		// 					tag: "named",
-		// 					typeSpecifier: .nominalType(
-		// 						.chain(["Graphix", "ColorName"])
-		// 					)
-		// 				),
-		// 				.tagged(
-		// 					tag: "hsv",
-		// 					typeSpecifier: .record([
-		// 						.tagged(
-		// 							tag: "hue",
-		// 							typeSpecifier: .nominalType(
-		// 								.chain(["Float"])
-		// 							)
-		// 						),
-		// 						.tagged(
-		// 							tag: "saturation",
-		// 							typeSpecifier: .nominalType(
-		// 								.chain(["Float"])
-		// 							)
-		// 						),
-		// 						.tagged(
-		// 							tag: "value",
-		// 							typeSpecifier: .nominalType(
-		// 								.chain(["Float"])
-		// 							)
-		// 						),
-		// 					])
-		// 				),
-		// 			])
-		// 		),
-		// 		.init(
-		// 			identifier: .chain(["Union"]),
-		// 			definition: .choice([
-		// 				.untagged(
-		// 					typeSpecifier: .nominalType(
-		// 						.chain(["Int"])
-		// 					)
-		// 				),
-		// 				.untagged(
-		// 					typeSpecifier: .nominalType(
-		// 						.chain(["Float"])
-		// 					)
-		// 				),
-		// 				.untagged(
-		// 					typeSpecifier: .nominalType(
-		// 						.chain(["String"])
-		// 					)
-		// 				),
-		// 			])
-		// 		),
-		// 		.init(
-		// 			identifier: .chain(["Nested", "Stuff"]),
-		// 			definition: .record([
-		// 				.tagged(
-		// 					tag: "first",
-		// 					typeSpecifier: .choice([
-		// 						.untagged(
-		// 							typeSpecifier: .nominalType(
-		// 								.chain(["A"])
-		// 							)
-		// 						),
-		// 						.untagged(
-		// 							typeSpecifier: .nominalType(
-		// 								.chain(["B"])
-		// 							)
-		// 						),
-		// 						.untagged(
-		// 							typeSpecifier: .nominalType(
-		// 								.chain(["C"])
-		// 							)
-		// 						),
-		// 					])
-		// 				),
-		// 				.tagged(
-		// 					tag: "second",
-		// 					typeSpecifier: .choice([
-		// 						.tagged(
-		// 							tag: "a",
-		// 							typeSpecifier: nil,
-		// 						),
-		// 						.tagged(
-		// 							tag: "b",
-		// 							typeSpecifier: nil,
-		// 						),
-		// 						.tagged(
-		// 							tag: "c",
-		// 							typeSpecifier: nil,
-		// 						),
-		// 					])
-		// 				),
-		// 				.tagged(
-		// 					tag: "mix",
-		// 					typeSpecifier: .choice([
-		// 						.untagged(
-		// 							typeSpecifier: .nominalType(
-		// 								.chain(["First"])
-		// 							)
-		// 						),
-		// 						.tagged(
-		// 							tag: "second",
-		// 							typeSpecifier: .nominalType(
-		// 								.chain(["Second"])
-		// 							)
-		// 						),
-		// 						.tagged(
-		// 							tag: "third",
-		// 							typeSpecifier: .choice([
-		// 								.tagged(
-		// 									tag: "_1",
-		// 									typeSpecifier: nil
-		// 								),
-		// 								.tagged(
-		// 									tag: "_2",
-		// 									typeSpecifier: nil
-		// 								),
-		// 								.tagged(
-		// 									tag: "_3",
-		// 									typeSpecifier: nil
-		// 								),
-		//
-		// 							])
-		// 						),
-		// 					])
-		// 				),
-		// 			])
-		// 		),
-		// 	]
-		// ),
 		// "expressions": .init(
 		// 	sourceName: "expressions",
 		// 	definitions: [
@@ -1074,6 +992,7 @@ final class ParserTests: XCTestCase {
 			)!
 			let source = try Syntax.Source(url: sourceUrl)
 			let module = TreeSitterModulParser.parseModule(source: source)
+			print("The syntax errors: \(module.syntaxErrors)")
 			module.assertEqual(with: reference)
 		}
 	}
