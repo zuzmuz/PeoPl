@@ -37,41 +37,41 @@ Nested: [
      n: nothing
  ]
  
-// Numbered: [
-//     _1: One,
-//     _2: Two,
-//     _3: Three
-// ]
-// 
-// Tuple: [Int, Float, String, Bool, Nested\Scope, Multiple\Nested\Scope]
-// 
-// Mix: [
-//     Int,
-//     named: Int,
-//     Float,
-//     other: Float
-// ]
-// 
-// Choice: choice [
-//     first:, second:, third:
-// ]
-// 
-// Shape: choice [
-//     circle: [radius: Float],
-//     rectangle: [width: Float, height: Float],
-//     triangle: [base: Float, height: Float]
-// ]
-// 
-// Graphix\Color: choice [
-//     rgb: [red: Float, green: Float, blue: Float],
-//     named: Graphix\ColorName,
-//     hsv: [hue: Float, saturation: Float, value: Float]
-// ]
-// 
-// Union: choice [Int, Float, String]
-// 
-// Nested\Stuff: [
-//     first: choice [A, B, C],
-//     second: choice [a:, b:, c:],
-//     mix: choice [First, second: Second, third: choice [_1:, _2:, _3:]]
-// ]
+Numbered: [
+    _1: One,
+    _2: Two,
+    _3: Three
+]
+
+Tuple: [Int, Float, String, Bool, Nested\Scope, Multiple\Nested\Scope]
+
+Mix: [
+    Int,
+    named: Int,
+    Float,
+    other: Float
+]
+
+Choice: choice [
+    first:, second:, third:
+]
+
+Shape: choice [
+    circle: [radius: Float],
+    rectangle: [width: Float, height: Float],
+    triangle: [base: Float, height: Float]
+]
+
+Graphix\Color: choice [
+    rgb: [red: Float, green: Float, blue: Float],
+    named: Graphix\ColorName,
+    hsv: [hue: Float, saturation: Float, value: Float]
+]
+
+Union: choice [Int, Float, String]
+
+Nested\Stuff: [
+    first: choice [A, B, C],
+    second: choice [a:, b:, c:],
+    mix: choice [First, second: Second, third: choice [_1:, _2:, _3:]]
+]

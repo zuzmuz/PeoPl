@@ -1,4 +1,4 @@
-#if TREE_SITTER_PARSER 
+// #if TREE_SITTER_PARSER 
 
 import Foundation
 import SwiftTreeSitter
@@ -378,14 +378,28 @@ extension Syntax.TaggedExpression: TreeSitterNode {
 		guard
 			let identifierNode = node.child(
 				byFieldName: "identifier"
-			),
-			let expressionNode = node.child(
-				byFieldName: "expression"
 			)
 		else {
 			throw .errorParsing(
 				element: "TaggedExpression",
 				location: node.getLocation(in: source)
+			)
+		}
+
+		let expression: Syntax.Expression
+
+		if let expressionNode = node.child(
+				byFieldName: "expression"
+			) {
+			expression = try .from(
+				node: expressionNode,
+				in: source)
+		} else {
+			expression = .literal(
+				.init(
+					value: .nothing,
+					location: node.getLocation(in: source)
+				)
 			)
 		}
 
@@ -404,7 +418,7 @@ extension Syntax.TaggedExpression: TreeSitterNode {
 		return try .init(
 			identifier: identifierNode.getString(in: source),
 			typeSpecifier: typeSpecifier,
-			expression: .from(node: expressionNode, in: source),
+			expression: expression,
 			location: node.getLocation(in: source)
 		)
 	}
@@ -815,4 +829,4 @@ extension Syntax.Branched.Branch {
 	}
 }
 
-#endif
+// #endif
