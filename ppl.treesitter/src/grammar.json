@@ -324,6 +324,10 @@
         },
         {
           "type": "SYMBOL",
+          "name": "parenthesis_expression"
+        },
+        {
+          "type": "SYMBOL",
           "name": "round_call_expression"
         },
         {
@@ -379,79 +383,116 @@
       ]
     },
     "access_expression": {
-      "type": "SEQ",
-      "members": [
-        {
-          "type": "FIELD",
-          "name": "prefix",
-          "content": {
-            "type": "SYMBOL",
-            "name": "_basic_expression"
+      "type": "PREC_LEFT",
+      "value": 50,
+      "content": {
+        "type": "SEQ",
+        "members": [
+          {
+            "type": "FIELD",
+            "name": "prefix",
+            "content": {
+              "type": "SYMBOL",
+              "name": "_basic_expression"
+            }
+          },
+          {
+            "type": "STRING",
+            "value": "."
+          },
+          {
+            "type": "FIELD",
+            "name": "field",
+            "content": {
+              "type": "SYMBOL",
+              "name": "identifier"
+            }
           }
-        },
-        {
-          "type": "STRING",
-          "value": "."
-        },
-        {
-          "type": "FIELD",
-          "name": "field",
-          "content": {
-            "type": "SYMBOL",
-            "name": "identifier"
+        ]
+      }
+    },
+    "parenthesis_expression": {
+      "type": "PREC_LEFT",
+      "value": 20,
+      "content": {
+        "type": "SEQ",
+        "members": [
+          {
+            "type": "STRING",
+            "value": "("
+          },
+          {
+            "type": "FIELD",
+            "name": "expression",
+            "content": {
+              "type": "SYMBOL",
+              "name": "_complex_expression"
+            }
+          },
+          {
+            "type": "STRING",
+            "value": ")"
           }
-        }
-      ]
+        ]
+      }
     },
     "round_call_expression": {
-      "type": "SEQ",
-      "members": [
-        {
-          "type": "CHOICE",
-          "members": [
-            {
-              "type": "FIELD",
-              "name": "prefix",
-              "content": {
-                "type": "SYMBOL",
-                "name": "_basic_expression"
+      "type": "PREC_LEFT",
+      "value": 20,
+      "content": {
+        "type": "SEQ",
+        "members": [
+          {
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "FIELD",
+                "name": "prefix",
+                "content": {
+                  "type": "SYMBOL",
+                  "name": "_basic_expression"
+                }
+              },
+              {
+                "type": "BLANK"
               }
-            },
-            {
-              "type": "BLANK"
+            ]
+          },
+          {
+            "type": "FIELD",
+            "name": "arguments",
+            "content": {
+              "type": "SYMBOL",
+              "name": "round_expression_list"
             }
-          ]
-        },
-        {
-          "type": "FIELD",
-          "name": "arguments",
-          "content": {
-            "type": "SYMBOL",
-            "name": "round_expression_list"
           }
-        }
-      ]
+        ]
+      }
     },
     "square_call_expression": {
-      "type": "SEQ",
-      "members": [
-        {
-          "type": "FIELD",
-          "name": "prefix",
-          "content": {
-            "type": "SYMBOL",
-            "name": "_basic_expression"
+      "type": "PREC_LEFT",
+      "value": 20,
+      "content": {
+        "type": "SEQ",
+        "members": [
+          {
+            "type": "FIELD",
+            "name": "prefix",
+            "content": {
+              "type": "SYMBOL",
+              "name": "_basic_expression"
+            }
+          },
+          {
+            "type": "FIELD",
+            "name": "arguments",
+            "content": {
+              "type": "SYMBOL",
+              "name": "square_expression_list"
+            }
           }
-        },
-        {
-          "type": "FIELD",
-          "name": "arguments",
-          "content": {
-            "type": "SYMBOL",
-            "name": "square_expression_list"
-          }
-        }
-      ]
+        ]
+      }
     },
     "function_definition": {
       "type": "PREC_LEFT",

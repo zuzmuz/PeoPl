@@ -163,6 +163,7 @@ extension Node {
 		case taggedExpression = "tagged_expression"
 		case branchedExpression = "branched_expression"
 		case pipedExpression = "piped_expression"
+		case parenthesisExpression = "parenthesis_expression"
 	}
 
 	enum LiteralNodeType: String, CaseIterable {
@@ -457,6 +458,14 @@ extension Syntax.Expression: TreeSitterNode {
 			return try .branched(.from(node: node, in: source))
 		case .pipedExpression:
 			return try .piped(.from(node: node, in: source))
+		case .parenthesisExpression:
+			guard let child = node.child(byFieldName: "expression") else {
+				throw .errorParsing(
+					element: "parenthesisExpression",
+					location: node.getLocation(in: source)
+				)
+			}
+			return try .from(node: child, in: source)
 		case .none:
 			throw .notImplemented(
 				element: node.nodeType ?? "nil",

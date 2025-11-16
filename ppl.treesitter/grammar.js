@@ -124,6 +124,7 @@ module.exports = grammar({
       $.binary_expression,
       $.qualified_identifier,
       $.access_expression,
+      $.parenthesis_expression,
       $.round_call_expression,
       $.square_call_expression,
       $.square_expression_list,
@@ -145,21 +146,25 @@ module.exports = grammar({
       $.partial_function_value
     ),
 
-    access_expression: $ => seq(
+    access_expression: $ => prec.left(PREC.ACCESS, seq(
       field("prefix", $._basic_expression),
       '.',
       field("field", $.identifier),
-    ),
+    )),
 
-    round_call_expression: $ => seq(
+    parenthesis_expression: $ => prec.left(PREC.PARENTHESIS, seq(
+      '(', field('expression', $._complex_expression), ')'
+    )),
+
+    round_call_expression: $ => prec.left(PREC.PARENTHESIS, seq(
       optional(field("prefix", $._basic_expression)),
       field("arguments", $.round_expression_list),
-    ),
+    )),
 
-    square_call_expression: $ => seq(
+    square_call_expression: $ => prec.left(PREC.PARENTHESIS, seq(
       field("prefix", $._basic_expression),
       field("arguments", $.square_expression_list),
-    ),
+    )),
     
 
 

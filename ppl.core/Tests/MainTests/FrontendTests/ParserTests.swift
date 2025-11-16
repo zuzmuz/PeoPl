@@ -373,477 +373,477 @@ extension Syntax.Expression {
 // swiftlint:disable:next type_body_length
 final class ParserTests: XCTestCase {
 	let fileNames: [String: Syntax.Module] = [
-		"types": .init(
-			sourceName: "types",
-			definitions: [
-				.init(
-					identifier: .chain(["Basic"]),
-					definition: .typeDefinition([
-						.tagged("a", .nominal(.chain(["Int"])))
-					])
-				),
-				.init(
-					identifier: .chain(["Multiple"]),
-					definition: .typeDefinition([
-						.tagged("a", .nominal(.chain(["Int"]))),
-						.tagged("b", .nominal(.chain(["Float"]))),
-						.tagged("c", .nominal(.chain(["String"]))),
-					])
-				),
-				.init(
-					identifier: .chain(["Nested"]),
-					definition: .typeDefinition([
-						.tagged("a", .nominal(.chain(["Int"]))),
-						.tagged(
-							"d",
-							.typeDefinition([
-								.tagged("b", .nominal(.chain(["Float"]))),
-								.tagged(
-									"e",
-									.typeDefinition([
-										.tagged("c", .nominal(.chain(["String"])))
-									])
-								),
-							])
-						),
-					])
-				),
-				.init(
-					identifier: .chain(["Scoped", "Basic"]),
-					definition: .typeDefinition([
-						.tagged("a", .nominal(.chain(["Int"])))
-					])
-				),
-				.init(
-					identifier: .chain(["Scoped", "Multiple", "Times"]),
-					definition: .typeDefinition([
-						.tagged("a", .nominal(.chain(["Int"]))),
-						.tagged("e", .nominal(.chain(["Bool"]))),
-					])
-				),
-				.init(
-					identifier: .chain(["ScopedTypes"]),
-					definition: .typeDefinition([
-						.tagged("x", .nominal(.chain(["CG", "Float"]))),
-						.tagged("y", .nominal(.chain(["CG", "Vector"]))),
-					])
-				),
-				.init(
-					identifier: .chain(["TypeWithNothing"]),
-					definition: .typeDefinition([
-						.tagged("m", .nothing),
-						.tagged("n", .nothing),
-					])
-				),
-				.init(
-					identifier: .chain(["Numbered"]),
-					definition: .typeDefinition([
-						.tagged("_1", .nominal(.chain(["One"]))),
-						.tagged("_2", .nominal(.chain(["Two"]))),
-						.tagged("_3", .nominal(.chain(["Three"]))),
-					])
-				),
-				.init(
-					identifier: .chain(["Tuple"]),
-					definition: .typeDefinition([
-						.nominal(.chain(["Int"])),
-						.nominal(.chain(["Float"])),
-						.nominal(.chain(["String"])),
-						.nominal(.chain(["Bool"])),
-						.nominal(.chain(["Nested", "Scope"])),
-						.nominal(
-							.chain([
-								"Multiple",
-								"Nested",
-								"Scope",
-							])
-						),
-					])
-				),
-				.init(
-					identifier: .chain(["Mix"]),
-					definition: .typeDefinition([
-						.nominal(.chain(["Int"])),
-						.tagged("named", .nominal(.chain(["Int"]))),
-						.nominal(.chain(["Float"])),
-						.tagged("other", .nominal(.chain(["Float"]))),
-					])
-				),
-				.init(
-					identifier: .chain(["Choice"]),
-					definition: .squareCall(
-						.chain(["choice"]),
-						[
-							.tagged("first", .nothing),
-							.tagged("second", .nothing),
-							.tagged("third", .nothing),
-						]
-					)
-				),
-				.init(
-					identifier: .chain(["Shape"]),
-					definition: .squareCall(
-						.chain(["choice"]),
-						[
-							.tagged(
-								"circle",
-								.typeDefinition([
-									.tagged("radius", .nominal(.chain(["Float"])))
-								])
-							),
-							.tagged(
-								"rectangle",
-								.typeDefinition([
-									.tagged("width", .nominal(.chain(["Float"]))),
-									.tagged("height", .nominal(.chain(["Float"]))),
-								])
-							),
-							.tagged(
-								"triangle",
-								.typeDefinition([
-									.tagged("base", .nominal(.chain(["Float"]))),
-									.tagged("height", .nominal(.chain(["Float"]))),
-								])
-							),
-						]
-					)
-				),
-				.init(
-					identifier: .chain(["Graphix", "Color"]),
-					definition: .squareCall(
-						.chain(["choice"]),
-						[
-							.tagged(
-								"rgb",
-								.typeDefinition([
-									.tagged("red", .nominal(.chain(["Float"]))),
-									.tagged("green", .nominal(.chain(["Float"]))),
-									.tagged("blue", .nominal(.chain(["Float"]))),
-								])),
-							.tagged(
-								"named", .nominal(.chain(["Graphix", "ColorName"]))),
-							.tagged(
-								"hsv",
-								.typeDefinition([
-									.tagged("hue", .nominal(.chain(["Float"]))),
-									.tagged(
-										"saturation", .nominal(.chain(["Float"]))),
-									.tagged("value", .nominal(.chain(["Float"]))),
-								])
-							),
-						]
-					)
-				),
-				.init(
-					identifier: .chain(["Union"]),
-					definition: .squareCall(
-						.chain(["choice"]),
-						[
-							.nominal(.chain(["Int"])),
-							.nominal(
-								.chain(["Float"])
-							),
-							.nominal(
-								.chain(["String"])
-							),
-						]
-					)
-				),
-				.init(
-					identifier: .chain(["Nested", "Stuff"]),
-					definition: .typeDefinition([
-						.tagged(
-							"first",
-							.squareCall(
-								.chain(["choice"]),
-								[
-									.nominal(.chain(["A"])),
-									.nominal(.chain(["B"])),
-									.nominal(.chain(["C"])),
-								]
-							)
-						),
-						.tagged(
-							"second",
-							.squareCall(
-								.chain(["choice"]),
-								[
-									.tagged("a", .nothing),
-									.tagged("b", .nothing),
-									.tagged("c", .nothing),
-								]
-							)
-						),
-						.tagged(
-							"mix",
-							.squareCall(
-								.chain(["choice"]),
-								[
-									.nominal(.chain(["First"])),
-									.tagged("second", .nominal(.chain(["Second"]))),
-									.tagged(
-										"third",
-										.call(
-											.chain(["choice"]),
-											[
-												.typeDefinition([
-													.tagged("_1", .nothing),
-													.tagged("_2", .nothing),
-													.tagged("_3", .nothing),
-												])
-											]
-										)
-									),
-								]
-							)
-						),
-					])
-				),
-			]
-		)
-		// "expressions": .init(
-		// 	sourceName: "expressions",
+		// "types": .init(
+		// 	sourceName: "types",
 		// 	definitions: [
-		// 		.init(identifier: .chain(["well"]), definition: .nothing),
 		// 		.init(
-		// 			identifier: .chain(["hello"]),
-		// 			definition: .stringLiteral("Hello, World!"),
+		// 			identifier: .chain(["Basic"]),
+		// 			definition: .typeDefinition([
+		// 				.tagged("a", .nominal(.chain(["Int"])))
+		// 			])
 		// 		),
 		// 		.init(
-		// 			identifier: .chain(["arithmetics"]),
-		// 			definition: .binary(
-		// 				.binary(
-		// 					.binary(
-		// 						.binary(
-		// 							.intLiteral(1),
-		// 							.plus,
-		// 							.binary(
-		// 								.intLiteral(20),
-		// 								.times,
-		// 								.binary(
-		// 									.intLiteral(5),
-		// 									.minus,
-		// 									.intLiteral(2),
-		// 								)
-		// 							)
+		// 			identifier: .chain(["Multiple"]),
+		// 			definition: .typeDefinition([
+		// 				.tagged("a", .nominal(.chain(["Int"]))),
+		// 				.tagged("b", .nominal(.chain(["Float"]))),
+		// 				.tagged("c", .nominal(.chain(["String"]))),
+		// 			])
+		// 		),
+		// 		.init(
+		// 			identifier: .chain(["Nested"]),
+		// 			definition: .typeDefinition([
+		// 				.tagged("a", .nominal(.chain(["Int"]))),
+		// 				.tagged(
+		// 					"d",
+		// 					.typeDefinition([
+		// 						.tagged("b", .nominal(.chain(["Float"]))),
+		// 						.tagged(
+		// 							"e",
+		// 							.typeDefinition([
+		// 								.tagged("c", .nominal(.chain(["String"])))
+		// 							])
 		// 						),
-		// 						.minus,
-		// 						.binary(
-		// 							.binary(
-		// 								.intLiteral(3),
-		// 								.by,
-		// 								.intLiteral(1)
-		// 							),
-		// 							.times,
-		// 							.intLiteral(3)
-		// 						)
+		// 					])
+		// 				),
+		// 			])
+		// 		),
+		// 		.init(
+		// 			identifier: .chain(["Scoped", "Basic"]),
+		// 			definition: .typeDefinition([
+		// 				.tagged("a", .nominal(.chain(["Int"])))
+		// 			])
+		// 		),
+		// 		.init(
+		// 			identifier: .chain(["Scoped", "Multiple", "Times"]),
+		// 			definition: .typeDefinition([
+		// 				.tagged("a", .nominal(.chain(["Int"]))),
+		// 				.tagged("e", .nominal(.chain(["Bool"]))),
+		// 			])
+		// 		),
+		// 		.init(
+		// 			identifier: .chain(["ScopedTypes"]),
+		// 			definition: .typeDefinition([
+		// 				.tagged("x", .nominal(.chain(["CG", "Float"]))),
+		// 				.tagged("y", .nominal(.chain(["CG", "Vector"]))),
+		// 			])
+		// 		),
+		// 		.init(
+		// 			identifier: .chain(["TypeWithNothing"]),
+		// 			definition: .typeDefinition([
+		// 				.tagged("m", .nothing),
+		// 				.tagged("n", .nothing),
+		// 			])
+		// 		),
+		// 		.init(
+		// 			identifier: .chain(["Numbered"]),
+		// 			definition: .typeDefinition([
+		// 				.tagged("_1", .nominal(.chain(["One"]))),
+		// 				.tagged("_2", .nominal(.chain(["Two"]))),
+		// 				.tagged("_3", .nominal(.chain(["Three"]))),
+		// 			])
+		// 		),
+		// 		.init(
+		// 			identifier: .chain(["Tuple"]),
+		// 			definition: .typeDefinition([
+		// 				.nominal(.chain(["Int"])),
+		// 				.nominal(.chain(["Float"])),
+		// 				.nominal(.chain(["String"])),
+		// 				.nominal(.chain(["Bool"])),
+		// 				.nominal(.chain(["Nested", "Scope"])),
+		// 				.nominal(
+		// 					.chain([
+		// 						"Multiple",
+		// 						"Nested",
+		// 						"Scope",
+		// 					])
+		// 				),
+		// 			])
+		// 		),
+		// 		.init(
+		// 			identifier: .chain(["Mix"]),
+		// 			definition: .typeDefinition([
+		// 				.nominal(.chain(["Int"])),
+		// 				.tagged("named", .nominal(.chain(["Int"]))),
+		// 				.nominal(.chain(["Float"])),
+		// 				.tagged("other", .nominal(.chain(["Float"]))),
+		// 			])
+		// 		),
+		// 		.init(
+		// 			identifier: .chain(["Choice"]),
+		// 			definition: .squareCall(
+		// 				.chain(["choice"]),
+		// 				[
+		// 					.tagged("first", .nothing),
+		// 					.tagged("second", .nothing),
+		// 					.tagged("third", .nothing),
+		// 				]
+		// 			)
+		// 		),
+		// 		.init(
+		// 			identifier: .chain(["Shape"]),
+		// 			definition: .squareCall(
+		// 				.chain(["choice"]),
+		// 				[
+		// 					.tagged(
+		// 						"circle",
+		// 						.typeDefinition([
+		// 							.tagged("radius", .nominal(.chain(["Float"])))
+		// 						])
 		// 					),
-		// 					.plus,
-		// 					.binary(
-		// 						.intLiteral(10),
-		// 						.modulo,
-		// 						.intLiteral(3)
-		// 					)
-		// 				),
-		// 				.minus,
-		// 				.intLiteral(10)
-		// 			)
-		// 		),
-		// 		.init(
-		// 			identifier: .chain(["hexOctBin"]),
-		// 			definition: .binary(
-		// 				.binary(
-		// 					.intLiteral(255),
-		// 					.plus,
-		// 					.binary(
-		// 						.intLiteral(240),
-		// 						.times,
-		// 						.intLiteral(7)
-		// 					)
-		// 				),
-		// 				.minus,
-		// 				.intLiteral(56400)
-		// 			)
-		// 		),
-		// 		.init(
-		// 			identifier: .chain(["big_numbers"]),
-		// 			definition: .intLiteral(1_000_000_000),
-		// 		),
-		// 		.init(
-		// 			identifier: .chain(["floating"]),
-		// 			definition: .binary(
-		// 				.floatLiteral(1.0),
-		// 				.plus,
-		// 				.binary(
-		// 					.binary(
-		// 						.floatLiteral(2.5),
-		// 						.times,
-		// 						.binary(
-		// 							.floatLiteral(3.14),
-		// 							.minus,
-		// 							.floatLiteral(1.0)
-		// 						)
+		// 					.tagged(
+		// 						"rectangle",
+		// 						.typeDefinition([
+		// 							.tagged("width", .nominal(.chain(["Float"]))),
+		// 							.tagged("height", .nominal(.chain(["Float"]))),
+		// 						])
 		// 					),
-		// 					.by,
-		// 					.floatLiteral(2.0)
-		// 				)
-		// 			)
-		// 		),
-		// 		.init(
-		// 			identifier: .chain(["prefix"]),
-		// 			definition: .binary(
-		// 				.intLiteral(1),
-		// 				.minus,
-		// 				.unary(
-		// 					.plus,
-		// 					.unary(
-		// 						.minus,
-		// 						.intLiteral(5)
-		// 					)
-		// 				)
-		// 			)
-		// 		),
-		// 		.init(
-		// 			identifier: .chain(["conditions"]),
-		// 			definition: .binary(
-		// 				.binary(
-		// 					.nominal(.chain(["you"])),
-		// 					.and,
-		// 					.nominal(.chain(["me"])),
-		// 				),
-		// 				.or,
-		// 				.nothing
-		// 			)
-		// 		),
-		// 		.init(
-		// 			identifier: .chain(["complex", "Conditions"]),
-		// 			definition: .binary(
-		// 				.binary(
-		// 					.binary(
-		// 						.binary(
-		// 							.intLiteral(1),
-		// 							.plus,
-		// 							.intLiteral(3),
-		// 						),
-		// 						.times,
-		// 						.intLiteral(3),
+		// 					.tagged(
+		// 						"triangle",
+		// 						.typeDefinition([
+		// 							.tagged("base", .nominal(.chain(["Float"]))),
+		// 							.tagged("height", .nominal(.chain(["Float"]))),
+		// 						])
 		// 					),
-		// 					.greaterThan,
-		// 					.intLiteral(42),
-		// 				),
-		// 				.or,
-		// 				.binary(
-		// 					.nominal(.chain(["something"])),
-		// 					.and,
-		// 					.binary(
-		// 						.binary(
-		// 							.stringLiteral("this"),
-		// 							.equal,
-		// 							.stringLiteral("that"),
-		// 						),
-		// 						.or,
-		// 						.unary(
-		// 							.not,
-		// 							.call(.chain(["theSame"]))
-		// 						)
-		// 					)
-		// 				),
+		// 				]
 		// 			)
 		// 		),
 		// 		.init(
-		// 			identifier: .chain(["What", "are", "the", "Odds"]),
-		// 			definition: .pipe(
-		// 				.pipe(
-		// 					.call(
-		// 						.chain(["Object"]),
+		// 			identifier: .chain(["Graphix", "Color"]),
+		// 			definition: .squareCall(
+		// 				.chain(["choice"]),
+		// 				[
+		// 					.tagged(
+		// 						"rgb",
+		// 						.typeDefinition([
+		// 							.tagged("red", .nominal(.chain(["Float"]))),
+		// 							.tagged("green", .nominal(.chain(["Float"]))),
+		// 							.tagged("blue", .nominal(.chain(["Float"]))),
+		// 						])),
+		// 					.tagged(
+		// 						"named", .nominal(.chain(["Graphix", "ColorName"]))),
+		// 					.tagged(
+		// 						"hsv",
+		// 						.typeDefinition([
+		// 							.tagged("hue", .nominal(.chain(["Float"]))),
+		// 							.tagged(
+		// 								"saturation", .nominal(.chain(["Float"]))),
+		// 							.tagged("value", .nominal(.chain(["Float"]))),
+		// 						])
+		// 					),
+		// 				]
+		// 			)
+		// 		),
+		// 		.init(
+		// 			identifier: .chain(["Union"]),
+		// 			definition: .squareCall(
+		// 				.chain(["choice"]),
+		// 				[
+		// 					.nominal(.chain(["Int"])),
+		// 					.nominal(
+		// 						.chain(["Float"])
+		// 					),
+		// 					.nominal(
+		// 						.chain(["String"])
+		// 					),
+		// 				]
+		// 			)
+		// 		),
+		// 		.init(
+		// 			identifier: .chain(["Nested", "Stuff"]),
+		// 			definition: .typeDefinition([
+		// 				.tagged(
+		// 					"first",
+		// 					.squareCall(
+		// 						.chain(["choice"]),
 		// 						[
-		// 							.tagged("a", .intLiteral(1)),
-		// 							.tagged("b", .intLiteral(2)),
-		// 							.tagged("c", .intLiteral(3)),
-		// 						],
-		// 					),
-		// 					.call(
-		// 						.chain(["a", "b", "c"]),
+		// 							.nominal(.chain(["A"])),
+		// 							.nominal(.chain(["B"])),
+		// 							.nominal(.chain(["C"])),
+		// 						]
+		// 					)
+		// 				),
+		// 				.tagged(
+		// 					"second",
+		// 					.squareCall(
+		// 						.chain(["choice"]),
 		// 						[
-		// 							.binary(
-		// 								.intLiteral(1),
-		// 								.plus,
-		// 								.intLiteral(1)
-		// 							),
-		// 							.binary(
-		// 								.intLiteral(2),
-		// 								.times,
-		// 								.intLiteral(2)
-		// 							),
-		// 							.binary(
-		// 								.nominal(.chain(["b"])),
-		// 								.or,
+		// 							.tagged("a", .nothing),
+		// 							.tagged("b", .nothing),
+		// 							.tagged("c", .nothing),
+		// 						]
+		// 					)
+		// 				),
+		// 				.tagged(
+		// 					"mix",
+		// 					.squareCall(
+		// 						.chain(["choice"]),
+		// 						[
+		// 							.nominal(.chain(["First"])),
+		// 							.tagged("second", .nominal(.chain(["Second"]))),
+		// 							.tagged(
+		// 								"third",
 		// 								.call(
-		// 									.chain(["x"])
+		// 									.chain(["choice"]),
+		// 									[
+		// 										.typeDefinition([
+		// 											.tagged("_1", .nothing),
+		// 											.tagged("_2", .nothing),
+		// 											.tagged("_3", .nothing),
+		// 										])
+		// 									]
 		// 								)
 		// 							),
 		// 						]
 		// 					)
 		// 				),
-		// 				.branched([
-		// 					.init(
-		// 						matchExpression: .nominal(.chain(["a"])),
-		// 						body: .binary(
-		// 							.binary(
-		// 								.access(.chain(["a"]), "a"),
-		// 								.plus,
-		// 								.access(.chain(["a"]), "b")
-		// 							),
-		// 							.plus,
-		// 							.access(.chain(["a"]), "c")
-		// 						)
-		// 					),
-		// 					.init(
-		// 						matchExpression: .nominal(.chain(["z", "z"])),
-		// 						body: .access(
-		// 							.access(.access(.chain(["z"]), "z"), "z"),
-		// 							"z"
-		// 						)
-		// 					),
-		// 					.init(
-		// 						matchExpression: .binding(
-		// 							.init(identifier: "call")
-		// 						),
-		// 						body: .call(
-		// 							.chain(["call"]),
-		// 							[
-		// 								.pipe(
-		// 									.nominal(.chain(["a"])),
-		// 									.nominal(.chain(["b"]))
-		// 								),
-		// 								.tagged(
-		// 									"x",
-		// 									.pipe(
-		// 										.nominal(.chain(["a"])),
-		// 										.nominal(.chain(["b"]))
-		// 									),
-		// 								),
-		// 								.tagged(
-		// 									"y",
-		// 									.pipe(
-		// 										.access(
-		// 											.chain(["a"]),
-		// 											"b"
-		// 										),
-		// 										.access(
-		// 											.chain(["q", "a"]),
-		// 											"b"
-		// 										)
-		// 									)
-		// 								),
-		// 							]
-		// 						)
-		// 					),
-		// 				])
-		// 			)
+		// 			])
 		// 		),
 		// 	]
 		// ),
+		"expressions": .init(
+			sourceName: "expressions",
+			definitions: [
+				.init(identifier: .chain(["well"]), definition: .nothing),
+				.init(
+					identifier: .chain(["hello"]),
+					definition: .stringLiteral("Hello, World!"),
+				),
+				.init(
+					identifier: .chain(["arithmetics"]),
+					definition: .binary(
+						.binary(
+							.binary(
+								.binary(
+									.intLiteral(1),
+									.plus,
+									.binary(
+										.intLiteral(20),
+										.times,
+										.binary(
+											.intLiteral(5),
+											.minus,
+											.intLiteral(2),
+										)
+									)
+								),
+								.minus,
+								.binary(
+									.binary(
+										.intLiteral(3),
+										.by,
+										.intLiteral(1)
+									),
+									.times,
+									.intLiteral(3)
+								)
+							),
+							.plus,
+							.binary(
+								.intLiteral(10),
+								.modulo,
+								.intLiteral(3)
+							)
+						),
+						.minus,
+						.intLiteral(10)
+					)
+				),
+				.init(
+					identifier: .chain(["hexOctBin"]),
+					definition: .binary(
+						.binary(
+							.intLiteral(255),
+							.plus,
+							.binary(
+								.intLiteral(240),
+								.times,
+								.intLiteral(7)
+							)
+						),
+						.minus,
+						.intLiteral(56400)
+					)
+				),
+				.init(
+					identifier: .chain(["big_numbers"]),
+					definition: .intLiteral(1_000_000_000),
+				),
+				.init(
+					identifier: .chain(["floating"]),
+					definition: .binary(
+						.floatLiteral(1.0),
+						.plus,
+						.binary(
+							.binary(
+								.floatLiteral(2.5),
+								.times,
+								.binary(
+									.floatLiteral(3.14),
+									.minus,
+									.floatLiteral(1.0)
+								)
+							),
+							.by,
+							.floatLiteral(2.0)
+						)
+					)
+				),
+				.init(
+					identifier: .chain(["prefix"]),
+					definition: .binary(
+						.intLiteral(1),
+						.minus,
+						.unary(
+							.plus,
+							.unary(
+								.minus,
+								.intLiteral(5)
+							)
+						)
+					)
+				),
+				.init(
+					identifier: .chain(["conditions"]),
+					definition: .binary(
+						.binary(
+							.nominal(.chain(["you"])),
+							.and,
+							.nominal(.chain(["me"])),
+						),
+						.or,
+						.nothing
+					)
+				),
+				.init(
+					identifier: .chain(["complex", "Conditions"]),
+					definition: .binary(
+						.binary(
+							.binary(
+								.binary(
+									.intLiteral(1),
+									.plus,
+									.intLiteral(3),
+								),
+								.times,
+								.intLiteral(3),
+							),
+							.greaterThan,
+							.intLiteral(42),
+						),
+						.or,
+						.binary(
+							.nominal(.chain(["something"])),
+							.and,
+							.binary(
+								.binary(
+									.stringLiteral("this"),
+									.equal,
+									.stringLiteral("that"),
+								),
+								.or,
+								.unary(
+									.not,
+									.call(.chain(["theSame"]))
+								)
+							)
+						),
+					)
+				),
+				.init(
+					identifier: .chain(["What", "are", "the", "Odds"]),
+					definition: .pipe(
+						.pipe(
+							.call(
+								.chain(["Object"]),
+								[
+									.tagged("a", .intLiteral(1)),
+									.tagged("b", .intLiteral(2)),
+									.tagged("c", .intLiteral(3)),
+								],
+							),
+							.call(
+								.chain(["a", "b", "c"]),
+								[
+									.binary(
+										.intLiteral(1),
+										.plus,
+										.intLiteral(1)
+									),
+									.binary(
+										.intLiteral(2),
+										.times,
+										.intLiteral(2)
+									),
+									.binary(
+										.nominal(.chain(["b"])),
+										.or,
+										.call(
+											.chain(["x"])
+										)
+									),
+								]
+							)
+						),
+						.branched([
+							.init(
+								matchExpression: .nominal(.chain(["a"])),
+								body: .binary(
+									.binary(
+										.access(.chain(["a"]), "a"),
+										.plus,
+										.access(.chain(["a"]), "b")
+									),
+									.plus,
+									.access(.chain(["a"]), "c")
+								)
+							),
+							.init(
+								matchExpression: .nominal(.chain(["z", "z"])),
+								body: .access(
+									.access(.access(.chain(["z"]), "z"), "z"),
+									"z"
+								)
+							),
+							.init(
+								matchExpression: .binding(
+									.init(identifier: "call")
+								),
+								body: .call(
+									.chain(["call"]),
+									[
+										.pipe(
+											.nominal(.chain(["a"])),
+											.nominal(.chain(["b"]))
+										),
+										.tagged(
+											"x",
+											.pipe(
+												.nominal(.chain(["a"])),
+												.nominal(.chain(["b"]))
+											),
+										),
+										.tagged(
+											"y",
+											.pipe(
+												.access(
+													.chain(["a"]),
+													"b"
+												),
+												.access(
+													.chain(["q", "a"]),
+													"b"
+												)
+											)
+										),
+									]
+								)
+							),
+						])
+					)
+				),
+			]
+		),
 		// "errors": .init(
 		//     sourceName: "errors", definitions: [])
 	]
