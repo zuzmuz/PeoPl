@@ -297,6 +297,18 @@ extension Syntax.Expression {
 		)
 	}
 
+	static func squareCall(
+		_ identifier: Syntax.QualifiedIdentifier,
+		_ arguments: [Syntax.Expression] = []
+	) -> Syntax.Expression {
+		return .call(
+			identifier,
+			[
+				.typeDefinition(arguments)
+			]
+		)
+	}
+
 	static func call(
 		_ prefix: Syntax.Expression,
 		_ arguments: [Syntax.Expression] = []
@@ -459,89 +471,81 @@ final class ParserTests: XCTestCase {
 				),
 				.init(
 					identifier: .chain(["Choice"]),
-					definition: .call(
+					definition: .squareCall(
 						.chain(["choice"]),
 						[
-							.typeDefinition([
-								.tagged("first", .nothing),
-								.tagged("second", .nothing),
-								.tagged("third", .nothing),
-							])
+							.tagged("first", .nothing),
+							.tagged("second", .nothing),
+							.tagged("third", .nothing),
 						]
 					)
 				),
 				.init(
 					identifier: .chain(["Shape"]),
-					definition: .call(
+					definition: .squareCall(
 						.chain(["choice"]),
 						[
-							.typeDefinition([
-								.tagged(
-									"circle",
-									.typeDefinition([
-										.tagged("radius", .nominal(.chain(["Float"])))
-									])
-								),
-								.tagged(
-									"rectangle",
-									.typeDefinition([
-										.tagged("width", .nominal(.chain(["Float"]))),
-										.tagged("height", .nominal(.chain(["Float"]))),
-									])
-								),
-								.tagged(
-									"triangle",
-									.typeDefinition([
-										.tagged("base", .nominal(.chain(["Float"]))),
-										.tagged("height", .nominal(.chain(["Float"]))),
-									])
-								),
-							])
+							.tagged(
+								"circle",
+								.typeDefinition([
+									.tagged("radius", .nominal(.chain(["Float"])))
+								])
+							),
+							.tagged(
+								"rectangle",
+								.typeDefinition([
+									.tagged("width", .nominal(.chain(["Float"]))),
+									.tagged("height", .nominal(.chain(["Float"]))),
+								])
+							),
+							.tagged(
+								"triangle",
+								.typeDefinition([
+									.tagged("base", .nominal(.chain(["Float"]))),
+									.tagged("height", .nominal(.chain(["Float"]))),
+								])
+							),
 						]
 					)
 				),
 				.init(
 					identifier: .chain(["Graphix", "Color"]),
-					definition: .call(
+					definition: .squareCall(
 						.chain(["choice"]),
 						[
-							.typeDefinition([
-								.tagged(
-									"rgb",
-									.typeDefinition([
-										.tagged("red", .nominal(.chain(["Float"]))),
-										.tagged("green", .nominal(.chain(["Float"]))),
-										.tagged("blue", .nominal(.chain(["Float"]))),
-									])),
-								.tagged(
-									"named", .nominal(.chain(["Graphix", "ColorName"]))),
-								.tagged(
-									"hsv",
-									.typeDefinition([
-										.tagged("hue", .nominal(.chain(["Float"]))),
-										.tagged(
-											"saturation", .nominal(.chain(["Float"]))),
-										.tagged("value", .nominal(.chain(["Float"]))),
-									])
-								),
-							])
+							.tagged(
+								"rgb",
+								.typeDefinition([
+									.tagged("red", .nominal(.chain(["Float"]))),
+									.tagged("green", .nominal(.chain(["Float"]))),
+									.tagged("blue", .nominal(.chain(["Float"]))),
+								])),
+							.tagged(
+								"named", .nominal(.chain(["Graphix", "ColorName"]))),
+							.tagged(
+								"hsv",
+								.typeDefinition([
+									.tagged("hue", .nominal(.chain(["Float"]))),
+									.tagged(
+										"saturation", .nominal(.chain(["Float"]))),
+									.tagged("value", .nominal(.chain(["Float"]))),
+								])
+							),
 						]
 					)
 				),
 				.init(
 					identifier: .chain(["Union"]),
-					definition: .call(
+					definition: .squareCall(
 						.chain(["choice"]),
 						[
-							.typeDefinition([
-								.nominal(.chain(["Int"])),
-								.nominal(
-									.chain(["Float"])
-								),
-								.nominal(
-									.chain(["String"])
-								),
-							])
+							.nominal(.chain(["Int"])),
+							.nominal(
+								.chain(["Float"])
+							),
+							.nominal(
+								.chain(["String"])
+							),
 						]
 					)
 				),
@@ -550,52 +554,46 @@ final class ParserTests: XCTestCase {
 					definition: .typeDefinition([
 						.tagged(
 							"first",
-							.call(
+							.squareCall(
 								.chain(["choice"]),
 								[
-									.typeDefinition([
-										.nominal(.chain(["A"])),
-										.nominal(.chain(["B"])),
-										.nominal(.chain(["C"])),
-									])
+									.nominal(.chain(["A"])),
+									.nominal(.chain(["B"])),
+									.nominal(.chain(["C"])),
 								]
 							)
 						),
 						.tagged(
 							"second",
-							.call(
+							.squareCall(
 								.chain(["choice"]),
 								[
-									.typeDefinition([
-										.tagged("a", .nothing),
-										.tagged("b", .nothing),
-										.tagged("c", .nothing),
-									])
+									.tagged("a", .nothing),
+									.tagged("b", .nothing),
+									.tagged("c", .nothing),
 								]
 							)
 						),
 						.tagged(
 							"mix",
-							.call(
+							.squareCall(
 								.chain(["choice"]),
 								[
-									.typeDefinition([
-										.nominal(.chain(["First"])),
-										.tagged("second", .nominal(.chain(["Second"]))),
-										.tagged(
-											"third",
-											.call(
-												.chain(["choice"]),
-												[
-													.typeDefinition([
-														.tagged("_1", .nothing),
-														.tagged("_2", .nothing),
-														.tagged("_3", .nothing),
-													])
-												]
-											)
-										),
-									])
+									.nominal(.chain(["First"])),
+									.tagged("second", .nominal(.chain(["Second"]))),
+									.tagged(
+										"third",
+										.call(
+											.chain(["choice"]),
+											[
+												.typeDefinition([
+													.tagged("_1", .nothing),
+													.tagged("_2", .nothing),
+													.tagged("_3", .nothing),
+												])
+											]
+										)
+									),
 								]
 							)
 						),
