@@ -162,7 +162,10 @@ extension Syntax.Call: Testable {
 			XCTAssertNil(with.prefix)
 		}
 
-		XCTAssertEqual(arguments.count, with.arguments.count)
+		XCTAssertEqual(
+			arguments.count,
+			with.arguments.count,
+			"Call expression arguments mismatch")
 
 		zip(arguments, with.arguments).forEach {
 			$0.assertEqual(with: $1)
@@ -544,25 +547,30 @@ final class ParserTests: XCTestCase {
 				),
 				.init(
 					identifier: .chain(["Nested", "Stuff"]),
-					definition: .record([
+					definition: .typeDefinition([
 						.tagged(
 							"first",
 							.call(
 								.chain(["choice"]),
 								[
-									.nominal(.chain(["A"])),
-									.nominal(.chain(["B"])),
-									.nominal(.chain(["C"])),
-								])
+									.typeDefinition([
+										.nominal(.chain(["A"])),
+										.nominal(.chain(["B"])),
+										.nominal(.chain(["C"])),
+									])
+								]
+							)
 						),
 						.tagged(
 							"second",
 							.call(
 								.chain(["choice"]),
 								[
-									.tagged("a", .nothing),
-									.tagged("b", .nothing),
-									.tagged("c", .nothing),
+									.typeDefinition([
+										.tagged("a", .nothing),
+										.tagged("b", .nothing),
+										.tagged("c", .nothing),
+									])
 								]
 							)
 						),
@@ -571,19 +579,23 @@ final class ParserTests: XCTestCase {
 							.call(
 								.chain(["choice"]),
 								[
-									.nominal(.chain(["First"])),
-									.tagged("second", .nominal(.chain(["Second"]))),
-									.tagged(
-										"third",
-										.call(
-											.chain(["choice"]),
-											[
-												.tagged("_1", .nothing),
-												.tagged("_2", .nothing),
-												.tagged("_3", .nothing),
-											]
-										)
-									),
+									.typeDefinition([
+										.nominal(.chain(["First"])),
+										.tagged("second", .nominal(.chain(["Second"]))),
+										.tagged(
+											"third",
+											.call(
+												.chain(["choice"]),
+												[
+													.typeDefinition([
+														.tagged("_1", .nothing),
+														.tagged("_2", .nothing),
+														.tagged("_3", .nothing),
+													])
+												]
+											)
+										),
+									])
 								]
 							)
 						),

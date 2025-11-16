@@ -1,4 +1,4 @@
-#if LSP
+// #if LSP
 
 import Foundation
 import Lsp
@@ -301,4 +301,4 @@ enum PeopLsp {
 		}
 	}
 }
-#endif
+// #endif
