@@ -176,39 +176,43 @@ public enum Utils {
 		}
 	}
 
-	public final class StdErrLogger: Logger {
-		private let level: LogLevel
-		private let dateFormatter: DateFormatter
-
-		public init(level: LogLevel = .info) {
-			self.level = level
-			dateFormatter = DateFormatter()
-			dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
-		}
-
-		public func log(
-			level: LogLevel,
-			tag: String,
-			message: Data
-		) {
-			if level.rawValue >= self.level.rawValue {
-				fputs(
-					"\(dateFormatter.string(for: Date())!) \(level.label) \t\(tag): \t\(String(data: message, encoding: .utf8) ?? "")\n",
-					stderr
-				)
-			}
-		}
-
-		public func log(
-			level: LogLevel,
-			tag: String,
-			message: String
-		) {
-			log(
-				level: level, tag: tag,
-				message: message.data(using: .utf8)!)
-		}
-	}
+	// public final class StdErrLogger: Logger {
+	// 	private let level: LogLevel
+	// 	private let dateFormatter: DateFormatter
+	// 	private let queue = DispatchQueue(
+	// 		label: "stderr-logger", qos: .utility)
+	//
+	// 	public init(level: LogLevel = .info) {
+	// 		self.level = level
+	// 		dateFormatter = DateFormatter()
+	// 		dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+	// 	}
+	//
+	// 	public func log(
+	// 		level: LogLevel,
+	// 		tag: String,
+	// 		message: Data
+	// 	) {
+	// 		if level.rawValue >= self.level.rawValue {
+	// 			queue.sync {
+	// 				fputs(
+	// 					"\(dateFormatter.string(for: Date())!) \(level.label) \t\(tag): \t\(String(data: message, encoding: .utf8) ?? "")\n",
+	// 					stderr
+	// 				)
+	// 			}
+	// 		}
+	// 	}
+	//
+	// 	public func log(
+	// 		level: LogLevel,
+	// 		tag: String,
+	// 		message: String
+	// 	) {
+	// 		log(
+	// 			level: level, tag: tag,
+	// 			message: message.data(using: .utf8)!)
+	// 	}
+	// }
 
 	/// Logger that logs into a file
 	public final class FileLogger: Logger {
