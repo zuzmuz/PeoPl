@@ -1,4 +1,4 @@
-// swift-tools-version: 6.2.1
+// swift-tools-version: 6.1
 // The swift-tools-version declares the minimum version of Swift required to
 // build this package.
 
@@ -55,13 +55,12 @@ let package = Package(
 					name: "TreeSitterPeoPl", package: "ppl.treesitter"
 				),
 			],
-			// swiftSettings: [
-			//     // .define("RELEASE"),
-			// 	 .define("TREE_SITTER_PARSER"),
-			// 	 // .define("ANALYZER"),
-			// 	 .define("LSP"),
-			// 	 // .define("LLVM_BACKEND")
-			// ]
+			swiftSettings: [
+			    // .define("RELEASE"),
+				 .define("TREE_SITTER_PARSER"),
+				 // .define("ANALYZER"),
+				 // .define("LLVM_BACKEND")
+			]
 		),
 		.testTarget(
 			name: "MainTests",
@@ -69,14 +68,12 @@ let package = Package(
 			resources: [
 				.process("Resources")
 			],
-			// swiftSettings: [
-			//     // .define("RELEASE"),
-			// 	 .define("TREE_SITTER_PARSER"),
-			// 	 // .define("ANALYZER"),
-			// 	 .define("LSP"),
-			// 	 // .define("LLVM_BACKEND")
-			// ]
+			swiftSettings: [
+			    // .define("RELEASE"),
+				 .define("TREE_SITTER_PARSER"),
+				 // .define("ANALYZER"),
+				 // .define("LLVM_BACKEND")
+			]
 		),
 	],
-	// cxxLanguageStandard: .cxx17
 )

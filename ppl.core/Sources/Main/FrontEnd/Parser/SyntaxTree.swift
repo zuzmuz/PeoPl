@@ -218,12 +218,19 @@ public enum Syntax {
 		case nominal(QualifiedIdentifier)
 		/// A Basic Product type definition
 		case typeDefinition(TypeDefinition)
+		/// Function definition, lambda expression
 		case function(Function)
+		/// Call expressions representing function calls, or type initializers, or even tuple instantiations
 		case call(Call)
+		/// Accessing a field of a record
 		case access(Access)
+		/// Binding expression inside a branch capture group
 		case binding(Binding)
+		/// Expression associated with a tag/label
 		case taggedExpression(TaggedExpression)
+		/// Branching expression for pattern matching
 		case branched(Branched)
+		/// Pipe expression for chaining operations
 		case piped(Pipe)
 
 		public var location: Syntax.NodeLocation {
@@ -450,11 +457,16 @@ public enum Syntax {
 			self.location = location
 		}
 	}
+
 	public struct DocString: Codable, Sendable, SyntaxNode {
 		let content: String
 		public let location: Syntax.NodeLocation
 	}
 
+	/// Branching expression for pattern matching
+
+	/// # Attributes:
+	///	- branches: List of branches in the pattern match
 	public struct Branched: SyntaxNode, Sendable {
 		let branches: [Branch]
 		public let location: NodeLocation
@@ -491,6 +503,7 @@ public enum Syntax {
 		}
 	}
 
+	/// Pipe expression for chaining operations
 	public struct Pipe: SyntaxNode, Sendable {
 		let left: Expression
 		let right: Expression

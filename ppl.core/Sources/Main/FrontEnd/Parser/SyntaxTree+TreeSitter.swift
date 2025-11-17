@@ -1,4 +1,4 @@
-// #if TREE_SITTER_PARSER 
+#if TREE_SITTER_PARSER
 
 import Foundation
 import SwiftTreeSitter
@@ -16,7 +16,7 @@ protocol TreeSitterNode {
 	) throws(Syntax.Error) -> Self
 }
 
-/// A ``Syntax.ModuleParser`` implementation using TreeSitter.
+/// A ``Syntax/ModuleParser`` implementation using TreeSitter.
 struct TreeSitterModulParser: Syntax.ModuleParser {
 	private static func collectErrors(
 		from node: Node,
@@ -390,8 +390,8 @@ extension Syntax.TaggedExpression: TreeSitterNode {
 		let expression: Syntax.Expression
 
 		if let expressionNode = node.child(
-				byFieldName: "expression"
-			) {
+			byFieldName: "expression"
+		) {
 			expression = try .from(
 				node: expressionNode,
 				in: source)
@@ -838,4 +838,4 @@ extension Syntax.Branched.Branch {
 	}
 }
 
-// #endif
+#endif

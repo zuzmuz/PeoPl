@@ -1,5 +1,3 @@
-// #if LSP
-
 import Foundation
 import Lsp
 import Utils
@@ -301,4 +299,3 @@ enum PeopLsp {
 		}
 	}
 }
-// #endif

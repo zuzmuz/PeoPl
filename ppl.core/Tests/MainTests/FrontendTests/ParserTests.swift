@@ -373,234 +373,234 @@ extension Syntax.Expression {
 // swiftlint:disable:next type_body_length
 final class ParserTests: XCTestCase {
 	let fileNames: [String: Syntax.Module] = [
-		// "types": .init(
-		// 	sourceName: "types",
-		// 	definitions: [
-		// 		.init(
-		// 			identifier: .chain(["Basic"]),
-		// 			definition: .typeDefinition([
-		// 				.tagged("a", .nominal(.chain(["Int"])))
-		// 			])
-		// 		),
-		// 		.init(
-		// 			identifier: .chain(["Multiple"]),
-		// 			definition: .typeDefinition([
-		// 				.tagged("a", .nominal(.chain(["Int"]))),
-		// 				.tagged("b", .nominal(.chain(["Float"]))),
-		// 				.tagged("c", .nominal(.chain(["String"]))),
-		// 			])
-		// 		),
-		// 		.init(
-		// 			identifier: .chain(["Nested"]),
-		// 			definition: .typeDefinition([
-		// 				.tagged("a", .nominal(.chain(["Int"]))),
-		// 				.tagged(
-		// 					"d",
-		// 					.typeDefinition([
-		// 						.tagged("b", .nominal(.chain(["Float"]))),
-		// 						.tagged(
-		// 							"e",
-		// 							.typeDefinition([
-		// 								.tagged("c", .nominal(.chain(["String"])))
-		// 							])
-		// 						),
-		// 					])
-		// 				),
-		// 			])
-		// 		),
-		// 		.init(
-		// 			identifier: .chain(["Scoped", "Basic"]),
-		// 			definition: .typeDefinition([
-		// 				.tagged("a", .nominal(.chain(["Int"])))
-		// 			])
-		// 		),
-		// 		.init(
-		// 			identifier: .chain(["Scoped", "Multiple", "Times"]),
-		// 			definition: .typeDefinition([
-		// 				.tagged("a", .nominal(.chain(["Int"]))),
-		// 				.tagged("e", .nominal(.chain(["Bool"]))),
-		// 			])
-		// 		),
-		// 		.init(
-		// 			identifier: .chain(["ScopedTypes"]),
-		// 			definition: .typeDefinition([
-		// 				.tagged("x", .nominal(.chain(["CG", "Float"]))),
-		// 				.tagged("y", .nominal(.chain(["CG", "Vector"]))),
-		// 			])
-		// 		),
-		// 		.init(
-		// 			identifier: .chain(["TypeWithNothing"]),
-		// 			definition: .typeDefinition([
-		// 				.tagged("m", .nothing),
-		// 				.tagged("n", .nothing),
-		// 			])
-		// 		),
-		// 		.init(
-		// 			identifier: .chain(["Numbered"]),
-		// 			definition: .typeDefinition([
-		// 				.tagged("_1", .nominal(.chain(["One"]))),
-		// 				.tagged("_2", .nominal(.chain(["Two"]))),
-		// 				.tagged("_3", .nominal(.chain(["Three"]))),
-		// 			])
-		// 		),
-		// 		.init(
-		// 			identifier: .chain(["Tuple"]),
-		// 			definition: .typeDefinition([
-		// 				.nominal(.chain(["Int"])),
-		// 				.nominal(.chain(["Float"])),
-		// 				.nominal(.chain(["String"])),
-		// 				.nominal(.chain(["Bool"])),
-		// 				.nominal(.chain(["Nested", "Scope"])),
-		// 				.nominal(
-		// 					.chain([
-		// 						"Multiple",
-		// 						"Nested",
-		// 						"Scope",
-		// 					])
-		// 				),
-		// 			])
-		// 		),
-		// 		.init(
-		// 			identifier: .chain(["Mix"]),
-		// 			definition: .typeDefinition([
-		// 				.nominal(.chain(["Int"])),
-		// 				.tagged("named", .nominal(.chain(["Int"]))),
-		// 				.nominal(.chain(["Float"])),
-		// 				.tagged("other", .nominal(.chain(["Float"]))),
-		// 			])
-		// 		),
-		// 		.init(
-		// 			identifier: .chain(["Choice"]),
-		// 			definition: .squareCall(
-		// 				.chain(["choice"]),
-		// 				[
-		// 					.tagged("first", .nothing),
-		// 					.tagged("second", .nothing),
-		// 					.tagged("third", .nothing),
-		// 				]
-		// 			)
-		// 		),
-		// 		.init(
-		// 			identifier: .chain(["Shape"]),
-		// 			definition: .squareCall(
-		// 				.chain(["choice"]),
-		// 				[
-		// 					.tagged(
-		// 						"circle",
-		// 						.typeDefinition([
-		// 							.tagged("radius", .nominal(.chain(["Float"])))
-		// 						])
-		// 					),
-		// 					.tagged(
-		// 						"rectangle",
-		// 						.typeDefinition([
-		// 							.tagged("width", .nominal(.chain(["Float"]))),
-		// 							.tagged("height", .nominal(.chain(["Float"]))),
-		// 						])
-		// 					),
-		// 					.tagged(
-		// 						"triangle",
-		// 						.typeDefinition([
-		// 							.tagged("base", .nominal(.chain(["Float"]))),
-		// 							.tagged("height", .nominal(.chain(["Float"]))),
-		// 						])
-		// 					),
-		// 				]
-		// 			)
-		// 		),
-		// 		.init(
-		// 			identifier: .chain(["Graphix", "Color"]),
-		// 			definition: .squareCall(
-		// 				.chain(["choice"]),
-		// 				[
-		// 					.tagged(
-		// 						"rgb",
-		// 						.typeDefinition([
-		// 							.tagged("red", .nominal(.chain(["Float"]))),
-		// 							.tagged("green", .nominal(.chain(["Float"]))),
-		// 							.tagged("blue", .nominal(.chain(["Float"]))),
-		// 						])),
-		// 					.tagged(
-		// 						"named", .nominal(.chain(["Graphix", "ColorName"]))),
-		// 					.tagged(
-		// 						"hsv",
-		// 						.typeDefinition([
-		// 							.tagged("hue", .nominal(.chain(["Float"]))),
-		// 							.tagged(
-		// 								"saturation", .nominal(.chain(["Float"]))),
-		// 							.tagged("value", .nominal(.chain(["Float"]))),
-		// 						])
-		// 					),
-		// 				]
-		// 			)
-		// 		),
-		// 		.init(
-		// 			identifier: .chain(["Union"]),
-		// 			definition: .squareCall(
-		// 				.chain(["choice"]),
-		// 				[
-		// 					.nominal(.chain(["Int"])),
-		// 					.nominal(
-		// 						.chain(["Float"])
-		// 					),
-		// 					.nominal(
-		// 						.chain(["String"])
-		// 					),
-		// 				]
-		// 			)
-		// 		),
-		// 		.init(
-		// 			identifier: .chain(["Nested", "Stuff"]),
-		// 			definition: .typeDefinition([
-		// 				.tagged(
-		// 					"first",
-		// 					.squareCall(
-		// 						.chain(["choice"]),
-		// 						[
-		// 							.nominal(.chain(["A"])),
-		// 							.nominal(.chain(["B"])),
-		// 							.nominal(.chain(["C"])),
-		// 						]
-		// 					)
-		// 				),
-		// 				.tagged(
-		// 					"second",
-		// 					.squareCall(
-		// 						.chain(["choice"]),
-		// 						[
-		// 							.tagged("a", .nothing),
-		// 							.tagged("b", .nothing),
-		// 							.tagged("c", .nothing),
-		// 						]
-		// 					)
-		// 				),
-		// 				.tagged(
-		// 					"mix",
-		// 					.squareCall(
-		// 						.chain(["choice"]),
-		// 						[
-		// 							.nominal(.chain(["First"])),
-		// 							.tagged("second", .nominal(.chain(["Second"]))),
-		// 							.tagged(
-		// 								"third",
-		// 								.call(
-		// 									.chain(["choice"]),
-		// 									[
-		// 										.typeDefinition([
-		// 											.tagged("_1", .nothing),
-		// 											.tagged("_2", .nothing),
-		// 											.tagged("_3", .nothing),
-		// 										])
-		// 									]
-		// 								)
-		// 							),
-		// 						]
-		// 					)
-		// 				),
-		// 			])
-		// 		),
-		// 	]
-		// ),
+		"types": .init(
+			sourceName: "types",
+			definitions: [
+				.init(
+					identifier: .chain(["Basic"]),
+					definition: .typeDefinition([
+						.tagged("a", .nominal(.chain(["Int"])))
+					])
+				),
+				.init(
+					identifier: .chain(["Multiple"]),
+					definition: .typeDefinition([
+						.tagged("a", .nominal(.chain(["Int"]))),
+						.tagged("b", .nominal(.chain(["Float"]))),
+						.tagged("c", .nominal(.chain(["String"]))),
+					])
+				),
+				.init(
+					identifier: .chain(["Nested"]),
+					definition: .typeDefinition([
+						.tagged("a", .nominal(.chain(["Int"]))),
+						.tagged(
+							"d",
+							.typeDefinition([
+								.tagged("b", .nominal(.chain(["Float"]))),
+								.tagged(
+									"e",
+									.typeDefinition([
+										.tagged("c", .nominal(.chain(["String"])))
+									])
+								),
+							])
+						),
+					])
+				),
+				.init(
+					identifier: .chain(["Scoped", "Basic"]),
+					definition: .typeDefinition([
+						.tagged("a", .nominal(.chain(["Int"])))
+					])
+				),
+				.init(
+					identifier: .chain(["Scoped", "Multiple", "Times"]),
+					definition: .typeDefinition([
+						.tagged("a", .nominal(.chain(["Int"]))),
+						.tagged("e", .nominal(.chain(["Bool"]))),
+					])
+				),
+				.init(
+					identifier: .chain(["ScopedTypes"]),
+					definition: .typeDefinition([
+						.tagged("x", .nominal(.chain(["CG", "Float"]))),
+						.tagged("y", .nominal(.chain(["CG", "Vector"]))),
+					])
+				),
+				.init(
+					identifier: .chain(["TypeWithNothing"]),
+					definition: .typeDefinition([
+						.tagged("m", .nothing),
+						.tagged("n", .nothing),
+					])
+				),
+				.init(
+					identifier: .chain(["Numbered"]),
+					definition: .typeDefinition([
+						.tagged("_1", .nominal(.chain(["One"]))),
+						.tagged("_2", .nominal(.chain(["Two"]))),
+						.tagged("_3", .nominal(.chain(["Three"]))),
+					])
+				),
+				.init(
+					identifier: .chain(["Tuple"]),
+					definition: .typeDefinition([
+						.nominal(.chain(["Int"])),
+						.nominal(.chain(["Float"])),
+						.nominal(.chain(["String"])),
+						.nominal(.chain(["Bool"])),
+						.nominal(.chain(["Nested", "Scope"])),
+						.nominal(
+							.chain([
+								"Multiple",
+								"Nested",
+								"Scope",
+							])
+						),
+					])
+				),
+				.init(
+					identifier: .chain(["Mix"]),
+					definition: .typeDefinition([
+						.nominal(.chain(["Int"])),
+						.tagged("named", .nominal(.chain(["Int"]))),
+						.nominal(.chain(["Float"])),
+						.tagged("other", .nominal(.chain(["Float"]))),
+					])
+				),
+				.init(
+					identifier: .chain(["Choice"]),
+					definition: .squareCall(
+						.chain(["choice"]),
+						[
+							.tagged("first", .nothing),
+							.tagged("second", .nothing),
+							.tagged("third", .nothing),
+						]
+					)
+				),
+				.init(
+					identifier: .chain(["Shape"]),
+					definition: .squareCall(
+						.chain(["choice"]),
+						[
+							.tagged(
+								"circle",
+								.typeDefinition([
+									.tagged("radius", .nominal(.chain(["Float"])))
+								])
+							),
+							.tagged(
+								"rectangle",
+								.typeDefinition([
+									.tagged("width", .nominal(.chain(["Float"]))),
+									.tagged("height", .nominal(.chain(["Float"]))),
+								])
+							),
+							.tagged(
+								"triangle",
+								.typeDefinition([
+									.tagged("base", .nominal(.chain(["Float"]))),
+									.tagged("height", .nominal(.chain(["Float"]))),
+								])
+							),
+						]
+					)
+				),
+				.init(
+					identifier: .chain(["Graphix", "Color"]),
+					definition: .squareCall(
+						.chain(["choice"]),
+						[
+							.tagged(
+								"rgb",
+								.typeDefinition([
+									.tagged("red", .nominal(.chain(["Float"]))),
+									.tagged("green", .nominal(.chain(["Float"]))),
+									.tagged("blue", .nominal(.chain(["Float"]))),
+								])),
+							.tagged(
+								"named", .nominal(.chain(["Graphix", "ColorName"]))),
+							.tagged(
+								"hsv",
+								.typeDefinition([
+									.tagged("hue", .nominal(.chain(["Float"]))),
+									.tagged(
+										"saturation", .nominal(.chain(["Float"]))),
+									.tagged("value", .nominal(.chain(["Float"]))),
+								])
+							),
+						]
+					)
+				),
+				.init(
+					identifier: .chain(["Union"]),
+					definition: .squareCall(
+						.chain(["choice"]),
+						[
+							.nominal(.chain(["Int"])),
+							.nominal(
+								.chain(["Float"])
+							),
+							.nominal(
+								.chain(["String"])
+							),
+						]
+					)
+				),
+				.init(
+					identifier: .chain(["Nested", "Stuff"]),
+					definition: .typeDefinition([
+						.tagged(
+							"first",
+							.squareCall(
+								.chain(["choice"]),
+								[
+									.nominal(.chain(["A"])),
+									.nominal(.chain(["B"])),
+									.nominal(.chain(["C"])),
+								]
+							)
+						),
+						.tagged(
+							"second",
+							.squareCall(
+								.chain(["choice"]),
+								[
+									.tagged("a", .nothing),
+									.tagged("b", .nothing),
+									.tagged("c", .nothing),
+								]
+							)
+						),
+						.tagged(
+							"mix",
+							.squareCall(
+								.chain(["choice"]),
+								[
+									.nominal(.chain(["First"])),
+									.tagged("second", .nominal(.chain(["Second"]))),
+									.tagged(
+										"third",
+										.call(
+											.chain(["choice"]),
+											[
+												.typeDefinition([
+													.tagged("_1", .nothing),
+													.tagged("_2", .nothing),
+													.tagged("_3", .nothing),
+												])
+											]
+										)
+									),
+								]
+							)
+						),
+					])
+				),
+			]
+		),
 		"expressions": .init(
 			sourceName: "expressions",
 			definitions: [
