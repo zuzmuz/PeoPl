@@ -1,5 +1,6 @@
 #if !canImport(Network) || !canImport(Foundation)
 import Utils
+import Foundation
 
 extension Socket {
 	public actor TcpClient<L: Utils.Logger>: Lsp.Transport {
@@ -24,5 +25,4 @@ extension Socket {
 		}
 	}
 }
-
 #endif

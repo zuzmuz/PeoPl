@@ -1,4 +1,6 @@
 #if !canImport(Network) || !canImport(Foundation)
+import Utils
+import Foundation
 
 extension Socket {
 
@@ -20,5 +22,4 @@ extension Socket {
 		}
 	}
 }
-
 #endif
