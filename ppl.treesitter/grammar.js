@@ -30,7 +30,9 @@ module.exports = grammar({
 
   rules: {
     source_file: $ => repeat(
-      $.definition,
+      seq(
+        $._complex_expression, choice(',', '\n')
+      )
     ),
 
     // --------------------------------------------
@@ -83,7 +85,10 @@ module.exports = grammar({
           seq(
             $._complex_expression,
             repeat(
-              seq(',', $._complex_expression)
+              choice(
+                seq(',', $._complex_expression),
+                seq('\n', $._complex_expression)
+              ),
             ),
             optional(','),
           ),
@@ -98,7 +103,10 @@ module.exports = grammar({
           seq(
             $._complex_expression,
             repeat(
-              seq(',', $._complex_expression)
+              choice(
+                seq(',', $._complex_expression),
+                seq('\n', $._complex_expression)
+              ),
             ),
             optional(','),
           ),

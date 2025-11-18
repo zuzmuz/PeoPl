@@ -4,6 +4,10 @@
 // This file defines the semantic tree structure of valid type checked
 // Peopl code.
 
+public enum Semantic {
+	public struct Expression {}
+}
+
 #if ANALYZER
 
 public enum Semantic {
