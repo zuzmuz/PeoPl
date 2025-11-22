@@ -140,43 +140,17 @@ public enum Syntax {
 	/// Modules are basically files
 	public struct Module: Codable {
 		let sourceName: String
-		let definitions: [Definition]
+		let definitions: [Expression]
 		let syntaxErrors: [Syntax.Error]
 
 		init(
 			sourceName: String,
-			definitions: [Definition],
+			definitions: [Expression],
 			syntaxErrors: [Syntax.Error] = []
 		) {
 			self.sourceName = sourceName
 			self.definitions = definitions
 			self.syntaxErrors = syntaxErrors
-		}
-	}
-
-	/// Top-level definitions that can appear at module scope
-	/// # Attributes:
-	/// - identifier: The name of the definition, can be qualified
-	/// - typeSpecifier: Optional type specification for the definition, the type
-	/// can be infered from the expression and is optional
-	/// - typeArguments: Optional type arguments for generic definitions
-	/// - definition: The expression that defines the value or type
-	public struct Definition: SyntaxNode, Sendable {
-		let identifier: QualifiedIdentifier
-		let typeSpecifier: Expression?
-		let definition: Expression
-		public let location: NodeLocation
-
-		init(
-			identifier: QualifiedIdentifier,
-			typeSpecifier: Expression? = nil,
-			definition: Expression,
-			location: NodeLocation = .nowhere
-		) {
-			self.identifier = identifier
-			self.typeSpecifier = typeSpecifier
-			self.definition = definition
-			self.location = location
 		}
 	}
 
@@ -440,18 +414,18 @@ public enum Syntax {
 
 	/// An expression with a label/tag for pattern matching and named parameters
 	public struct TaggedExpression: SyntaxNode, Sendable {
-		let tag: String
+		let tag: QualifiedIdentifier
 		let typeSpecifier: Expression?
 		let expression: Expression
 		public let location: NodeLocation
 
 		init(
-			identifier: String,
+			tag: QualifiedIdentifier,
 			typeSpecifier: Expression?,
 			expression: Expression,
 			location: NodeLocation = .nowhere
 		) {
-			tag = identifier
+			self.tag = tag
 			self.typeSpecifier = typeSpecifier
 			self.expression = expression
 			self.location = location

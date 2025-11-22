@@ -29,11 +29,7 @@ module.exports = grammar({
   ],
 
   rules: {
-    source_file: $ => repeat(
-      seq(
-        $._complex_expression, choice(',', '\n')
-      )
-    ),
+    source_file: $ => optional($._expression_list),
 
     // --------------------------------------------
     // Comments
@@ -60,38 +56,30 @@ module.exports = grammar({
       )
     ),
 
-    // -------------------------------------------
-    // Definitions
-    // Top level definitions are treated specially,
-    // - they can be qualified
-    // -------------------------------------------
-    
-    definition: $ => seq(
-      field("identifier", $.qualified_identifier),
-      optional(seq("'", field("type_specifier", $._basic_expression))),
-      ':',
-      field("definition", $._expression)
-    ),
-
     // -----------------------------------------
     // Expressions
     // everything is an expression
     // -----------------------------------------
+    //
+
+    _expression_list: $ => seq(
+      $._complex_expression,
+      repeat(
+        seq(
+          choice(',', '\n'),
+          $._complex_expression,
+        ),
+      ),
+      optional(choice(',', '\n'))  // Allow trailing separator
+    ),
+        
+
 
     // An expression list is used in function calls
     round_expression_list: $ => seq(
       '(',
         optional(
-          seq(
-            $._complex_expression,
-            repeat(
-              choice(
-                seq(',', $._complex_expression),
-                seq('\n', $._complex_expression)
-              ),
-            ),
-            optional(','),
-          ),
+          $._expression_list
         ),
       ')'
     ),
@@ -100,23 +88,14 @@ module.exports = grammar({
     square_expression_list: $ => seq(
       '[',
         optional(
-          seq(
-            $._complex_expression,
-            repeat(
-              choice(
-                seq(',', $._complex_expression),
-                seq('\n', $._complex_expression)
-              ),
-            ),
-            optional(','),
-          ),
+          $._expression_list
         ),
       ']'
     ),
 
 
     tagged_expression: $ => prec.right(PREC.TAGGED, seq(
-      field("identifier", $.identifier),
+      field("identifier", $.qualified_identifier),
       optional(
         seq(
           "'",
