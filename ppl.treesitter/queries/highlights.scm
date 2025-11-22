@@ -2,17 +2,7 @@
  "comp"
  "fn"
 ] @keyword.type
-;
-; (tagged_type_specifier
-;   identifier: (identifier) @variable.member)
-;
-; ; (tagged_type_specifier
-; ;   type_specifier: (nominal
-; ;                     identifier: (qualified_identifier
-; ;                                   identifier: (identifier) @type.definition)))
-(tagged_expression
-  identifier: (identifier) @variable.member)
-;
+
 (qualified_identifier
   identifier: (identifier) @type.definition)
 ;
@@ -27,21 +17,18 @@
 (float_literal) @number.float
 (string_literal) @string
 ;
+(exponential_operator) @operator
 (multiplicative_operator) @operator
 (additive_operator) @operator
+(bitwise_shift_operator) @operator
+(bitwise_and_operator) @operator
 (comparative_operator) @operator
 (not_operator) @operator
 (and_operator) @operator
 (or_operator) @operator
 (pipe_operator) @operator
 (optional_pipe_operator) @operator
-;
-; [
-; ;   ; "^"
-;   "**"
-; ;   "and"
-; ] @keyword.operator
-;
+
 [
   "("
   ")"
@@ -51,20 +38,15 @@
   "}"
   "|"
 ] @punctuation.bracket
-;
+
 [
  ":"
  "."
  "\\"
  ","
  "->"
- ; "=>"
 ] @punctuation.delimiter
-;
-; ; [
-; ;  "_"
-; ; ] @constant.builtin
-;
+
 (nothing) @constant.builtin
 (never) @constant.builtin
 

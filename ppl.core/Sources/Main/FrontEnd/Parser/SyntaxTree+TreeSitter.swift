@@ -92,7 +92,7 @@ struct TreeSitterModulParser: Syntax.ModuleParser {
 			collectedErrors: &errors
 		)
 
-		var definitions: [Syntax.Definition] = []
+		var definitions: [Syntax.Expression] = []
 		var docString = ""
 
 		for index in 0..<rootNode.childCount {
@@ -107,7 +107,7 @@ struct TreeSitterModulParser: Syntax.ModuleParser {
 					errors.append(error)
 				}
 			}
-			if node.nodeType == "definition" {
+			if node.expressionNodeType != nil {
 				do throws(Syntax.Error) {
 					try definitions.append(
 						.from(
@@ -237,45 +237,6 @@ extension Node {
 
 // -------------------------
 
-extension Syntax.Definition: TreeSitterNode {
-	static func from(
-		node: Node,
-		in source: Syntax.Source
-	) throws(Syntax.Error) -> Self {
-		guard
-			let identifierNode = node.child(
-				byFieldName: "identifier"
-			),
-			let definitionNode = node.child(
-				byFieldName: "definition"
-			)
-		else {
-			throw .errorParsing(
-				element: "Definition",
-				location: node.getLocation(in: source)
-			)
-		}
-
-		let typeSpecifier: Syntax.Expression?
-		if let typeSpecifierNode = node.child(
-			byFieldName: "type_specifier"
-		) {
-			typeSpecifier = try .from(
-				node: typeSpecifierNode,
-				in: source
-			)
-		} else {
-			typeSpecifier = nil
-		}
-
-		return try .init(
-			identifier: .from(node: identifierNode, in: source),
-			typeSpecifier: typeSpecifier,
-			definition: .from(node: definitionNode, in: source),
-			location: node.getLocation(in: source)
-		)
-	}
-}
 
 extension Syntax.QualifiedIdentifier: TreeSitterNode {
 	static func getScopedIdentifier(
@@ -417,7 +378,7 @@ extension Syntax.TaggedExpression: TreeSitterNode {
 		}
 
 		return try .init(
-			identifier: identifierNode.getString(in: source),
+			tag: .from(node: identifierNode, in: source),
 			typeSpecifier: typeSpecifier,
 			expression: expression,
 			location: node.getLocation(in: source)

@@ -18,24 +18,24 @@ Nested: [
     ]
 ]
  
- Scoped\Basic: [
-     a: Int
- ]
- 
- Scoped\Multiple\Times: [
-     a: Int,
-     e: Bool
- ]
- 
- ScopedTypes: [
-     x: CG\Float,
-     y: CG\Vector
- ]
- 
- TypeWithNothing: [
-     m: nothing,
-     n: nothing
- ]
+Scoped\Basic: [
+    a: Int
+]
+
+Scoped\Multiple\Times: [
+    a: Int,
+    e: Bool
+]
+
+ScopedTypes: [
+    x: CG\Float,
+    y: CG\Vector
+]
+
+TypeWithNothing: [
+    m: nothing,
+    n: nothing
+]
  
 Numbered: [
     _1: One,
