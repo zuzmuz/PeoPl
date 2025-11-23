@@ -21,6 +21,7 @@ struct Peopl: AsyncParsableCommand {
 				LspComand.self,
 				// Semantic.AnalyzeCommand.self,
 				BuildCommand.self,
+				PrintASTCommand.self,
 			]
 		)
 	#endif

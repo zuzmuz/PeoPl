@@ -187,13 +187,15 @@ public enum Syntax {
 		case unary(Unary)
 		/// Expression with infix operator
 		case binary(Binary)
-		/// Nominal expression, represented by a ``QualifiedIdentifier``
+		/// Nominal expression, represented by a ``Syntax.QualifiedIdentifier``
 		/// Represents user defined and builtin construct
 		case nominal(QualifiedIdentifier)
 		/// A Basic Product type definition
 		case typeDefinition(TypeDefinition)
 		/// Function definition, lambda expression
 		case function(Function)
+		/// Lambda expression representing anonymous functions
+		case lambda(Lambda)
 		/// Call expressions representing function calls, or type initializers, or even tuple instantiations
 		case call(Call)
 		/// Accessing a field of a record
@@ -221,6 +223,8 @@ public enum Syntax {
 				record.location
 			case .function(let function):
 				function.location
+			case .lambda(let lambda):
+				lambda.location
 			case .call(let call):
 				call.location
 			case .access(let access):
@@ -241,6 +245,8 @@ public enum Syntax {
 	public struct Literal: SyntaxNode, Sendable {
 		/// Different literal options
 		public enum Value: Equatable, Codable, Sendable {
+			/// Representing the special value, used for partial applications and currying
+			case special
 			/// Nothing representing the unit type
 			case nothing
 			/// Type representing the empty set, used for fatal errors, panics, and unreachable states
@@ -358,6 +364,23 @@ public enum Syntax {
 			self.inputType = inputType
 			self.arguments = arguments
 			self.outputType = outputType
+			self.location = location
+		}
+	}
+
+	
+	public struct Lambda: SyntaxNode, Sendable {
+		let prefix: Expression?
+		let body: Expression
+		public let location: Syntax.NodeLocation
+
+		init(
+			prefix: Expression?,
+			body: Expression,
+			location: NodeLocation = .nowhere
+		) {
+			self.prefix = prefix
+			self.body = body
 			self.location = location
 		}
 	}

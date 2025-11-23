@@ -1,5 +1,497 @@
-extension Syntax.QualifiedIdentifier {
-	func display() -> String {
+// MARK: - Debug String Representations for AST
+
+// MARK: - Operator
+
+extension Operator: CustomDebugStringConvertible {
+	public var debugDescription: String {
+		rawValue
+	}
+}
+
+// MARK: - Location
+
+extension Syntax.NodeLocation.Point: CustomDebugStringConvertible {
+	public var debugDescription: String {
+		"\(line):\(column)"
+	}
+}
+
+extension Syntax.NodeLocation: CustomDebugStringConvertible {
+	public var debugDescription: String {
+		if self == .nowhere {
+			return "<nowhere>"
+		}
+		return
+			"[\(pointRange.lowerBound.debugDescription)-\(pointRange.upperBound.debugDescription)]"
+	}
+}
+
+// MARK: - Qualified Identifier
+
+extension Syntax.QualifiedIdentifier: CustomDebugStringConvertible {
+	public var debugDescription: String {
 		chain.joined(separator: "\\")
+	}
+}
+
+// MARK: - Expression
+
+extension Syntax.Expression: CustomDebugStringConvertible {
+	public var debugDescription: String {
+		var descriptions: [String] = []
+		formatAST(
+			depth: 0,
+			isLast: true,
+			prefix: "",
+			descriptions: &descriptions)
+        return descriptions.joined(separator: "\n")
+	}
+
+	func formatAST(
+		depth: Int,
+		isLast: Bool,
+		prefix: String,
+		descriptions: inout [String]
+	) {
+		let connector = isLast ? "└─ " : "├─ "
+		let childPrefix = prefix + (isLast ? "   " : "│  ")
+
+		switch self {
+		case .literal(let literal):
+			descriptions.append(
+				"\(prefix)\(connector)Literal: \(literal.value)"
+			)
+
+		case .unary(let unary):
+			descriptions.append("\(prefix)\(connector)Unary: \(unary.op)")
+			unary.expression.formatAST(
+				depth: depth + 1,
+				isLast: true,
+				prefix: childPrefix,
+				descriptions: &descriptions
+			)
+
+		case .binary(let binary):
+			descriptions.append("\(prefix)\(connector)Binary: \(binary.op)")
+			binary.left.formatAST(
+				depth: depth + 1, isLast: false, prefix: childPrefix,
+				descriptions: &descriptions)
+			binary.right.formatAST(
+				depth: depth + 1, isLast: true, prefix: childPrefix,
+				descriptions: &descriptions)
+
+		case .nominal(let nominal):
+			descriptions.append(
+				"\(prefix)\(connector)Nominal: \(nominal)"
+			)
+
+		case .typeDefinition(let typeDef):
+			descriptions.append("\(prefix)\(connector)TypeDefinition")
+			for (index, expr) in typeDef.expressions.enumerated() {
+				let isLastExpr = index == typeDef.expressions.count - 1
+				expr.formatAST(
+					depth: depth + 1,
+					isLast: isLastExpr,
+					prefix: childPrefix,
+					descriptions: &descriptions
+				)
+			}
+
+		// case .function(let function):
+		// 	descriptions.append("\(prefix)\(connector)Function")
+		// 	if let sig = function.signature {
+		// 		descriptions.append("\(childPrefix)├─ Signature")
+		// 		sig.formatAST(depth: depth + 2, prefix: childPrefix + "│  ", descriptions: &de)
+		// 	}
+		// 	result += "\n\(childPrefix)└─ Body"
+		// 	result +=
+		// 		"\n"
+		// 		+ function.body.formatAST(
+		// 			depth: depth + 2, isLast: true, prefix: childPrefix + "   ")
+		// 	return result
+		//
+		// case .lambda(let lambda):
+		// 	var result = "\(prefix)\(connector)Lambda"
+		// 	if let lambdaPrefix = lambda.prefix {
+		// 		result += "\n\(childPrefix)├─ Prefix"
+		// 		result +=
+		// 			"\n"
+		// 			+ lambdaPrefix.formatAST(
+		// 				depth: depth + 2, isLast: false, prefix: childPrefix + "│  ")
+		// 	}
+		// 	let bodyConnector = lambda.prefix == nil ? "└─" : "└─"
+		// 	result += "\n\(childPrefix)\(bodyConnector) Body"
+		// 	result +=
+		// 		"\n"
+		// 		+ lambda.body.formatAST(
+		// 			depth: depth + 2, isLast: true, prefix: childPrefix + "   ")
+		// 	return result
+		//
+		// case .call(let call):
+		// 	var result = "\(prefix)\(connector)Call"
+		// 	if let callPrefix = call.prefix {
+		// 		result += "\n\(childPrefix)├─ Prefix"
+		// 		result +=
+		// 			"\n"
+		// 			+ callPrefix.formatAST(
+		// 				depth: depth + 2, isLast: call.arguments.isEmpty,
+		// 				prefix: childPrefix + (call.arguments.isEmpty ? "   " : "│  ")
+		// 			)
+		// 	}
+		// 	if !call.arguments.isEmpty {
+		// 		result += "\n\(childPrefix)└─ Arguments"
+		// 		for (index, arg) in call.arguments.enumerated() {
+		// 			let isLastArg = index == call.arguments.count - 1
+		// 			result +=
+		// 				"\n"
+		// 				+ arg.formatAST(
+		// 					depth: depth + 2, isLast: isLastArg,
+		// 					prefix: childPrefix + "   ")
+		// 		}
+		// 	}
+		// 	return result
+		//
+		// case .access(let access):
+		// 	var result = "\(prefix)\(connector)Access: .\(access.field)"
+		// 	result +=
+		// 		"\n"
+		// 		+ access.prefix.formatAST(
+		// 			depth: depth + 1, isLast: true, prefix: childPrefix)
+		// 	return result
+		//
+		// case .binding(let binding):
+		// 	return "\(prefix)\(connector)Binding: @\(binding.identifier)"
+		//
+		case .taggedExpression(let tagged):
+			descriptions.append("\(prefix)\(connector)Tagged: \(tagged.tag)")
+			if let typeSpec = tagged.typeSpecifier {
+				descriptions.append("\(childPrefix)├─ TypeSpec")
+			    typeSpec.formatAST(
+					depth: depth + 2,
+                    isLast: false,
+                    prefix: childPrefix + "│  ",
+                    descriptions: &descriptions)
+			}
+			descriptions.append("\(childPrefix)└─ Expression")
+			tagged.expression.formatAST(
+				depth: depth + 2,
+                isLast: true,
+                prefix: childPrefix + "   ",
+                descriptions: &descriptions)
+		//
+		// case .branched(let branched):
+		// 	var result = "\(prefix)\(connector)Branched"
+		// 	for (index, branch) in branched.branches.enumerated() {
+		// 		let isLastBranch = index == branched.branches.count - 1
+		// 		result +=
+		// 			"\n"
+		// 			+ branch.formatAST(
+		// 				depth: depth + 1, isLast: isLastBranch, prefix: childPrefix,
+		// 				branchIndex: index)
+		// 	}
+		// 	return result
+		//
+		// case .piped(let pipe):
+		// 	var result = "\(prefix)\(connector)Pipe"
+		// 	result += "\n\(childPrefix)├─ Left"
+		// 	result +=
+		// 		"\n"
+		// 		+ pipe.left.formatAST(
+		// 			depth: depth + 2, isLast: false, prefix: childPrefix + "│  ")
+		// 	result += "\n\(childPrefix)└─ Right"
+		// 	result +=
+		// 		"\n"
+		// 		+ pipe.right.formatAST(
+		// 			depth: depth + 2, isLast: true, prefix: childPrefix + "   ")
+		// 	return result
+		default:
+			descriptions.append(
+				"\(prefix)\(connector)Unknown Expression Type"
+			)
+		}
+	}
+}
+
+// MARK: - Literal Value
+
+extension Syntax.Literal.Value: CustomDebugStringConvertible {
+	public var debugDescription: String {
+		switch self {
+		case .special:
+			return "_"
+		case .nothing:
+			return "nothing"
+		case .never:
+			return "never"
+		case .intLiteral(let value):
+			return "\(value)"
+		case .floatLiteral(let value):
+			return "\(value)"
+		case .stringLiteral(let value):
+			return "\"\(value)\""
+		case .boolLiteral(let value):
+			return "\(value)"
+		}
+	}
+}
+
+extension Syntax.Literal: CustomDebugStringConvertible {
+	public var debugDescription: String {
+		value.debugDescription
+	}
+}
+
+// MARK: - Unary
+
+extension Syntax.Unary: CustomDebugStringConvertible {
+	public var debugDescription: String {
+		"Unary(\(op.debugDescription), \(expression.debugDescription))"
+	}
+}
+
+// MARK: - Binary
+
+extension Syntax.Binary: CustomDebugStringConvertible {
+	public var debugDescription: String {
+		"Binary(\(op.debugDescription), \(left.debugDescription), \(right.debugDescription))"
+	}
+}
+
+// MARK: - Type Definition
+
+extension Syntax.TypeDefinition: CustomDebugStringConvertible {
+	public var debugDescription: String {
+		if expressions.isEmpty {
+			return "TypeDefinition()"
+		}
+		return "TypeDefinition(\(expressions.count) fields)"
+	}
+}
+
+// MARK: - Function Type
+
+// extension Syntax.FunctionType: CustomDebugStringConvertible {
+// 	public var debugDescription: String {
+// 		var parts: [String] = []
+// 		if let input = inputType {
+// 			parts.append("in: \(input.debugDescription)")
+// 		}
+// 		if !arguments.isEmpty {
+// 			parts.append("args: \(arguments.count)")
+// 		}
+// 		parts.append("-> \(outputType.debugDescription)")
+// 		return parts.joined(separator: " ")
+// 	}
+//
+// 	func formatAST(depth: Int, prefix: String) -> String {
+// 		var result = ""
+// 		var hasInput = inputType != nil
+// 		var hasArgs = !arguments.isEmpty
+//
+// 		if let input = inputType {
+// 			result += "\n\(prefix)├─ InputType"
+// 			result +=
+// 				"\n"
+// 				+ input.formatAST(
+// 					depth: depth + 1, isLast: !hasArgs,
+// 					prefix: prefix + (hasArgs ? "│  " : "   "))
+// 		}
+//
+// 		if !arguments.isEmpty {
+// 			result += "\n\(prefix)├─ Arguments"
+// 			for (index, arg) in arguments.enumerated() {
+// 				let isLastArg = index == arguments.count - 1
+// 				result +=
+// 					"\n"
+// 					+ arg.formatAST(
+// 						depth: depth + 1, isLast: isLastArg, prefix: prefix + "│  ")
+// 			}
+// 		}
+//
+// 		result += "\n\(prefix)└─ OutputType"
+// 		result +=
+// 			"\n"
+// 			+ outputType.formatAST(
+// 				depth: depth + 1, isLast: true, prefix: prefix + "   ")
+//
+// 		return result
+// 	}
+// }
+//
+// // MARK: - Function
+//
+// extension Syntax.Function: CustomDebugStringConvertible {
+// 	public var debugDescription: String {
+// 		if let sig = signature {
+// 			return "Function(\(sig.debugDescription))"
+// 		}
+// 		return "Function"
+// 	}
+// }
+//
+// // MARK: - Lambda
+//
+// extension Syntax.Lambda: CustomDebugStringConvertible {
+// 	public var debugDescription: String {
+// 		"Lambda"
+// 	}
+// }
+//
+// // MARK: - Call
+//
+// extension Syntax.Call: CustomDebugStringConvertible {
+// 	public var debugDescription: String {
+// 		"Call(\(arguments.count) args)"
+// 	}
+// }
+//
+// // MARK: - Access
+//
+// extension Syntax.Access: CustomDebugStringConvertible {
+// 	public var debugDescription: String {
+// 		"Access(.\(field))"
+// 	}
+// }
+//
+// // MARK: - Binding
+//
+// extension Syntax.Binding: CustomDebugStringConvertible {
+// 	public var debugDescription: String {
+// 		"Binding(@\(identifier))"
+// 	}
+// }
+//
+// // MARK: - Tagged Expression
+//
+// extension Syntax.TaggedExpression: CustomDebugStringConvertible {
+// 	public var debugDescription: String {
+// 		"Tagged(\(tag.debugDescription))"
+// 	}
+// }
+//
+// // MARK: - Branch
+//
+// extension Syntax.Branched.Branch: CustomDebugStringConvertible {
+// 	public var debugDescription: String {
+// 		"Branch"
+// 	}
+//
+// 	func formatAST(depth: Int, isLast: Bool, prefix: String, branchIndex: Int)
+// 		-> String
+// 	{
+// 		let connector = isLast ? "└─ " : "├─ "
+// 		let childPrefix = prefix + (isLast ? "   " : "│  ")
+//
+// 		var result = "\(prefix)\(connector)Branch[\(branchIndex)]"
+// 		result += "\n\(childPrefix)├─ Match"
+// 		result +=
+// 			"\n"
+// 			+ matchExpression.formatAST(
+// 				depth: depth + 1, isLast: guardExpression == nil,
+// 				prefix: childPrefix + (guardExpression == nil ? "   " : "│  "))
+//
+// 		if let guardExpression {
+// 			result += "\n\(childPrefix)├─ Guard"
+// 			result +=
+// 				"\n"
+// 				+ guardExpression.formatAST(
+// 					depth: depth + 1, isLast: false, prefix: childPrefix + "│  ")
+// 		}
+//
+// 		result += "\n\(childPrefix)└─ Body"
+// 		result +=
+// 			"\n"
+// 			+ body.formatAST(
+// 				depth: depth + 1, isLast: true, prefix: childPrefix + "   ")
+//
+// 		return result
+// 	}
+// }
+//
+// // MARK: - Branched
+//
+// extension Syntax.Branched: CustomDebugStringConvertible {
+// 	public var debugDescription: String {
+// 		"Branched(\(branches.count) branches)"
+// 	}
+// }
+//
+// // MARK: - Pipe
+//
+// extension Syntax.Pipe: CustomDebugStringConvertible {
+// 	public var debugDescription: String {
+// 		"Pipe"
+// 	}
+// }
+
+// MARK: - Module
+
+extension Syntax.Module: CustomDebugStringConvertible {
+	public var debugDescription: String {
+		var result = "Module: \(sourceName)\n"
+
+		if !syntaxErrors.isEmpty {
+			result +=
+				"\(definitions.isEmpty ? "└─": "├─") Errors: \(syntaxErrors.count)\n"
+			for (index, error) in syntaxErrors.enumerated() {
+				let isLast = index == syntaxErrors.count - 1 && definitions.isEmpty
+				result += "│  \(isLast ? "└─" : "├─") \(error)\n"
+			}
+		}
+
+		if !definitions.isEmpty {
+			result += "└─ Definitions: \(definitions.count)\n"
+			var descriptions: [String] = []
+			for (index, def) in definitions.enumerated() {
+				let isLast = index == definitions.count - 1
+				def.formatAST(
+					depth: 1,
+                    isLast: isLast,
+                    prefix: "   ",
+					descriptions: &descriptions)
+			}
+            result += descriptions.joined(separator: "\n")
+		}
+
+		return result
+	}
+}
+
+// MARK: - Project
+
+// extension Syntax.Project: CustomDebugStringConvertible {
+// 	public var debugDescription: String {
+// 		var result = "Project\n"
+// 		let sortedModules = modules.sorted { $0.key < $1.key }
+//
+// 		for (index, (name, module)) in sortedModules.enumerated() {
+// 			let isLast = index == sortedModules.count - 1
+// 			let connector = isLast ? "└─ " : "├─ "
+// 			let childPrefix = isLast ? "   " : "│  "
+//
+// 			result += "\(connector)\(name)\n"
+// 			let moduleLines = module.debugDescription.split(separator: "\n")
+// 			for (lineIndex, line) in moduleLines.enumerated() {
+// 				let isLastLine = lineIndex == moduleLines.count - 1
+// 				if lineIndex == 0 {
+// 					result += "\(childPrefix)\(line)\n"
+// 				} else {
+// 					result += "\(childPrefix)\(line)\(isLastLine ? "" : "\n")"
+// 				}
+// 			}
+// 			if !isLast {
+// 				result += "\n"
+// 			}
+// 		}
+//
+// 		return result
+// 	}
+// }
+
+// MARK: - DocString
+
+extension Syntax.DocString: CustomDebugStringConvertible {
+	public var debugDescription: String {
+		"DocString: \"\(content)\""
 	}
 }

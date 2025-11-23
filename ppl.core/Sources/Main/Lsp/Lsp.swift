@@ -24,6 +24,8 @@ extension Syntax.Error {
 			element
 		case .notImplemented(let element, _):
 			"\(element) not implemented"
+		case .fileNotFound(let path):
+			"File not found at path: \(path)"
 		case .languageNotSupported:
 			"well something is terribly wrong here"
 		case .rangeNotInContent:
@@ -35,7 +37,8 @@ extension Syntax.Error {
 
 	var lspRange: Lsp.Range {
 		switch self {
-		case .rangeNotInContent, .languageNotSupported, .sourceUnreadable:
+		case .rangeNotInContent, .languageNotSupported, .sourceUnreadable,
+			.fileNotFound:
 			return .init(
 				start: .init(line: 0, character: 0),
 				end: .init(line: 0, character: 0)

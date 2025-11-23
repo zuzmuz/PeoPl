@@ -1,7 +1,3 @@
-well: _
+well: 1
 arithmetics: 1 - 10
-//
-//hi: () -> Int {
-//    1 |>
-//    x.find(2).b.c()
-//}
+einstein: e=m*c^2

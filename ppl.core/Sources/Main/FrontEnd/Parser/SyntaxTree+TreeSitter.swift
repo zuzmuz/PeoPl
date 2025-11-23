@@ -157,6 +157,7 @@ extension Node {
 		case accessExpression = "access_expression"
 		case roundCallExpression = "round_call_expression"
 		case squareCallExpression = "square_call_expression"
+		case braceCallExpression = "brace_call_expression"
 		case squareExpressionList = "square_expression_list"
 		case binding = "binding"
 		case functionDefinition = "function_definition"
@@ -169,6 +170,7 @@ extension Node {
 	enum LiteralNodeType: String, CaseIterable {
 		case nothing = "nothing"
 		case never = "never"
+		case special = "special"
 		case intLiteral = "int_literal"
 		case floatLiteral = "float_literal"
 		case stringLiteral = "string_literal"
@@ -236,7 +238,6 @@ extension Node {
 // MARK: - Project Structure
 
 // -------------------------
-
 
 extension Syntax.QualifiedIdentifier: TreeSitterNode {
 	static func getScopedIdentifier(
@@ -407,6 +408,8 @@ extension Syntax.Expression: TreeSitterNode {
 			return try .call(.from(node: node, in: source))
 		case .squareExpressionList:
 			return try .typeDefinition(.from(node: node, in: source))
+		case .braceCallExpression:
+			return try .lambda(.from(node: node, in: source))
 		case .binding:
 			return try .binding(.from(node: node, in: source))
 		case .functionDefinition:
@@ -453,6 +456,8 @@ extension Syntax.Literal {
 			value = .nothing
 		case .never:
 			value = .never
+		case .special:
+			value = .special
 		case .intLiteral:
 			guard
 				let intValue = try parseInteger(
@@ -597,6 +602,34 @@ extension [Syntax.Expression] {
 				nil
 			}
 		}
+	}
+}
+
+extension Syntax.Lambda: TreeSitterNode {
+	static func from(
+		node: Node,
+		in source: Syntax.Source
+	) throws(Syntax.Error) -> Self {
+		let prefix: Syntax.Expression?
+		if let prefixNode = node.child(byFieldName: "prefix") {
+			prefix = try .from(node: prefixNode, in: source)
+		} else {
+			prefix = nil
+		}
+
+		guard let bodyNode = node.child(byFieldName: "body"),
+			let expressionNode = bodyNode.child(at: 1)
+		else {
+			print("ZAZAZA \(try node.getString(in: source))")
+			throw .errorParsing(
+				element: "Function Body", location: node.getLocation(in: source))
+		}
+
+		return .init(
+			prefix: prefix,
+			body: try .from(node: expressionNode, in: source)
+		)
+
 	}
 }
 

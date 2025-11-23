@@ -4,6 +4,7 @@ extension Syntax {
 	public enum Error: LocalizedError, Codable {
 		case languageNotSupported
 		case sourceUnreadable
+		case fileNotFound(path: String)
 		case notImplemented(
 			element: String,
 			location: Syntax.NodeLocation
@@ -20,6 +21,8 @@ extension Syntax {
 				return "Error loading language parser"
 			case .sourceUnreadable:
 				return "Source is unreadable"
+			case let .fileNotFound(path):
+				return "File not found at path: \(path)"
 			case let .notImplemented(element, location):
 				return "Feature not implemented for \(element) at \(location)"
 			case .rangeNotInContent:

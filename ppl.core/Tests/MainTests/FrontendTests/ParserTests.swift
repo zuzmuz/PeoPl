@@ -360,6 +360,23 @@ extension Syntax.Expression {
 				expression: expression)
 		)
 	}
+
+	static func lambda(
+		_ prefix: Syntax.Expression,
+		_ body: Syntax.Expression
+	) -> Syntax.Expression {
+		return .lambda(
+			.init(prefix: prefix, body: body)
+		)
+	}
+
+	static func lambda(
+		_ body: Syntax.Expression
+	) -> Syntax.Expression {
+		return .lambda(
+			.init(prefix: nil, body: body)
+		)
+	}
 }
 
 // swiftlint:disable:next type_body_length
@@ -742,94 +759,96 @@ final class ParserTests: XCTestCase {
 				),
 				.tagged(
 					.chain(["What", "are", "the", "Odds"]),
-					.pipe(
+					.lambda(
 						.pipe(
-							.call(
-								.chain(["Object"]),
-								[
-									.tagged("a", .intLiteral(1)),
-									.tagged("b", .intLiteral(2)),
-									.tagged("c", .intLiteral(3)),
-								],
-							),
-							.call(
-								.chain(["a", "b", "c"]),
-								[
-									.binary(
-										.intLiteral(1),
-										.plus,
-										.intLiteral(1)
-									),
-									.binary(
-										.intLiteral(2),
-										.times,
-										.intLiteral(2)
-									),
-									.binary(
-										.nominal(.chain(["b"])),
-										.or,
-										.call(
-											.chain(["x"])
-										)
-									),
-								]
-							)
-						),
-						.branched([
-							.init(
-								matchExpression: .nominal(.chain(["a"])),
-								body: .binary(
-									.binary(
-										.access(.chain(["a"]), "a"),
-										.plus,
-										.access(.chain(["a"]), "b")
-									),
-									.plus,
-									.access(.chain(["a"]), "c")
-								)
-							),
-							.init(
-								matchExpression: .nominal(.chain(["z", "z"])),
-								body: .access(
-									.access(.access(.chain(["z"]), "z"), "z"),
-									"z"
-								)
-							),
-							.init(
-								matchExpression: .binding(
-									.init(identifier: "call")
-								),
-								body: .call(
-									.chain(["call"]),
+							.pipe(
+								.call(
+									.chain(["Object"]),
 									[
-										.pipe(
-											.nominal(.chain(["a"])),
-											.nominal(.chain(["b"]))
+										.tagged("a", .intLiteral(1)),
+										.tagged("b", .intLiteral(2)),
+										.tagged("c", .intLiteral(3)),
+									],
+								),
+								.call(
+									.chain(["a", "b", "c"]),
+									[
+										.binary(
+											.intLiteral(1),
+											.plus,
+											.intLiteral(1)
 										),
-										.tagged(
-											"x",
-											.pipe(
-												.nominal(.chain(["a"])),
-												.nominal(.chain(["b"]))
-											),
+										.binary(
+											.intLiteral(2),
+											.times,
+											.intLiteral(2)
 										),
-										.tagged(
-											"y",
-											.pipe(
-												.access(
-													.chain(["a"]),
-													"b"
-												),
-												.access(
-													.chain(["q", "a"]),
-													"b"
-												)
+										.binary(
+											.nominal(.chain(["b"])),
+											.or,
+											.call(
+												.chain(["x"])
 											)
 										),
 									]
 								)
 							),
-						])
+							.branched([
+								.init(
+									matchExpression: .nominal(.chain(["a"])),
+									body: .binary(
+										.binary(
+											.access(.chain(["a"]), "a"),
+											.plus,
+											.access(.chain(["a"]), "b")
+										),
+										.plus,
+										.access(.chain(["a"]), "c")
+									)
+								),
+								.init(
+									matchExpression: .nominal(.chain(["z", "z"])),
+									body: .access(
+										.access(.access(.chain(["z"]), "z"), "z"),
+										"z"
+									)
+								),
+								.init(
+									matchExpression: .binding(
+										.init(identifier: "call")
+									),
+									body: .call(
+										.chain(["call"]),
+										[
+											.pipe(
+												.nominal(.chain(["a"])),
+												.nominal(.chain(["b"]))
+											),
+											.tagged(
+												"x",
+												.pipe(
+													.nominal(.chain(["a"])),
+													.nominal(.chain(["b"]))
+												),
+											),
+											.tagged(
+												"y",
+												.pipe(
+													.access(
+														.chain(["a"]),
+														"b"
+													),
+													.access(
+														.chain(["q", "a"]),
+														"b"
+													)
+												)
+											),
+										]
+									)
+								),
+							])
+						)
 					)
 				),
 			]

@@ -1,12 +1,5 @@
 import Foundation
 
-extension Syntax.NodeLocation: CustomDebugStringConvertible {
-	public var debugDescription: String {
-		return
-			"\(pointRange.lowerBound.line):\(pointRange.lowerBound.column)-\(pointRange.upperBound.line):\(pointRange.upperBound.column)"
-	}
-}
-
 extension Syntax.Source {
 	public init(path: String) throws(Syntax.Error) {
 		let fileHandle = FileHandle(forReadingAtPath: path)
