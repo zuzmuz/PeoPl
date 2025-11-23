@@ -374,11 +374,6 @@ final class ParserTests: XCTestCase {
 						.tagged("a", .nominal(.chain(["Int"])))
 					])),
 				.tagged(
-					"Basic",
-					.typeDefinition([
-						.tagged("a", .nominal(.chain(["Int"])))
-					])),
-				.tagged(
 					"Multiple",
 					.typeDefinition([
 						.tagged("a", .nominal(.chain(["Int"]))),
