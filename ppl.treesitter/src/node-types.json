@@ -46,6 +46,10 @@
             "named": true
           },
           {
+            "type": "special",
+            "named": true
+          },
+          {
             "type": "square_call_expression",
             "named": true
           },
@@ -100,6 +104,10 @@
           },
           {
             "type": "round_call_expression",
+            "named": true
+          },
+          {
+            "type": "special",
             "named": true
           },
           {
@@ -191,6 +199,10 @@
             "named": true
           },
           {
+            "type": "special",
+            "named": true
+          },
+          {
             "type": "square_call_expression",
             "named": true
           },
@@ -253,6 +265,10 @@
             "named": true
           },
           {
+            "type": "special",
+            "named": true
+          },
+          {
             "type": "square_call_expression",
             "named": true
           },
@@ -303,6 +319,10 @@
             "named": true
           },
           {
+            "type": "special",
+            "named": true
+          },
+          {
             "type": "square_call_expression",
             "named": true
           },
@@ -346,6 +366,10 @@
           },
           {
             "type": "round_call_expression",
+            "named": true
+          },
+          {
+            "type": "special",
             "named": true
           },
           {
@@ -441,6 +465,10 @@
           "named": true
         },
         {
+          "type": "special",
+          "named": true
+        },
+        {
           "type": "square_call_expression",
           "named": true
         },
@@ -532,6 +560,10 @@
             "named": true
           },
           {
+            "type": "special",
+            "named": true
+          },
+          {
             "type": "square_call_expression",
             "named": true
           },
@@ -575,6 +607,10 @@
           },
           {
             "type": "round_call_expression",
+            "named": true
+          },
+          {
+            "type": "special",
             "named": true
           },
           {
@@ -691,6 +727,10 @@
             "named": true
           },
           {
+            "type": "special",
+            "named": true
+          },
+          {
             "type": "square_call_expression",
             "named": true
           },
@@ -790,6 +830,10 @@
             "named": true
           },
           {
+            "type": "special",
+            "named": true
+          },
+          {
             "type": "square_call_expression",
             "named": true
           },
@@ -859,6 +903,10 @@
           },
           {
             "type": "round_call_expression",
+            "named": true
+          },
+          {
+            "type": "special",
             "named": true
           },
           {
@@ -950,6 +998,10 @@
             "named": true
           },
           {
+            "type": "special",
+            "named": true
+          },
+          {
             "type": "square_call_expression",
             "named": true
           },
@@ -1015,6 +1067,10 @@
         },
         {
           "type": "round_call_expression",
+          "named": true
+        },
+        {
+          "type": "special",
           "named": true
         },
         {
@@ -1090,6 +1146,10 @@
           "named": true
         },
         {
+          "type": "special",
+          "named": true
+        },
+        {
           "type": "square_call_expression",
           "named": true
         },
@@ -1152,6 +1212,10 @@
           },
           {
             "type": "round_call_expression",
+            "named": true
+          },
+          {
+            "type": "special",
             "named": true
           },
           {
@@ -1223,6 +1287,10 @@
           "named": true
         },
         {
+          "type": "special",
+          "named": true
+        },
+        {
           "type": "square_call_expression",
           "named": true
         },
@@ -1290,6 +1358,10 @@
             "named": true
           },
           {
+            "type": "special",
+            "named": true
+          },
+          {
             "type": "square_call_expression",
             "named": true
           },
@@ -1299,6 +1371,16 @@
           },
           {
             "type": "unary_expression",
+            "named": true
+          }
+        ]
+      },
+      "hidden": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "special",
             "named": true
           }
         ]
@@ -1343,6 +1425,10 @@
           },
           {
             "type": "round_call_expression",
+            "named": true
+          },
+          {
+            "type": "special",
             "named": true
           },
           {
@@ -1395,6 +1481,10 @@
           },
           {
             "type": "round_call_expression",
+            "named": true
+          },
+          {
+            "type": "special",
             "named": true
           },
           {
@@ -1601,6 +1691,10 @@
   },
   {
     "type": "or_operator",
+    "named": true
+  },
+  {
+    "type": "special",
     "named": true
   },
   {

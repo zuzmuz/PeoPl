@@ -8,15 +8,14 @@
 ;
 (access_expression
   field: (identifier) @function.call)
-;
-; ; (trailing_closure_list
-; ;   identifier: (identifier) @variable.member)
-;
+
+
 (int_literal) @number
 (bool_literal) @boolean
 (float_literal) @number.float
 (string_literal) @string
-;
+
+
 (exponential_operator) @operator
 (multiplicative_operator) @operator
 (additive_operator) @operator
@@ -49,6 +48,7 @@
 
 (nothing) @constant.builtin
 (never) @constant.builtin
+(special) @constant.builtin
 
 (binding) @function.call
 "if" @keyword.control

@@ -44,6 +44,7 @@ module.exports = grammar({
     // --------------------------------------------
 
     identifier: $ => /[a-zA-Z_][a-zA-Z0-9_]*/,
+    special: $ => "_",
 
     qualified_identifier: $ => choice(
       field("identifier", $.identifier),
@@ -95,6 +96,7 @@ module.exports = grammar({
 
 
     tagged_expression: $ => prec.right(PREC.TAGGED, seq(
+      optional(field("hidden", $.special)),
       field("identifier", $.qualified_identifier),
       optional(
         seq(
@@ -107,6 +109,7 @@ module.exports = grammar({
 
     _basic_expression: $ => choice(
       $.literal,
+      $.special,
       $.unary_expression,
       $.binary_expression,
       $.qualified_identifier,
