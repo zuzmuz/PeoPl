@@ -3,3 +3,6 @@ binary: 1 - 10
 einstein: e=m*c^2
 the\branching: |cond if another| this |_| that
 function: fn [] -> []
+fullon: fn (Type) [a: X, b: Y, d: fn (F)[]->Z] -> X {
+    _
+}
