@@ -48,6 +48,8 @@ extension Syntax.Expression: Testable {
 			lhs.assertEqual(with: rhs)
 		case (.piped(let lhs), .piped(let rhs)):
 			lhs.assertEqual(with: rhs)
+		case (.lambda(let lhs), .lambda(let rhs)):
+			lhs.assertEqual(with: rhs)
 		default:
 			XCTFail("Expressions \(self) do not match \(with)")
 		}
@@ -81,22 +83,6 @@ extension Syntax.Binary: Testable {
 	}
 }
 
-extension Syntax.Function: Testable {
-	func assertEqual(
-		with: Self
-	) {
-		if let withSignature = with.signature {
-			XCTAssertNotNil(signature)
-			if let signature = signature {
-				signature.assertEqual(with: withSignature)
-			}
-		} else {
-			XCTAssertNil(signature)
-		}
-		body.assertEqual(with: with.body)
-	}
-}
-
 extension Syntax.TypeDefinition: Testable {
 	func assertEqual(with: Syntax.TypeDefinition) {
 		zip(self.expressions, with.expressions).forEach {
@@ -105,17 +91,17 @@ extension Syntax.TypeDefinition: Testable {
 	}
 }
 
-extension Syntax.FunctionType: Testable {
+extension Syntax.Function: Testable {
 	func assertEqual(
 		with: Self
 	) {
-		if let withInputType = with.inputType {
-			XCTAssertNotNil(inputType)
-			if let inputType = inputType {
-				inputType.assertEqual(with: withInputType)
+		if let withInput = with.input {
+			XCTAssertNotNil(input)
+			if let input {
+				input.assertEqual(with: withInput)
 			}
 		} else {
-			XCTAssertNil(inputType)
+			XCTAssertNil(input)
 		}
 
 		XCTAssertEqual(arguments.count, with.arguments.count)
@@ -124,7 +110,7 @@ extension Syntax.FunctionType: Testable {
 			$0.assertEqual(with: $1)
 		}
 
-		outputType.assertEqual(with: with.outputType)
+		output.assertEqual(with: with.output)
 	}
 }
 
@@ -214,6 +200,23 @@ extension Syntax.Pipe: Testable {
 	) {
 		left.assertEqual(with: with.left)
 		right.assertEqual(with: with.right)
+	}
+}
+
+extension Syntax.Lambda: Testable {
+	func assertEqual(
+		with: Self
+	) {
+		if let prefix {
+			XCTAssertNotNil(with.prefix)
+			if let withPrefix = with.prefix {
+				prefix.assertEqual(with: withPrefix)
+			}
+		} else {
+			XCTAssertNil(with.prefix)
+		}
+
+		self.body.assertEqual(with: with.body)
 	}
 }
 
@@ -867,7 +870,6 @@ final class ParserTests: XCTestCase {
 			)!
 			let source = try Syntax.Source(url: sourceUrl)
 			let module = TreeSitterModulParser.parseModule(source: source)
-			print("The syntax errors: \(module.syntaxErrors)")
 			module.assertEqual(with: reference)
 		}
 	}

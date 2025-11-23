@@ -58,7 +58,7 @@ private protocol ASTFormatableNode: CustomDebugStringConvertible {
 
 extension ASTFormatableNode {
 	public var debugDescription: String {
-		var descriptions: [String] = []
+		var descriptions: [String] = [""]
 		formatAST(
 			prefix: "",
 			connector: .last,
