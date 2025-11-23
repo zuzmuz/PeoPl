@@ -77,92 +77,72 @@ extension Syntax.Expression: ASTFormatableNode {
 
 		case .unary(let unary):
 			unary.formatAST(
-				depth: depth + 1,
-				isLast: isLast,
 				prefix: prefix,
+				connector: connector,
 				descriptions: &descriptions)
 
 		case .binary(let binary):
 			binary.formatAST(
-				depth: depth + 1,
-				isLast: isLast,
 				prefix: prefix,
+				connector: connector,
 				descriptions: &descriptions)
 
 		case .nominal(let nominal):
 			descriptions.append(
-				"\(prefix)\(isLast ? "└─ " : "├─ ")Nominal: \(nominal)"
+				"\(prefix)\(connector)Nominal: \(nominal)"
 			)
 
 		case .typeDefinition(let typeDefinition):
 			typeDefinition.formatAST(
-				depth: depth + 1,
-				isLast: isLast,
 				prefix: prefix,
+				connector: connector,
 				descriptions: &descriptions)
 
 		case .function(let function):
 			function.formatAST(
-				depth: depth + 1,
-				isLast: isLast,
 				prefix: prefix,
+				connector: connector,
 				descriptions: &descriptions)
 
 		case .lambda(let lambda):
 			lambda.formatAST(
-				depth: depth + 1,
-				isLast: isLast,
 				prefix: prefix,
+				connector: connector,
 				descriptions: &descriptions)
 
 		case .call(let call):
-			self.formatAST(
-				depth: depth + 1,
-				isLast: isLast,
+			call.formatAST(
 				prefix: prefix,
+				connector: connector,
 				descriptions: &descriptions)
+
 		case .access(let access):
 			access.formatAST(
-				depth: depth + 1,
-				isLast: isLast,
 				prefix: prefix,
+				connector: connector,
 				descriptions: &descriptions)
+
 		case .binding(let binding):
 			descriptions.append(
-				"\(prefix)\(isLast ? "└─ " : "├─ ")\(binding)")
+				"\(prefix)\(connector)\(binding)")
 
 		case .taggedExpression(let tagged):
 			tagged.formatAST(
-				depth: depth + 1,
-				isLast: isLast,
 				prefix: prefix,
+				connector: connector,
 				descriptions: &descriptions)
 
 		case .branched(let branched):
-			for (index, branch) in branched.branches.enumerated() {
-				let isLastBranch = index == branched.branches.count - 1
-				branch.formatAST(
-					depth: depth + 1,
-					isLast: isLastBranch,
-					prefix: childPrefix,
-					branchIndex: index,
-					descriptions: &descriptions
-				)
-			}
+				branched.formatAST(
+					prefix: prefix,
+					connector: connector,
+					descriptions: &descriptions)
 
 		case .piped(let pipe):
-			pipe.left.formatAST(
-				depth: depth + 1,
-				isLast: false,
-				prefix: childPrefix + "│  ",
-				descriptions: &descriptions
-			)
-			pipe.right.formatAST(
-				depth: depth + 1,
-				isLast: true,
-				prefix: childPrefix + "   ",
-				descriptions: &descriptions
-			)
+			pipe.formatAST(
+				prefix: prefix,
+				connector: connector,
+				descriptions: &descriptions)
 		}
 	}
 }
