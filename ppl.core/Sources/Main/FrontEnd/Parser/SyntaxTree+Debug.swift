@@ -103,59 +103,61 @@ extension Syntax.Expression: CustomDebugStringConvertible {
 				depth: depth + 1,
 				prefix: childPrefix,
 				descriptions: &descriptions)
-		//
-		// case .lambda(let lambda):
-		// 	var result = "\(prefix)\(connector)Lambda"
-		// 	if let lambdaPrefix = lambda.prefix {
-		// 		result += "\n\(childPrefix)├─ Prefix"
-		// 		result +=
-		// 			"\n"
-		// 			+ lambdaPrefix.formatAST(
-		// 				depth: depth + 2, isLast: false, prefix: childPrefix + "│  ")
-		// 	}
-		// 	let bodyConnector = lambda.prefix == nil ? "└─" : "└─"
-		// 	result += "\n\(childPrefix)\(bodyConnector) Body"
-		// 	result +=
-		// 		"\n"
-		// 		+ lambda.body.formatAST(
-		// 			depth: depth + 2, isLast: true, prefix: childPrefix + "   ")
-		// 	return result
-		//
-		// case .call(let call):
-		// 	var result = "\(prefix)\(connector)Call"
-		// 	if let callPrefix = call.prefix {
-		// 		result += "\n\(childPrefix)├─ Prefix"
-		// 		result +=
-		// 			"\n"
-		// 			+ callPrefix.formatAST(
-		// 				depth: depth + 2, isLast: call.arguments.isEmpty,
-		// 				prefix: childPrefix + (call.arguments.isEmpty ? "   " : "│  ")
-		// 			)
-		// 	}
-		// 	if !call.arguments.isEmpty {
-		// 		result += "\n\(childPrefix)└─ Arguments"
-		// 		for (index, arg) in call.arguments.enumerated() {
-		// 			let isLastArg = index == call.arguments.count - 1
-		// 			result +=
-		// 				"\n"
-		// 				+ arg.formatAST(
-		// 					depth: depth + 2, isLast: isLastArg,
-		// 					prefix: childPrefix + "   ")
-		// 		}
-		// 	}
-		// 	return result
-		//
-		// case .access(let access):
-		// 	var result = "\(prefix)\(connector)Access: .\(access.field)"
-		// 	result +=
-		// 		"\n"
-		// 		+ access.prefix.formatAST(
-		// 			depth: depth + 1, isLast: true, prefix: childPrefix)
-		// 	return result
-		//
-		// case .binding(let binding):
-		// 	return "\(prefix)\(connector)Binding: @\(binding.identifier)"
-		//
+
+		case .lambda(let lambda):
+			descriptions.append("\(prefix)\(connector)Lambda")
+			if let lambdaPrefix = lambda.prefix {
+				descriptions.append("\(childPrefix)├─ Prefix")
+				lambdaPrefix.formatAST(
+					depth: depth + 2,
+					isLast: false,
+					prefix: childPrefix + "│  ",
+					descriptions: &descriptions)
+			}
+			let bodyConnector = "└─"
+			descriptions.append("\(childPrefix)\(bodyConnector) Body")
+			lambda.body.formatAST(
+				depth: depth + 2,
+				isLast: true,
+				prefix: childPrefix + "   ",
+				descriptions: &descriptions
+			)
+
+		case .call(let call):
+			descriptions.append("\(prefix)\(connector)Call")
+			if let callPrefix = call.prefix {
+				descriptions.append("\(childPrefix)├─ Prefix")
+				callPrefix.formatAST(
+					depth: depth + 2,
+					isLast: call.arguments.isEmpty,
+					prefix: childPrefix + (call.arguments.isEmpty ? "   " : "│  "),
+					descriptions: &descriptions
+				)
+			}
+			if !call.arguments.isEmpty {
+				descriptions.append("\(childPrefix)└─ Arguments")
+				for (index, arg) in call.arguments.enumerated() {
+					let isLastArg = index == call.arguments.count - 1
+					arg.formatAST(
+						depth: depth + 2,
+						isLast: isLastArg,
+						prefix: childPrefix + "   ",
+						descriptions: &descriptions)
+				}
+			}
+
+		case .access(let access):
+			descriptions.append("\(prefix)\(connector)Access: .\(access.field)")
+			access.prefix.formatAST(
+				depth: depth + 1,
+				isLast: true,
+				prefix: childPrefix,
+				descriptions: &descriptions
+			)
+		case .binding(let binding):
+			descriptions.append(
+				"\(prefix)\(connector)Binding: @\(binding.identifier)")
+
 		case .taggedExpression(let tagged):
 			descriptions.append("\(prefix)\(connector)Tagged: \(tagged.tag)")
 			if let typeSpec = tagged.typeSpecifier {
@@ -205,10 +207,6 @@ extension Syntax.Expression: CustomDebugStringConvertible {
 				isLast: true,
 				prefix: childPrefix + "   ",
 				descriptions: &descriptions
-			)
-		default:
-			descriptions.append(
-				"\(prefix)\(connector)Unknown Expression Type"
 			)
 		}
 	}
@@ -355,13 +353,14 @@ extension Syntax.Function: CustomDebugStringConvertible {
 // 	}
 // }
 //
-// // MARK: - Tagged Expression
-//
-// extension Syntax.TaggedExpression: CustomDebugStringConvertible {
-// 	public var debugDescription: String {
-// 		"Tagged(\(tag.debugDescription))"
-// 	}
-// }
+// MARK: - Tagged Expression
+
+extension Syntax.TaggedExpression: CustomDebugStringConvertible {
+	// FIXME: this is not correct it should format the ast
+	public var debugDescription: String {
+		"Tagged(\(tag.debugDescription))"
+	}
+}
 //
 // // MARK: - Branch
 //
@@ -385,7 +384,7 @@ extension Syntax.Branched.Branch: CustomDebugStringConvertible {
 		matchExpression.formatAST(
 			depth: depth + 1,
 			isLast: true,
-			prefix: childPrefix +  "│  ",
+			prefix: childPrefix + "│  ",
 			descriptions: &descriptions
 		)
 
@@ -409,21 +408,34 @@ extension Syntax.Branched.Branch: CustomDebugStringConvertible {
 	}
 }
 //
-// // MARK: - Branched
-//
-// extension Syntax.Branched: CustomDebugStringConvertible {
-// 	public var debugDescription: String {
-// 		"Branched(\(branches.count) branches)"
-// 	}
-// }
-//
-// // MARK: - Pipe
-//
-// extension Syntax.Pipe: CustomDebugStringConvertible {
-// 	public var debugDescription: String {
-// 		"Pipe"
-// 	}
-// }
+// MARK: - Branched
+
+extension Syntax.Branched: CustomDebugStringConvertible {
+	public var debugDescription: String {
+		"Branched(\(branches.count) branches)"
+	}
+}
+
+// MARK: - Pipe
+
+extension Syntax.Pipe: CustomDebugStringConvertible {
+	public var debugDescription: String {
+		var descriptions = ["Pipe"]
+		left.formatAST(
+			depth: 1,
+			isLast: false,
+			prefix: "│  ",
+			descriptions: &descriptions
+		)
+		right.formatAST(
+			depth: 1,
+			isLast: false,
+			prefix: "│  ",
+			descriptions: &descriptions
+		)
+		return descriptions.joined(separator: "\n")
+	}
+}
 
 // MARK: - Module
 
