@@ -3,6 +3,12 @@
 #endif
 import Foundation
 
+extension String {
+	public func colored(_ color: Utils.TerminalColor) -> String {
+		"\(color.rawValue)\(self)\(Utils.TerminalColor.reset.rawValue)"
+	}
+}
+
 public enum Utils {
 	// ANSI color codes
 	public enum TerminalColor: String {
