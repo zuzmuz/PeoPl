@@ -115,9 +115,10 @@ module.exports = grammar({
       $.qualified_identifier,
       $.access_expression,
       $.parenthesis_expression,
+      $.square_expression_list,
       $.round_call_expression,
       $.square_call_expression,
-      $.square_expression_list,
+      $.brace_call_expression,
       $.binding
     ),
 
@@ -133,7 +134,6 @@ module.exports = grammar({
     _complex_expression: $ => choice(
       $._expression,
       $.tagged_expression,
-      $.partial_function_value
     ),
 
     access_expression: $ => prec.left(PREC.ACCESS, seq(
@@ -155,6 +155,11 @@ module.exports = grammar({
       field("prefix", $._basic_expression),
       field("arguments", $.square_expression_list),
     )),
+
+    brace_call_expression: $ => prec.left(PREC.PARENTHESIS, seq(
+      field("prefix", $._basic_expression),
+      field("body", $.function_body)
+    )),
     
 
 
@@ -162,27 +167,13 @@ module.exports = grammar({
     // Function literals
     // Used to define function definitions and expressions
     // -------------------------------------
-    function_definition: $ => prec.left(seq(
-      field("signature", $.function_type),
-      field("body", $.function_body)
-    )),
-
-    partial_function_value: $ => prec.left(seq(
-      optional(field("arguments", $.square_expression_list)),
-      field("body", $.function_body)
-    )),
-    
-    function_type: $ => seq(
+    function_definition: $ => seq(
       optional("comp"),
       "fn",
-      optional(seq('(', field('input_type', $._basic_expression), ')')),
+      optional(seq('(', field('input', $._basic_expression), ')')),
       field("arguments", $.square_expression_list),
-      optional(
-        seq(
-          "->",
-          field("output_type", $._basic_expression)
-        )
-      )
+      "->",
+      field("output", $._basic_expression)
     ),
 
     function_body: $ => seq(

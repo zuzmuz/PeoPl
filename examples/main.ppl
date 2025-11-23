@@ -5,7 +5,7 @@ basic: 42 // basic is an Int with the value 42
 
 mathExpression: 11 * 4 - 2
 
-Math\pi: 3.14 // a qualified floating point value
+Math: 3.14 // a qualified floating point value
 
 name: "zuzmuz" // a string value
 
@@ -20,7 +20,7 @@ main: fn [] -> Int {
 }
 
 // functions can take parameters
-Math\multiply: fn [a: Int, b: Int] -> Int {
+Math: fn [a: Int, b: Int] -> Int {
     a * b
 }
 
@@ -29,9 +29,13 @@ multuply2and4: Math\multiply(a: 2, b: 4) // functin arguments are named by defau
 // multiplyResult is a compile time Int with the value 8
 
 // function with inputs
-Math\square: fn (Int)[] -> Int {
+Math: fn (Int)[] -> Int {
     2
 }
+
+Hashable: fn [Self: Type] -> [
+    a: fn (Self)[] -> i64 { 3 }
+]
 
 // calling a function with an input
 // object method syntax is possible, the identifier's scope is not needed

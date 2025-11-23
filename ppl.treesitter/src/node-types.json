@@ -30,6 +30,10 @@
             "named": true
           },
           {
+            "type": "brace_call_expression",
+            "named": true
+          },
+          {
             "type": "literal",
             "named": true
           },
@@ -88,6 +92,10 @@
           },
           {
             "type": "binding",
+            "named": true
+          },
+          {
+            "type": "brace_call_expression",
             "named": true
           },
           {
@@ -183,6 +191,10 @@
             "named": true
           },
           {
+            "type": "brace_call_expression",
+            "named": true
+          },
+          {
             "type": "literal",
             "named": true
           },
@@ -229,6 +241,76 @@
     "fields": {}
   },
   {
+    "type": "brace_call_expression",
+    "named": true,
+    "fields": {
+      "body": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "function_body",
+            "named": true
+          }
+        ]
+      },
+      "prefix": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "access_expression",
+            "named": true
+          },
+          {
+            "type": "binary_expression",
+            "named": true
+          },
+          {
+            "type": "binding",
+            "named": true
+          },
+          {
+            "type": "brace_call_expression",
+            "named": true
+          },
+          {
+            "type": "literal",
+            "named": true
+          },
+          {
+            "type": "parenthesis_expression",
+            "named": true
+          },
+          {
+            "type": "qualified_identifier",
+            "named": true
+          },
+          {
+            "type": "round_call_expression",
+            "named": true
+          },
+          {
+            "type": "special",
+            "named": true
+          },
+          {
+            "type": "square_call_expression",
+            "named": true
+          },
+          {
+            "type": "square_expression_list",
+            "named": true
+          },
+          {
+            "type": "unary_expression",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
     "type": "branch",
     "named": true,
     "fields": {
@@ -246,6 +328,10 @@
           },
           {
             "type": "binding",
+            "named": true
+          },
+          {
+            "type": "brace_call_expression",
             "named": true
           },
           {
@@ -303,6 +389,10 @@
             "named": true
           },
           {
+            "type": "brace_call_expression",
+            "named": true
+          },
+          {
             "type": "literal",
             "named": true
           },
@@ -350,6 +440,10 @@
           },
           {
             "type": "binding",
+            "named": true
+          },
+          {
+            "type": "brace_call_expression",
             "named": true
           },
           {
@@ -433,6 +527,10 @@
           "named": true
         },
         {
+          "type": "brace_call_expression",
+          "named": true
+        },
+        {
           "type": "branched_expression",
           "named": true
         },
@@ -446,10 +544,6 @@
         },
         {
           "type": "parenthesis_expression",
-          "named": true
-        },
-        {
-          "type": "partial_function_value",
           "named": true
         },
         {
@@ -491,32 +585,6 @@
     "type": "function_definition",
     "named": true,
     "fields": {
-      "body": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "function_body",
-            "named": true
-          }
-        ]
-      },
-      "signature": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "function_type",
-            "named": true
-          }
-        ]
-      }
-    }
-  },
-  {
-    "type": "function_type",
-    "named": true,
-    "fields": {
       "arguments": {
         "multiple": false,
         "required": true,
@@ -527,7 +595,7 @@
           }
         ]
       },
-      "input_type": {
+      "input": {
         "multiple": false,
         "required": false,
         "types": [
@@ -541,6 +609,10 @@
           },
           {
             "type": "binding",
+            "named": true
+          },
+          {
+            "type": "brace_call_expression",
             "named": true
           },
           {
@@ -577,9 +649,9 @@
           }
         ]
       },
-      "output_type": {
+      "output": {
         "multiple": false,
-        "required": false,
+        "required": true,
         "types": [
           {
             "type": "access_expression",
@@ -591,6 +663,10 @@
           },
           {
             "type": "binding",
+            "named": true
+          },
+          {
+            "type": "brace_call_expression",
             "named": true
           },
           {
@@ -695,6 +771,10 @@
             "named": true
           },
           {
+            "type": "brace_call_expression",
+            "named": true
+          },
+          {
             "type": "branched_expression",
             "named": true
           },
@@ -708,10 +788,6 @@
           },
           {
             "type": "parenthesis_expression",
-            "named": true
-          },
-          {
-            "type": "partial_function_value",
             "named": true
           },
           {
@@ -751,32 +827,6 @@
     }
   },
   {
-    "type": "partial_function_value",
-    "named": true,
-    "fields": {
-      "arguments": {
-        "multiple": false,
-        "required": false,
-        "types": [
-          {
-            "type": "square_expression_list",
-            "named": true
-          }
-        ]
-      },
-      "body": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "function_body",
-            "named": true
-          }
-        ]
-      }
-    }
-  },
-  {
     "type": "pipe_operator",
     "named": true,
     "fields": {}
@@ -799,6 +849,10 @@
           },
           {
             "type": "binding",
+            "named": true
+          },
+          {
+            "type": "brace_call_expression",
             "named": true
           },
           {
@@ -875,6 +929,10 @@
           },
           {
             "type": "binding",
+            "named": true
+          },
+          {
+            "type": "brace_call_expression",
             "named": true
           },
           {
@@ -982,6 +1040,10 @@
             "named": true
           },
           {
+            "type": "brace_call_expression",
+            "named": true
+          },
+          {
             "type": "literal",
             "named": true
           },
@@ -1038,6 +1100,10 @@
           "named": true
         },
         {
+          "type": "brace_call_expression",
+          "named": true
+        },
+        {
           "type": "branched_expression",
           "named": true
         },
@@ -1051,10 +1117,6 @@
         },
         {
           "type": "parenthesis_expression",
-          "named": true
-        },
-        {
-          "type": "partial_function_value",
           "named": true
         },
         {
@@ -1114,6 +1176,10 @@
           "named": true
         },
         {
+          "type": "brace_call_expression",
+          "named": true
+        },
+        {
           "type": "branched_expression",
           "named": true
         },
@@ -1127,10 +1193,6 @@
         },
         {
           "type": "parenthesis_expression",
-          "named": true
-        },
-        {
-          "type": "partial_function_value",
           "named": true
         },
         {
@@ -1199,6 +1261,10 @@
             "named": true
           },
           {
+            "type": "brace_call_expression",
+            "named": true
+          },
+          {
             "type": "literal",
             "named": true
           },
@@ -1255,6 +1321,10 @@
           "named": true
         },
         {
+          "type": "brace_call_expression",
+          "named": true
+        },
+        {
           "type": "branched_expression",
           "named": true
         },
@@ -1268,10 +1338,6 @@
         },
         {
           "type": "parenthesis_expression",
-          "named": true
-        },
-        {
-          "type": "partial_function_value",
           "named": true
         },
         {
@@ -1327,6 +1393,10 @@
           },
           {
             "type": "binding",
+            "named": true
+          },
+          {
+            "type": "brace_call_expression",
             "named": true
           },
           {
@@ -1412,6 +1482,10 @@
             "named": true
           },
           {
+            "type": "brace_call_expression",
+            "named": true
+          },
+          {
             "type": "literal",
             "named": true
           },
@@ -1465,6 +1539,10 @@
           },
           {
             "type": "binding",
+            "named": true
+          },
+          {
+            "type": "brace_call_expression",
             "named": true
           },
           {
@@ -1643,7 +1721,8 @@
   },
   {
     "type": "comment",
-    "named": true
+    "named": true,
+    "extra": true
   },
   {
     "type": "comp",
