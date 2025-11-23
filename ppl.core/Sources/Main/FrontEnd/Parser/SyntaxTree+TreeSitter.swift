@@ -277,58 +277,6 @@ extension Syntax.QualifiedIdentifier: TreeSitterNode {
 	}
 }
 
-extension Syntax.FunctionType: TreeSitterNode {
-	static func from(
-		node: Node,
-		in source: Syntax.Source
-	) throws(Syntax.Error) -> Self {
-		let inputType: Syntax.Expression?
-		if let inputTypeNode = node.child(byFieldName: "input_type") {
-			inputType = try .from(node: inputTypeNode, in: source)
-		} else {
-			inputType = nil
-		}
-
-		let arguments: [Syntax.Expression]
-		if let argumentsNode = node.child(byFieldName: "arguments") {
-			arguments =
-				try argumentsNode
-				.compactMapChildren {
-					child throws(Syntax.Error) in
-					if child.expressionNodeType != nil {
-						return try Syntax.Expression
-							.from(
-								node: child,
-								in: source
-							)
-					} else {
-						return nil
-					}
-				}
-		} else {
-			arguments = []
-		}
-
-		guard
-			let outputTypeNode = node.child(
-				byFieldName: "output_type"
-			)
-		else {
-			throw .errorParsing(
-				element: "FunctionDefinition",
-				location: node.getLocation(in: source)
-			)
-		}
-
-		return try .init(
-			inputType: inputType,
-			arguments: arguments,
-			outputType: .from(node: outputTypeNode, in: source),
-			location: node.getLocation(in: source)
-		)
-	}
-}
-
 // MARK: - Expressions
 
 // -------------------
@@ -718,25 +666,26 @@ extension Syntax.Function: TreeSitterNode {
 		node: Node,
 		in source: Syntax.Source
 	) throws(Syntax.Error) -> Self {
-		guard let bodyNode = node.child(byFieldName: "body"),
-			let bodyExpressionNode = bodyNode.child(at: 1)
+		guard let outputNode = node.child(byFieldName: "output"),
+			let argumentsNode = node.child(byFieldName: "arguments")
 		else {
 			throw .errorParsing(
 				element: "FunctionDefinition",
 				location: node.getLocation(in: source)
 			)
 		}
-
-		let signature: Syntax.FunctionType?
-		if let signatureNode = node.child(byFieldName: "signature") {
-			signature = try .from(node: signatureNode, in: source)
+		let input: Syntax.Expression?
+		if let inputNode = node.child(byFieldName: "input") {
+			input = try .from(node: inputNode, in: source)
 		} else {
-			signature = nil
+			input = nil
 		}
 
 		return try .init(
-			signature: signature,
-			body: .from(node: bodyExpressionNode, in: source)
+			input: input,
+			arguments: .from(node: argumentsNode, in: source),
+			output: .from(node: outputNode, in: source),
+			location: node.getLocation(in: source)
 		)
 	}
 }

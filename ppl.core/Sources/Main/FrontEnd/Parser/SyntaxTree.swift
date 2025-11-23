@@ -331,44 +331,24 @@ public enum Syntax {
 	/// Compile time functions represents generics and can be used for macros and code gen.
 	/// TODO: get into compile time functions
 	public struct Function: SyntaxNode, Sendable {
-		let signature: FunctionType?
-		let body: Expression
-		public let location: NodeLocation
-
-		init(
-			signature: FunctionType? = nil,
-			body: Expression,
-			location: NodeLocation = .nowhere
-		) {
-			self.signature = signature
-			self.body = body
-			self.location = location
-		}
-	}
-
-	/// Function type: represents the type of functions
-	/// Supports both traditional and dependently-typed function signatures
-	/// - inputType: Optional input type for the function
-	public struct FunctionType: SyntaxNode, Sendable {
-		let inputType: Expression?
+		let input: Expression?
 		let arguments: [Expression]
-		let outputType: Expression
+		let output: Expression
 		public let location: NodeLocation
 
 		init(
-			inputType: Expression? = nil,
+			input: Expression? = nil,
 			arguments: [Expression] = [],
-			outputType: Expression,
+			output: Expression,
 			location: NodeLocation = .nowhere
 		) {
-			self.inputType = inputType
+			self.input = input
 			self.arguments = arguments
-			self.outputType = outputType
+			self.output = output
 			self.location = location
 		}
 	}
 
-	
 	public struct Lambda: SyntaxNode, Sendable {
 		let prefix: Expression?
 		let body: Expression

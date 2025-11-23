@@ -1,4 +1,5 @@
-well: 1
-arithmetics: 1 - 10
+literal: 1
+binary: 1 - 10
 einstein: e=m*c^2
-the\question: |be| this |_| not this
+the\branching: |cond if another| this |_| that
+function: fn [] -> []

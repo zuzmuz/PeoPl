@@ -44,7 +44,7 @@ extension Syntax.Expression: CustomDebugStringConvertible {
 			isLast: true,
 			prefix: "",
 			descriptions: &descriptions)
-        return descriptions.joined(separator: "\n")
+		return descriptions.joined(separator: "\n")
 	}
 
 	func formatAST(
@@ -97,18 +97,12 @@ extension Syntax.Expression: CustomDebugStringConvertible {
 				)
 			}
 
-		// case .function(let function):
-		// 	descriptions.append("\(prefix)\(connector)Function")
-		// 	if let sig = function.signature {
-		// 		descriptions.append("\(childPrefix)├─ Signature")
-		// 		sig.formatAST(depth: depth + 2, prefix: childPrefix + "│  ", descriptions: &de)
-		// 	}
-		// 	result += "\n\(childPrefix)└─ Body"
-		// 	result +=
-		// 		"\n"
-		// 		+ function.body.formatAST(
-		// 			depth: depth + 2, isLast: true, prefix: childPrefix + "   ")
-		// 	return result
+		case .function(let function):
+			descriptions.append("\(prefix)\(connector)Function")
+			function.formatAST(
+				depth: depth + 2,
+				prefix: childPrefix + "   ",
+				descriptions: &descriptions)
 		//
 		// case .lambda(let lambda):
 		// 	var result = "\(prefix)\(connector)Lambda"
@@ -166,18 +160,18 @@ extension Syntax.Expression: CustomDebugStringConvertible {
 			descriptions.append("\(prefix)\(connector)Tagged: \(tagged.tag)")
 			if let typeSpec = tagged.typeSpecifier {
 				descriptions.append("\(childPrefix)├─ TypeSpec")
-			    typeSpec.formatAST(
+				typeSpec.formatAST(
 					depth: depth + 2,
-                    isLast: false,
-                    prefix: childPrefix + "│  ",
-                    descriptions: &descriptions)
+					isLast: false,
+					prefix: childPrefix + "│  ",
+					descriptions: &descriptions)
 			}
 			descriptions.append("\(childPrefix)└─ Expression")
 			tagged.expression.formatAST(
 				depth: depth + 2,
-                isLast: true,
-                prefix: childPrefix + "   ",
-                descriptions: &descriptions)
+				isLast: true,
+				prefix: childPrefix + "   ",
+				descriptions: &descriptions)
 
 		case .branched(let branched):
 			descriptions.append("\(prefix)\(connector)Branched")
@@ -185,11 +179,11 @@ extension Syntax.Expression: CustomDebugStringConvertible {
 				let isLastBranch = index == branched.branches.count - 1
 				branch.formatAST(
 					depth: depth + 1,
-                    isLast: isLastBranch,
-                    prefix: childPrefix,
+					isLast: isLastBranch,
+					prefix: childPrefix,
 					branchIndex: index,
-                    descriptions: &descriptions
-                )
+					descriptions: &descriptions
+				)
 			}
 		//
 		// case .piped(let pipe):
@@ -271,53 +265,55 @@ extension Syntax.TypeDefinition: CustomDebugStringConvertible {
 
 // MARK: - Function Type
 
-// extension Syntax.FunctionType: CustomDebugStringConvertible {
-// 	public var debugDescription: String {
-// 		var parts: [String] = []
-// 		if let input = inputType {
-// 			parts.append("in: \(input.debugDescription)")
-// 		}
-// 		if !arguments.isEmpty {
-// 			parts.append("args: \(arguments.count)")
-// 		}
-// 		parts.append("-> \(outputType.debugDescription)")
-// 		return parts.joined(separator: " ")
-// 	}
-//
-// 	func formatAST(depth: Int, prefix: String) -> String {
-// 		var result = ""
-// 		var hasInput = inputType != nil
-// 		var hasArgs = !arguments.isEmpty
-//
-// 		if let input = inputType {
-// 			result += "\n\(prefix)├─ InputType"
-// 			result +=
-// 				"\n"
-// 				+ input.formatAST(
-// 					depth: depth + 1, isLast: !hasArgs,
-// 					prefix: prefix + (hasArgs ? "│  " : "   "))
-// 		}
-//
-// 		if !arguments.isEmpty {
-// 			result += "\n\(prefix)├─ Arguments"
-// 			for (index, arg) in arguments.enumerated() {
-// 				let isLastArg = index == arguments.count - 1
-// 				result +=
-// 					"\n"
-// 					+ arg.formatAST(
-// 						depth: depth + 1, isLast: isLastArg, prefix: prefix + "│  ")
-// 			}
-// 		}
-//
-// 		result += "\n\(prefix)└─ OutputType"
-// 		result +=
-// 			"\n"
-// 			+ outputType.formatAST(
-// 				depth: depth + 1, isLast: true, prefix: prefix + "   ")
-//
-// 		return result
-// 	}
-// }
+extension Syntax.Function: CustomDebugStringConvertible {
+	public var debugDescription: String {
+		var descriptions: [String] = []
+		formatAST(
+			depth: 0,
+			prefix: "",
+			descriptions: &descriptions)
+		return descriptions.joined(separator: "\n")
+	}
+
+	func formatAST(
+		depth: Int,
+		prefix: String,
+		descriptions: inout [String]
+	) {
+		let hasArgs = !arguments.isEmpty
+
+		if let input {
+			descriptions.append("\(prefix)├─ InputType")
+			input.formatAST(
+				depth: depth + 1,
+				isLast: !hasArgs,
+				prefix: prefix + (hasArgs ? "│  " : "   "),
+				descriptions: &descriptions
+			)
+		}
+
+		if !arguments.isEmpty {
+			descriptions.append("\(prefix)├─ Arguments")
+			for (index, arg) in arguments.enumerated() {
+				let isLastArg = index == arguments.count - 1
+				arg.formatAST(
+					depth: depth + 1,
+					isLast: isLastArg,
+					prefix: prefix + "│  ",
+					descriptions: &descriptions
+				)
+			}
+		}
+
+		descriptions.append("\(prefix)└─ OutputType")
+		output.formatAST(
+			depth: depth + 1,
+			isLast: true,
+			prefix: prefix + "   ",
+			descriptions: &descriptions
+		)
+	}
+}
 //
 // // MARK: - Function
 //
@@ -378,41 +374,41 @@ extension Syntax.Branched.Branch: CustomDebugStringConvertible {
 	}
 
 	func formatAST(
-        depth: Int,
-        isLast: Bool,
-        prefix: String,
-        branchIndex: Int,
-        descriptions: inout [String]
-    ) {
+		depth: Int,
+		isLast: Bool,
+		prefix: String,
+		branchIndex: Int,
+		descriptions: inout [String]
+	) {
 		let connector = isLast ? "└─ " : "├─ "
 		let childPrefix = prefix + (isLast ? "   " : "│  ")
 
 		descriptions.append("\(prefix)\(connector)Branch[\(branchIndex)]")
 		descriptions.append("\(childPrefix)├─ Match")
 		matchExpression.formatAST(
-            depth: depth + 1,
-            isLast: guardExpression == nil,
-            prefix: childPrefix + (guardExpression == nil ? "   " : "│  "),
-            descriptions: &descriptions
-        )
+			depth: depth + 1,
+			isLast: guardExpression == nil,
+			prefix: childPrefix + (guardExpression == nil ? "   " : "│  "),
+			descriptions: &descriptions
+		)
 
 		if let guardExpression {
 			descriptions.append("\(childPrefix)├─ Guard")
 			guardExpression.formatAST(
-			    depth: depth + 1,
-                isLast: false,
-                prefix: childPrefix + "│  ",
-                descriptions: &descriptions
-            )
+				depth: depth + 1,
+				isLast: false,
+				prefix: childPrefix + "│  ",
+				descriptions: &descriptions
+			)
 		}
 
 		descriptions.append("\(childPrefix)└─ Body")
 		body.formatAST(
 			depth: depth + 1,
-            isLast: true,
-            prefix: childPrefix + "   ",
-            descriptions: &descriptions
-        )
+			isLast: true,
+			prefix: childPrefix + "   ",
+			descriptions: &descriptions
+		)
 	}
 }
 //
@@ -454,11 +450,11 @@ extension Syntax.Module: CustomDebugStringConvertible {
 				let isLast = index == definitions.count - 1
 				def.formatAST(
 					depth: 1,
-                    isLast: isLast,
-                    prefix: "   ",
+					isLast: isLast,
+					prefix: "   ",
 					descriptions: &descriptions)
 			}
-            result += descriptions.joined(separator: "\n")
+			result += descriptions.joined(separator: "\n")
 		}
 
 		return result
