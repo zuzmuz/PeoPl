@@ -469,12 +469,20 @@
         "type": "SEQ",
         "members": [
           {
-            "type": "FIELD",
-            "name": "prefix",
-            "content": {
-              "type": "SYMBOL",
-              "name": "_basic_expression"
-            }
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "FIELD",
+                "name": "prefix",
+                "content": {
+                  "type": "SYMBOL",
+                  "name": "_basic_expression"
+                }
+              },
+              {
+                "type": "BLANK"
+              }
+            ]
           },
           {
             "type": "FIELD",
@@ -1302,6 +1310,5 @@
   "precedences": [],
   "externals": [],
   "inline": [],
-  "supertypes": [],
-  "reserved": {}
+  "supertypes": []
 }

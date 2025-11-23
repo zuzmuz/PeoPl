@@ -157,7 +157,7 @@ module.exports = grammar({
     )),
 
     brace_call_expression: $ => prec.left(PREC.PARENTHESIS, seq(
-      field("prefix", $._basic_expression),
+      optional(field("prefix", $._basic_expression)),
       field("body", $.function_body)
     )),
     

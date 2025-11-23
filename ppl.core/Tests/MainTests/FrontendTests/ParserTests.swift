@@ -590,250 +590,250 @@ final class ParserTests: XCTestCase {
 					])
 				),
 			]
-		)
-		// "expressions": .init(
-		// 	sourceName: "expressions",
-		// 	definitions: [
-		// 		.init(identifier: .chain(["well"]), definition: .nothing),
-		// 		.init(
-		// 			identifier: .chain(["hello"]),
-		// 			definition: .stringLiteral("Hello, World!"),
-		// 		),
-		// 		.init(
-		// 			identifier: .chain(["arithmetics"]),
-		// 			definition: .binary(
-		// 				.binary(
-		// 					.binary(
-		// 						.binary(
-		// 							.intLiteral(1),
-		// 							.plus,
-		// 							.binary(
-		// 								.intLiteral(20),
-		// 								.times,
-		// 								.binary(
-		// 									.intLiteral(5),
-		// 									.minus,
-		// 									.intLiteral(2),
-		// 								)
-		// 							)
-		// 						),
-		// 						.minus,
-		// 						.binary(
-		// 							.binary(
-		// 								.intLiteral(3),
-		// 								.by,
-		// 								.intLiteral(1)
-		// 							),
-		// 							.times,
-		// 							.intLiteral(3)
-		// 						)
-		// 					),
-		// 					.plus,
-		// 					.binary(
-		// 						.intLiteral(10),
-		// 						.modulo,
-		// 						.intLiteral(3)
-		// 					)
-		// 				),
-		// 				.minus,
-		// 				.intLiteral(10)
-		// 			)
-		// 		),
-		// 		.init(
-		// 			identifier: .chain(["hexOctBin"]),
-		// 			definition: .binary(
-		// 				.binary(
-		// 					.intLiteral(255),
-		// 					.plus,
-		// 					.binary(
-		// 						.intLiteral(240),
-		// 						.times,
-		// 						.intLiteral(7)
-		// 					)
-		// 				),
-		// 				.minus,
-		// 				.intLiteral(56400)
-		// 			)
-		// 		),
-		// 		.init(
-		// 			identifier: .chain(["big_numbers"]),
-		// 			definition: .intLiteral(1_000_000_000),
-		// 		),
-		// 		.init(
-		// 			identifier: .chain(["floating"]),
-		// 			definition: .binary(
-		// 				.floatLiteral(1.0),
-		// 				.plus,
-		// 				.binary(
-		// 					.binary(
-		// 						.floatLiteral(2.5),
-		// 						.times,
-		// 						.binary(
-		// 							.floatLiteral(3.14),
-		// 							.minus,
-		// 							.floatLiteral(1.0)
-		// 						)
-		// 					),
-		// 					.by,
-		// 					.floatLiteral(2.0)
-		// 				)
-		// 			)
-		// 		),
-		// 		.init(
-		// 			identifier: .chain(["prefix"]),
-		// 			definition: .binary(
-		// 				.intLiteral(1),
-		// 				.minus,
-		// 				.unary(
-		// 					.plus,
-		// 					.unary(
-		// 						.minus,
-		// 						.intLiteral(5)
-		// 					)
-		// 				)
-		// 			)
-		// 		),
-		// 		.init(
-		// 			identifier: .chain(["conditions"]),
-		// 			definition: .binary(
-		// 				.binary(
-		// 					.nominal(.chain(["you"])),
-		// 					.and,
-		// 					.nominal(.chain(["me"])),
-		// 				),
-		// 				.or,
-		// 				.nothing
-		// 			)
-		// 		),
-		// 		.init(
-		// 			identifier: .chain(["complex", "Conditions"]),
-		// 			definition: .binary(
-		// 				.binary(
-		// 					.binary(
-		// 						.binary(
-		// 							.intLiteral(1),
-		// 							.plus,
-		// 							.intLiteral(3),
-		// 						),
-		// 						.times,
-		// 						.intLiteral(3),
-		// 					),
-		// 					.greaterThan,
-		// 					.intLiteral(42),
-		// 				),
-		// 				.or,
-		// 				.binary(
-		// 					.nominal(.chain(["something"])),
-		// 					.and,
-		// 					.binary(
-		// 						.binary(
-		// 							.stringLiteral("this"),
-		// 							.equal,
-		// 							.stringLiteral("that"),
-		// 						),
-		// 						.or,
-		// 						.unary(
-		// 							.not,
-		// 							.call(.chain(["theSame"]))
-		// 						)
-		// 					)
-		// 				),
-		// 			)
-		// 		),
-		// 		.init(
-		// 			identifier: .chain(["What", "are", "the", "Odds"]),
-		// 			definition: .pipe(
-		// 				.pipe(
-		// 					.call(
-		// 						.chain(["Object"]),
-		// 						[
-		// 							.tagged("a", .intLiteral(1)),
-		// 							.tagged("b", .intLiteral(2)),
-		// 							.tagged("c", .intLiteral(3)),
-		// 						],
-		// 					),
-		// 					.call(
-		// 						.chain(["a", "b", "c"]),
-		// 						[
-		// 							.binary(
-		// 								.intLiteral(1),
-		// 								.plus,
-		// 								.intLiteral(1)
-		// 							),
-		// 							.binary(
-		// 								.intLiteral(2),
-		// 								.times,
-		// 								.intLiteral(2)
-		// 							),
-		// 							.binary(
-		// 								.nominal(.chain(["b"])),
-		// 								.or,
-		// 								.call(
-		// 									.chain(["x"])
-		// 								)
-		// 							),
-		// 						]
-		// 					)
-		// 				),
-		// 				.branched([
-		// 					.init(
-		// 						matchExpression: .nominal(.chain(["a"])),
-		// 						body: .binary(
-		// 							.binary(
-		// 								.access(.chain(["a"]), "a"),
-		// 								.plus,
-		// 								.access(.chain(["a"]), "b")
-		// 							),
-		// 							.plus,
-		// 							.access(.chain(["a"]), "c")
-		// 						)
-		// 					),
-		// 					.init(
-		// 						matchExpression: .nominal(.chain(["z", "z"])),
-		// 						body: .access(
-		// 							.access(.access(.chain(["z"]), "z"), "z"),
-		// 							"z"
-		// 						)
-		// 					),
-		// 					.init(
-		// 						matchExpression: .binding(
-		// 							.init(identifier: "call")
-		// 						),
-		// 						body: .call(
-		// 							.chain(["call"]),
-		// 							[
-		// 								.pipe(
-		// 									.nominal(.chain(["a"])),
-		// 									.nominal(.chain(["b"]))
-		// 								),
-		// 								.tagged(
-		// 									"x",
-		// 									.pipe(
-		// 										.nominal(.chain(["a"])),
-		// 										.nominal(.chain(["b"]))
-		// 									),
-		// 								),
-		// 								.tagged(
-		// 									"y",
-		// 									.pipe(
-		// 										.access(
-		// 											.chain(["a"]),
-		// 											"b"
-		// 										),
-		// 										.access(
-		// 											.chain(["q", "a"]),
-		// 											"b"
-		// 										)
-		// 									)
-		// 								),
-		// 							]
-		// 						)
-		// 					),
-		// 				])
-		// 			)
-		// 		),
-		// 	]
-		// ),
+		),
+		"expressions": .init(
+			sourceName: "expressions",
+			definitions: [
+				.tagged("well", .nothing),
+				.tagged(
+					"hello",
+					.stringLiteral("Hello, World!"),
+				),
+				.tagged(
+					"arithmetics",
+					.binary(
+						.binary(
+							.binary(
+								.binary(
+									.intLiteral(1),
+									.plus,
+									.binary(
+										.intLiteral(20),
+										.times,
+										.binary(
+											.intLiteral(5),
+											.minus,
+											.intLiteral(2),
+										)
+									)
+								),
+								.minus,
+								.binary(
+									.binary(
+										.intLiteral(3),
+										.by,
+										.intLiteral(1)
+									),
+									.times,
+									.intLiteral(3)
+								)
+							),
+							.plus,
+							.binary(
+								.intLiteral(10),
+								.modulo,
+								.intLiteral(3)
+							)
+						),
+						.minus,
+						.intLiteral(10)
+					)
+				),
+				.tagged(
+					"hexOctBin",
+					.binary(
+						.binary(
+							.intLiteral(255),
+							.plus,
+							.binary(
+								.intLiteral(240),
+								.times,
+								.intLiteral(7)
+							)
+						),
+						.minus,
+						.intLiteral(56400)
+					)
+				),
+				.tagged(
+					"big_numbers",
+					.intLiteral(1_000_000_000),
+				),
+				.tagged(
+					"floating",
+					.binary(
+						.floatLiteral(1.0),
+						.plus,
+						.binary(
+							.binary(
+								.floatLiteral(2.5),
+								.times,
+								.binary(
+									.floatLiteral(3.14),
+									.minus,
+									.floatLiteral(1.0)
+								)
+							),
+							.by,
+							.floatLiteral(2.0)
+						)
+					)
+				),
+				.tagged(
+					"prefix",
+					.binary(
+						.intLiteral(1),
+						.minus,
+						.unary(
+							.plus,
+							.unary(
+								.minus,
+								.intLiteral(5)
+							)
+						)
+					)
+				),
+				.tagged(
+					"conditions",
+					.binary(
+						.binary(
+							.nominal(.chain(["you"])),
+							.and,
+							.nominal(.chain(["me"])),
+						),
+						.or,
+						.nothing
+					)
+				),
+				.tagged(
+					.chain(["complex", "Conditions"]),
+					.binary(
+						.binary(
+							.binary(
+								.binary(
+									.intLiteral(1),
+									.plus,
+									.intLiteral(3),
+								),
+								.times,
+								.intLiteral(3),
+							),
+							.greaterThan,
+							.intLiteral(42),
+						),
+						.or,
+						.binary(
+							.nominal(.chain(["something"])),
+							.and,
+							.binary(
+								.binary(
+									.stringLiteral("this"),
+									.equal,
+									.stringLiteral("that"),
+								),
+								.or,
+								.unary(
+									.not,
+									.call(.chain(["theSame"]))
+								)
+							)
+						),
+					)
+				),
+				.tagged(
+					.chain(["What", "are", "the", "Odds"]),
+					.pipe(
+						.pipe(
+							.call(
+								.chain(["Object"]),
+								[
+									.tagged("a", .intLiteral(1)),
+									.tagged("b", .intLiteral(2)),
+									.tagged("c", .intLiteral(3)),
+								],
+							),
+							.call(
+								.chain(["a", "b", "c"]),
+								[
+									.binary(
+										.intLiteral(1),
+										.plus,
+										.intLiteral(1)
+									),
+									.binary(
+										.intLiteral(2),
+										.times,
+										.intLiteral(2)
+									),
+									.binary(
+										.nominal(.chain(["b"])),
+										.or,
+										.call(
+											.chain(["x"])
+										)
+									),
+								]
+							)
+						),
+						.branched([
+							.init(
+								matchExpression: .nominal(.chain(["a"])),
+								body: .binary(
+									.binary(
+										.access(.chain(["a"]), "a"),
+										.plus,
+										.access(.chain(["a"]), "b")
+									),
+									.plus,
+									.access(.chain(["a"]), "c")
+								)
+							),
+							.init(
+								matchExpression: .nominal(.chain(["z", "z"])),
+								body: .access(
+									.access(.access(.chain(["z"]), "z"), "z"),
+									"z"
+								)
+							),
+							.init(
+								matchExpression: .binding(
+									.init(identifier: "call")
+								),
+								body: .call(
+									.chain(["call"]),
+									[
+										.pipe(
+											.nominal(.chain(["a"])),
+											.nominal(.chain(["b"]))
+										),
+										.tagged(
+											"x",
+											.pipe(
+												.nominal(.chain(["a"])),
+												.nominal(.chain(["b"]))
+											),
+										),
+										.tagged(
+											"y",
+											.pipe(
+												.access(
+													.chain(["a"]),
+													"b"
+												),
+												.access(
+													.chain(["q", "a"]),
+													"b"
+												)
+											)
+										),
+									]
+								)
+							),
+						])
+					)
+				),
+			]
+		),
 		// "errors": .init(
 		//     sourceName: "errors", definitions: [])
 	]

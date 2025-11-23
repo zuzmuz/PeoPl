@@ -256,7 +256,7 @@
       },
       "prefix": {
         "multiple": false,
-        "required": true,
+        "required": false,
         "types": [
           {
             "type": "access_expression",
@@ -1721,8 +1721,7 @@
   },
   {
     "type": "comment",
-    "named": true,
-    "extra": true
+    "named": true
   },
   {
     "type": "comp",
