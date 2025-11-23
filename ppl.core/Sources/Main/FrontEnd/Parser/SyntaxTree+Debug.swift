@@ -178,18 +178,19 @@ extension Syntax.Expression: CustomDebugStringConvertible {
                 isLast: true,
                 prefix: childPrefix + "   ",
                 descriptions: &descriptions)
-		//
-		// case .branched(let branched):
-		// 	var result = "\(prefix)\(connector)Branched"
-		// 	for (index, branch) in branched.branches.enumerated() {
-		// 		let isLastBranch = index == branched.branches.count - 1
-		// 		result +=
-		// 			"\n"
-		// 			+ branch.formatAST(
-		// 				depth: depth + 1, isLast: isLastBranch, prefix: childPrefix,
-		// 				branchIndex: index)
-		// 	}
-		// 	return result
+
+		case .branched(let branched):
+			descriptions.append("\(prefix)\(connector)Branched")
+			for (index, branch) in branched.branches.enumerated() {
+				let isLastBranch = index == branched.branches.count - 1
+				branch.formatAST(
+					depth: depth + 1,
+                    isLast: isLastBranch,
+                    prefix: childPrefix,
+					branchIndex: index,
+                    descriptions: &descriptions
+                )
+			}
 		//
 		// case .piped(let pipe):
 		// 	var result = "\(prefix)\(connector)Pipe"
@@ -371,42 +372,49 @@ extension Syntax.TypeDefinition: CustomDebugStringConvertible {
 //
 // // MARK: - Branch
 //
-// extension Syntax.Branched.Branch: CustomDebugStringConvertible {
-// 	public var debugDescription: String {
-// 		"Branch"
-// 	}
-//
-// 	func formatAST(depth: Int, isLast: Bool, prefix: String, branchIndex: Int)
-// 		-> String
-// 	{
-// 		let connector = isLast ? "└─ " : "├─ "
-// 		let childPrefix = prefix + (isLast ? "   " : "│  ")
-//
-// 		var result = "\(prefix)\(connector)Branch[\(branchIndex)]"
-// 		result += "\n\(childPrefix)├─ Match"
-// 		result +=
-// 			"\n"
-// 			+ matchExpression.formatAST(
-// 				depth: depth + 1, isLast: guardExpression == nil,
-// 				prefix: childPrefix + (guardExpression == nil ? "   " : "│  "))
-//
-// 		if let guardExpression {
-// 			result += "\n\(childPrefix)├─ Guard"
-// 			result +=
-// 				"\n"
-// 				+ guardExpression.formatAST(
-// 					depth: depth + 1, isLast: false, prefix: childPrefix + "│  ")
-// 		}
-//
-// 		result += "\n\(childPrefix)└─ Body"
-// 		result +=
-// 			"\n"
-// 			+ body.formatAST(
-// 				depth: depth + 1, isLast: true, prefix: childPrefix + "   ")
-//
-// 		return result
-// 	}
-// }
+extension Syntax.Branched.Branch: CustomDebugStringConvertible {
+	public var debugDescription: String {
+		"Branch"
+	}
+
+	func formatAST(
+        depth: Int,
+        isLast: Bool,
+        prefix: String,
+        branchIndex: Int,
+        descriptions: inout [String]
+    ) {
+		let connector = isLast ? "└─ " : "├─ "
+		let childPrefix = prefix + (isLast ? "   " : "│  ")
+
+		descriptions.append("\(prefix)\(connector)Branch[\(branchIndex)]")
+		descriptions.append("\(childPrefix)├─ Match")
+		matchExpression.formatAST(
+            depth: depth + 1,
+            isLast: guardExpression == nil,
+            prefix: childPrefix + (guardExpression == nil ? "   " : "│  "),
+            descriptions: &descriptions
+        )
+
+		if let guardExpression {
+			descriptions.append("\(childPrefix)├─ Guard")
+			guardExpression.formatAST(
+			    depth: depth + 1,
+                isLast: false,
+                prefix: childPrefix + "│  ",
+                descriptions: &descriptions
+            )
+		}
+
+		descriptions.append("\(childPrefix)└─ Body")
+		body.formatAST(
+			depth: depth + 1,
+            isLast: true,
+            prefix: childPrefix + "   ",
+            descriptions: &descriptions
+        )
+	}
+}
 //
 // // MARK: - Branched
 //
