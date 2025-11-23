@@ -620,7 +620,6 @@ extension Syntax.Lambda: TreeSitterNode {
 		guard let bodyNode = node.child(byFieldName: "body"),
 			let expressionNode = bodyNode.child(at: 1)
 		else {
-			print("ZAZAZA \(try node.getString(in: source))")
 			throw .errorParsing(
 				element: "Function Body", location: node.getLocation(in: source))
 		}

@@ -272,10 +272,6 @@
         },
         {
           "type": "SYMBOL",
-          "name": "special"
-        },
-        {
-          "type": "SYMBOL",
           "name": "unary_expression"
         },
         {
@@ -783,6 +779,10 @@
         {
           "type": "SYMBOL",
           "name": "never"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "special"
         },
         {
           "type": "SYMBOL",
