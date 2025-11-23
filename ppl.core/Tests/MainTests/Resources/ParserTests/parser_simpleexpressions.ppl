@@ -4,5 +4,15 @@ einstein: e=m*c^2
 the\branching: |cond if another| this |_| that
 function: fn [] -> []
 fullon: fn (Type) [a: X, b: Y, d: fn (F)[]->Z] -> X {
-    _
+    one
+    |> for(a: b, c: d)
+    |>
+    |we=$x if x| {
+        wa
+        |> thing
+    }
+    |sam| x
 }
+
+last' Int: 3
+

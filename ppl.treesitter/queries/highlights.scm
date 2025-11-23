@@ -44,6 +44,7 @@
  "\\"
  ","
  "->"
+ "'"
 ] @punctuation.delimiter
 
 (nothing) @constant.builtin

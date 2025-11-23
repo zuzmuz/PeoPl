@@ -28,17 +28,21 @@ extension Syntax.QualifiedIdentifier: CustomDebugStringConvertible {
 	}
 }
 
-private enum Connector: String {
+private enum Connector: String, CustomDebugStringConvertible {
 	case last = "└─ "
 	case notLast = "├─ "
 
 	var childPrefix: String {
 		switch self {
 		case .last:
-			return "│ "
+			return "   "
 		case .notLast:
-			return "  "
+			return "│  "
 		}
+	}
+
+	var debugDescription: String {
+		return self.rawValue
 	}
 }
 
@@ -244,7 +248,7 @@ extension Syntax.Function: ASTFormatableNode {
 		let prefix = prefix + connector.childPrefix
 
 		if let input {
-			descriptions.append("\(prefix)\(Connector.notLast) InputType")
+			descriptions.append("\(prefix)\(Connector.notLast)InputType")
 			input.formatAST(
 				prefix: prefix + Connector.notLast.childPrefix,
 				connector: .last,
@@ -253,7 +257,7 @@ extension Syntax.Function: ASTFormatableNode {
 		}
 
 		if hasArgs {
-			descriptions.append("\(prefix)\(Connector.notLast) Arguments")
+			descriptions.append("\(prefix)\(Connector.notLast)Arguments")
 			for (index, arg) in arguments.enumerated() {
 				let isLastArg = index == arguments.count - 1
 				arg.formatAST(
@@ -264,7 +268,7 @@ extension Syntax.Function: ASTFormatableNode {
 			}
 		}
 
-		descriptions.append("\(prefix)\(Connector.last) OutputType")
+		descriptions.append("\(prefix)\(Connector.last)OutputType")
 		output.formatAST(
 			prefix: prefix + Connector.last.childPrefix,
 			connector: .last,
@@ -282,13 +286,13 @@ extension Syntax.Lambda: ASTFormatableNode {
 		let childPrefix = prefix + connector.childPrefix
 		descriptions.append("\(prefix)\(connector)Lambda")
 		if let lambdaPrefix = self.prefix {
-			descriptions.append("\(childPrefix)\(Connector.notLast) Prefix")
+			descriptions.append("\(childPrefix)\(Connector.notLast)Prefix")
 			lambdaPrefix.formatAST(
 				prefix: childPrefix + Connector.notLast.childPrefix,
-				connector: .notLast,
+				connector: .last,
 				descriptions: &descriptions)
 		}
-		descriptions.append("\(childPrefix)\(Connector.last) Body")
+		descriptions.append("\(childPrefix)\(Connector.last)Body")
 		self.body.formatAST(
 			prefix: childPrefix + Connector.last.childPrefix,
 			connector: .last,
@@ -308,7 +312,7 @@ extension Syntax.Call: ASTFormatableNode {
 		if let callPrefix = self.prefix {
 			let isLastNodeConnector =
 				self.arguments.isEmpty ? Connector.last : Connector.notLast
-			descriptions.append("\(childPrefix)\(isLastNodeConnector) Prefix")
+			descriptions.append("\(childPrefix)\(isLastNodeConnector)Prefix")
 			callPrefix.formatAST(
 				prefix: childPrefix + isLastNodeConnector.childPrefix,
 				connector: .last,
@@ -316,7 +320,7 @@ extension Syntax.Call: ASTFormatableNode {
 			)
 		}
 		if !self.arguments.isEmpty {
-			descriptions.append("\(childPrefix)\(Connector.last) Arguments")
+			descriptions.append("\(childPrefix)\(Connector.last)Arguments")
 			for (index, arg) in self.arguments.enumerated() {
 				let isLastArg = index == self.arguments.count - 1
 				arg.formatAST(
@@ -346,7 +350,7 @@ extension Syntax.Access: ASTFormatableNode {
 
 extension Syntax.Binding: CustomDebugStringConvertible {
 	public var debugDescription: String {
-		"$\(self.identifier)"
+		"Binding: \(self.identifier)"
 	}
 }
 
@@ -359,12 +363,12 @@ extension Syntax.TaggedExpression: ASTFormatableNode {
 		let childPrefix = prefix + connector.childPrefix
 		descriptions.append("\(prefix)\(connector)Tagged: \(self.tag)")
 		if let typeSpec = self.typeSpecifier {
-			descriptions.append("\(childPrefix)\(Connector.notLast) TypeSpec")
+			descriptions.append("\(childPrefix)\(Connector.notLast)TypeSpec")
 			typeSpec.formatAST(
 				prefix: childPrefix + Connector.notLast.childPrefix,
 				connector: .last,
 				descriptions: &descriptions)
-			descriptions.append("\(childPrefix)\(Connector.last) Expression")
+			descriptions.append("\(childPrefix)\(Connector.last)Expression")
 			self.expression.formatAST(
 				prefix: childPrefix + Connector.last.childPrefix,
 				connector: .last,
@@ -407,7 +411,7 @@ extension Syntax.Branched.Branch: ASTFormatableNode {
 		let childPrefix = prefix + connector.childPrefix
 
 		descriptions.append("\(prefix)\(connector)Branch")
-		descriptions.append("\(childPrefix)\(Connector.notLast) Match")
+		descriptions.append("\(childPrefix)\(Connector.notLast)Match")
 		matchExpression.formatAST(
 			prefix: childPrefix + Connector.notLast.childPrefix,
 			connector: .last,
@@ -415,7 +419,7 @@ extension Syntax.Branched.Branch: ASTFormatableNode {
 		)
 
 		if let guardExpression {
-			descriptions.append("\(childPrefix)\(Connector.notLast) Guard")
+			descriptions.append("\(childPrefix)\(Connector.notLast)Guard")
 			guardExpression.formatAST(
 				prefix: childPrefix + Connector.notLast.childPrefix,
 				connector: .last,
@@ -423,7 +427,7 @@ extension Syntax.Branched.Branch: ASTFormatableNode {
 			)
 		}
 
-		descriptions.append("\(childPrefix)\(Connector.last) Body")
+		descriptions.append("\(childPrefix)\(Connector.last)Body")
 		body.formatAST(
 			prefix: childPrefix + Connector.last.childPrefix,
 			connector: .last,
@@ -442,7 +446,7 @@ extension Syntax.Pipe: ASTFormatableNode {
 		let childPrefix = prefix + connector.childPrefix
 		left.formatAST(
 			prefix: childPrefix,
-			connector: .last,
+			connector: .notLast,
 			descriptions: &descriptions
 		)
 		right.formatAST(
