@@ -385,6 +385,174 @@ extension Syntax.Expression {
 // swiftlint:disable:next type_body_length
 final class ParserTests: XCTestCase {
 	let fileNames: [String: Syntax.Module] = [
+		"literals": .init(
+			sourceName: "literals",
+			definitions: [
+				.tagged("intVal", .intLiteral(42)),
+				.tagged("floatVal", .floatLiteral(3.14)),
+				.tagged("strVal", .stringLiteral("hello world")),
+				.tagged("boolTrue", .literal(.init(value: .boolLiteral(true)))),
+				.tagged("boolFalse", .literal(.init(value: .boolLiteral(false)))),
+				.tagged("unitVal", .nothing),
+			]
+		),
+		"simple_functions": .init(
+			sourceName: "simple_functions",
+			definitions: [
+				.tagged(
+					"add",
+					.function(
+						.init(
+							input: .nominal(.chain(["Int"])),
+							arguments: [
+								.tagged("x", .nominal(.chain(["Int"])))
+							],
+							output: .nominal(.chain(["Int"]))
+						)
+					)
+				),
+				.tagged(
+					"identity",
+					.function(
+						.init(
+							input: .nominal(.chain(["T"])),
+							arguments: [],
+							output: .nominal(.chain(["T"]))
+						)
+					)
+				),
+				.tagged(
+					"complexFn",
+					.function(
+						.init(
+							input: .nominal(.chain(["A"])),
+							arguments: [
+								.tagged("x", .nominal(.chain(["Int"]))),
+								.tagged("y", .nominal(.chain(["Float"]))),
+								.tagged(
+									"callback",
+									.function(
+										.init(
+											input: .nominal(.chain(["B"])),
+											arguments: [],
+											output: .nominal(.chain(["C"]))
+										)
+									)
+								),
+							],
+							output: .nominal(.chain(["Result"]))
+						)
+					)
+				),
+			]
+		),
+		"lambdas": .init(
+			sourceName: "lambdas",
+			definitions: [
+				.tagged(
+					"simpleLambda",
+					.lambda(.intLiteral(42))
+				),
+				.tagged(
+					"lambdaWithPipe",
+					.lambda(
+						.pipe(
+							.pipe(
+								.nominal(.chain(["x"])),
+								.nominal(.chain(["double"]))
+							),
+							.nominal(.chain(["increment"]))
+						)
+					)
+				),
+				.tagged(
+					"lambdaWithMatch",
+					.lambda(
+						.branched([
+							.init(
+								matchExpression: .intLiteral(0),
+								body: .nothing
+							),
+							.init(
+								matchExpression: .binding(.init(identifier: "n")),
+								body: .nominal(.chain(["n"]))
+							),
+						])
+					)
+				),
+			]
+		),
+		"calls": .init(
+			sourceName: "calls",
+			definitions: [
+				.tagged("noArgs", .call(.chain(["doSomething"]))),
+				.tagged(
+					"withArgs",
+					.call(
+						.chain(["calculate"]),
+						[
+							.intLiteral(1),
+							.intLiteral(2),
+							.intLiteral(3),
+						]
+					)
+				),
+				.tagged(
+					"namedArgs",
+					.call(
+						.chain(["create"]),
+						[
+							.tagged("x", .intLiteral(10)),
+							.tagged("y", .intLiteral(20)),
+							.tagged("label", .stringLiteral("point")),
+						]
+					)
+				),
+				.tagged(
+					"nestedCall",
+					.call(
+						.chain(["outer"]),
+						[
+							.call(
+								.chain(["inner"]),
+								[
+									.nominal(.chain(["value"]))
+								]
+							)
+						]
+					)
+				),
+			]
+		),
+		"simple_types": .init(
+			sourceName: "simple_types",
+			definitions: [
+				.tagged(
+					"Point",
+					.typeDefinition([
+						.tagged("x", .nominal(.chain(["Int"]))),
+						.tagged("y", .nominal(.chain(["Int"]))),
+					])
+				),
+				.tagged(
+					"Person",
+					.typeDefinition([
+						.tagged("name", .nominal(.chain(["String"]))),
+						.tagged("age", .nominal(.chain(["Int"]))),
+					])
+				),
+				.tagged(
+					"Result",
+					.squareCall(
+						.chain(["choice"]),
+						[
+							.tagged("ok", .nominal(.chain(["T"]))),
+							.tagged("error", .nominal(.chain(["String"]))),
+						]
+					)
+				),
+			]
+		),
 		"types": .init(
 			sourceName: "types",
 			definitions: [

@@ -1,0 +1,11 @@
+intVal: 42
+
+floatVal: 3.14
+
+strVal: "hello world"
+
+boolTrue: true
+
+boolFalse: false
+
+unitVal: nothing

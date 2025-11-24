@@ -1,0 +1,5 @@
+Point: [x: Int, y: Int]
+
+Person: [name: String, age: Int]
+
+Result: choice[ok: T, error: String]

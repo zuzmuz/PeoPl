@@ -1,0 +1,7 @@
+noArgs: doSomething()
+
+withArgs: calculate(1, 2, 3)
+
+namedArgs: create(x: 10, y: 20, label: "point")
+
+nestedCall: outer(inner(value))

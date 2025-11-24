@@ -1,0 +1,8 @@
+simpleLambda: { 42 }
+
+lambdaWithPipe: { x |> double |> increment }
+
+lambdaWithMatch: {
+    |0| nothing
+    |$n| n
+}
