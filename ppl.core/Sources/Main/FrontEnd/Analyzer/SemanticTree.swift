@@ -5,7 +5,33 @@
 // Peopl code.
 
 public enum Semantic {
-	public struct Expression {}
+
+	public enum Expression {
+		case literal
+		case unary
+		case binary
+		case nominal
+		case typeDefinition
+		case typeInitialiser
+		case call
+		case function
+
+		var typeSpecifier: Expression {
+			return .typeDefinition
+		}
+
+		func isSub(in typeSpecifier: Expression) -> Bool {
+			return false
+		}
+
+		var info
+	}
+
+	public enum Info {
+		case runtimeValue
+		case comptimeValue
+		case typeDefinition
+	}
 }
 
 #if ANALYZER
