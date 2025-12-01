@@ -143,7 +143,22 @@ extension Syntax.Access: Testable {
 		with: Self
 	) {
 		prefix.assertEqual(with: with.prefix)
-		XCTAssertEqual(field, with.field)
+		field.assertEqual(with: with.field)
+	}
+}
+
+extension Syntax.Access.Field: Testable {
+	func assertEqual(
+		with: Self
+	) {
+		switch (self, with) {
+		case (.named(let lhs), .named(let rhs)):
+			XCTAssertEqual(lhs, rhs)
+		case (.positional(let lhs), .positional(let rhs)):
+			XCTAssertEqual(lhs, rhs)
+		default:
+			XCTFail("Field access \(self) does not match \(with)")
+		}
 	}
 }
 
@@ -305,7 +320,7 @@ extension Syntax.Expression {
 		_ field: String
 	) -> Syntax.Expression {
 		return .access(
-			.init(prefix: .nominal(identifier), field: field)
+			.init(prefix: .nominal(identifier), field: .named(field))
 		)
 	}
 
@@ -314,7 +329,25 @@ extension Syntax.Expression {
 		_ field: String
 	) -> Syntax.Expression {
 		return .access(
-			.init(prefix: prefix, field: field)
+			.init(prefix: prefix, field: .named(field))
+		)
+	}
+
+	static func access(
+		_ identifier: Syntax.QualifiedIdentifier,
+		_ field: UInt32
+	) -> Syntax.Expression {
+		return .access(
+			.init(prefix: .nominal(identifier), field: .positional(field))
+		)
+	}
+
+	static func access(
+		_ prefix: Syntax.Expression,
+		_ field: UInt32
+	) -> Syntax.Expression {
+		return .access(
+			.init(prefix: prefix, field: .positional(field))
 		)
 	}
 
