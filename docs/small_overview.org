@@ -27,23 +27,30 @@
 * What is this
   This is a small introduction to PeoPl.
   Knowledge of programming languages and concepts is assumed.
-  To get a more in-depth tour over PeoPl's features and specifications, read the {:overview.norg:}[comprehensive overview].
+  To get a more in-depth tour over PeoPl's features and
+  specifications, read the [[file:overview.org][comprehensive overview]]
+  
 
 * What is PeoPl
   *PeoPl* is a /Pipeline Expression Oriented Programming Language/.
 
-  It is a general-purpose, compiled, statically typed programming language with:
+  It is a general-purpose, compiled, statically typed programming
+  language with:
   - Expressive pipeline-oriented programming style 
   - Powerful type system for domain modeling
   - Low-level control
-  - Expressive generics system
+  - Expressive generics system and compile time execution
 
-  Programs are constructed as pipelines of operations, where each operation receives data, transforms it, and passes it forward.
+  Programs are constructed as pipelines of operations, where each
+  operation receives data, transforms it, and passes it forward.
+  
 
 * A PeoPl File
   A PeoPl source file ends with the file extension =.ppl=.
   It contains top-level definitions.
-  Definitions define compile-time constructs: values, expressions, types, and functions.
+  Definitions define compile-time constructs: values, expressions,
+  types, and functions.
+  
 
 * Main
   If running in single-file mode, one definition must exist in the file, and it is the main function.
@@ -62,8 +69,8 @@
   This is how functions are defined:
 
   #+begin_src peopl
-  main: func [] -> Int {
-  0
+  main: fn [] -> Int {
+      0
   }
   #+end_src
 
@@ -71,7 +78,7 @@
   A PeoPl file is basically a list of definitions. We covered the main definition; here's the format of custom definitions:
 
   #+begin_src peopl
-  qualifiedIdentifier OptionalType: expression
+  qualifiedIdentifier' OptionalType: expression
   #+end_src
 
   Note: There's no apostrophe after the identifier.
@@ -184,7 +191,7 @@
   To define a function:
 
   #+begin_src peopl
-  qualifiedIdentifier: func (OptionalInputType)[arg1' ArgType1, arg2' ArgType2] -> OutputType {
+  qualifiedIdentifier: fn (OptionalInputType)[arg1: ArgType1, arg2: ArgType2] -> OutputType {
   // function body
   }
   #+end_src
@@ -235,7 +242,7 @@
    x: coordinates._0  // 3.14
 
    // Records (named access)
-   Person: [name' String, age' Int]
+   Person: [name: String, age: Int]
    person: Person(name: "Alice", age: 30)
    name: person.name  // "Alice"
    #+end_src
@@ -245,12 +252,12 @@
 
    #+begin_src peopl
    // Basic enums
-   Color: choice [red', green', blue', yellow']
+   Color: choice [red:, green:, blue:, yellow:]
 
    // Tagged unions with associated values
    Shape: choice [
-   circle' [radius' Float],
-   rectangle' [width' Float, height' Float]
+   circle: [radius: Float],
+   rectangle: [width: Float, height: Float]
    ]
 
    // Pattern matching on choice types
@@ -266,7 +273,7 @@
    #+begin_src peopl
    UserId: Int
    Email: String
-   Point2D: [x' Float, y' Float]
+   Point2D: [x: Float, y: Float]
    #+end_src
 
    TypeAliases are distinct, and =Int= can be used as a =UserId= but a =UserId= can not be used as an =Int=

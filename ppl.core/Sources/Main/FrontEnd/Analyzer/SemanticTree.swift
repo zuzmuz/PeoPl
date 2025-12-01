@@ -6,31 +6,80 @@
 
 public enum Semantic {
 
-	public enum Expression {
-		case literal
-		case unary
-		case binary
-		case nominal
-		case typeDefinition
-		case typeInitialiser
-		case call
-		case function
+	public typealias ElementId = UInt32
+	public typealias Symbol = String
 
-		var typeSpecifier: Expression {
-			return .typeDefinition
+	// public enum Symbol: Hashable, Sendable {
+	// 	case named(String)
+	// 	/// position symbols are anonymous
+	// 	case positional(UInt64)
+	// 	/// function symbols behave in a special way to allow overloading on paramer names
+	// 	/// two functions can have the same symbol but will be differenciated by their arguments
+	// 	/// two functions sharing the same name and arguments but with different types is not allowed
+	// 	case function(String, argumentHash: String)
+	// }
+
+	// TODO: what we need
+	// 1) generate [Element] and [Symbol: Element]
+	//		- [Element] represents nodes hierarcy, each element has a parent,
+	//      a) element 0 is the nameless global scope
+	//      b) a module (file) is an element, and behaves like a scope (namespace), the global element is parent of all modules
+	//      c) each top level definition is an element of the module, which means it has the module as a parent
+	//      d) a module is defined and referenced by a symbol
+	//    - [Symbol: ElementId] represents the lookup table for symbols
+	//      a) a symbol is the hash value of the elements qualified tag, which includes all the element chains, which means that a field a in a Struct B in a file c has the symbol c\B\a
+	//		  b) positional arguments and anonymous expressions take a positional symbol which is equivalent to its position.
+
+	public enum Literal: Sendable {
+		case int(UInt64)
+		case float(Double)
+		case bool(Bool)
+		case string(String)
+
+		var type: Expression {
+			switch self {
+			case .int:
+				return .nominal(1)
+			case .float:
+				return .nominal(2)
+			case .bool:
+				return .nominal(3)
+			case .string:
+				fatalError("Strings not implemented")
+			}
 		}
-
-		func isSub(in typeSpecifier: Expression) -> Bool {
-			return false
-		}
-
-		var info
 	}
 
-	public enum Info {
-		case runtimeValue
-		case comptimeValue
-		case typeDefinition
+	public indirect enum Expression: Sendable {
+		case literal(Literal)
+		case nominal(ElementId)
+		case unary(op: Operator, Expression, type: Expression)
+		case binary(op: Operator, lhs: Expression, rhs: Expression, type: Expression)
+		case typeDefinition([ElementId: Expression])
+		case tuple([ElementId: Expression])
+	}
+
+	public struct Context {
+		let parentScopes: [ElementId]
+		let symbols: [Symbol: ElementId]
+		let experssions: [Symbol: Syntax.Expression]
+	}
+}
+
+extension [Syntax.Expression] {
+	func semanticCheck(
+		currentScope: Semantic.ElementId,
+		context: Semantic.Context
+	) -> [Semantic.Symbol: Syntax.Expression] {
+		
+		fatalError("not implemented")
+	}
+}
+
+extension Syntax.Module {
+	func semanticCheck(context: Semantic.Context) -> Semantic.Context {
+		// self.definitions.
+		fatalError("not implemented")
 	}
 }
 
