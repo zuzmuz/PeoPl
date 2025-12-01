@@ -42,6 +42,8 @@ extension Syntax.Expression: Testable {
 			lhs.assertEqual(with: rhs)
 		case (.binding(let lhs), .binding(let rhs)):
 			lhs.assertEqual(with: rhs)
+		case (.positional(let lhs), .positional(let rhs)):
+			lhs.assertEqual(with: rhs)
 		case (.taggedExpression(let lhs), .taggedExpression(let rhs)):
 			lhs.assertEqual(with: rhs)
 		case (.branched(let lhs), .branched(let rhs)):
@@ -167,6 +169,12 @@ extension Syntax.Binding: Testable {
 		with: Self
 	) {
 		XCTAssertEqual(identifier, with.identifier)
+	}
+}
+
+extension Syntax.Positional: Testable {
+	func assertEqual(with: Self) {
+		XCTAssertEqual(self.index, with.index)
 	}
 }
 
@@ -474,6 +482,28 @@ final class ParserTests: XCTestCase {
 								),
 							],
 							output: .nominal(.chain(["Result"]))
+						)
+					)
+				),
+				.tagged(
+					"positional",
+					.function(
+						.init(
+							input: nil,
+							arguments: [
+								.nominal(.chain(["Int"])),
+								.nominal(.chain(["Int"])),
+							],
+							output: .lambda(
+								.init(
+									prefix: .nominal(.chain(["Int"])),
+									body: .binary(
+										.positional(.init(index: 0)),
+										.plus,
+										.positional(.init(index: 1))
+									)
+								)
+							)
 						)
 					)
 				),

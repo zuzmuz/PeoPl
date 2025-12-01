@@ -22,5 +22,5 @@ What\are\the\Odds: {
     |>
     |a| a.a + a.b + a.c
     |z\z| z.z.z.z
-    |$call| call(a |> b, x: a |> b, y: a.b |> q\a.b)
+    |@call| call(a |> b, x: a |> b, y: a.b |> q\a.b)
 }
