@@ -133,6 +133,11 @@ extension Syntax.Expression: ASTFormatableNode {
 				"\(prefix)\(connector)\("Binding".colored(.cyan)): \(binding.identifier.colored(.yellow))"
 			)
 
+		case .positional(let positional):
+			descriptions.append(
+				"\(prefix)\(connector)\("Positional".colored(.cyan)): \(String(positional.index).colored(.yellow))"
+			)
+
 		case .taggedExpression(let tagged):
 			tagged.formatAST(
 				prefix: prefix,
@@ -352,13 +357,24 @@ extension Syntax.Access: ASTFormatableNode {
 	) {
 		let childPrefix = prefix + connector.childPrefix
 		descriptions.append(
-			"\(prefix)\(connector)\("Access".colored(.cyan)): .\(self.field.colored(.yellow)) \(self.location)"
+			"\(prefix)\(connector)\("Access".colored(.cyan)): .\(self.field.debugDescription.colored(.yellow)) \(self.location)"
 		)
 		self.prefix.formatAST(
 			prefix: childPrefix,
 			connector: .last,
 			descriptions: &descriptions
 		)
+	}
+}
+
+extension Syntax.Access.Field: CustomDebugStringConvertible {
+	public var debugDescription: String {
+		switch self {
+		case .named(let value):
+			return value
+		case .positional(let value):
+			return "\(value)"
+		}
 	}
 }
 

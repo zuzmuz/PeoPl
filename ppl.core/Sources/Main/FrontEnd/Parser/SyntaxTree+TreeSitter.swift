@@ -160,6 +160,7 @@ extension Node {
 		case braceCallExpression = "brace_call_expression"
 		case squareExpressionList = "square_expression_list"
 		case binding = "binding"
+		case positional = "positional"
 		case functionDefinition = "function_definition"
 		case taggedExpression = "tagged_expression"
 		case branchedExpression = "branched_expression"
@@ -360,6 +361,8 @@ extension Syntax.Expression: TreeSitterNode {
 			return try .lambda(.from(node: node, in: source))
 		case .binding:
 			return try .binding(.from(node: node, in: source))
+		case .positional:
+			return try .positional(.from(node: node, in: source))
 		case .functionDefinition:
 			return try .function(.from(node: node, in: source))
 		case .taggedExpression:
@@ -630,17 +633,29 @@ extension Syntax.Access: TreeSitterNode {
 		node: Node,
 		in source: Syntax.Source
 	) throws(Syntax.Error) -> Self {
-		guard let prefixNode = node.child(byFieldName: "prefix"),
-			let fieldNode = node.child(byFieldName: "field")
-		else {
+		guard let prefixNode = node.child(byFieldName: "prefix") else {
 			throw .errorParsing(
 				element: "AccessExpression",
 				location: node.getLocation(in: source)
 			)
 		}
+		let field: Syntax.Access.Field
+		if let fieldNode = node.child(byFieldName: "named_field") {
+			field = .named(try fieldNode.getString(in: source))
+		} else if let fieldNode = node.child(byFieldName: "positional_field"),
+			let positionalFieldStringValue = try? fieldNode.getString(in: source),
+			let positionalIndex = UInt32(positionalFieldStringValue.dropFirst())
+		{
+			field = .positional(positionalIndex)
+		} else {
+			throw .errorParsing(
+				element: "AccessExpression no field",
+				location: node.getLocation(in: source)
+			)
+		}
 		return try .init(
 			prefix: .from(node: prefixNode, in: source),
-			field: fieldNode.getString(in: source),
+			field: field,
 			location: node.getLocation(in: source)
 		)
 	}
@@ -657,6 +672,25 @@ extension Syntax.Binding: TreeSitterNode {
 				node.getString(in: source).dropFirst()
 			),
 			location: node.getLocation(in: source)
+		)
+	}
+}
+
+extension Syntax.Positional: TreeSitterNode {
+	static func from(
+		node: Node,
+		in source: Syntax.Source
+	) throws(Syntax.Error) -> Self {
+		let indexStringValue = try node.getString(in: source).dropFirst()
+		guard let index = UInt32(indexStringValue) else {
+			throw .errorParsing(
+				element: "Positional",
+				location: node.getLocation(in: source)
+			)
+		}
+
+		return .init(
+			index: index, location: node.getLocation(in: source)
 		)
 	}
 }

@@ -180,7 +180,7 @@ public enum Syntax {
 
 	/// Core expression node representing
 	/// all computations and values in the language
-	public indirect enum Expression: Codable, Sendable, SyntaxNode {
+	public indirect enum Expression: Sendable, SyntaxNode {
 		/// Compile time constant literals
 		case literal(Literal)
 		/// Expression with prefix operator
@@ -202,6 +202,8 @@ public enum Syntax {
 		case access(Access)
 		/// Binding expression inside a branch capture group
 		case binding(Binding)
+		/// Access positional argument in function block
+		case positional(Positional)
 		/// Expression associated with a tag/label
 		case taggedExpression(TaggedExpression)
 		/// Branching expression for pattern matching
@@ -231,6 +233,8 @@ public enum Syntax {
 				access.location
 			case .binding(let binding):
 				binding.location
+			case .positional(let positional):
+				positional.location
 			case .taggedExpression(let taggedExpression):
 				taggedExpression.location
 			case .branched(let branched):
@@ -387,12 +391,17 @@ public enum Syntax {
 	/// Represents access to internal field of a product type
 	public struct Access: SyntaxNode, Sendable {
 		let prefix: Expression
-		let field: String
+		let field: Field
 		public let location: NodeLocation
+
+		public enum Field: Codable, Sendable {
+			case named(String)
+			case positional(UInt32)
+		}
 
 		init(
 			prefix: Expression,
-			field: String,
+			field: Field,
 			location: NodeLocation = .nowhere
 		) {
 			self.prefix = prefix
@@ -411,6 +420,19 @@ public enum Syntax {
 			location: NodeLocation = .nowhere
 		) {
 			self.identifier = identifier
+			self.location = location
+		}
+	}
+
+	public struct Positional: SyntaxNode, Sendable {
+		let index: UInt32
+		public let location: NodeLocation
+
+		init(
+			index: UInt32,
+			location: NodeLocation = .nowhere
+		) {
+			self.index = index
 			self.location = location
 		}
 	}

@@ -118,7 +118,8 @@ module.exports = grammar({
       $.round_call_expression,
       $.square_call_expression,
       $.brace_call_expression,
-      $.binding
+      $.binding,
+      $.positional
     ),
 
     _expression: $ => choice(
@@ -138,7 +139,10 @@ module.exports = grammar({
     access_expression: $ => prec.left(PREC.ACCESS, seq(
       field("prefix", $._basic_expression),
       '.',
-      field("field", $.identifier),
+      choice(
+        field("named_field", $.identifier),
+        field("positional_field", $.int_literal),
+      ),
     )),
 
     parenthesis_expression: $ => prec.left(PREC.PARENTHESIS, seq(
@@ -184,6 +188,15 @@ module.exports = grammar({
 
     
     binding: $ => /\$[a-zA-Z_][a-zA-Z0-9_]*/,
+    positional: $ => token(seq(
+      '#',
+      token.immediate(choice(
+        /[0-9][0-9_]*/,
+        /0x[0-9a-fA-F_]+/,
+        /0b[01_]+/,
+        /0o[0-7_]+/,
+      ))
+    )),
 
 
     branched_expression: $ => prec.left(seq(
