@@ -7,7 +7,7 @@
   identifier: (identifier) @type.definition)
 ;
 (access_expression
-  field: (identifier) @function.call)
+  named_field: (identifier) @function.call)
 
 
 (int_literal) @number
@@ -51,7 +51,8 @@
 (never) @constant.builtin
 (special) @constant.builtin
 
-(binding) @function.call
+(binding) @variable.member
+(positional) @variable.member
 "if" @keyword.control
 
 (comment) @comment

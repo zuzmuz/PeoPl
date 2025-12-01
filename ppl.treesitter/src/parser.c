@@ -1176,8 +1176,7 @@ static bool ts_lex(TSLexer *lexer, TSStateId state) {
       ADVANCE_MAP(
         '!', 30,
         '"', 26,
-        '#', 29,
-        '$', 43,
+        '$', 29,
         '%', 133,
         '\'', 98,
         '(', 94,
@@ -1194,6 +1193,7 @@ static bool ts_lex(TSLexer *lexer, TSStateId state) {
         '=', 142,
         '>', 144,
         '?', 116,
+        '@', 43,
         'N', 67,
         '[', 96,
       );
@@ -1428,14 +1428,14 @@ static bool ts_lex(TSLexer *lexer, TSStateId state) {
     case 23:
       ADVANCE_MAP(
         '"', 26,
-        '#', 29,
-        '$', 43,
+        '$', 29,
         '(', 94,
         '+', 134,
         '-', 135,
         '/', 28,
         '0', 119,
         '?', 116,
+        '@', 43,
         'N', 67,
         '[', 96,
       );
@@ -1458,13 +1458,13 @@ static bool ts_lex(TSLexer *lexer, TSStateId state) {
     case 24:
       ADVANCE_MAP(
         '"', 26,
-        '#', 29,
-        '$', 43,
+        '$', 29,
         '(', 94,
         '+', 134,
         '-', 135,
         '/', 28,
         '0', 119,
+        '@', 43,
         'N', 67,
         '[', 96,
       );
@@ -1485,13 +1485,13 @@ static bool ts_lex(TSLexer *lexer, TSStateId state) {
     case 25:
       ADVANCE_MAP(
         '"', 26,
-        '#', 29,
-        '$', 43,
+        '$', 29,
         '(', 94,
         '+', 134,
         '-', 135,
         '/', 28,
         '0', 119,
+        '@', 43,
         'N', 67,
         '[', 96,
       );
@@ -1688,8 +1688,7 @@ static bool ts_lex(TSLexer *lexer, TSStateId state) {
       ADVANCE_MAP(
         '\n', 92,
         '"', 26,
-        '#', 29,
-        '$', 43,
+        '$', 29,
         '(', 94,
         ')', 95,
         '+', 134,
@@ -1698,6 +1697,7 @@ static bool ts_lex(TSLexer *lexer, TSStateId state) {
         '/', 28,
         '0', 119,
         '?', 116,
+        '@', 43,
         'N', 67,
         '[', 96,
       );
@@ -1771,8 +1771,7 @@ static bool ts_lex(TSLexer *lexer, TSStateId state) {
       if (eof) ADVANCE(60);
       ADVANCE_MAP(
         '"', 26,
-        '#', 29,
-        '$', 43,
+        '$', 29,
         '(', 94,
         ')', 95,
         '+', 134,
@@ -1780,6 +1779,7 @@ static bool ts_lex(TSLexer *lexer, TSStateId state) {
         '/', 28,
         '0', 119,
         '?', 116,
+        '@', 43,
         'N', 67,
         '[', 96,
       );

@@ -597,7 +597,7 @@
     },
     "binding": {
       "type": "PATTERN",
-      "value": "\\$[a-zA-Z_][a-zA-Z0-9_]*"
+      "value": "\\@[a-zA-Z_][a-zA-Z0-9_]*"
     },
     "positional": {
       "type": "TOKEN",
@@ -606,7 +606,7 @@
         "members": [
           {
             "type": "STRING",
-            "value": "#"
+            "value": "$"
           },
           {
             "type": "IMMEDIATE_TOKEN",

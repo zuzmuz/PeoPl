@@ -3,3 +3,7 @@ add: fn (Int) [x: Int] -> Int
 identity: fn (T) [] -> T
 
 complexFn: fn (A) [x: Int, y: Float, callback: fn (B) [] -> C] -> Result
+
+positional: fn [Int, Int] -> Int {
+    $0 + $1
+}

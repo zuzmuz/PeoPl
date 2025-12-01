@@ -187,9 +187,9 @@ module.exports = grammar({
 
 
     
-    binding: $ => /\$[a-zA-Z_][a-zA-Z0-9_]*/,
+    binding: $ => /\@[a-zA-Z_][a-zA-Z0-9_]*/,
     positional: $ => token(seq(
-      '#',
+      '$',
       token.immediate(choice(
         /[0-9][0-9_]*/,
         /0x[0-9a-fA-F_]+/,

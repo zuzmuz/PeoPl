@@ -7,7 +7,7 @@ fullon: fn (Type) [a: X, b: Y, d: fn (F)[]->Z] -> X {
     one
     |> for(a: b, c: d)
     |>
-    |we=$x if x| {
+    |we=@x if x| {
         wa
         |> thing
     }
@@ -15,4 +15,3 @@ fullon: fn (Type) [a: X, b: Y, d: fn (F)[]->Z] -> X {
 }
 
 last' Int: 3
-
