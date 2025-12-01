@@ -373,7 +373,7 @@
             "members": [
               {
                 "type": "FIELD",
-                "name": "field",
+                "name": "named_field",
                 "content": {
                   "type": "SYMBOL",
                   "name": "identifier"
@@ -381,7 +381,7 @@
               },
               {
                 "type": "FIELD",
-                "name": "position",
+                "name": "positional_field",
                 "content": {
                   "type": "SYMBOL",
                   "name": "int_literal"

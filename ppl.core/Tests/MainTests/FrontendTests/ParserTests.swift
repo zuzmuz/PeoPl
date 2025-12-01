@@ -1071,6 +1071,9 @@ final class ParserTests: XCTestCase {
 			)!
 			let source = try Syntax.Source(url: sourceUrl)
 			let module = TreeSitterModulParser.parseModule(source: source)
+			if !module.syntaxErrors.isEmpty {
+				print("Syntax errors in module \(name): \(module.syntaxErrors)")
+			}
 			module.assertEqual(with: reference)
 		}
 	}
