@@ -1,54 +1,65 @@
 pub const TokenType = enum {
     // literals
-    number,
-    string,
-    identifier,
+    int_literal, // decimal, hexadecimal, octal, binary
+    float_literal, 
+    string_literal,
     true_literal,
     false_literal,
-    nothing,
-    underscore,
+    nothing_literal,
+    never_literal,
+    special, // underscore
 
     // kwords
     kword_if,
+    kword_comp,
     kword_fn,
     kword_and,
     kword_or,
     kword_not,
 
     // arithmetics
-    plus,
-    minus,
-    star,
-    slash,
-    percent,
+    plus, // +
+    minus, // -
+    times, // *
+    by, // /
+    mod, // %
+    exponent, // ^
+
+    // bitwise
+    lshift, // <<
+    rshift, // >>
+    band, // .&
+    bor, // .|
+    bnot, // ~
 
     // access
-    dot,
-    pipe,
-    optional_pipe,
+    dot, // .
+    pipe, // |>
+    propagate, // ?
 
     // comparisons
-    equal,
-    ge,
-    gt,
-    le,
-    lt,
+    eq, // =
+    ge, // >=
+    gt, // >
+    le, // <=
+    lt, // <
 
     // delimieters
-    lparen,
-    rparen,
-    lbracket,
-    rbracket,
-    lbrace,
-    rbrace,
+    lparen, // (
+    rparen, // )
+    lbracket, // [
+    rbracket, // ]
+    lbrace, // {
+    rbrace, // }
 
     // special
-    colon,
-    comma,
-    bar,
-    dollar,
-    backslash,
-    arrow,
+    comma, // delimiting expressions
+    bar, // for capture blocks
+    backslash, // for qualified identifiers
+    appostrophe, // for type definitions
+    arrow, // ->
+    binding, // @
+    positional, // $
 
     eof,
     invalid

@@ -24,10 +24,6 @@ module.exports = grammar({
     $.comment, /\s|\\\r?\n/,
   ],
 
-  conflicts: $ => [
-    // [$.bitwise_or_operator, $._branch_capture_group],
-  ],
-
   rules: {
     source_file: $ => optional($._expression_list),
 
