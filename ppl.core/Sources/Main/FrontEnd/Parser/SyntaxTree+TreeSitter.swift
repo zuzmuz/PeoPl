@@ -568,16 +568,21 @@ extension Syntax.Lambda: TreeSitterNode {
 			prefix = nil
 		}
 
-		guard let bodyNode = node.child(byFieldName: "body"),
-			let expressionNode = bodyNode.child(at: 1)
-		else {
+		guard let bodyNode = node.child(byFieldName: "body") else {
 			throw .errorParsing(
 				element: "Function Body", location: node.getLocation(in: source))
 		}
 
+		let body: Syntax.Expression?
+		if let expressionNode = bodyNode.child(byFieldName: "expression") {
+			body = try .from(node: expressionNode, in: source)
+		} else {
+			body = nil
+		}
+
 		return .init(
 			prefix: prefix,
-			body: try .from(node: expressionNode, in: source)
+			body: body
 		)
 
 	}

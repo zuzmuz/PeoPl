@@ -181,7 +181,7 @@ module.exports = grammar({
 
     function_body: $ => seq(
       "{",
-      $._complex_expression,
+      optional(field("expression", $._complex_expression)),
       "}"
     ),
 

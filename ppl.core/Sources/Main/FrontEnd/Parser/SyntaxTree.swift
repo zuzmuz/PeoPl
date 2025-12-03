@@ -355,12 +355,12 @@ public enum Syntax {
 
 	public struct Lambda: SyntaxNode, Sendable {
 		let prefix: Expression?
-		let body: Expression
+		let body: Expression?
 		public let location: Syntax.NodeLocation
 
 		init(
 			prefix: Expression?,
-			body: Expression,
+			body: Expression?,
 			location: NodeLocation = .nowhere
 		) {
 			self.prefix = prefix

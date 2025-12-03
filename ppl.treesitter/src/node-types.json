@@ -519,76 +519,77 @@
   {
     "type": "function_body",
     "named": true,
-    "fields": {},
-    "children": {
-      "multiple": false,
-      "required": true,
-      "types": [
-        {
-          "type": "access_expression",
-          "named": true
-        },
-        {
-          "type": "binary_expression",
-          "named": true
-        },
-        {
-          "type": "binding",
-          "named": true
-        },
-        {
-          "type": "brace_call_expression",
-          "named": true
-        },
-        {
-          "type": "branched_expression",
-          "named": true
-        },
-        {
-          "type": "function_definition",
-          "named": true
-        },
-        {
-          "type": "literal",
-          "named": true
-        },
-        {
-          "type": "parenthesis_expression",
-          "named": true
-        },
-        {
-          "type": "piped_expression",
-          "named": true
-        },
-        {
-          "type": "positional",
-          "named": true
-        },
-        {
-          "type": "qualified_identifier",
-          "named": true
-        },
-        {
-          "type": "round_call_expression",
-          "named": true
-        },
-        {
-          "type": "square_call_expression",
-          "named": true
-        },
-        {
-          "type": "square_expression_list",
-          "named": true
-        },
-        {
-          "type": "tagged_expression",
-          "named": true
-        },
-        {
-          "type": "unary_expression",
-          "named": true
-        }
-      ]
+    "fields": {
+      "expression": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "access_expression",
+            "named": true
+          },
+          {
+            "type": "binary_expression",
+            "named": true
+          },
+          {
+            "type": "binding",
+            "named": true
+          },
+          {
+            "type": "brace_call_expression",
+            "named": true
+          },
+          {
+            "type": "branched_expression",
+            "named": true
+          },
+          {
+            "type": "function_definition",
+            "named": true
+          },
+          {
+            "type": "literal",
+            "named": true
+          },
+          {
+            "type": "parenthesis_expression",
+            "named": true
+          },
+          {
+            "type": "piped_expression",
+            "named": true
+          },
+          {
+            "type": "positional",
+            "named": true
+          },
+          {
+            "type": "qualified_identifier",
+            "named": true
+          },
+          {
+            "type": "round_call_expression",
+            "named": true
+          },
+          {
+            "type": "square_call_expression",
+            "named": true
+          },
+          {
+            "type": "square_expression_list",
+            "named": true
+          },
+          {
+            "type": "tagged_expression",
+            "named": true
+          },
+          {
+            "type": "unary_expression",
+            "named": true
+          }
+        ]
+      }
     }
   },
   {
