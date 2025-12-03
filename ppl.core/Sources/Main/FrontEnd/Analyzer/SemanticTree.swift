@@ -8,7 +8,7 @@ public enum Semantic {
 
 	// MARK: - Core Types
 
-	public typealias ElementId = UInt32
+	public typealias ElementId = Int
 
 	/// Qualified identifier for symbol names
 	public struct QualifiedIdentifier: Hashable, Sendable, Equatable {
@@ -51,8 +51,12 @@ public enum Semantic {
 		}
 	}
 
-	/// Symbol lookup table mapping qualified identifiers to element IDs
-	public typealias SymbolTable = [QualifiedIdentifier: ElementId]
+	public struct Expression {
+		let syntax: Syntax.Expression
+	}
+
+	/// Symbol lookup table mapping qualified identifiers to syntax expression
+	public typealias SymbolTable = [QualifiedIdentifier: Syntax.Expression]
 }
 
 // MARK: - Symbol Collection
@@ -76,69 +80,48 @@ extension Syntax.Expression {
 	}
 }
 
-extension Syntax.Module {
-	/// First pass: collect all tagged top-level definitions
-	/// Returns elements list and symbol table
-	public func resolve(
-		element: Semantic.Element
-	) -> (
-		elements: [Semantic.Element],
-		symbolTable: Semantic.SymbolTable,
-		errors: [String]
+extension [Syntax.Expression] {
+	public func resolveSymbols() -> (
+		symbols: Semantic.SymbolTable,
+		errors: [Semantic.Error]
 	) {
-		var elements: [Semantic.Element] = []
-		var symbolTable: Semantic.SymbolTable = [:]
-		var redeclarations: [Semantic.QualifiedIdentifier: [Syntax.Expression]] =
-			[:]
+		let result:
+			(
+				positional: UInt32,
+				errors: [Semantic.Error],
+				symbols: Semantic.SymbolTable
+			) = self.reduce(
+				into: (
+					positional: 0,
+					errors: [],
+					symbols: [:]
+				)
+			) { acc, expression in
+				let (tag, newPosition) = expression.semanticTag(
+					position: acc.positional)
+				acc.positional = newPosition
 
-		var index = UInt32(0)  // index for unnamed expressions
-		var tag: Semantic.QualifiedIdentifier
+				// let qualifiedId = parent + tag // NOTE: if parent is given
 
-		for definition in self.definitions {
-
-			let (tag, index) = definition.semanticTag(position: index)
-
-			let qualifiedId = element.qualifiedId + tag
-
-			// Check for redeclaration
-			if let existingId = symbolTable[qualifiedId] {
-				redeclarations[qualifiedId] =
-					redeclarations[qualifiedId] ?? [] + [definition]
+				if let existingSymbol = acc.symbols[tag] {
+					// let error = Semantic.Error.redeclaration(
+					// 	identifier: tag, nodes: [])
+					// acc.errors.append(error)
+					fatalError("Proper redeclation storing")
+				}
+				acc.symbols[tag] = expression
 			}
-
-			// Create element
-			// let elementId = Semantic.ElementId(elements.count)
-			// let element = Semantic.Element(
-			// 	parentId: moduleElementId,
-			// 	qualifiedId: qualifiedId,
-			// 	location: location,
-			// 	expression: definition
-			// )
-			//
-			// elements.append(element)
-			// symbolTable[qualifiedId] = elementId
-		}
-
-        fatalError("Unfinished function")
-
-		// return (elements, symbolTable, errors)
+		return (result.symbols, result.errors)
 	}
 }
 
-// MARK: - Tag Extraction Helpers
-
-extension Syntax.Expression {
-	/// Extract tag and location from a tagged expression
-	/// Returns the qualified identifier chain and location
-	func extractTag() -> (
-		tag: Syntax.QualifiedIdentifier,
-		location: Syntax.NodeLocation
-	)? {
-		switch self {
-		case .taggedExpression(let tagged):
-			return (tagged.tag, tagged.location)
-		default:
-			return nil
-		}
+extension Syntax.Module {
+	/// First pass: collect all tagged top-level definitions
+	/// Returns elements list and symbol table
+	public func resolveSymbols() -> (
+		symbols: Semantic.SymbolTable,
+		errors: [Semantic.Error]
+	) {
+		return self.definitions.resolveSymbols()
 	}
 }
