@@ -133,10 +133,12 @@ public enum Semantic {
 				return id.description
 			case .unary(let op, _, let type, _):
 				return "#\(op)(\(type.description))"
+			case .binary(let op, let lhs, let rhs, _, _):
+				return "#\(op)(\(lhs.type),\(rhs.type))"
 			case .invalid:
 				return "!"
 			default:
-				fatalError("not implemented")
+				fatalError("not implemented \(self)")
 			}
 		}
 	}
@@ -159,11 +161,11 @@ public enum Semantic {
 		var type: Expression {
 			switch self {
 			case .int:
-				.intrinsic(.int)
+				.nominal(.init(chain: ["Int"]), type: .type)
 			case .float:
-				.intrinsic(.float)
+				.nominal(.init(chain: ["Float"]), type: .type)
 			case .bool:
-				.intrinsic(.bool)
+				.nominal(.init(chain: ["Bool"]), type: .type)
 			}
 		}
 	}
@@ -224,10 +226,10 @@ extension Syntax.Expression {
 		errors: [Semantic.Error]
 	) {
 		switch self {
-		case .typeDefinition(let typeDefinition):
-			typeDefinition.expressions.resolveSymbols()
-		case .call(let call):
-			call.arguments.resolveSymbols()
+		// case .typeDefinition(let typeDefinition):
+		// 	typeDefinition.expressions.resolveSymbols()
+		// case .call(let call):
+		// 	call.arguments.resolveSymbols()
 		default:
 			fatalError("not implemented")
 		}
@@ -241,13 +243,15 @@ extension Syntax.Expression {
 		errors: [Semantic.Error]
 	) {
 		switch self {
-		case .typeDefinition(let typeDefinition):
-			let result = typeDefinition.expressions.resolveSymbols()
-			return (.typeDefinition(result.symbols), result.errors)
+		// case .typeDefinition(let typeDefinition):
+		// 	let result = typeDefinition.expressions.resolveSymbols(scope: scope)
+		// 	return (.typeDefinition(result.symbols), result.errors)
 		case .literal(let literal):
 			return (literal.resolveType(), [])
 		case .unary(let unary):
 			return unary.resolveType(scope: scope, context: context)
+		case .binary(let binary):
+			return binary.resolveType(scope: scope, context: context)
 		default:
 			fatalError("not implemented")
 		}
@@ -345,7 +349,7 @@ extension Syntax.Binary {
 }
 
 extension [Syntax.Expression] {
-	public func resolveSymbols() -> (
+	public func resolveSymbols(scope: Semantic.QualifiedIdentifier) -> (
 		symbols: Semantic.SymbolTable,
 		errors: [Semantic.Error]
 	) {
@@ -365,15 +369,15 @@ extension [Syntax.Expression] {
 					position: acc.positional)
 				acc.positional = newPosition
 
-				// let qualifiedId = parent + tag // NOTE: if parent is given
+				let qualifiedId = scope + tag
 
-				if let existingSymbol = acc.symbols[tag] {
-					// let error = Semantic.Error.redeclaration(
-					// 	identifier: tag, nodes: [])
-					// acc.errors.append(error)
+				if let existingSymbol = acc.symbols[qualifiedId] {
 					fatalError("Proper redeclation storing")
 				}
-				acc.symbols[tag] = expression
+				if let existingSymbol = acc.symbols[tag] {
+					fatalError("Proper global shadowing storing")
+				}
+				acc.symbols[qualifiedId] = expression
 			}
 		return (result.symbols, result.errors)
 	}
@@ -386,6 +390,193 @@ extension Syntax.Module {
 		symbols: Semantic.SymbolTable,
 		errors: [Semantic.Error]
 	) {
-		return self.definitions.resolveSymbols()
+		return self.definitions.resolveSymbols(scope: .init(chain: [self.sourceName]))
 	}
+
+	public func resolveExpressions(
+		scope: Semantic.QualifiedIdentifier,
+		context: Semantic.Context
+	) -> (
+		context: Semantic.Context,
+		errors: [Semantic.Error]
+	) {
+		let result = self.definitions.resolveSymbols(scope: scope)
+
+		let expressionsResult = result.symbols.mapValues { expression in
+			expression.resolveType(
+				scope: scope,
+				context: context)
+		}
+		let expressions = expressionsResult.mapValues { $0.expression }		
+		// TODO: handle errors later
+
+		let mergedContext = context.merging(expressions) { $1 }
+
+		return (mergedContext, [])
+	}
+
+	public func resolveTypeDefinitions(
+		scope: Semantic.QualifiedIdentifier,
+		context: Semantic.Context
+	) -> (
+		context: Semantic.Context,
+		errors: [Semantic.Error]
+	) {
+		let result = self.definitions.resolveSymbols(scope: scope)
+
+		let typeDefinitions:
+			[Semantic.QualifiedIdentifier: Syntax.TypeDefinition] = result.symbols
+				.reduce(into: [:]) { acc, symbol in
+					switch symbol.value {
+					case .typeDefinition(let typeDefinition):
+						acc[symbol.key] = typeDefinition
+					default:
+						break
+					}
+				}
+
+		// TODO: detect shadowing?
+		// TODO: detect redeclaration?
+		// TODO: detect undefined types
+
+		let undefinedTypes = typeDefinitions.compactMap {
+			identifier, typeDefinition in
+			// some recursive shit
+			// typeDefinition.expressions
+		}
+
+		// TODO: detect cyclical referencing
+
+		fatalError("not implemented")
+	}
+
+	// private func checkCyclicalDependencies(
+	// 	symbols: Semantic.TypeLookupMap
+	// ) -> [Semantic.Error] {
+	// 	var nodeStates: [Syntax.QualifiedIdentifier: NodeState] = [:]
+	// 	var errors: [Semantic.Error] = []
+	//
+	// 	func checkCyclicalDependencies(
+	// 		typeSpecifier: Syntax.TypeSpecifier,
+	// 		stack: [Syntax.Definition]
+	// 	) {
+	// 		switch typeSpecifier {
+	// 		case .nothing, .never:
+	// 			break
+	// 		case let .nominal(nominal):
+	// 			// NOTE: intrinsics don't have definition
+	// 			if let typeDefinition = localTypeLookup[
+	// 				nominal.identifier.getSemanticIdentifier()
+	// 			] {
+	// 				checkCyclicalDependencies(
+	// 					typeDefinition: typeDefinition,
+	// 					stack: stack
+	// 				)
+	// 			}
+	// 		case let .recordType(record):
+	// 			for field in record.typeFields {
+	// 				switch field {
+	// 				case let .typeSpecifier(typeSpecifier):
+	// 					checkCyclicalDependencies(
+	// 						typeSpecifier: typeSpecifier,
+	// 						stack: stack
+	// 					)
+	// 				case let .taggedTypeSpecifier(taggedTypeSpecifier):
+	// 					if let typeSpecifier =
+	// 						taggedTypeSpecifier.typeSpecifier
+	// 					{
+	// 						checkCyclicalDependencies(
+	// 							typeSpecifier: typeSpecifier,
+	// 							stack: stack
+	// 						)
+	// 					} else {
+	// 						// NOTE: nil typeSpecifiers are not allowed in record types
+	// 						errors.append(
+	// 							.init(
+	// 								location: field.location,
+	// 								errorChoice: .taggedTypeSpecifierRequired
+	// 							)
+	// 						)
+	// 					}
+	// 				case let .homogeneousTypeProduct(homogeneousTypeProduct):
+	// 					checkCyclicalDependencies(
+	// 						typeSpecifier: homogeneousTypeProduct.typeSpecifier,
+	// 						stack: stack
+	// 					)
+	// 				}
+	// 			}
+	// 		case let .choiceType(choice):
+	// 			for field in choice.typeFields {
+	// 				switch field {
+	// 				case let .typeSpecifier(typeSpecifier):
+	// 					checkCyclicalDependencies(
+	// 						typeSpecifier: typeSpecifier,
+	// 						stack: stack
+	// 					)
+	// 				case let .taggedTypeSpecifier(taggedTypeSpecifier):
+	// 					if let typeSpecifier =
+	// 						taggedTypeSpecifier.typeSpecifier
+	// 					{
+	// 						checkCyclicalDependencies(
+	// 							typeSpecifier: typeSpecifier,
+	// 							stack: stack
+	// 						)
+	// 					}
+	// 				case .homogeneousTypeProduct:
+	// 					errors.append(
+	// 						.init(
+	// 							location: field.location,
+	// 							errorChoice: .homogeneousTypeProductInSum
+	// 						)
+	// 					)
+	// 				}
+	// 			}
+	// 		case .function:
+	// 			break
+	// 		}
+	// 	}
+	//
+	// 	func checkCyclicalDependencies(
+	// 		typeDefinition: Syntax.Definition,
+	// 		stack: [Syntax.Definition]
+	// 	) {
+	// 		let typeIdentifier = typeDefinition.identifier
+	// 		if nodeStates[typeIdentifier] == .visited {
+	// 			return
+	// 		}
+	// 		if nodeStates[typeIdentifier] == .visiting {
+	// 			for element in stack {
+	// 				errors.append(
+	// 					.init(
+	// 						location: typeIdentifier.location,
+	// 						errorChoice: .cyclicType(
+	// 							stack: stack
+	// 						)
+	// 					)
+	// 				)
+	// 			}
+	// 			return
+	// 		}
+	// 		nodeStates[typeIdentifier] = .visiting
+	//
+	// 		if case let .typeSpecifier(typeSpecifier) =
+	// 			typeDefinition.definition
+	// 		{
+	// 			checkCyclicalDependencies(
+	// 				typeSpecifier: typeSpecifier,
+	// 				stack: stack + [typeDefinition]
+	// 			)
+	// 			nodeStates[typeIdentifier] = .visited
+	// 		}
+	// 	}
+	//
+	// 	for (_, typeDefinition) in localTypeLookup {
+	// 		checkCyclicalDependencies(
+	// 			typeDefinition: typeDefinition,
+	// 			stack: []
+	// 		)
+	// 	}
+	//
+	// 	return errors
+	// }
 }

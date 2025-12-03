@@ -238,8 +238,14 @@ extension Syntax.Lambda: Testable {
 		} else {
 			XCTAssertNil(with.prefix)
 		}
-
-		self.body.assertEqual(with: with.body)
+		if let body {
+			XCTAssertNotNil(with.body)
+			if let withBody = with.body {
+				body.assertEqual(with: withBody)
+			}
+		} else {
+			XCTAssertNil(with.body)
+		}
 	}
 }
 

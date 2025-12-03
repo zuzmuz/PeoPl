@@ -1,7 +1,7 @@
 extension Semantic {
 	static let IntId: Semantic.QualifiedIdentifier = .init(chain: ["Int"])
 	static let FloatId: Semantic.QualifiedIdentifier = .init(chain: ["Float"])
-	static let BoolId: Semantic.QualifiedIdentifier = .init(chain: ["Int"])
+	static let BoolId: Semantic.QualifiedIdentifier = .init(chain: ["Bool"])
 
 	static let globals: Semantic.Context = [
 		IntId: .type,
