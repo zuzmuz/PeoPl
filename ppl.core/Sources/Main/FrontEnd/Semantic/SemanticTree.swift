@@ -77,7 +77,7 @@ public enum Semantic {
 			type: Expression,
 			kind: Kind)
 
-		case nominal(QualifiedIdentifier, type: Expression)
+		case nominal(QualifiedIdentifier, type: Expression, kind: Kind)
 		case function(
 			input: Expression,
 			arguments: [QualifiedIdentifier],
@@ -99,7 +99,7 @@ public enum Semantic {
 				literal.type
 			case .intrinsic:
 				.type
-			case .nominal(_, let type):
+			case .nominal(_, let type, _):
 				type
 			case .function(let input, let arguments, let output):
 				.function(
@@ -120,8 +120,15 @@ public enum Semantic {
 
 		var kind: Kind {
 			switch self {
-			case .typeDefinition, .type, .intrinsic, .function, .operation:
+			case .literal, .typeDefinition, .type, .intrinsic, .function,
+				.operation:
 				.compiletimeValue
+			case .nominal(_, _, let kind):
+				kind
+			case .unary(_, _, _, let kind):
+				kind
+			case .binary(_, _, _, _, let kind):
+				kind
 			default:
 				.runtimeValue
 			}
@@ -129,7 +136,7 @@ public enum Semantic {
 
 		var description: String {
 			switch self {
-			case .nominal(let id, _):
+			case .nominal(let id, _, _):
 				return id.description
 			case .unary(let op, _, let type, _):
 				return "#\(op)(\(type.description))"
@@ -146,6 +153,18 @@ public enum Semantic {
 	public enum Kind: Sendable {
 		case runtimeValue
 		case compiletimeValue
+
+		static func & (
+			lhs: Kind,
+			rhs: Kind
+		) -> Kind {
+			switch (lhs, rhs) {
+			case (.compiletimeValue, .compiletimeValue):
+				return .compiletimeValue
+			default:
+				return .runtimeValue
+			}
+		}
 	}
 
 	/// Symbol lookup table mapping qualified identifiers to syntax expression
@@ -161,11 +180,11 @@ public enum Semantic {
 		var type: Expression {
 			switch self {
 			case .int:
-				.nominal(.init(chain: ["Int"]), type: .type)
+				.nominal(.init(chain: ["Int"]), type: .type, kind: .compiletimeValue)
 			case .float:
-				.nominal(.init(chain: ["Float"]), type: .type)
+				.nominal(.init(chain: ["Float"]), type: .type, kind: .compiletimeValue)
 			case .bool:
-				.nominal(.init(chain: ["Bool"]), type: .type)
+				.nominal(.init(chain: ["Bool"]), type: .type, kind: .compiletimeValue)
 			}
 		}
 	}
@@ -283,7 +302,7 @@ extension Syntax.Unary {
 	) {
 		let (typedExpression, errors) = self.expression.resolveType(
 			scope: scope, context: context)
-		let symbol = "#\(self.op)(\(typedExpression.type.description))"
+		let symbol = "#\(self.op.rawValue)(\(typedExpression.type.description))"
 
 		if let symbolExpression = context.resolveSymbol(
 			symbol, in: scope),
@@ -322,7 +341,7 @@ extension Syntax.Binary {
 			scope: scope, context: context)
 
 		let symbol =
-			"#\(self.op)(\(typedLHS.type.description),\(typedRHS.type.description))"
+			"#\(self.op.rawValue)(\(typedLHS.type.description),\(typedRHS.type.description))"
 
 		if let symbolExpression = context.resolveSymbol(
 			symbol, in: scope),
@@ -334,7 +353,7 @@ extension Syntax.Binary {
 					lhs: typedLHS,
 					rhs: typedRHS,
 					type: output,
-					kind: typedLHS.kind),
+					kind: typedLHS.kind & typedRHS.kind),
 				errors: lhsErrors + rhsErrors
 			)
 		}
@@ -390,7 +409,8 @@ extension Syntax.Module {
 		symbols: Semantic.SymbolTable,
 		errors: [Semantic.Error]
 	) {
-		return self.definitions.resolveSymbols(scope: .init(chain: [self.sourceName]))
+		return self.definitions.resolveSymbols(
+			scope: .init(chain: [self.sourceName]))
 	}
 
 	public func resolveExpressions(
@@ -407,7 +427,7 @@ extension Syntax.Module {
 				scope: scope,
 				context: context)
 		}
-		let expressions = expressionsResult.mapValues { $0.expression }		
+		let expressions = expressionsResult.mapValues { $0.expression }
 		// TODO: handle errors later
 
 		let mergedContext = context.merging(expressions) { $1 }

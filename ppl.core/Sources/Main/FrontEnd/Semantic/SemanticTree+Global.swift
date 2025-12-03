@@ -8,20 +8,20 @@ extension Semantic {
 		FloatId: .type,
 		BoolId: .type,
 		.init(chain: ["#+(Int,Int)"]): .operation(
-			lhs: .nominal(IntId, type: .type),
-			rhs: .nominal(IntId, type: .type),
-			output: .nominal(IntId, type: .type)),
+			lhs: .nominal(IntId, type: .type, kind: .compiletimeValue),
+			rhs: .nominal(IntId, type: .type, kind: .compiletimeValue),
+			output: .nominal(IntId, type: .type, kind: .compiletimeValue)),
 		.init(chain: ["#-(Int,Int)"]): .operation(
-			lhs: .nominal(IntId, type: .type),
-			rhs: .nominal(IntId, type: .type),
-			output: .nominal(IntId, type: .type)),
+			lhs: .nominal(IntId, type: .type, kind: .compiletimeValue),
+			rhs: .nominal(IntId, type: .type, kind: .compiletimeValue),
+			output: .nominal(IntId, type: .type, kind: .compiletimeValue)),
 		.init(chain: ["#+(Int)"]): .operation(
-			lhs: .nominal(IntId, type: .type),
-			rhs: .nominal(IntId, type: .type),
-			output: .nominal(IntId, type: .type)),
+			lhs: .nominal(IntId, type: .type, kind: .compiletimeValue),
+			rhs: .nominal(IntId, type: .type, kind: .compiletimeValue),
+			output: .nominal(IntId, type: .type, kind: .compiletimeValue)),
 		.init(chain: ["#-(Int)"]): .operation(
-			lhs: .nominal(IntId, type: .type),
-			rhs: .nominal(IntId, type: .type),
-			output: .nominal(IntId, type: .type)),
+			lhs: .nominal(IntId, type: .type, kind: .compiletimeValue),
+			rhs: .nominal(IntId, type: .type, kind: .compiletimeValue),
+			output: .nominal(IntId, type: .type, kind: .compiletimeValue)),
 	]
 }

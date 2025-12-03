@@ -663,9 +663,9 @@ extension Semantic.Expression: ASTFormatableNode {
 		case .type:
 			descriptions.append(
 				"\(firstPrefix)\("Type".colored(.cyan))")
-		case .nominal(let nominal, let type):
+		case .nominal(let nominal, let type, let kind):
 			descriptions.append(
-				"\(firstPrefix)\("Nominal".colored(.cyan)) value \(nominal.debugDescription.colored(.yellow))")
+				"\(firstPrefix)\("Nominal".colored(.cyan)), value: \(nominal.debugDescription.colored(.yellow)), kind: \(kind)")
 			type.formatAST(
 				prefix: prefix + connector.childPrefix,
 				connector: .last,
@@ -689,8 +689,12 @@ extension Semantic.Expression: ASTFormatableNode {
 				connector: .last,
 				extra: "output: ",
 				descriptions: &descriptions)
+		case .invalid:
+			descriptions.append(
+				"\(firstPrefix)\("Invalid".colored(.red))")
 		default:
-			break
+			descriptions.append(
+				"\(firstPrefix)\("Unsupported Semantic Expression".colored(.red))")
 		}
 	}
 }
