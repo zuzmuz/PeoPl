@@ -424,7 +424,7 @@ extension Syntax.Expression {
 }
 
 // swiftlint:disable:next type_body_length
-final class ParserTests: XCTestCase {
+final class SyntaxTests: XCTestCase {
 	let fileNames: [String: Syntax.Module] = [
 		"literals": .init(
 			sourceName: "literals",
@@ -1096,7 +1096,7 @@ final class ParserTests: XCTestCase {
 
 		for (name, reference) in fileNames {
 			let sourceUrl = bundle.url(
-				forResource: "parser_\(name)",
+				forResource: "syntax_\(name)",
 				withExtension: "ppl"
 			)!
 			let source = try Syntax.Source(url: sourceUrl)
