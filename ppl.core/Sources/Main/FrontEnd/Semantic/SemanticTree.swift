@@ -41,27 +41,6 @@ public enum Semantic {
 		}
 	}
 
-	/// Element in the semantic tree representing a definition
-	/// Elements form a hierarchy with parent-child relationships
-	public struct Element: Sendable {
-		/// Index in the elements array (parent reference)
-		let parentId: ElementId
-		/// Fully qualified identifier
-		let qualifiedId: QualifiedIdentifier
-		/// The original syntax expression
-		let expression: Syntax.Expression
-
-		public init(
-			parentId: ElementId,
-			qualifiedId: QualifiedIdentifier,
-			expression: Syntax.Expression
-		) {
-			self.parentId = parentId
-			self.qualifiedId = qualifiedId
-			self.expression = expression
-		}
-	}
-
 	public indirect enum Expression: Sendable {
 		case typeDefinition(SymbolTable)
 		case literal(Literal)
@@ -199,11 +178,11 @@ public enum Semantic {
 	}
 }
 
-extension [Semantic.QualifiedIdentifier: Semantic.Expression] {
+extension Dictionary where Key == Semantic.QualifiedIdentifier {
 	func resolveSymbol(
 		identifier: Semantic.QualifiedIdentifier,
 		in scope: Semantic.QualifiedIdentifier
-	) -> Semantic.Expression? {
+	) -> Value? {
 		if let expression = self[scope + identifier] {
 			return expression
 		}
@@ -216,7 +195,7 @@ extension [Semantic.QualifiedIdentifier: Semantic.Expression] {
 	func resolveSymbol(
 		_ identifier: String,
 		in scope: Semantic.QualifiedIdentifier
-	) -> Semantic.Expression? {
+	) -> Value? {
 		return resolveSymbol(
 			identifier: .init(chain: [identifier]),
 			in: scope)
@@ -306,26 +285,96 @@ extension Syntax.Expression {
 				symbolsState: &symbolsState,
 				currentContext: &currentContext)
 		case .nominal(let identifier):
-			let semanticIdentifier = Semantic.QualifiedIdentifier(
-				chain: identifier.chain)
-			if let symbol = context.resolveSymbol(
-				identifier: semanticIdentifier,
-				in: scope)
-			{
-				return (symbol, [])
-			} else {
-				return (
-					.invalid,
-					[
-						.undefinedIdentifier(
-							identifier: semanticIdentifier, node: identifier.location)
-					]
-				)
-			}
+			return self.resolveIdentifier(
+				identifier: identifier,
+				scope: scope,
+				context: context,
+				currentSymbols: currentSymbols,
+				symbolsState: &symbolsState,
+				currentContext: &currentContext)
 		// identifier.getSemanticIdentifier()
 		default:
 			fatalError("not implemented \(self)")
 		}
+	}
+
+	fileprivate func resolveIdentifier(
+		identifier: Syntax.QualifiedIdentifier,
+		scope: Semantic.QualifiedIdentifier,
+		context: Semantic.Context,
+		currentSymbols: borrowing Semantic.SymbolTable,
+		symbolsState: inout [Semantic.QualifiedIdentifier: NodeState],
+		currentContext: inout Semantic.Context,
+	) -> (
+		expression: Semantic.Expression,
+		errors: [Semantic.Error]
+	) {
+		let semanticIdentifier = Semantic.QualifiedIdentifier(
+			chain: identifier.chain)
+
+		let keys = context.keys
+
+		// Looking in local context first
+		if let semanticExpression = currentContext.resolveSymbol(
+			identifier: semanticIdentifier,
+			in: scope) {
+			return (semanticExpression, [])
+		}
+		// checking if symbol exists in current unevaluated symbols
+		else if symbolsState.resolveSymbol(
+			identifier: semanticIdentifier,
+			in: scope) == .visiting {
+			return (
+				.invalid,
+				[.cycle(identifier: semanticIdentifier, node: self.location)])
+		}
+		// evaluating symbol from current unevaluated symbols
+		else if let syntaxExpression = currentSymbols.resolveSymbol(
+			identifier: semanticIdentifier,
+			in: scope) {
+				// Marking as visiting
+				symbolsState[semanticIdentifier] = .visiting
+
+				let (semanticExpression, errors) = syntaxExpression.resolveType(
+					scope: scope,
+					context: context,
+					currentSymbols: currentSymbols,
+					symbolsState: &symbolsState,
+					currentContext: &currentContext)
+
+				// Marking as visited
+				symbolsState[semanticIdentifier] = .visited
+
+				// Storing evaluated expression in current context
+				currentContext[semanticIdentifier] = semanticExpression
+
+				return (semanticExpression, errors)
+		}
+		// Looking in global context next
+		else if let semanticExpression = context.resolveSymbol(
+			identifier: semanticIdentifier,
+			in: scope) {
+			return (semanticExpression, [])
+
+		} else 		} else if symbolsState[semanticIdentifier] == .visiting {
+			// Cycle detected
+			return (
+				.invalid,
+				[.cycle(identifier: semanticIdentifier, node: self.location)])
+		} else if symbolsState.resolveSymbol(
+			identifier: semanticIdentifier,
+			in: scope) == .visiting {
+				ret
+			symbolsState
+			return (
+				.invalid,
+				[
+					.undefinedIdentifier(
+						identifier: semanticIdentifier, node: identifier.location)
+				]
+			)
+		}
+		fatalError("not implemented")
 	}
 }
 
