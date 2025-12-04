@@ -29,6 +29,10 @@ function_body_length:
   warning: 150
   error: 200
 
+function_parameter_count:
+  warning: 8
+  error: 10
+
 type_body_length:
   warning: 500
   error: 750

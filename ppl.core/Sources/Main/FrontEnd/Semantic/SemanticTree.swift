@@ -357,14 +357,15 @@ extension Syntax.Expression {
 		let semanticIdentifier = Semantic.QualifiedIdentifier(
 			chain: identifier.chain)
 
-		let keys = context.keys
-
 		// Looking in local resolved context first
 		if let semanticExpression = currentContext.resolveSymbol(
 			identifier: semanticIdentifier,
 			in: scope)
 		{
-			return semanticExpression
+			return .nominal(
+				semanticIdentifier,
+				type: semanticExpression.type,
+				kind: semanticExpression.kind)
 		}
 		// checking if symbol exists in current unevaluated symbols
 		else if symbolsState.resolveSymbol(
@@ -397,14 +398,20 @@ extension Syntax.Expression {
 			// Storing evaluated expression in current context
 			currentContext[semanticIdentifier] = semanticExpression
 
-			return semanticExpression
+			return .nominal(
+				semanticIdentifier,
+				type: semanticExpression.type,
+				kind: semanticExpression.kind)
 		}
 		// Looking in global context next
 		else if let semanticExpression = context.resolveSymbol(
 			identifier: semanticIdentifier,
 			in: scope)
 		{
-			return semanticExpression
+			return .nominal(
+				semanticIdentifier,
+				type: semanticExpression.type,
+				kind: semanticExpression.kind)
 
 		} else {
 			errors.append(
