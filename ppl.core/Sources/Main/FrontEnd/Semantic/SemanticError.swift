@@ -10,5 +10,13 @@ extension Semantic {
 			op: Operator,
 			node: Syntax.NodeLocation
 		)
+		case undefinedIdentifier(
+			identifier: Semantic.QualifiedIdentifier,
+			node: Syntax.NodeLocation
+		)
+		case cycle(
+			identifier: Semantic.QualifiedIdentifier,
+			node: Syntax.NodeLocation
+		)
 	}
 }

@@ -180,11 +180,14 @@ public enum Semantic {
 		var type: Expression {
 			switch self {
 			case .int:
-				.nominal(.init(chain: ["Int"]), type: .type, kind: .compiletimeValue)
+				.nominal(
+					.init(chain: ["Int"]), type: .type, kind: .compiletimeValue)
 			case .float:
-				.nominal(.init(chain: ["Float"]), type: .type, kind: .compiletimeValue)
+				.nominal(
+					.init(chain: ["Float"]), type: .type, kind: .compiletimeValue)
 			case .bool:
-				.nominal(.init(chain: ["Bool"]), type: .type, kind: .compiletimeValue)
+				.nominal(
+					.init(chain: ["Bool"]), type: .type, kind: .compiletimeValue)
 			}
 		}
 	}
@@ -222,10 +225,20 @@ extension [Semantic.QualifiedIdentifier: Semantic.Expression] {
 
 // MARK: - Symbol Collection
 
+private enum NodeState {
+	case unvisited
+	case visiting
+	case visited
+}
+
 extension Syntax.Expression {
-	public func semanticTag(
+	public func taggedExpression(
 		position: UInt32
-	) -> (Semantic.QualifiedIdentifier, newPosition: UInt32) {
+	) -> (
+		tag: Semantic.QualifiedIdentifier,
+		expression: Syntax.Expression,
+		newPosition: UInt32
+	) {
 		switch self {
 		case .taggedExpression(let tagged):
 			switch tagged.expression {
@@ -233,10 +246,18 @@ extension Syntax.Expression {
 				fatalError(
 					"I should figure out how to identify inputs for functions")
 			default:
-				return (.init(chain: tagged.tag.chain), newPosition: position)
+				return (
+					tag: .init(chain: tagged.tag.chain),
+					expression: tagged.expression,
+					newPosition: position
+				)
 			}
 		default:
-			return (.init(chain: ["$\(position)"]), newPosition: position + 1)
+			return (
+				tag: .init(chain: ["$\(position)"]),
+				expression: self,
+				newPosition: position + 1
+			)
 		}
 	}
 
@@ -254,9 +275,12 @@ extension Syntax.Expression {
 		}
 	}
 
-	public func resolveType(
+	fileprivate func resolveType(
 		scope: Semantic.QualifiedIdentifier,
-		context: Semantic.Context
+		context: Semantic.Context,
+		currentSymbols: borrowing Semantic.SymbolTable,
+		symbolsState: inout [Semantic.QualifiedIdentifier: NodeState],
+		currentContext: inout Semantic.Context,
 	) -> (
 		expression: Semantic.Expression,
 		errors: [Semantic.Error]
@@ -268,11 +292,39 @@ extension Syntax.Expression {
 		case .literal(let literal):
 			return (literal.resolveType(), [])
 		case .unary(let unary):
-			return unary.resolveType(scope: scope, context: context)
+			return unary.resolveType(
+				scope: scope,
+				context: context,
+				currentSymbols: currentSymbols,
+				symbolsState: &symbolsState,
+				currentContext: &currentContext)
 		case .binary(let binary):
-			return binary.resolveType(scope: scope, context: context)
+			return binary.resolveType(
+				scope: scope,
+				context: context,
+				currentSymbols: currentSymbols,
+				symbolsState: &symbolsState,
+				currentContext: &currentContext)
+		case .nominal(let identifier):
+			let semanticIdentifier = Semantic.QualifiedIdentifier(
+				chain: identifier.chain)
+			if let symbol = context.resolveSymbol(
+				identifier: semanticIdentifier,
+				in: scope)
+			{
+				return (symbol, [])
+			} else {
+				return (
+					.invalid,
+					[
+						.undefinedIdentifier(
+							identifier: semanticIdentifier, node: identifier.location)
+					]
+				)
+			}
+		// identifier.getSemanticIdentifier()
 		default:
-			fatalError("not implemented")
+			fatalError("not implemented \(self)")
 		}
 	}
 }
@@ -293,15 +345,23 @@ extension Syntax.Literal {
 }
 
 extension Syntax.Unary {
-	func resolveType(
+	fileprivate func resolveType(
 		scope: Semantic.QualifiedIdentifier,
-		context: Semantic.Context
+		context: Semantic.Context,
+		currentSymbols: borrowing Semantic.SymbolTable,
+		symbolsState: inout [Semantic.QualifiedIdentifier: NodeState],
+		currentContext: inout Semantic.Context,
 	) -> (
 		expression: Semantic.Expression,
 		errors: [Semantic.Error]
 	) {
 		let (typedExpression, errors) = self.expression.resolveType(
-			scope: scope, context: context)
+			scope: scope,
+			context: context,
+			currentSymbols: currentSymbols,
+			symbolsState: &symbolsState,
+			currentContext: &currentContext)
+
 		let symbol = "#\(self.op.rawValue)(\(typedExpression.type.description))"
 
 		if let symbolExpression = context.resolveSymbol(
@@ -328,17 +388,29 @@ extension Syntax.Unary {
 }
 
 extension Syntax.Binary {
-	func resolveType(
+	fileprivate func resolveType(
 		scope: Semantic.QualifiedIdentifier,
-		context: Semantic.Context
+		context: Semantic.Context,
+		currentSymbols: borrowing Semantic.SymbolTable,
+		symbolsState: inout [Semantic.QualifiedIdentifier: NodeState],
+		currentContext: inout Semantic.Context,
 	) -> (
 		expression: Semantic.Expression,
 		errors: [Semantic.Error]
 	) {
 		let (typedLHS, lhsErrors) = self.left.resolveType(
-			scope: scope, context: context)
+			scope: scope,
+			context: context,
+			currentSymbols: currentSymbols,
+			symbolsState: &symbolsState,
+			currentContext: &currentContext)
+
 		let (typedRHS, rhsErrors) = self.right.resolveType(
-			scope: scope, context: context)
+			scope: scope,
+			context: context,
+			currentSymbols: currentSymbols,
+			symbolsState: &symbolsState,
+			currentContext: &currentContext)
 
 		let symbol =
 			"#\(self.op.rawValue)(\(typedLHS.type.description),\(typedRHS.type.description))"
@@ -384,7 +456,7 @@ extension [Syntax.Expression] {
 					symbols: [:]
 				)
 			) { acc, expression in
-				let (tag, newPosition) = expression.semanticTag(
+				let (tag, expression, newPosition) = expression.taggedExpression(
 					position: acc.positional)
 				acc.positional = newPosition
 
@@ -403,14 +475,10 @@ extension [Syntax.Expression] {
 }
 
 extension Syntax.Module {
-	/// First pass: collect all tagged top-level definitions
-	/// Returns elements list and symbol table
-	public func resolveSymbols() -> (
-		symbols: Semantic.SymbolTable,
-		errors: [Semantic.Error]
-	) {
-		return self.definitions.resolveSymbols(
-			scope: .init(chain: [self.sourceName]))
+	fileprivate enum NodeState {
+		case unvisited
+		case visiting
+		case visited
 	}
 
 	public func resolveExpressions(
@@ -421,18 +489,43 @@ extension Syntax.Module {
 		errors: [Semantic.Error]
 	) {
 		let result = self.definitions.resolveSymbols(scope: scope)
-
-		let expressionsResult = result.symbols.mapValues { expression in
-			expression.resolveType(
-				scope: scope,
-				context: context)
+		let symbols = result.symbols
+		var symbolsState = symbols.mapValues { _ in
+			Syntax.Module.NodeState.unvisited
 		}
-		let expressions = expressionsResult.mapValues { $0.expression }
-		// TODO: handle errors later
+		var currentContext: Semantic.Context = [:]
+		var errors: [Semantic.Error] = []
 
-		let mergedContext = context.merging(expressions) { $1 }
+		func cyclicEvaluation(
+			// TODO: store stack to report cycles
+			identifier: Semantic.QualifiedIdentifier,
+			expression: Syntax.Expression
+		) {
+			if currentContext[identifier] != nil {
+				// already evaluated
+				return
+			}
 
-		return (mergedContext, [])
+			if symbolsState[identifier] == .visiting {
+				// cycle detected
+				errors.append(
+					.cycle(identifier: identifier, node: expression.location)
+				)
+				// TODO: mark symbol as invalid type
+				return
+			}
+
+			symbolsState[identifier] = .visiting
+
+		}
+
+		for (identifier, expression) in symbols {
+			// TODO: start evaluating positional expressions,
+			// TODO: if fields are needed, evaluate them,
+			// TODO: visit nodes and check for cycles
+		}
+
+		fatalError("not implemented")
 	}
 
 	public func resolveTypeDefinitions(
