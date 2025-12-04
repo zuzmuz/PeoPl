@@ -314,67 +314,65 @@ extension Syntax.Expression {
 
 		let keys = context.keys
 
-		// Looking in local context first
+		// Looking in local resolved context first
 		if let semanticExpression = currentContext.resolveSymbol(
 			identifier: semanticIdentifier,
-			in: scope) {
+			in: scope)
+		{
 			return (semanticExpression, [])
 		}
 		// checking if symbol exists in current unevaluated symbols
 		else if symbolsState.resolveSymbol(
 			identifier: semanticIdentifier,
-			in: scope) == .visiting {
+			in: scope) == .visiting
+		{
 			return (
-				.invalid,
-				[.cycle(identifier: semanticIdentifier, node: self.location)])
+				expression: .invalid,
+				errors: [
+					.cycle(identifier: semanticIdentifier, node: self.location)
+				]
+			)
 		}
 		// evaluating symbol from current unevaluated symbols
 		else if let syntaxExpression = currentSymbols.resolveSymbol(
 			identifier: semanticIdentifier,
-			in: scope) {
-				// Marking as visiting
-				symbolsState[semanticIdentifier] = .visiting
+			in: scope)
+		{
+			// Marking as visiting
+			symbolsState[semanticIdentifier] = .visiting
 
-				let (semanticExpression, errors) = syntaxExpression.resolveType(
-					scope: scope,
-					context: context,
-					currentSymbols: currentSymbols,
-					symbolsState: &symbolsState,
-					currentContext: &currentContext)
+			let (semanticExpression, errors) = syntaxExpression.resolveType(
+				scope: scope,
+				context: context,
+				currentSymbols: currentSymbols,
+				symbolsState: &symbolsState,
+				currentContext: &currentContext)
 
-				// Marking as visited
-				symbolsState[semanticIdentifier] = .visited
+			// Marking as visited
+			symbolsState[semanticIdentifier] = .visited
 
-				// Storing evaluated expression in current context
-				currentContext[semanticIdentifier] = semanticExpression
+			// Storing evaluated expression in current context
+			currentContext[semanticIdentifier] = semanticExpression
 
-				return (semanticExpression, errors)
+			return (semanticExpression, errors)
 		}
 		// Looking in global context next
 		else if let semanticExpression = context.resolveSymbol(
 			identifier: semanticIdentifier,
-			in: scope) {
+			in: scope)
+		{
 			return (semanticExpression, [])
 
-		} else 		} else if symbolsState[semanticIdentifier] == .visiting {
-			// Cycle detected
+		} else {
 			return (
-				.invalid,
-				[.cycle(identifier: semanticIdentifier, node: self.location)])
-		} else if symbolsState.resolveSymbol(
-			identifier: semanticIdentifier,
-			in: scope) == .visiting {
-				ret
-			symbolsState
-			return (
-				.invalid,
-				[
+				expression: .invalid,
+				errors: [
 					.undefinedIdentifier(
-						identifier: semanticIdentifier, node: identifier.location)
+						identifier: semanticIdentifier,
+						node: self.location)
 				]
 			)
 		}
-		fatalError("not implemented")
 	}
 }
 
