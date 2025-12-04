@@ -4,7 +4,11 @@ extension Semantic {
 	public enum Error: LocalizedError {
 		case redeclaration(
 			identifier: Semantic.QualifiedIdentifier,
-			nodes: [Syntax.Expression],
+			node: Syntax.NodeLocation,
+		)
+		case shadowing(
+			identifier: Semantic.QualifiedIdentifier,
+			node: Syntax.NodeLocation
 		)
 		case invalidOperation(
 			op: Operator,

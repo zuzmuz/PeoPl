@@ -607,7 +607,7 @@ extension Syntax.DocString: CustomDebugStringConvertible {
 
 extension Semantic.QualifiedIdentifier: CustomDebugStringConvertible {
 	public var debugDescription: String {
-		chain.joined(separator: "\\")
+		chain.map { $0.description }.joined(separator: "\\")
 	}
 }
 

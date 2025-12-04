@@ -11,10 +11,36 @@ public enum Semantic {
 	public typealias ElementId = Int
 
 	/// Qualified identifier for symbol names
+	public enum IdElement: Hashable, Sendable, Equatable {
+		case named(String)
+		case positional(UInt32)
+		case functionNoInput(name: String, args: Set<QualifiedIdentifier>)
+
+		var description: String {
+			switch self {
+			case .named(let name):
+				return name
+			case .positional(let position):
+				return "$\(position)"
+			case .functionNoInput(let name, let args):
+				let argsDescription =
+					args
+					.map { $0.description }
+					.sorted()
+					.joined(separator: ",")
+				return "\(name)(\(argsDescription))"
+			}
+		}
+	}
+
 	public struct QualifiedIdentifier: Hashable, Sendable, Equatable {
-		let chain: [String]
+		let chain: [IdElement]
 
 		public init(chain: [String]) {
+			self.chain = chain.map { .named($0) }
+		}
+
+		public init(chain: [IdElement]) {
 			self.chain = chain
 		}
 
@@ -29,7 +55,7 @@ public enum Semantic {
 			lhs: QualifiedIdentifier,
 			rhs: String
 		) -> QualifiedIdentifier {
-			return .init(chain: lhs.chain + [rhs])
+			return .init(chain: lhs.chain + [.named(rhs)])
 		}
 
 		public func parent() -> QualifiedIdentifier {
@@ -37,8 +63,10 @@ public enum Semantic {
 		}
 
 		public var description: String {
-			chain.joined(separator: "\\")
+			chain.map { $0.description }.joined(separator: "\\")
 		}
+
+		static let empty = QualifiedIdentifier(chain: [IdElement]())
 	}
 
 	public indirect enum Expression: Sendable {
@@ -76,6 +104,10 @@ public enum Semantic {
 				.type
 			case .literal(let literal):
 				literal.type
+			case .unary(_, _, let type, _):
+				type
+			case .binary(_, _, _, let type, _):
+				type
 			case .intrinsic:
 				.type
 			case .nominal(_, let type, _):
@@ -93,7 +125,7 @@ public enum Semantic {
 			case .invalid:
 				.invalid
 			default:
-				fatalError("not implemented")
+				fatalError("not implemented \(self)")
 			}
 		}
 
@@ -211,31 +243,49 @@ private enum NodeState {
 }
 
 extension Syntax.Expression {
-	public func taggedExpression(
+	public func generateTaggedExpression(
 		position: UInt32
 	) -> (
 		tag: Semantic.QualifiedIdentifier,
 		expression: Syntax.Expression,
-		newPosition: UInt32
+		newPosition: UInt32,
+		errors: [Semantic.Error]
 	) {
 		switch self {
 		case .taggedExpression(let tagged):
 			switch tagged.expression {
 			case .function(let function):
-				fatalError(
-					"I should figure out how to identify inputs for functions")
+				if function.input == nil {
+					let functionName = (tagged.tag.chain.last ?? "")
+					let (argumentsSets, errors) = function.arguments.generateSymbols(
+						scope: .empty)
+					return (
+						tag: .init(
+							chain: tagged.tag.chain.dropLast().map { .named($0) } + [
+								.functionNoInput(
+									name: functionName.description,
+									args: Set(argumentsSets.keys))
+							]),
+						expression: tagged.expression,
+						newPosition: position,
+						errors: errors
+					)
+				}
+				fatalError("Need to handle function with input")
 			default:
 				return (
 					tag: .init(chain: tagged.tag.chain),
 					expression: tagged.expression,
-					newPosition: position
+					newPosition: position,
+					errors: []
 				)
 			}
 		default:
 			return (
-				tag: .init(chain: ["$\(position)"]),
+				tag: .init(chain: [.positional(position)]),
 				expression: self,
-				newPosition: position + 1
+				newPosition: position + 1,
+				errors: []
 			)
 		}
 	}
@@ -260,30 +310,27 @@ extension Syntax.Expression {
 		currentSymbols: borrowing Semantic.SymbolTable,
 		symbolsState: inout [Semantic.QualifiedIdentifier: NodeState],
 		currentContext: inout Semantic.Context,
-	) -> (
-		expression: Semantic.Expression,
-		errors: [Semantic.Error]
-	) {
+		errors: inout [Semantic.Error]
+	) -> Semantic.Expression {
 		switch self {
-		// case .typeDefinition(let typeDefinition):
-		// 	let result = typeDefinition.expressions.resolveSymbols(scope: scope)
-		// 	return (.typeDefinition(result.symbols), result.errors)
 		case .literal(let literal):
-			return (literal.resolveType(), [])
+			return literal.resolveType()
 		case .unary(let unary):
 			return unary.resolveType(
 				scope: scope,
 				context: context,
 				currentSymbols: currentSymbols,
 				symbolsState: &symbolsState,
-				currentContext: &currentContext)
+				currentContext: &currentContext,
+				errors: &errors)
 		case .binary(let binary):
 			return binary.resolveType(
 				scope: scope,
 				context: context,
 				currentSymbols: currentSymbols,
 				symbolsState: &symbolsState,
-				currentContext: &currentContext)
+				currentContext: &currentContext,
+				errors: &errors)
 		case .nominal(let identifier):
 			return self.resolveIdentifier(
 				identifier: identifier,
@@ -291,8 +338,8 @@ extension Syntax.Expression {
 				context: context,
 				currentSymbols: currentSymbols,
 				symbolsState: &symbolsState,
-				currentContext: &currentContext)
-		// identifier.getSemanticIdentifier()
+				currentContext: &currentContext,
+				errors: &errors)
 		default:
 			fatalError("not implemented \(self)")
 		}
@@ -305,10 +352,8 @@ extension Syntax.Expression {
 		currentSymbols: borrowing Semantic.SymbolTable,
 		symbolsState: inout [Semantic.QualifiedIdentifier: NodeState],
 		currentContext: inout Semantic.Context,
-	) -> (
-		expression: Semantic.Expression,
-		errors: [Semantic.Error]
-	) {
+		errors: inout [Semantic.Error]
+	) -> Semantic.Expression {
 		let semanticIdentifier = Semantic.QualifiedIdentifier(
 			chain: identifier.chain)
 
@@ -319,19 +364,16 @@ extension Syntax.Expression {
 			identifier: semanticIdentifier,
 			in: scope)
 		{
-			return (semanticExpression, [])
+			return semanticExpression
 		}
 		// checking if symbol exists in current unevaluated symbols
 		else if symbolsState.resolveSymbol(
 			identifier: semanticIdentifier,
 			in: scope) == .visiting
 		{
-			return (
-				expression: .invalid,
-				errors: [
-					.cycle(identifier: semanticIdentifier, node: self.location)
-				]
-			)
+			errors.append(
+				.cycle(identifier: semanticIdentifier, node: self.location))
+			return .invalid
 		}
 		// evaluating symbol from current unevaluated symbols
 		else if let syntaxExpression = currentSymbols.resolveSymbol(
@@ -341,12 +383,13 @@ extension Syntax.Expression {
 			// Marking as visiting
 			symbolsState[semanticIdentifier] = .visiting
 
-			let (semanticExpression, errors) = syntaxExpression.resolveType(
+			let semanticExpression = syntaxExpression.resolveType(
 				scope: scope,
 				context: context,
 				currentSymbols: currentSymbols,
 				symbolsState: &symbolsState,
-				currentContext: &currentContext)
+				currentContext: &currentContext,
+				errors: &errors)
 
 			// Marking as visited
 			symbolsState[semanticIdentifier] = .visited
@@ -354,24 +397,21 @@ extension Syntax.Expression {
 			// Storing evaluated expression in current context
 			currentContext[semanticIdentifier] = semanticExpression
 
-			return (semanticExpression, errors)
+			return semanticExpression
 		}
 		// Looking in global context next
 		else if let semanticExpression = context.resolveSymbol(
 			identifier: semanticIdentifier,
 			in: scope)
 		{
-			return (semanticExpression, [])
+			return semanticExpression
 
 		} else {
-			return (
-				expression: .invalid,
-				errors: [
-					.undefinedIdentifier(
-						identifier: semanticIdentifier,
-						node: self.location)
-				]
-			)
+			errors.append(
+				.undefinedIdentifier(
+					identifier: semanticIdentifier,
+					node: self.location))
+			return .invalid
 		}
 	}
 }
@@ -398,16 +438,15 @@ extension Syntax.Unary {
 		currentSymbols: borrowing Semantic.SymbolTable,
 		symbolsState: inout [Semantic.QualifiedIdentifier: NodeState],
 		currentContext: inout Semantic.Context,
-	) -> (
-		expression: Semantic.Expression,
-		errors: [Semantic.Error]
-	) {
-		let (typedExpression, errors) = self.expression.resolveType(
+		errors: inout [Semantic.Error]
+	) -> Semantic.Expression {
+		let typedExpression = self.expression.resolveType(
 			scope: scope,
 			context: context,
 			currentSymbols: currentSymbols,
 			symbolsState: &symbolsState,
-			currentContext: &currentContext)
+			currentContext: &currentContext,
+			errors: &errors)
 
 		let symbol = "#\(self.op.rawValue)(\(typedExpression.type.description))"
 
@@ -415,22 +454,15 @@ extension Syntax.Unary {
 			symbol, in: scope),
 			case .operation(_, _, let output) = symbolExpression
 		{
-			return (
-				expression: .unary(
-					op: self.op,
-					expression: typedExpression,
-					type: output,
-					kind: typedExpression.kind),
-				errors: errors
-			)
+			return .unary(
+				op: self.op,
+				expression: typedExpression,
+				type: output,
+				kind: typedExpression.kind)
 		}
-
-		return (
-			expression: .invalid,
-			errors: errors + [
-				.invalidOperation(op: self.op, node: self.location)
-			]
-		)
+		errors.append(
+			.invalidOperation(op: self.op, node: self.location))
+		return .invalid
 	}
 }
 
@@ -441,23 +473,24 @@ extension Syntax.Binary {
 		currentSymbols: borrowing Semantic.SymbolTable,
 		symbolsState: inout [Semantic.QualifiedIdentifier: NodeState],
 		currentContext: inout Semantic.Context,
-	) -> (
-		expression: Semantic.Expression,
-		errors: [Semantic.Error]
-	) {
-		let (typedLHS, lhsErrors) = self.left.resolveType(
-			scope: scope,
-			context: context,
-			currentSymbols: currentSymbols,
-			symbolsState: &symbolsState,
-			currentContext: &currentContext)
+		errors: inout [Semantic.Error]
+	) -> Semantic.Expression {
 
-		let (typedRHS, rhsErrors) = self.right.resolveType(
+		let typedLHS = self.left.resolveType(
 			scope: scope,
 			context: context,
 			currentSymbols: currentSymbols,
 			symbolsState: &symbolsState,
-			currentContext: &currentContext)
+			currentContext: &currentContext,
+			errors: &errors)
+
+		let typedRHS = self.right.resolveType(
+			scope: scope,
+			context: context,
+			currentSymbols: currentSymbols,
+			symbolsState: &symbolsState,
+			currentContext: &currentContext,
+			errors: &errors)
 
 		let symbol =
 			"#\(self.op.rawValue)(\(typedLHS.type.description),\(typedRHS.type.description))"
@@ -466,28 +499,21 @@ extension Syntax.Binary {
 			symbol, in: scope),
 			case .operation(_, _, let output) = symbolExpression
 		{
-			return (
-				expression: .binary(
-					op: self.op,
-					lhs: typedLHS,
-					rhs: typedRHS,
-					type: output,
-					kind: typedLHS.kind & typedRHS.kind),
-				errors: lhsErrors + rhsErrors
-			)
+			return .binary(
+				op: self.op,
+				lhs: typedLHS,
+				rhs: typedRHS,
+				type: output,
+				kind: typedLHS.kind & typedRHS.kind)
 		}
-
-		return (
-			expression: .invalid,
-			errors: lhsErrors + rhsErrors + [
-				.invalidOperation(op: self.op, node: self.location)
-			]
-		)
+		errors.append(
+			.invalidOperation(op: self.op, node: self.location))
+		return .invalid
 	}
 }
 
 extension [Syntax.Expression] {
-	public func resolveSymbols(scope: Semantic.QualifiedIdentifier) -> (
+	public func generateSymbols(scope: Semantic.QualifiedIdentifier) -> (
 		symbols: Semantic.SymbolTable,
 		errors: [Semantic.Error]
 	) {
@@ -503,17 +529,26 @@ extension [Syntax.Expression] {
 					symbols: [:]
 				)
 			) { acc, expression in
-				let (tag, expression, newPosition) = expression.taggedExpression(
-					position: acc.positional)
+				let (tag, expression, newPosition, errors) =
+					expression.generateTaggedExpression(
+						position: acc.positional)
 				acc.positional = newPosition
+
+				acc.errors.append(contentsOf: errors)
 
 				let qualifiedId = scope + tag
 
 				if let existingSymbol = acc.symbols[qualifiedId] {
-					fatalError("Proper redeclation storing")
+					acc.errors.append(
+						.redeclaration(
+							identifier: qualifiedId,
+							node: expression.location))
 				}
 				if let existingSymbol = acc.symbols[tag] {
-					fatalError("Proper global shadowing storing")
+					acc.errors.append(
+						.shadowing(
+							identifier: qualifiedId,
+							node: expression.location))
 				}
 				acc.symbols[qualifiedId] = expression
 			}
@@ -522,12 +557,6 @@ extension [Syntax.Expression] {
 }
 
 extension Syntax.Module {
-	fileprivate enum NodeState {
-		case unvisited
-		case visiting
-		case visited
-	}
-
 	public func resolveExpressions(
 		scope: Semantic.QualifiedIdentifier,
 		context: Semantic.Context
@@ -535,208 +564,34 @@ extension Syntax.Module {
 		context: Semantic.Context,
 		errors: [Semantic.Error]
 	) {
-		let result = self.definitions.resolveSymbols(scope: scope)
+		let result = self.definitions.generateSymbols(scope: scope)
 		let symbols = result.symbols
-		var symbolsState = symbols.mapValues { _ in
-			Syntax.Module.NodeState.unvisited
-		}
 		var currentContext: Semantic.Context = [:]
+		var symbolsState: [Semantic.QualifiedIdentifier: NodeState] =
+			symbols.mapValues { _ in
+				.unvisited  // TODO: not sure if this is necessary
+			}
 		var errors: [Semantic.Error] = []
 
-		func cyclicEvaluation(
-			// TODO: store stack to report cycles
-			identifier: Semantic.QualifiedIdentifier,
-			expression: Syntax.Expression
-		) {
-			if currentContext[identifier] != nil {
-				// already evaluated
-				return
-			}
-
-			if symbolsState[identifier] == .visiting {
-				// cycle detected
-				errors.append(
-					.cycle(identifier: identifier, node: expression.location)
-				)
-				// TODO: mark symbol as invalid type
-				return
-			}
-
-			symbolsState[identifier] = .visiting
-
-		}
-
 		for (identifier, expression) in symbols {
-			// TODO: start evaluating positional expressions,
-			// TODO: if fields are needed, evaluate them,
-			// TODO: visit nodes and check for cycles
+			// NOTE: I don't think I need to resolve the identifier recursively
+			if currentContext.resolveSymbol(identifier: identifier, in: scope)
+				!= nil
+			{
+				continue
+			}
+			currentContext[identifier] = expression.resolveType(
+				scope: scope,
+				context: context,
+				currentSymbols: symbols,
+				symbolsState: &symbolsState,
+				currentContext: &currentContext,
+				errors: &errors)
 		}
 
-		fatalError("not implemented")
+		return (
+			currentContext,
+			errors
+		)
 	}
-
-	public func resolveTypeDefinitions(
-		scope: Semantic.QualifiedIdentifier,
-		context: Semantic.Context
-	) -> (
-		context: Semantic.Context,
-		errors: [Semantic.Error]
-	) {
-		let result = self.definitions.resolveSymbols(scope: scope)
-
-		let typeDefinitions:
-			[Semantic.QualifiedIdentifier: Syntax.TypeDefinition] = result.symbols
-				.reduce(into: [:]) { acc, symbol in
-					switch symbol.value {
-					case .typeDefinition(let typeDefinition):
-						acc[symbol.key] = typeDefinition
-					default:
-						break
-					}
-				}
-
-		// TODO: detect shadowing?
-		// TODO: detect redeclaration?
-		// TODO: detect undefined types
-
-		let undefinedTypes = typeDefinitions.compactMap {
-			identifier, typeDefinition in
-			// some recursive shit
-			// typeDefinition.expressions
-		}
-
-		// TODO: detect cyclical referencing
-
-		fatalError("not implemented")
-	}
-
-	// private func checkCyclicalDependencies(
-	// 	symbols: Semantic.TypeLookupMap
-	// ) -> [Semantic.Error] {
-	// 	var nodeStates: [Syntax.QualifiedIdentifier: NodeState] = [:]
-	// 	var errors: [Semantic.Error] = []
-	//
-	// 	func checkCyclicalDependencies(
-	// 		typeSpecifier: Syntax.TypeSpecifier,
-	// 		stack: [Syntax.Definition]
-	// 	) {
-	// 		switch typeSpecifier {
-	// 		case .nothing, .never:
-	// 			break
-	// 		case let .nominal(nominal):
-	// 			// NOTE: intrinsics don't have definition
-	// 			if let typeDefinition = localTypeLookup[
-	// 				nominal.identifier.getSemanticIdentifier()
-	// 			] {
-	// 				checkCyclicalDependencies(
-	// 					typeDefinition: typeDefinition,
-	// 					stack: stack
-	// 				)
-	// 			}
-	// 		case let .recordType(record):
-	// 			for field in record.typeFields {
-	// 				switch field {
-	// 				case let .typeSpecifier(typeSpecifier):
-	// 					checkCyclicalDependencies(
-	// 						typeSpecifier: typeSpecifier,
-	// 						stack: stack
-	// 					)
-	// 				case let .taggedTypeSpecifier(taggedTypeSpecifier):
-	// 					if let typeSpecifier =
-	// 						taggedTypeSpecifier.typeSpecifier
-	// 					{
-	// 						checkCyclicalDependencies(
-	// 							typeSpecifier: typeSpecifier,
-	// 							stack: stack
-	// 						)
-	// 					} else {
-	// 						// NOTE: nil typeSpecifiers are not allowed in record types
-	// 						errors.append(
-	// 							.init(
-	// 								location: field.location,
-	// 								errorChoice: .taggedTypeSpecifierRequired
-	// 							)
-	// 						)
-	// 					}
-	// 				case let .homogeneousTypeProduct(homogeneousTypeProduct):
-	// 					checkCyclicalDependencies(
-	// 						typeSpecifier: homogeneousTypeProduct.typeSpecifier,
-	// 						stack: stack
-	// 					)
-	// 				}
-	// 			}
-	// 		case let .choiceType(choice):
-	// 			for field in choice.typeFields {
-	// 				switch field {
-	// 				case let .typeSpecifier(typeSpecifier):
-	// 					checkCyclicalDependencies(
-	// 						typeSpecifier: typeSpecifier,
-	// 						stack: stack
-	// 					)
-	// 				case let .taggedTypeSpecifier(taggedTypeSpecifier):
-	// 					if let typeSpecifier =
-	// 						taggedTypeSpecifier.typeSpecifier
-	// 					{
-	// 						checkCyclicalDependencies(
-	// 							typeSpecifier: typeSpecifier,
-	// 							stack: stack
-	// 						)
-	// 					}
-	// 				case .homogeneousTypeProduct:
-	// 					errors.append(
-	// 						.init(
-	// 							location: field.location,
-	// 							errorChoice: .homogeneousTypeProductInSum
-	// 						)
-	// 					)
-	// 				}
-	// 			}
-	// 		case .function:
-	// 			break
-	// 		}
-	// 	}
-	//
-	// 	func checkCyclicalDependencies(
-	// 		typeDefinition: Syntax.Definition,
-	// 		stack: [Syntax.Definition]
-	// 	) {
-	// 		let typeIdentifier = typeDefinition.identifier
-	// 		if nodeStates[typeIdentifier] == .visited {
-	// 			return
-	// 		}
-	// 		if nodeStates[typeIdentifier] == .visiting {
-	// 			for element in stack {
-	// 				errors.append(
-	// 					.init(
-	// 						location: typeIdentifier.location,
-	// 						errorChoice: .cyclicType(
-	// 							stack: stack
-	// 						)
-	// 					)
-	// 				)
-	// 			}
-	// 			return
-	// 		}
-	// 		nodeStates[typeIdentifier] = .visiting
-	//
-	// 		if case let .typeSpecifier(typeSpecifier) =
-	// 			typeDefinition.definition
-	// 		{
-	// 			checkCyclicalDependencies(
-	// 				typeSpecifier: typeSpecifier,
-	// 				stack: stack + [typeDefinition]
-	// 			)
-	// 			nodeStates[typeIdentifier] = .visited
-	// 		}
-	// 	}
-	//
-	// 	for (_, typeDefinition) in localTypeLookup {
-	// 		checkCyclicalDependencies(
-	// 			typeDefinition: typeDefinition,
-	// 			stack: []
-	// 		)
-	// 	}
-	//
-	// 	return errors
-	// }
 }
