@@ -24,6 +24,7 @@ final class SemanticTests: XCTestCase {
 				scope: .init(chain: ["one"]),
 				context: Semantic.globals
 			)
+			print(expressions.errors)
 			print(expressions.context.debugDisplay)
 		}
 	}
