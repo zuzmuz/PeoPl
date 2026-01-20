@@ -69,24 +69,24 @@ module.exports = grammar({
       ),
       optional(choice(',', '\n'))  // Allow trailing separator
     ),
-        
+
 
 
     // An expression list is used in function calls
     round_expression_list: $ => seq(
       '(',
-        optional(
-          $._expression_list
-        ),
+      optional(
+        $._expression_list
+      ),
       ')'
     ),
 
     // a square expression list returns a tuple
     square_expression_list: $ => seq(
       '[',
-        optional(
-          $._expression_list
-        ),
+      optional(
+        $._expression_list
+      ),
       ']'
     ),
 
@@ -121,6 +121,7 @@ module.exports = grammar({
     _expression: $ => choice(
       $._basic_expression,
       $.function_definition,
+      // $._expression_list,
       $.piped_expression,
       $.branched_expression,
     ),
@@ -159,7 +160,7 @@ module.exports = grammar({
       optional(field("prefix", $._basic_expression)),
       field("body", $.function_body)
     )),
-    
+
 
 
     // -------------------------------------
@@ -182,7 +183,7 @@ module.exports = grammar({
     ),
 
 
-    
+
     binding: $ => /\@[a-zA-Z_][a-zA-Z0-9_]*/,
     positional: $ => token(seq(
       '$',
@@ -205,7 +206,7 @@ module.exports = grammar({
     ),
 
     _branch_capture_group: $ => seq(
-      '|', 
+      '|',
       choice(
         field("match_expression", choice($._basic_expression, $.tagged_expression)),
         seq('if', field("guard_expression", $._basic_expression)),
@@ -218,9 +219,9 @@ module.exports = grammar({
     ),
 
     piped_expression: $ => prec.left(PREC.PIPE, seq(
-        field("left", $._expression),
-        field("operator", choice($.pipe_operator, $.optional_pipe_operator)),
-        field("right", $._expression),
+      field("left", $._expression),
+      field("operator", choice($.pipe_operator, $.optional_pipe_operator)),
+      field("right", $._expression),
     )),
 
     pipe_operator: $ => '|>',
@@ -246,10 +247,10 @@ module.exports = grammar({
     never: _ => "Never",
 
     int_literal: $ => token(choice(
-        /[0-9][0-9_]*/,
-        /0x[0-9a-fA-F_]+/,
-        /0b[01_]+/,
-        /0o[0-7_]+/,
+      /[0-9][0-9_]*/,
+      /0x[0-9a-fA-F_]+/,
+      /0b[01_]+/,
+      /0o[0-7_]+/,
     )),
 
     float_literal: $ => /\d+\.\d+/,

@@ -712,7 +712,7 @@ extension Semantic.Literal: CustomDebugStringConvertible {
 	}
 }
 
-extension Semantic.Context {
+extension [Semantic.QualifiedIdentifier: Semantic.Expression] {
 	var debugDisplay: String {
 		var descriptions: [String] = []
 		for (key, value) in self {

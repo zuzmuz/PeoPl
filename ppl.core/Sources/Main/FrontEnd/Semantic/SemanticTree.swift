@@ -14,8 +14,14 @@ public enum Semantic {
 	public enum IdElement: Hashable, Sendable, Equatable {
 		case named(String)
 		case positional(UInt32)
-		case functionNoInput(name: String, args: Set<QualifiedIdentifier>)
-		case operation(op: Operator)  //, lhs: Expression, rhs: Expression)
+		case function(
+			input: Expression,
+			name: String,
+			args: Set<QualifiedIdentifier>)
+		case operation(
+			op: Operator,
+			lhs: Expression,
+			rhs: Expression)
 
 		var description: String {
 			switch self {
@@ -23,15 +29,15 @@ public enum Semantic {
 				return name
 			case .positional(let position):
 				return "$\(position)"
-			case .functionNoInput(let name, let args):
+			case .function(let input, let name, let args):
 				let argsDescription =
 					args
 					.map { $0.description }
 					.sorted()
 					.joined(separator: ",")
-				return "\(name)(\(argsDescription))"
-			case .operation(let op):
-				return "#\(op)"
+				return "\(input.description)\(name)(\(argsDescription))"
+			case .operation(let op, let lhs, let rhs):
+				return "#\(op)\(lhs.description),\(rhs.description)"
 			}
 		}
 	}
@@ -72,7 +78,7 @@ public enum Semantic {
 		static let empty = QualifiedIdentifier(chain: [IdElement]())
 	}
 
-	public indirect enum Expression: Sendable {
+	public indirect enum Expression: Hashable, Sendable {
 		case typeDefinition
 		case literal(Literal)
 		case unary(
@@ -96,7 +102,6 @@ public enum Semantic {
 			lhs: Expression,
 			rhs: Expression,
 			output: Expression)
-		case intrinsic(Intrinsic)
 		case type
 
 		case invalid
@@ -113,8 +118,6 @@ public enum Semantic {
 				type
 			case .binary(_, _, _, let type, _):
 				type
-			case .intrinsic:
-				.type
 			case .nominal(_, let type, _):
 				type
 			case .function(let input, let arguments, let output):
@@ -136,7 +139,7 @@ public enum Semantic {
 
 		var kind: Kind {
 			switch self {
-			case .literal, .type, .intrinsic, .function,
+			case .literal, .type, .function,
 				.operation:
 				.compiletimeValue
 			case .nominal(_, _, let kind):
@@ -195,7 +198,7 @@ public enum Semantic {
 		}
 	}
 
-	public enum Literal: Sendable {
+	public enum Literal: Hashable, Sendable {
 		case int(UInt64)
 		case float(Double)
 		// case string(String)
@@ -271,9 +274,10 @@ extension Syntax.QualifiedIdentifier {
 		// Second step:
 		// Check if symbol is in current symbols,
 		// if the symbol is currently being resolved, it means there's cycle
-		else if let (fullId, nodeState) = localContext.visitingSymbols.resolveSymbol(
-			identifier: semanticId,
-			in: scope), nodeState
+		else if let (fullId, nodeState) = localContext.visitingSymbols
+			.resolveSymbol(
+				identifier: semanticId,
+				in: scope), nodeState
 		{
 			errors.append(
 				.cycle(
@@ -284,7 +288,7 @@ extension Syntax.QualifiedIdentifier {
 		// If node is unvisited, resolve the type of identifier
 		else if let (fullId, syntaxExpression) =
 			localContext.symbols.resolveSymbol(
-			identifier: semanticId, in: scope)
+				identifier: semanticId, in: scope)
 		{
 			// Mark current symbol as visiting to detect cycle
 			localContext.visitingSymbols[fullId] = true
@@ -308,7 +312,7 @@ extension Syntax.QualifiedIdentifier {
 			identifier: semanticId,
 			in: scope)
 		{
-				return .nominal(
+			return .nominal(
 				fullId,
 				type: expression.type,
 				kind: expression.kind
@@ -340,14 +344,14 @@ extension Syntax.Expression {
 		case .taggedExpression(let tagged):
 			switch tagged.expression {
 			case .function(let function):
-				if function.input == nil {
 					let functionName = (tagged.tag.chain.last ?? "")
 					let (argumentsSets, errors) = function.arguments.generateSymbols(
 						scope: .empty)
 					return (
 						tag: .init(
 							chain: tagged.tag.chain.dropLast().map { .named($0) } + [
-								.functionNoInput(
+								.function(
+									input: fatalError(), //function.input,
 									name: functionName.description,
 									args: Set(argumentsSets.keys))
 							]),
@@ -355,8 +359,6 @@ extension Syntax.Expression {
 						newPosition: position,
 						errors: errors
 					)
-				}
-				fatalError("Need to handle function with input")
 			default:
 				return (
 					tag: .init(chain: tagged.tag.chain),
@@ -538,12 +540,9 @@ extension Syntax.Module {
 	) {
 		let result = self.definitions.generateSymbols(scope: scope)
 		let symbols = result.symbols
-		var localContext = Semantic.LocalContext(context: [Semantic.QualifiedIdentifier : Semantic.Expression], symbols: [Semantic.QualifiedIdentifier : Syntax.Expression], symbolsState: [Semantic.QualifiedIdentifier : Semantic.NodeState]
-		var currentContext: Semantic.Context = [:]
-		var symbolsState: [Semantic.QualifiedIdentifier: NodeState] =
-			symbols.mapValues { _ in
-				.unvisited  // TODO: not sure if this is necessary
-			}
+		var localContext = Semantic.LocalContext(symbols: symbols)
+		var currentContext: [Semantic.QualifiedIdentifier: Semantic.Expression] =
+			[:]
 		var errors: [Semantic.Error] = []
 
 		for (identifier, expression) in symbols {
@@ -553,12 +552,10 @@ extension Syntax.Module {
 			{
 				continue
 			}
-			currentContext[identifier] = expression.resolveType(
+			currentContext[identifier] = expression.resolve(
 				scope: identifier,
-				context: context,
-				currentSymbols: symbols,
-				symbolsState: &symbolsState,
-				currentContext: &currentContext,
+				inheritedContext: inheritedContext,
+				localContext: &localContext,
 				errors: &errors)
 		}
 
