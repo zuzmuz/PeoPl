@@ -521,9 +521,17 @@
     "named": true,
     "fields": {
       "expression": {
-        "multiple": false,
+        "multiple": true,
         "required": false,
         "types": [
+          {
+            "type": "\n",
+            "named": false
+          },
+          {
+            "type": ",",
+            "named": false
+          },
           {
             "type": "access_expression",
             "named": true

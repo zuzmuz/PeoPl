@@ -593,7 +593,7 @@
               "name": "expression",
               "content": {
                 "type": "SYMBOL",
-                "name": "_complex_expression"
+                "name": "_expression_list"
               }
             },
             {
