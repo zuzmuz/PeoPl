@@ -14,6 +14,7 @@ const PREC = {
   OR: 3,
   PIPE: 1,
   TAGGED: 0,
+  RETURN: -1
 };
 
 
@@ -59,7 +60,7 @@ module.exports = grammar({
     // -----------------------------------------
     //
 
-    _expression_list: $ => seq(
+    _expression_list: $ => prec.left(PREC.RETURN, seq(
       $._complex_expression,
       repeat(
         seq(
@@ -68,7 +69,7 @@ module.exports = grammar({
         ),
       ),
       optional(choice(',', '\n'))  // Allow trailing separator
-    ),
+    )),
 
 
 
@@ -177,7 +178,7 @@ module.exports = grammar({
 
     function_body: $ => seq(
       "{",
-      optional(field("expression", $._expression_list)),
+      optional(field("expression", $._complex_expression)),
       "}"
     ),
 

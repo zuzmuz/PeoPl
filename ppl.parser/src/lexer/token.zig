@@ -3,10 +3,8 @@ pub const TokenType = enum {
     int_literal, // decimal, hexadecimal, octal, binary
     float_literal, 
     string_literal,
-    true_literal,
-    false_literal,
-    nothing_literal,
-    never_literal,
+    // true_literal,
+    // false_literal,
     special, // underscore
 
     // kwords
@@ -30,6 +28,7 @@ pub const TokenType = enum {
     rshift, // >>
     band, // .&
     bor, // .|
+    bxor, // .^
     bnot, // ~
 
     // access
