@@ -3,6 +3,7 @@
 #include "common.cpp"
 #include <cstring>
 #include <format>
+#include <print>
 
 namespace syntax {
 enum class TokenKind {
@@ -118,6 +119,11 @@ struct Tokenizer {
 	Tokenizer(char const * source) {
 		this->source.ptr = (u8 *)source;
 		this->source.size = strlen(source);
+
+		start_of_token = this->source.ptr;
+		end_of_source = this->source.ptr + this->source.size;
+		cursor = start_of_token;
+		std::println("content {}", source);
 	}
 
 	Token generate_token(TokenKind kind) const {
@@ -133,6 +139,8 @@ struct Tokenizer {
 
 	Token next_token() {
 		this->start_of_token = this->cursor;
+
+		std::println("start {}, cursor {}", *start_of_token, *cursor);
 
 		if (skip_spaces_or_stop()) {
 			return generate_token(TokenKind::eof);
