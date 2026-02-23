@@ -1,0 +1,8 @@
+BasedOnStyle: LLVM
+ColumnLimit: 70
+UseTab: Always
+IndentWidth: 4
+TabWidth: 4
+AlignAfterOpenBracket: BlockIndent
+BinPackParameters: false
+PointerAlignment: Middle
