@@ -1,10 +1,9 @@
 pub const TokenType = enum {
     // literals
     int_literal, // decimal, hexadecimal, octal, binary
-    float_literal, 
+    float_literal,
     string_literal,
-    // true_literal,
-    // false_literal,
+    identifier,
     special, // underscore
 
     // kwords

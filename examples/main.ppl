@@ -29,11 +29,11 @@ multuply2and4: Math\multiply(a: 2, b: 4) // functin arguments are named by defau
 // multiplyResult is a compile time Int with the value 8
 
 // function with inputs
-Math: fn (Int)[] -> Int {
+Math: fn (Int) -> Int {
     2
 }
 
-Hashable: fn [Self: Type] -> [
+Hashable: fn (Self: Type) -> [
     a: fn (Self)[] -> i64 { 3 }
 ]
 
