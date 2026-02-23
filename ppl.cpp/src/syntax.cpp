@@ -123,7 +123,10 @@ struct Tokenizer {
 		start_of_token = this->source.ptr;
 		end_of_source = this->source.ptr + this->source.size;
 		cursor = start_of_token;
-		std::println("content {}", source);
+		std::println(
+			"content {}, start {}, end {}", source,
+			(void *)start_of_token, (void *)end_of_source
+		);
 	}
 
 	Token generate_token(TokenKind kind) const {
@@ -140,11 +143,21 @@ struct Tokenizer {
 	Token next_token() {
 		this->start_of_token = this->cursor;
 
-		std::println("start {}, cursor {}", *start_of_token, *cursor);
+		std::println(
+			"start {}, cursor {}, current_rune {}",
+			(void *)(source.ptr - start_of_token),
+			(void *)(source.ptr - cursor), current_rune
+		);
 
 		if (skip_spaces_or_stop()) {
 			return generate_token(TokenKind::eof);
 		}
+
+		std::println(
+			"start {}, cursor {}, current_rune {}",
+			(void *)(source.ptr - start_of_token),
+			(void *)(source.ptr - cursor), current_rune
+		);
 
 		if (current_rune == '\n') {
 			return generate_token(TokenKind::new_line);
@@ -163,11 +176,11 @@ struct Tokenizer {
 
 	Token consume_number() {
 		if (current_rune == '0') {
-			if (advance_or_stop()) {
+			if (advance_and_continue()) {
 				return generate_token(TokenKind::int_literal);
 			}
 			if (current_rune == 'x') {
-				while (advance_or_stop()) {
+				while (advance_and_continue()) {
 					if (not(is_hex_digit(current_rune) or
 							current_rune == '_')) {
 						break;
@@ -184,7 +197,7 @@ struct Tokenizer {
 			// TODO: handle binary
 		}
 
-		while (advance_or_stop()) {
+		while (advance_and_continue()) {
 			if (not is_digit(current_rune)) {
 				break;
 			}
@@ -193,7 +206,7 @@ struct Tokenizer {
 	}
 
 	Token consume_identifier() {
-		while (advance_or_stop()) {
+		while (advance_and_continue()) {
 			if (not(is_digit(current_rune) or
 					is_letter(current_rune))) {
 				break;
@@ -236,7 +249,7 @@ struct Tokenizer {
 	}
 
 	bool skip_spaces_or_stop() {
-		while (advance_or_stop()) {
+		while (advance_and_continue()) {
 			switch (current_rune) {
 			case ' ':
 			case '\t':
@@ -249,15 +262,16 @@ struct Tokenizer {
 		return true;
 	}
 
-	bool advance_or_stop() {
+	bool advance_and_continue() {
 		if (cursor < end_of_source) {
 			if (is_utf8(*cursor)) {
 				// TODO: handle utf8
-				return true;
+				return false;
 			} else if (*cursor == 0) {
 				// TODO: illegal state (store lexical errors)
-				return true;
+				return false;
 			} else {
+				std::println("we should be here no?");
 				current_rune = *cursor;
 
 				if (*cursor == '\n') {
@@ -267,10 +281,10 @@ struct Tokenizer {
 					column += 1;
 				}
 				cursor += 1;
-				return false;
+				return true;
 			}
 		}
-		return true;
+		return false;
 	}
 };
 }; // namespace syntax
