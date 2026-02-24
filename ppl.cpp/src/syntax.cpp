@@ -9,7 +9,11 @@ namespace syntax {
 enum class TokenKind {
 	// literals
 	int_literal,
+	hex_literal,
+	oct_literal,
+	bin_literal,
 	float_literal,
+	imaginary_literal,
 	string_literal,
 	identifier,
 	special, // underscore
@@ -67,6 +71,7 @@ enum class TokenKind {
 	binding,	 // @
 	positional,	 // $
 
+	comment,
 	new_line,
 
 	eof,
@@ -171,7 +176,144 @@ struct Tokenizer {
 			return consume_number();
 		}
 
+		switch (current_rune) {
+		case '=':
+			return generate_token(TokenKind::eq);
+		case '+':
+			return generate_token(TokenKind::plus);
+			break;
+		case '*':
+			return generate_token(TokenKind::times);
+			break;
+		case '%':
+			return generate_token(TokenKind::mod);
+			break;
+		case '^':
+			return generate_token(TokenKind::exponent);
+			break;
+		case '~':
+			return generate_token(TokenKind::bnot);
+			break;
+		case '(':
+			return generate_token(TokenKind::lparen);
+			break;
+		case ')':
+			return generate_token(TokenKind::rparen);
+			break;
+		case '[':
+			return generate_token(TokenKind::lbracket);
+			break;
+		case ']':
+			return generate_token(TokenKind::rbracket);
+			break;
+		case '{':
+			return generate_token(TokenKind::lbrace);
+			break;
+		case '}':
+			return generate_token(TokenKind::rbrace);
+			break;
+		case ',':
+			return generate_token(TokenKind::comma);
+			break;
+		case '\\':
+			return generate_token(TokenKind::backslash);
+			break;
+		case '\'':
+			return generate_token(TokenKind::appostrophe);
+			break;
+		case '@':
+			return generate_token(TokenKind::binding);
+			break;
+		case '$':
+			return generate_token(TokenKind::positional);
+			break;
+		case '?':
+			return generate_token(TokenKind::propagate);
+		case '_':
+			return generate_token(TokenKind::special);
+			break;
+
+		// Multi-character possibilities
+		case '-':
+			if (peek_compare('>')) {
+				advance_and_continue();
+				return generate_token(TokenKind::arrow);
+			} else {
+				return generate_token(TokenKind::minus);
+			}
+			break;
+		case '/':
+			if (peek_compare('/')) {
+				advance_and_continue();
+				return consume_comment();
+			} else {
+				return generate_token(TokenKind::by);
+			}
+			break;
+		case '>':
+			if (peek_compare('=')) {
+				advance_and_continue();
+				return generate_token(TokenKind::ge);
+			} else {
+				return generate_token(TokenKind::gt);
+			}
+			break;
+		case '<':
+			if (peek_compare('=')) {
+				advance_and_continue();
+				return generate_token(TokenKind::le);
+			} else {
+				return generate_token(TokenKind::lt);
+			}
+			break;
+		case '.':
+			if (peek_compare('&')) {
+				advance_and_continue();
+				return generate_token(TokenKind::band);
+			} else if (peek_compare('|')) {
+				advance_and_continue();
+				return generate_token(TokenKind::bor);
+			} else if (peek_compare('^')) {
+				advance_and_continue();
+				return generate_token(TokenKind::bxor);
+			} else {
+				return generate_token(TokenKind::dot);
+			}
+			break;
+		case '|':
+			if (peek_compare('>')) {
+				advance_and_continue();
+				return generate_token(TokenKind::pipe);
+			} else {
+				return generate_token(TokenKind::bar);
+			}
+			break;
+		case '"':
+			if (peek_compare('"')) {
+				advance_and_continue();
+				if (peek_compare('"')) {
+					advance_and_continue();
+					return consume_multi_line_string();
+				}
+				return generate_token(TokenKind::string_literal);
+			} else {
+				return consume_string();
+			}
+		}
+
 		return generate_token(TokenKind::invalid);
+	}
+
+	Token consume_multi_line_string() {
+		return generate_token(TokenKind::string_literal);
+	}
+
+	Token consume_string() {
+		return generate_token(TokenKind::string_literal);
+	}
+
+	Token consume_comment() {
+		return generate_token(TokenKind::comment);
 	}
 
 	Token consume_number() {
@@ -262,6 +404,13 @@ struct Tokenizer {
 		return true;
 	}
 
+	bool peek_compare(u32 rune) {
+		if (cursor < end_of_source) {
+			return rune == *this->cursor;
+		}
+		return false;
+	}
+
 	bool advance_and_continue() {
 		if (cursor < end_of_source) {
 			if (is_utf8(*cursor)) {
@@ -271,7 +420,6 @@ struct Tokenizer {
 				// TODO: illegal state (store lexical errors)
 				return false;
 			} else {
-				std::println("we should be here no?");
 				current_rune = *cursor;
 
 				if (*cursor == '\n') {
@@ -301,6 +449,18 @@ template <> struct std::formatter<syntax::TokenKind> {
 		switch (kind) {
 		case syntax::TokenKind::int_literal:
 			name = "int_literal";
+			break;
+		case syntax::TokenKind::hex_literal:
+			name = "hex_literal";
+			break;
+		case syntax::TokenKind::oct_literal:
+			name = "oct_literal";
+			break;
+		case syntax::TokenKind::bin_literal:
+			name = "bin_literal";
+			break;
+		case syntax::TokenKind::imaginary_literal:
+			name = "imaginary_literal";
 			break;
 		case syntax::TokenKind::float_literal:
 			name = "float_literal";
@@ -433,6 +593,9 @@ template <> struct std::formatter<syntax::TokenKind> {
 			break;
 		case syntax::TokenKind::new_line:
 			name = "new_line";
+			break;
+		case syntax::TokenKind::comment:
+			name = "comment";
 			break;
 		case syntax::TokenKind::eof:
 			name = "eof";

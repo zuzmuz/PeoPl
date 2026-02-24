@@ -3,17 +3,15 @@
 #include "syntax.cpp"
 
 int main() {
-	char const * string = "if 234";
+	char const * string = "(i+ 234) / siz";
 
 	auto tokenizer = syntax::Tokenizer(string);
-
-	auto token = tokenizer.next_token();
 	
-	std::println("token {}", token);
-
-	token = tokenizer.next_token();
-	
-	std::println("token {}", token);
+	syntax::Token token;
+	do {
+		token = tokenizer.next_token();
+		std::println("token {}", token);
+	} while (token.kind != syntax::TokenKind::eof);
 
 	return 0;
 }
