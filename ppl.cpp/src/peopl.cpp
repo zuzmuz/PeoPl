@@ -1,2 +1,2 @@
 #include "syntax/parser.cpp"
-#include "syntax/debug.cpp"
+#include "syntax/tokenizer+debug.cpp"

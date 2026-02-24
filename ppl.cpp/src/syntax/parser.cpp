@@ -1,5 +1,7 @@
 #pragma once
+#include "tokenizer+debug.cpp"
 #include "tokenizer.cpp"
+#include <print>
 #include <vector>
 
 namespace syntax {
@@ -8,16 +10,20 @@ u8 int_from_char(u8 c) {
 	if (c >= '0' and c <= '9')
 		return c - '0';
 	if (c >= 'a' and c <= 'f')
-		return c - 'a';
+		return 10 + c - 'a';
 	if (c >= 'A' and c <= 'F')
-		return c - 'A';
+		return 10 + c - 'A';
 	// FIXME: this should be unreachable
 	return 0;
 }
 
 u64 int_from_string(String const & content, u8 base) {
+	std::println("content {}", content);
 	u64 value = 0;
-	for (usize i = 0; i < content.size; ++i) {
+	usize i = 0;
+	if (base != 10)
+		i = 2;
+	for (; i < content.size; ++i) {
 		if (content[i] == '_') {
 			continue;
 		}
@@ -28,6 +34,8 @@ u64 int_from_string(String const & content, u8 base) {
 }
 
 u64 int_from_token(Token const & token) {
+
+	std::println("unreachable {}", token.kind);
 	switch (token.kind) {
 	case TokenKind::int_literal:
 		return int_from_string(token.value, 10);
@@ -81,13 +89,13 @@ struct Parser {
 	Token cursor;
 	std::vector<SyntaxError> errors;
 
-	SyntaxTree parse(const char * source) {
+	Parser(const char * source) : tokenizer(source) {
 		tokenizer = Tokenizer(source);
+	}
 
+	SyntaxTree parse() {
 		cursor = tokenizer.next_token();
-
 		auto expression_list = parse_expression_list(TokenKind::eof);
-
 		return {.expression_list = expression_list};
 	}
 
@@ -111,10 +119,15 @@ struct Parser {
 	}
 
 	Expression parse_expression() {
-		if (cursor.kind == TokenKind::int_literal) {
+		switch (cursor.kind) {
+		case TokenKind::int_literal:
+		case TokenKind::hex_literal:
+		case TokenKind::oct_literal:
+		case TokenKind::bin_literal:
 			return parse_int_literal();
+		default:
+			return {.kind = ExpressionKind::invalid, .value = {}};
 		}
-		return {.kind = ExpressionKind::invalid, .value = {}};
 	}
 
 	Expression parse_int_literal() {
