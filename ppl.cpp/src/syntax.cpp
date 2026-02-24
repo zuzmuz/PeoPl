@@ -128,10 +128,6 @@ struct Tokenizer {
 		start_of_token = this->source.ptr;
 		end_of_source = this->source.ptr + this->source.size;
 		cursor = start_of_token;
-		std::println(
-			"content {}, start {}, end {}", source,
-			(void *)start_of_token, (void *)end_of_source
-		);
 	}
 
 	Token generate_token(TokenKind kind) const {
@@ -146,23 +142,9 @@ struct Tokenizer {
 	}
 
 	Token next_token() {
+		skip_spaces();
 		this->start_of_token = this->cursor;
-
-		std::println(
-			"start {}, cursor {}, current_rune {}",
-			(void *)(source.ptr - start_of_token),
-			(void *)(source.ptr - cursor), current_rune
-		);
-
-		if (skip_spaces_or_stop()) {
-			return generate_token(TokenKind::eof);
-		}
-
-		std::println(
-			"start {}, cursor {}, current_rune {}",
-			(void *)(source.ptr - start_of_token),
-			(void *)(source.ptr - cursor), current_rune
-		);
+		advance();
 
 		if (current_rune == '\n') {
 			return generate_token(TokenKind::new_line);
@@ -235,64 +217,62 @@ struct Tokenizer {
 
 		// Multi-character possibilities
 		case '-':
-			if (peek_compare('>')) {
-				advance_and_continue();
+			if (peek() == '>') {
+				advance();
 				return generate_token(TokenKind::arrow);
 			} else {
 				return generate_token(TokenKind::minus);
 			}
 			break;
 		case '/':
-			if (peek_compare('/')) {
-				advance_and_continue();
+			if (peek() == '/') {
+				advance();
 				return consume_comment();
 			} else {
 				return generate_token(TokenKind::by);
 			}
 			break;
 		case '>':
-			if (peek_compare('=')) {
-				advance_and_continue();
+			if (peek() == '=') {
+				advance();
 				return generate_token(TokenKind::ge);
 			} else {
 				return generate_token(TokenKind::gt);
 			}
 			break;
 		case '<':
-			if (peek_compare('=')) {
-				advance_and_continue();
+			if (peek() == '=') {
+				advance();
 				return generate_token(TokenKind::le);
 			} else {
 				return generate_token(TokenKind::lt);
 			}
 			break;
 		case '.':
-			if (peek_compare('&')) {
-				advance_and_continue();
+			if (peek() == '&') {
+				advance();
 				return generate_token(TokenKind::band);
-			} else if (peek_compare('|')) {
-				advance_and_continue();
+			} else if (peek() == '|') {
+				advance();
 				return generate_token(TokenKind::bor);
-			} else if (peek_compare('^')) {
-				advance_and_continue();
+			} else if (peek() == '^') {
+				advance();
 				return generate_token(TokenKind::bxor);
 			} else {
 				return generate_token(TokenKind::dot);
 			}
-			break;
 		case '|':
-			if (peek_compare('>')) {
-				advance_and_continue();
+			if (peek() == '>') {
+				advance();
 				return generate_token(TokenKind::pipe);
 			} else {
 				return generate_token(TokenKind::bar);
 			}
-			break;
 		case '"':
-			if (peek_compare('"')) {
-				advance_and_continue();
-				if (peek_compare('"')) {
-					advance_and_continue();
+			if (peek() == '"') {
+				advance();
+				if (peek() == '"') {
+					advance();
 					return consume_multi_line_string();
 				}
 				return generate_token(TokenKind::string_literal);
@@ -301,7 +281,7 @@ struct Tokenizer {
 			}
 		}
 
-		return generate_token(TokenKind::invalid);
+		return generate_token(TokenKind::eof);
 	}
 
 	Token consume_multi_line_string() {
@@ -318,41 +298,46 @@ struct Tokenizer {
 
 	Token consume_number() {
 		if (current_rune == '0') {
-			if (advance_and_continue()) {
-				return generate_token(TokenKind::int_literal);
-			}
-			if (current_rune == 'x') {
-				while (advance_and_continue()) {
-					if (not(is_hex_digit(current_rune) or
-							current_rune == '_')) {
-						break;
-					}
-				}
-				return generate_token(TokenKind::int_literal);
-			}
-
-			if (current_rune == 'o') {
-				// TODO: handle octal numbers
+			advance();
+			u32 peeked = peek();
+			switch (current_rune) {
+			case '0':
 				return generate_token(TokenKind::invalid);
+			case 'x':
+				while (is_hex_digit(peeked) or peeked == '_') {
+					advance();
+					peeked = peek();
+				}
+				return generate_token(TokenKind::hex_literal);
+			case 'o':
+				while (is_oct_digit(peeked) or peeked == '_') {
+					advance();
+					peeked = peek();
+				}
+				return generate_token(TokenKind::oct_literal);
+			case 'b':
+				while (is_binary_digit(peeked) or peeked == '_') {
+					advance();
+					peeked = peek();
+				}
+				return generate_token(TokenKind::bin_literal);
 			}
-
-			// TODO: handle binary
 		}
 
-		while (advance_and_continue()) {
-			if (not is_digit(current_rune)) {
-				break;
-			}
+		u32 peeked = peek();
+		while (is_digit(peeked) or peeked == '_') {
+			advance();
+			peeked = peek();
 		}
+
 		return generate_token(TokenKind::int_literal);
 	}
 
 	Token consume_identifier() {
-		while (advance_and_continue()) {
-			if (not(is_digit(current_rune) or
-					is_letter(current_rune))) {
-				break;
-			}
+		u32 peeked = peek();
+		while (is_digit(peeked) or is_letter(peeked)) {
+			advance();
+			peeked = peek();
 		}
 
 		String identifier_string = {
@@ -390,35 +375,41 @@ struct Tokenizer {
 		return rune >= '0' and rune <= '1';
 	}
 
-	bool skip_spaces_or_stop() {
-		while (advance_and_continue()) {
-			switch (current_rune) {
+	void skip_spaces() {
+		for (;;) {
+			switch (peek()) {
 			case ' ':
 			case '\t':
 			case '\r':
-				continue;
+				advance();
+				break;
 			default:
-				return false;
+				return;
 			}
 		}
-		return true;
 	}
 
-	bool peek_compare(u32 rune) {
-		if (cursor < end_of_source) {
-			return rune == *this->cursor;
-		}
-		return false;
-	}
-
-	bool advance_and_continue() {
+	u32 peek() {
 		if (cursor < end_of_source) {
 			if (is_utf8(*cursor)) {
 				// TODO: handle utf8
-				return false;
+				return 0;
 			} else if (*cursor == 0) {
 				// TODO: illegal state (store lexical errors)
-				return false;
+				return 0;	
+			} else {
+				return *cursor;
+			}
+		}
+		return 0;
+	}
+
+	void advance() {
+		if (cursor < end_of_source) {
+			if (is_utf8(*cursor)) {
+				// TODO: handle utf8
+			} else if (*cursor == 0) {
+				// TODO: illegal state (store lexical errors)
 			} else {
 				current_rune = *cursor;
 
@@ -429,10 +420,10 @@ struct Tokenizer {
 					column += 1;
 				}
 				cursor += 1;
-				return true;
 			}
+		} else {
+			current_rune = 0;
 		}
-		return false;
 	}
 };
 }; // namespace syntax
