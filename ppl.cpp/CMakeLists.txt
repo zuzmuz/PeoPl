@@ -6,12 +6,10 @@ project(peopl
 )
 
 set(CMAKE_CXX_STANDARD 23)
-set(CMAKE_CXX_STANDARD_REQUIRED true)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-add_executable(peopl)
-target_compile_options(peopl PRIVATE -Wswitch -Werror=switch)
-target_compile_options(peopl PRIVATE -Wreturn-type -Werror=return-type)
-target_sources(peopl
-  PRIVATE
-    src/main.cpp
-)
+enable_testing()   # must be in root, before add_subdirectory
+
+add_subdirectory(src)
+add_subdirectory(tests)

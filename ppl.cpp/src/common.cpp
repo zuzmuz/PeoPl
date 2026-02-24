@@ -13,11 +13,10 @@ typedef uint64_t u64;
 typedef int64_t i64;
 
 typedef size_t usize;
-typedef ptrdiff_t isize;
 
 struct String {
 	u8 * ptr;
-	isize size;
+	usize size;
 
 	u8 const & operator[](usize i) { return ptr[i]; }
 

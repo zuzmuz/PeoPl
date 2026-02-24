@@ -1,5 +1,6 @@
 #pragma once
 #include "../common.cpp"
+#include <compare>
 #include <cstring>
 
 namespace syntax {
@@ -105,6 +106,9 @@ const Keyword KEYWORDS[] = {
 struct Point {
 	usize line;
 	usize column;
+
+	bool operator==(const Point &) const = default;
+	auto operator<=>(const Point &) const = default;
 };
 
 struct Token {
@@ -112,6 +116,8 @@ struct Token {
 	String value;
 	Point start;
 	Point end;
+
+	bool operator==(const Token &) const = default;
 };
 
 struct Tokenizer {
@@ -133,7 +139,9 @@ struct Tokenizer {
 			 .kind = kind,
 			 .value =
 				  {.ptr = start_of_token,
-					.size = current_cursor - start_of_token},
+					.size = static_cast<usize>(
+						 current_cursor - start_of_token
+					)},
 			 .start = start,
 			 .end = end
 		};
@@ -192,7 +200,7 @@ struct Tokenizer {
 
 		String identifier_string = {
 			 .ptr = start_of_token,
-			 .size = current_cursor - start_of_token
+			 .size = static_cast<usize>(current_cursor - start_of_token)
 		};
 
 		for (Keyword keyword : KEYWORDS) {
@@ -251,7 +259,7 @@ struct Tokenizer {
 			} else {
 				next_rune = *next_cursor;
 
-				if (*next_cursor == '\n') {
+				if (current_rune == '\n') {
 					end.line += 1;
 					end.column = 0;
 				} else {
@@ -261,6 +269,12 @@ struct Tokenizer {
 			}
 		} else {
 			next_rune = 0;
+			if (current_rune == '\n') {
+				end.line += 1;
+				end.column = 0;
+			} else if (current_rune != 0) {
+				end.column += 1;
+			}
 		}
 	}
 
@@ -274,6 +288,9 @@ struct Tokenizer {
 		current_cursor = start_of_token;
 		next_cursor = start_of_token;
 		advance();
+		// resetting after first advancing
+		start = {.line = 0, .column = 0};
+		end = {.line = 0, .column = 0};
 	}
 
 	Token next_token() {

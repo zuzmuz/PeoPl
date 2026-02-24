@@ -1,6 +1,6 @@
-#include <print>
-#include "syntax/tokenizer.cpp"
 #include "syntax/tokenizer+debug.cpp"
+#include "syntax/tokenizer.cpp"
+#include <print>
 
 int main() {
 	char const * string = "comp   if (  i+ 234) /  siz   , fn .| |hi @a|\n x: fn() -> {}";
