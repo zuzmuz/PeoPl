@@ -1,9 +1,9 @@
 #include <print>
-#include "common.cpp"
 #include "syntax.cpp"
+#include "syntax+debug.cpp"
 
 int main() {
-	char const * string = "comp   if (  i+ 234) /  siz   , fn .| |hi @a|";
+	char const * string = "comp   if (  i+ 234) /  siz   , fn .| |hi @a|\n x: fn() -> {}";
 
 	auto tokenizer = syntax::Tokenizer(string);
 	int i = 0;	
