@@ -1,6 +1,5 @@
 add_library(synpeopl
-    syntax/tokenizer.cpp
-    syntax/tokenizer+debug.cpp
+    main.cpp
 )
 
 target_include_directories(synpeopl PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

@@ -1,7 +1,7 @@
-#include "syntax/tokenizer+debug.cpp"
-#include "syntax/tokenizer.cpp"
 #include <catch2/catch_test_macros.hpp>
 #include <print>
+#include "syntax/tokenizer.cpp"
+#include "syntax/debug.cpp"
 
 TEST_CASE("keywords") {
 
