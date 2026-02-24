@@ -3,7 +3,7 @@
 
 int main() {
 	char const * string = "comp   if (  i+ 234) /  siz   , fn .| |hi "
-								 "@a|\n x: fn() -> {}";
+						  "@a|\n x: fn() -> {}";
 
 	auto tokenizer = syntax::Tokenizer(string);
 	syntax::Token token;

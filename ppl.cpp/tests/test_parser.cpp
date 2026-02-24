@@ -3,7 +3,7 @@
 #include "syntax/parser.cpp"
 
 TEST_CASE("int literal") {
-	char const * string = "0xff_ff_ff_ff";
+	char const * string = "0x1_2, 0b_10, 5\n0o1234,   0xff, 1000";
 	syntax::Parser parser(string);
 	auto ast = parser.parse();
 	// syntax::SyntaxTree ast(tokenizer);

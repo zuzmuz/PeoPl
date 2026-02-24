@@ -27,24 +27,24 @@ enum class TokenKind {
 	kword_not,
 
 	// arithmetics
-	plus,		 // +
-	minus,	 // -
-	times,	 // *
-	by,		 // /
-	mod,		 // %
+	plus,	  // +
+	minus,	  // -
+	times,	  // *
+	by,		  // /
+	mod,	  // %
 	exponent, // ^
 
 	// bitwise
 	lshift, // <<
 	rshift, // >>
-	band,	  // .&
-	bor,	  // .|
-	bxor,	  // .^
-	bnot,	  // ~
+	band,	// .&
+	bor,	// .|
+	bxor,	// .^
+	bnot,	// ~
 
 	// access
-	dot,		  // .
-	pipe,		  // |>
+	dot,	   // .
+	pipe,	   // |>
 	propagate, // ?
 
 	// comparisons
@@ -55,21 +55,21 @@ enum class TokenKind {
 	lt, // <
 
 	// delimieters
-	lparen,	 // (
-	rparen,	 // )
+	lparen,	  // (
+	rparen,	  // )
 	lbracket, // [
 	rbracket, // ]
-	lbrace,	 // {
-	rbrace,	 // }
+	lbrace,	  // {
+	rbrace,	  // }
 
 	// special
 	comma,		 // delimiting expressions
-	bar,			 // for capture blocks
+	bar,		 // for capture blocks
 	backslash,	 // for qualified identifiers
 	appostrophe, // for type definitions
 	colon,		 // for expression definitions
 	arrow,		 // ->
-	binding,		 // @
+	binding,	 // @
 	positional,	 // $
 
 	comment,
@@ -88,18 +88,18 @@ struct Keyword {
 };
 
 const Keyword KEYWORDS[] = {
-	 {.kind = TokenKind::kword_if,
-	  .string = {.ptr = (u8 *)COMPACT_KEYWORDS, .size = 2}},
-	 {.kind = TokenKind::kword_comp,
-	  .string = {.ptr = (u8 *)COMPACT_KEYWORDS + 2, .size = 4}},
-	 {.kind = TokenKind::kword_fn,
-	  .string = {.ptr = (u8 *)COMPACT_KEYWORDS + 6, .size = 2}},
-	 {.kind = TokenKind::kword_and,
-	  .string = {.ptr = (u8 *)COMPACT_KEYWORDS + 8, .size = 3}},
-	 {.kind = TokenKind::kword_or,
-	  .string = {.ptr = (u8 *)COMPACT_KEYWORDS + 11, .size = 2}},
-	 {.kind = TokenKind::kword_not,
-	  .string = {.ptr = (u8 *)COMPACT_KEYWORDS + 13, .size = 3}},
+	{.kind = TokenKind::kword_if,
+	 .string = {.ptr = (u8 *)COMPACT_KEYWORDS, .size = 2}},
+	{.kind = TokenKind::kword_comp,
+	 .string = {.ptr = (u8 *)COMPACT_KEYWORDS + 2, .size = 4}},
+	{.kind = TokenKind::kword_fn,
+	 .string = {.ptr = (u8 *)COMPACT_KEYWORDS + 6, .size = 2}},
+	{.kind = TokenKind::kword_and,
+	 .string = {.ptr = (u8 *)COMPACT_KEYWORDS + 8, .size = 3}},
+	{.kind = TokenKind::kword_or,
+	 .string = {.ptr = (u8 *)COMPACT_KEYWORDS + 11, .size = 2}},
+	{.kind = TokenKind::kword_not,
+	 .string = {.ptr = (u8 *)COMPACT_KEYWORDS + 13, .size = 3}},
 };
 
 /// Line and column in original source
@@ -122,7 +122,7 @@ struct Token {
 
 struct Tokenizer {
 
- private:
+  private:
 	String source;
 	u8 * start_of_token = nullptr;
 	u8 * end_of_source = nullptr;
@@ -136,14 +136,14 @@ struct Tokenizer {
 
 	Token generate_token(TokenKind kind) const {
 		return {
-			 .kind = kind,
-			 .value =
-				  {.ptr = start_of_token,
-					.size = static_cast<usize>(
-						 current_cursor - start_of_token
-					)},
-			 .start = start,
-			 .end = end
+			.kind = kind,
+			.value =
+				{.ptr = start_of_token,
+				 .size = static_cast<usize>(
+					 current_cursor - start_of_token
+				 )},
+			.start = start,
+			.end = end
 		};
 	}
 
@@ -188,7 +188,8 @@ struct Tokenizer {
 				}
 				return generate_token(TokenKind::oct_literal);
 			case 'b':
-				while (is_binary_digit(next_rune) or next_rune == '_') {
+				while (is_binary_digit(next_rune) or
+					   next_rune == '_') {
 					advance();
 				}
 				return generate_token(TokenKind::bin_literal);
@@ -208,8 +209,9 @@ struct Tokenizer {
 		}
 
 		String identifier_string = {
-			 .ptr = start_of_token,
-			 .size = static_cast<usize>(current_cursor - start_of_token)
+			.ptr = start_of_token,
+			.size =
+				static_cast<usize>(current_cursor - start_of_token)
 		};
 
 		for (Keyword keyword : KEYWORDS) {
@@ -220,9 +222,12 @@ struct Tokenizer {
 		return generate_token(TokenKind::identifier);
 	}
 
+	// TODO: consume bindings
+	// TODO: consume positionals
+
 	bool is_letter(u32 rune) const {
 		return (rune >= 'a' and rune <= 'z') or
-				 (rune >= 'A' and rune <= 'Z');
+			   (rune >= 'A' and rune <= 'Z');
 	}
 
 	bool is_digit(u32 rune) const {
@@ -231,8 +236,8 @@ struct Tokenizer {
 
 	bool is_hex_digit(u32 rune) const {
 		return (rune >= '0' and rune <= '9') or
-				 (rune >= 'a' and rune <= 'f') or
-				 (rune >= 'A' and rune <= 'F');
+			   (rune >= 'a' and rune <= 'f') or
+			   (rune >= 'A' and rune <= 'F');
 	}
 
 	bool is_oct_digit(u32 rune) const {
@@ -287,7 +292,7 @@ struct Tokenizer {
 		}
 	}
 
- public:
+  public:
 	Tokenizer(char const * source) {
 		this->source.ptr = (u8 *)source;
 		this->source.size = strlen(source);
@@ -314,12 +319,12 @@ struct Tokenizer {
 			return generate_token(TokenKind::new_line);
 		}
 
-		if (is_letter(current_rune)) {
-			return consume_identifier();
-		}
-
 		if (is_digit(current_rune)) {
 			return consume_number();
+		}
+
+		if (is_letter(current_rune)) {
+			return consume_identifier();
 		}
 
 		switch (current_rune) {
@@ -371,6 +376,7 @@ struct Tokenizer {
 			return generate_token(TokenKind::colon);
 			break;
 		case '@':
+			return consume_identifier();
 			return generate_token(TokenKind::binding);
 			break;
 		case '$':

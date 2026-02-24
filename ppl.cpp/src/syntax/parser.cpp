@@ -18,7 +18,6 @@ u8 int_from_char(u8 c) {
 }
 
 u64 int_from_string(String const & content, u8 base) {
-	std::println("content {}", content);
 	u64 value = 0;
 	usize i = 0;
 	if (base != 10)
@@ -35,7 +34,6 @@ u64 int_from_string(String const & content, u8 base) {
 
 u64 int_from_token(Token const & token) {
 
-	std::println("unreachable {}", token.kind);
 	switch (token.kind) {
 	case TokenKind::int_literal:
 		return int_from_string(token.value, 10);
@@ -102,13 +100,16 @@ struct Parser {
 	/// ExpressionList
 	ExpressionList parse_expression_list(TokenKind end_token_kind) {
 		std::vector<Expression> expressions;
-		expressions.push_back(parse_expression());
+		expressions.push_back(parse_complex_expression());
 
 		while (cursor.kind != end_token_kind) {
 			cursor = tokenizer.next_token();
-			if (cursor.kind == TokenKind::comma) {
-				// skip_newlines();
-				expressions.push_back(parse_expression());
+			if (cursor.kind == TokenKind::comma or
+				cursor.kind == TokenKind::new_line) {
+
+				cursor = tokenizer.next_token();
+				skip_newlines();
+				expressions.push_back(parse_complex_expression());
 			} else {
 				// TODO: handle error properly
 				break;
@@ -118,6 +119,42 @@ struct Parser {
 		return {.items = expressions};
 	}
 
+	void skip_newlines() {
+		while (cursor.kind == TokenKind::new_line) {
+			cursor = tokenizer.next_token();
+		}
+	}
+
+	/// ComplexExpression
+	///   : TaggedExpression
+	///   | BasicExpression
+	///   ;
+	Expression parse_complex_expression() {
+		switch (cursor.kind) {
+		case TokenKind::identifier:
+			cursor = tokenizer.next_token();
+			if (cursor.kind == TokenKind::colon) {
+				// TODO: tagged expressions
+			}
+		default:
+			break;
+		}
+		return {};
+	}
+
+	/// TaggedExpression
+	///   : Identifier BasicExpression
+	///   ;
+	Expression parse_tagged_expression() { return {}; }
+
+	/// BasicExpression
+	///   : SimpleExpression
+	///   ;
+	Expression parse_basic_expression() { return {}; }	
+
+	/// SimpleExpression
+	///   : 
+	///
 	Expression parse_expression() {
 		switch (cursor.kind) {
 		case TokenKind::int_literal:
@@ -132,12 +169,12 @@ struct Parser {
 
 	Expression parse_int_literal() {
 		return {
-			 .kind = ExpressionKind::int_literal,
-			 .value = {
-				  .int_literal = {
-						.value = int_from_token(cursor), .token = &cursor
-				  }
-			 }
+			.kind = ExpressionKind::int_literal,
+			.value = {
+				.int_literal = {
+					.value = int_from_token(cursor), .token = &cursor
+				}
+			}
 		};
 	}
 };
