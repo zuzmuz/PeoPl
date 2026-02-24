@@ -7,7 +7,7 @@ template <> struct std::formatter<syntax::TokenKind> {
 	}
 
 	auto format(
-		const syntax::TokenKind & kind, std::format_context & ctx
+		 const syntax::TokenKind & kind, std::format_context & ctx
 	) const {
 		string_view name;
 		switch (kind) {
@@ -183,9 +183,25 @@ template <> struct std::formatter<String> {
 
 	auto format(const String & s, std::format_context & ctx) const {
 		std::string_view view(
-			reinterpret_cast<const char *>(s.ptr), s.size
+			 reinterpret_cast<const char *>(s.ptr), s.size
 		);
 		return std::format_to(ctx.out(), "{}", view);
+	}
+};
+
+template <> struct std::formatter<syntax::Point> {
+	// parse() handles format spec like {:.2f}
+	constexpr auto parse(std::format_parse_context & ctx) {
+		return ctx.begin(); // no custom format spec, just return
+	}
+
+	auto format(
+		 const syntax::Point & point, std::format_context & ctx
+	) const {
+		return std::format_to(
+			 ctx.out(), "(line: {}, column: {})", point.line,
+			 point.column
+		);
 	}
 };
 
@@ -196,11 +212,11 @@ template <> struct std::formatter<syntax::Token> {
 	}
 
 	auto format(
-		const syntax::Token & token, std::format_context & ctx
+		 const syntax::Token & token, std::format_context & ctx
 	) const {
 		return std::format_to(
-			ctx.out(), "({}, {}, line: {}, column: {})", token.kind,
-			token.value, token.line, token.column
+			 ctx.out(), "({}, {}, start: {}, end: {})", token.kind,
+			 token.value, token.start, token.end
 		);
 	}
 };

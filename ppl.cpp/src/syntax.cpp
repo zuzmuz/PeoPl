@@ -77,11 +77,16 @@ enum class TokenKind {
 	invalid
 };
 
+struct Point {
+	usize line;
+	usize column;
+};
+
 struct Token {
 	TokenKind kind;
 	String value;
-	usize line;
-	usize column;
+	Point start;
+	Point end;
 };
 
 // TODO: move this elswhere
@@ -117,8 +122,8 @@ struct Tokenizer {
 	u8 * cursor = nullptr;
 	u32 current_rune = 0;
 
-	usize line = 0;
-	usize column = 0;
+	Point start = { .line = 0, .column = 0 };
+	Point end = { .line = 0, .column = 0 };
 
 	Tokenizer(char const * source) {
 		this->source.ptr = (u8 *)source;
@@ -135,14 +140,16 @@ struct Tokenizer {
 			 .value =
 				  {.ptr = start_of_token,
 					.size = cursor - start_of_token},
-			 .line = line,
-			 .column = column
+			 .start = start,
+			 .end = end
 		};
 	}
 
 	Token next_token() {
 		skip_spaces();
 		this->start_of_token = this->cursor;
+		this->start = this->end;
+
 		advance();
 
 		if (current_rune == '\n') {
@@ -416,10 +423,10 @@ struct Tokenizer {
 				current_rune = *cursor;
 
 				if (*cursor == '\n') {
-					line += 1;
-					column = 0;
+					end.line += 1;
+					end.column = 0;
 				} else {
-					column += 1;
+					end.column += 1;
 				}
 				cursor += 1;
 			}
