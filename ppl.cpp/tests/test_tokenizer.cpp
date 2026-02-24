@@ -8,7 +8,6 @@ TEST_CASE("keywords") {
 	char const * string =
 		 " comp   if fnfn not \n   and  or    fn  compiffnnotandor";
 	auto tokenizer = syntax::Tokenizer(string);
-	syntax::Token reference_token;
 	syntax::Token token;
 
 	syntax::Token reference_tokens[] = {
@@ -59,9 +58,40 @@ TEST_CASE("keywords") {
 
 		REQUIRE(reference_token == token);
 	}
+}
 
-	// do {
-	// 	token = tokenizer.next_token();
-	// 	REQUIRE(token.kind == syntax::TokenKind::kword_comp);
-	// } while (token.kind != syntax::TokenKind::eof);
+TEST_CASE("operators") {
+	char const * string = ",:"
+								 "\'"
+								 "? |>"
+								 "| > < = ~"
+								 "-> >= <=";
+
+	auto tokenizer = syntax::Tokenizer(string);
+	syntax::Token token;
+
+	syntax::Token reference_tokens[] = {
+		 {
+			  .kind = syntax::TokenKind::comma,
+			  .value = {.ptr = (u8 *)string, .size = 1},
+			  .start = {.line = 0, .column = 0},
+			  .end = {.line = 0, .column = 1},
+		 },
+		 {
+			  .kind = syntax::TokenKind::colon,
+			  .value = {.ptr = (u8 *)(string + 1), .size = 1},
+			  .start = {.line = 0, .column = 1},
+			  .end = {.line = 0, .column = 2},
+		 }
+	};
+
+	for (auto reference_token : reference_tokens) {
+		token = tokenizer.next_token();
+
+		std::println("token {}", token);
+		std::println("reference token {}", reference_token);
+		std::println("----");
+
+		REQUIRE(reference_token == token);
+	}
 }
