@@ -18,7 +18,7 @@ struct String {
 	u8 * ptr;
 	usize size;
 
-	u8 const & operator[](usize i) { return ptr[i]; }
+	u8 const & operator[](usize i) const { return ptr[i]; }
 
 	bool operator==(String const & rhs) const {
 		if (this->size != rhs.size)
