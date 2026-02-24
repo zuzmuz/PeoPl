@@ -116,6 +116,7 @@ struct Token {
 
 struct Tokenizer {
 
+ private:
 	String source;
 	u8 * start_of_token = nullptr;
 	u8 * end_of_source = nullptr;
@@ -127,17 +128,6 @@ struct Tokenizer {
 	Point start = {.line = 0, .column = 0};
 	Point end = {.line = 0, .column = 0};
 
-	Tokenizer(char const * source) {
-		this->source.ptr = (u8 *)source;
-		this->source.size = strlen(source);
-
-		start_of_token = this->source.ptr;
-		end_of_source = this->source.ptr + this->source.size;
-		current_cursor = start_of_token;
-		next_cursor = start_of_token;
-		advance();
-	}
-
 	Token generate_token(TokenKind kind) const {
 		return {
 			 .kind = kind,
@@ -147,6 +137,143 @@ struct Tokenizer {
 			 .start = start,
 			 .end = end
 		};
+	}
+
+	Token consume_multi_line_string() {
+		// TODO:
+		return generate_token(TokenKind::string_literal);
+	}
+
+	Token consume_string() {
+		// TODO:
+		return generate_token(TokenKind::string_literal);
+	}
+
+	Token consume_comment() {
+		// TODO:
+		return generate_token(TokenKind::comment);
+	}
+
+	Token consume_number() {
+		if (current_rune == '0') {
+			advance();
+			switch (current_rune) {
+			case '0':
+				return generate_token(TokenKind::invalid);
+			case 'x':
+				while (is_hex_digit(next_rune) or next_rune == '_') {
+					advance();
+				}
+				return generate_token(TokenKind::hex_literal);
+			case 'o':
+				while (is_oct_digit(next_rune) or next_rune == '_') {
+					advance();
+				}
+				return generate_token(TokenKind::oct_literal);
+			case 'b':
+				while (is_binary_digit(next_rune) or next_rune == '_') {
+					advance();
+				}
+				return generate_token(TokenKind::bin_literal);
+			}
+		}
+
+		while (is_digit(next_rune) or next_rune == '_') {
+			advance();
+		}
+
+		return generate_token(TokenKind::int_literal);
+	}
+
+	Token consume_identifier() {
+		while (is_digit(next_rune) or is_letter(next_rune)) {
+			advance();
+		}
+
+		String identifier_string = {
+			 .ptr = start_of_token,
+			 .size = current_cursor - start_of_token
+		};
+
+		for (Keyword keyword : KEYWORDS) {
+			if (identifier_string == keyword.string) {
+				return generate_token(keyword.kind);
+			}
+		}
+		return generate_token(TokenKind::identifier);
+	}
+
+	bool is_letter(u32 rune) const {
+		return (rune >= 'a' and rune <= 'z') or
+				 (rune >= 'A' and rune <= 'Z');
+	}
+
+	bool is_digit(u32 rune) const {
+		return rune >= '0' and rune <= '9';
+	}
+
+	bool is_hex_digit(u32 rune) const {
+		return (rune >= '0' and rune <= '9') or
+				 (rune >= 'a' and rune <= 'f') or
+				 (rune >= 'A' and rune <= 'F');
+	}
+
+	bool is_oct_digit(u32 rune) const {
+		return rune >= '0' and rune <= '7';
+	}
+
+	bool is_binary_digit(u32 rune) const {
+		return rune >= '0' and rune <= '1';
+	}
+
+	void skip_spaces() {
+		for (;;) {
+			switch (next_rune) {
+			case ' ':
+			case '\t':
+			case '\r':
+				advance();
+				break;
+			default:
+				return;
+			}
+		}
+	}
+
+	void advance() {
+		current_rune = next_rune;
+		current_cursor = next_cursor;
+		if (next_cursor < end_of_source) {
+			if (is_utf8(*next_cursor)) {
+				// TODO: handle utf8
+			} else if (*next_cursor == 0) {
+				// TODO: illegal state (store lexical errors)
+			} else {
+				next_rune = *next_cursor;
+
+				if (*next_cursor == '\n') {
+					end.line += 1;
+					end.column = 0;
+				} else {
+					end.column += 1;
+				}
+				next_cursor += 1;
+			}
+		} else {
+			next_rune = 0;
+		}
+	}
+
+ public:
+	Tokenizer(char const * source) {
+		this->source.ptr = (u8 *)source;
+		this->source.size = strlen(source);
+
+		start_of_token = this->source.ptr;
+		end_of_source = this->source.ptr + this->source.size;
+		current_cursor = start_of_token;
+		next_cursor = start_of_token;
+		advance();
 	}
 
 	Token next_token() {
@@ -296,130 +423,6 @@ struct Tokenizer {
 		}
 
 		return generate_token(TokenKind::eof);
-	}
-
-	Token consume_multi_line_string() {
-		// TODO:
-		return generate_token(TokenKind::string_literal);
-	}
-
-	Token consume_string() {
-		// TODO:
-		return generate_token(TokenKind::string_literal);
-	}
-
-	Token consume_comment() {
-		// TODO:
-		return generate_token(TokenKind::comment);
-	}
-
-	Token consume_number() {
-		if (current_rune == '0') {
-			advance();
-			switch (current_rune) {
-			case '0':
-				return generate_token(TokenKind::invalid);
-			case 'x':
-				while (is_hex_digit(next_rune) or next_rune == '_') {
-					advance();
-				}
-				return generate_token(TokenKind::hex_literal);
-			case 'o':
-				while (is_oct_digit(next_rune) or next_rune == '_') {
-					advance();
-				}
-				return generate_token(TokenKind::oct_literal);
-			case 'b':
-				while (is_binary_digit(next_rune) or next_rune == '_') {
-					advance();
-				}
-				return generate_token(TokenKind::bin_literal);
-			}
-		}
-
-		while (is_digit(next_rune) or next_rune == '_') {
-			advance();
-		}
-
-		return generate_token(TokenKind::int_literal);
-	}
-
-	Token consume_identifier() {
-		while (is_digit(next_rune) or is_letter(next_rune)) {
-			advance();
-		}
-
-		String identifier_string = {
-			 .ptr = start_of_token, .size = current_cursor - start_of_token
-		};
-
-		for (Keyword keyword : KEYWORDS) {
-			if (identifier_string == keyword.string) {
-				return generate_token(keyword.kind);
-			}
-		}
-		return generate_token(TokenKind::identifier);
-	}
-
-	bool is_letter(u32 rune) const {
-		return (rune >= 'a' and rune <= 'z') or
-				 (rune >= 'A' and rune <= 'Z');
-	}
-
-	bool is_digit(u32 rune) const {
-		return rune >= '0' and rune <= '9';
-	}
-
-	bool is_hex_digit(u32 rune) const {
-		return (rune >= '0' and rune <= '9') or
-				 (rune >= 'a' and rune <= 'f') or
-				 (rune >= 'A' and rune <= 'F');
-	}
-
-	bool is_oct_digit(u32 rune) const {
-		return rune >= '0' and rune <= '7';
-	}
-
-	bool is_binary_digit(u32 rune) const {
-		return rune >= '0' and rune <= '1';
-	}
-
-	void skip_spaces() {
-		for (;;) {
-			switch (next_rune) {
-			case ' ':
-			case '\t':
-			case '\r':
-				advance();
-				break;
-			default:
-				return;
-			}
-		}
-	}
-
-	void advance() {
-		current_rune = next_rune;
-		current_cursor = next_cursor;
-		if (next_cursor < end_of_source) {
-			if (is_utf8(*next_cursor)) {
-				// TODO: handle utf8
-			} else if (*next_cursor == 0) {
-				// TODO: illegal state (store lexical errors)
-			} else {
-				next_rune = *next_cursor;
-
-				if (*next_cursor == '\n') {
-					end.line += 1;
-					end.column = 0;
-				} else {
-					end.column += 1;
-				}
-				next_cursor += 1;
-			}
-		} else {
-			next_rune = 0;
-		}
 	}
 };
 }; // namespace syntax
