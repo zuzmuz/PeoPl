@@ -95,3 +95,42 @@ TEST_CASE("operators") {
 		REQUIRE(reference_token == token);
 	}
 }
+
+TEST_CASE("multi line strings") {
+	char const * string = "\"\"\" this is a multiline string\n"
+								 "\"\"\" we do";
+
+	auto tokenizer = syntax::Tokenizer(string);
+	syntax::Token token;
+
+	syntax::Token reference_tokens[] = {
+		 {
+			  .kind = syntax::TokenKind::string_literal,
+			  .value = {.ptr = (u8 *)string, .size = 30},
+			  .start = {.line = 0, .column = 0},
+			  .end = {.line = 0, .column = 30},
+		 },
+		 {
+			  .kind = syntax::TokenKind::new_line,
+			  .value = {.ptr = (u8 *)(string +30), .size = 1},
+			  .start = {.line = 0, .column = 30},
+			  .end = {.line = 1, .column = 0},
+		 },
+		 {
+			  .kind = syntax::TokenKind::string_literal,
+			  .value = {.ptr = (u8 *)(string + 31), .size = 9},
+			  .start = {.line = 1, .column = 0},
+			  .end = {.line = 1, .column = 9},
+		 }
+	};
+
+	for (auto reference_token : reference_tokens) {
+		token = tokenizer.next_token();
+
+		std::println("token {}", token);
+		std::println("reference token {}", reference_token);
+		std::println("----");
+
+		REQUIRE(reference_token == token);
+	}
+}

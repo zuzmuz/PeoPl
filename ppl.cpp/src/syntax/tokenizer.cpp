@@ -148,17 +148,26 @@ struct Tokenizer {
 	}
 
 	Token consume_multi_line_string() {
-		// TODO:
+		while (next_rune != '\n' and next_rune != 0) {
+			advance();
+		}
 		return generate_token(TokenKind::string_literal);
 	}
 
 	Token consume_string() {
-		// TODO:
+		while (next_rune != '"') {
+			if (next_rune == '\n' or next_rune == 0) {
+				return generate_token(TokenKind::invalid);
+			}
+			advance();
+		}
 		return generate_token(TokenKind::string_literal);
 	}
 
 	Token consume_comment() {
-		// TODO:
+		while (next_rune != '\n' and next_rune != 0) {
+			advance();
+		}
 		return generate_token(TokenKind::comment);
 	}
 
