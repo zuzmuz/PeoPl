@@ -1,5 +1,4 @@
-#ifndef PEOPL_COMMON_CPP
-#define PEOPL_COMMON_CPP
+#pragma once
 
 #include <cstring>
 #include <stdint.h>
@@ -31,5 +30,3 @@ struct String {
 		return not (*this == rhs);
 	}
 };
-
-#endif

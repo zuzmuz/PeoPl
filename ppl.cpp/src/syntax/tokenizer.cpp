@@ -1,9 +1,10 @@
-#ifndef PEOPL_SYNTAX_CPP
-#define PEOPL_SYNTAX_CPP
-#include "common.cpp"
+#pragma once
+#include "../common.cpp"
 #include <cstring>
 
 namespace syntax {
+
+/// Represents token kinds
 enum class TokenKind {
 	// literals
 	int_literal,
@@ -77,20 +78,6 @@ enum class TokenKind {
 	invalid
 };
 
-struct Point {
-	usize line;
-	usize column;
-};
-
-struct Token {
-	TokenKind kind;
-	String value;
-	Point start;
-	Point end;
-};
-
-// TODO: move this elswhere
-
 u8 is_utf8(u8 c) { return c & 0x80; }
 
 char const * COMPACT_KEYWORDS = "ifcompfnandornot";
@@ -114,16 +101,31 @@ const Keyword KEYWORDS[] = {
 	  .string = {.ptr = (u8 *)COMPACT_KEYWORDS + 13, .size = 3}},
 };
 
+/// Line and column in original source
+struct Point {
+	usize line;
+	usize column;
+};
+
+struct Token {
+	TokenKind kind;
+	String value;
+	Point start;
+	Point end;
+};
+
 struct Tokenizer {
 
 	String source;
 	u8 * start_of_token = nullptr;
 	u8 * end_of_source = nullptr;
-	u8 * cursor = nullptr;
+	u8 * next_cursor = nullptr;
+	u8 * current_cursor = nullptr;
 	u32 current_rune = 0;
+	u32 next_rune = 0;
 
-	Point start = { .line = 0, .column = 0 };
-	Point end = { .line = 0, .column = 0 };
+	Point start = {.line = 0, .column = 0};
+	Point end = {.line = 0, .column = 0};
 
 	Tokenizer(char const * source) {
 		this->source.ptr = (u8 *)source;
@@ -131,7 +133,9 @@ struct Tokenizer {
 
 		start_of_token = this->source.ptr;
 		end_of_source = this->source.ptr + this->source.size;
-		cursor = start_of_token;
+		current_cursor = start_of_token;
+		next_cursor = start_of_token;
+		advance();
 	}
 
 	Token generate_token(TokenKind kind) const {
@@ -139,7 +143,7 @@ struct Tokenizer {
 			 .kind = kind,
 			 .value =
 				  {.ptr = start_of_token,
-					.size = cursor - start_of_token},
+					.size = current_cursor - start_of_token},
 			 .start = start,
 			 .end = end
 		};
@@ -147,7 +151,8 @@ struct Tokenizer {
 
 	Token next_token() {
 		skip_spaces();
-		this->start_of_token = this->cursor;
+
+		this->start_of_token = this->current_cursor;
 		this->start = this->end;
 
 		advance();
@@ -226,7 +231,7 @@ struct Tokenizer {
 
 		// Multi-character possibilities
 		case '-':
-			if (peek() == '>') {
+			if (next_rune == '>') {
 				advance();
 				return generate_token(TokenKind::arrow);
 			} else {
@@ -234,7 +239,7 @@ struct Tokenizer {
 			}
 			break;
 		case '/':
-			if (peek() == '/') {
+			if (next_rune == '/') {
 				advance();
 				return consume_comment();
 			} else {
@@ -242,7 +247,7 @@ struct Tokenizer {
 			}
 			break;
 		case '>':
-			if (peek() == '=') {
+			if (next_rune == '=') {
 				advance();
 				return generate_token(TokenKind::ge);
 			} else {
@@ -250,7 +255,7 @@ struct Tokenizer {
 			}
 			break;
 		case '<':
-			if (peek() == '=') {
+			if (next_rune == '=') {
 				advance();
 				return generate_token(TokenKind::le);
 			} else {
@@ -258,29 +263,29 @@ struct Tokenizer {
 			}
 			break;
 		case '.':
-			if (peek() == '&') {
+			if (next_rune == '&') {
 				advance();
 				return generate_token(TokenKind::band);
-			} else if (peek() == '|') {
+			} else if (next_rune == '|') {
 				advance();
 				return generate_token(TokenKind::bor);
-			} else if (peek() == '^') {
+			} else if (next_rune == '^') {
 				advance();
 				return generate_token(TokenKind::bxor);
 			} else {
 				return generate_token(TokenKind::dot);
 			}
 		case '|':
-			if (peek() == '>') {
+			if (next_rune == '>') {
 				advance();
 				return generate_token(TokenKind::pipe);
 			} else {
 				return generate_token(TokenKind::bar);
 			}
 		case '"':
-			if (peek() == '"') {
+			if (next_rune == '"') {
 				advance();
-				if (peek() == '"') {
+				if (next_rune == '"') {
 					advance();
 					return consume_multi_line_string();
 				}
@@ -294,63 +299,58 @@ struct Tokenizer {
 	}
 
 	Token consume_multi_line_string() {
+		// TODO:
 		return generate_token(TokenKind::string_literal);
 	}
 
 	Token consume_string() {
+		// TODO:
 		return generate_token(TokenKind::string_literal);
 	}
 
 	Token consume_comment() {
+		// TODO:
 		return generate_token(TokenKind::comment);
 	}
 
 	Token consume_number() {
 		if (current_rune == '0') {
 			advance();
-			u32 peeked = peek();
 			switch (current_rune) {
 			case '0':
 				return generate_token(TokenKind::invalid);
 			case 'x':
-				while (is_hex_digit(peeked) or peeked == '_') {
+				while (is_hex_digit(next_rune) or next_rune == '_') {
 					advance();
-					peeked = peek();
 				}
 				return generate_token(TokenKind::hex_literal);
 			case 'o':
-				while (is_oct_digit(peeked) or peeked == '_') {
+				while (is_oct_digit(next_rune) or next_rune == '_') {
 					advance();
-					peeked = peek();
 				}
 				return generate_token(TokenKind::oct_literal);
 			case 'b':
-				while (is_binary_digit(peeked) or peeked == '_') {
+				while (is_binary_digit(next_rune) or next_rune == '_') {
 					advance();
-					peeked = peek();
 				}
 				return generate_token(TokenKind::bin_literal);
 			}
 		}
 
-		u32 peeked = peek();
-		while (is_digit(peeked) or peeked == '_') {
+		while (is_digit(next_rune) or next_rune == '_') {
 			advance();
-			peeked = peek();
 		}
 
 		return generate_token(TokenKind::int_literal);
 	}
 
 	Token consume_identifier() {
-		u32 peeked = peek();
-		while (is_digit(peeked) or is_letter(peeked)) {
+		while (is_digit(next_rune) or is_letter(next_rune)) {
 			advance();
-			peeked = peek();
 		}
 
 		String identifier_string = {
-			 .ptr = start_of_token, .size = cursor - start_of_token
+			 .ptr = start_of_token, .size = current_cursor - start_of_token
 		};
 
 		for (Keyword keyword : KEYWORDS) {
@@ -386,7 +386,7 @@ struct Tokenizer {
 
 	void skip_spaces() {
 		for (;;) {
-			switch (peek()) {
+			switch (next_rune) {
 			case ' ':
 			case '\t':
 			case '\r':
@@ -398,43 +398,28 @@ struct Tokenizer {
 		}
 	}
 
-	u32 peek() {
-		if (cursor < end_of_source) {
-			if (is_utf8(*cursor)) {
-				// TODO: handle utf8
-				return 0;
-			} else if (*cursor == 0) {
-				// TODO: illegal state (store lexical errors)
-				return 0;
-			} else {
-				return *cursor;
-			}
-		}
-		return 0;
-	}
-
 	void advance() {
-		if (cursor < end_of_source) {
-			if (is_utf8(*cursor)) {
+		current_rune = next_rune;
+		current_cursor = next_cursor;
+		if (next_cursor < end_of_source) {
+			if (is_utf8(*next_cursor)) {
 				// TODO: handle utf8
-			} else if (*cursor == 0) {
+			} else if (*next_cursor == 0) {
 				// TODO: illegal state (store lexical errors)
 			} else {
-				current_rune = *cursor;
+				next_rune = *next_cursor;
 
-				if (*cursor == '\n') {
+				if (*next_cursor == '\n') {
 					end.line += 1;
 					end.column = 0;
 				} else {
 					end.column += 1;
 				}
-				cursor += 1;
+				next_cursor += 1;
 			}
 		} else {
-			current_rune = 0;
+			next_rune = 0;
 		}
 	}
 };
 }; // namespace syntax
-
-#endif

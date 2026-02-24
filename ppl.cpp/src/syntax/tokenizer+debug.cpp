@@ -1,5 +1,6 @@
-#include "syntax.cpp"
+#pragma once
 #include <format>
+#include "tokenizer.cpp"
 
 template <> struct std::formatter<syntax::TokenKind> {
 	constexpr auto parse(std::format_parse_context & ctx) {
