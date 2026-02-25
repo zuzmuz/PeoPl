@@ -19,6 +19,15 @@ struct String {
 	const u8 * data;
 	usize size;
 
+	String() {}
+
+	String(const char * source) {
+		data = (u8 *)source;
+		size = strlen(source);
+	}
+
+	String(const u8 * data, usize size) : data(data), size(size) {}
+
 	u8 const & operator[](usize i) const { return data[i]; }
 
 	bool operator==(String const & rhs) const {
@@ -31,8 +40,8 @@ struct String {
 		return not(*this == rhs);
 	}
 
-	String substring(usize start, usize end) {
-		return { .data = data + start, .size = end - start };
+	String substring(usize start, usize end) const {
+		return String(data + start, end - start);
 	}
 };
 
@@ -44,7 +53,9 @@ template <typename T> struct Array {
   public:
 	usize capacity;
 
-	Array(usize capacity) : capacity(capacity) {
+	Array() {}
+
+	explicit Array(usize capacity) : capacity(capacity) {
 		data = new T[capacity];
 	}
 

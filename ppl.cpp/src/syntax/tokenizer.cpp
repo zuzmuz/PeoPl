@@ -81,7 +81,7 @@ enum class TokenKind {
 
 u8 is_utf8(u8 c) { return c & 0x80; }
 
-char const * COMPACT_KEYWORDS = "ifcompfnandornot";
+String COMPACT_KEYWORDS = "ifcompfnandornot";
 struct Keyword {
 	TokenKind kind;
 	String string;
@@ -89,17 +89,17 @@ struct Keyword {
 
 const Keyword KEYWORDS[] = {
 	{.kind = TokenKind::kword_if,
-	 .string = {.ptr = (u8 *)COMPACT_KEYWORDS, .size = 2}},
+	 .string = COMPACT_KEYWORDS.substring(0, 2)},
 	{.kind = TokenKind::kword_comp,
-	 .string = {.ptr = (u8 *)COMPACT_KEYWORDS + 2, .size = 4}},
+	 .string = COMPACT_KEYWORDS.substring(2, 6)},
 	{.kind = TokenKind::kword_fn,
-	 .string = {.ptr = (u8 *)COMPACT_KEYWORDS + 6, .size = 2}},
+	 .string = COMPACT_KEYWORDS.substring(6, 8)},
 	{.kind = TokenKind::kword_and,
-	 .string = {.ptr = (u8 *)COMPACT_KEYWORDS + 8, .size = 3}},
+	 .string = COMPACT_KEYWORDS.substring(8, 11)},
 	{.kind = TokenKind::kword_or,
-	 .string = {.ptr = (u8 *)COMPACT_KEYWORDS + 11, .size = 2}},
+	 .string = COMPACT_KEYWORDS.substring(11, 13)},
 	{.kind = TokenKind::kword_not,
-	 .string = {.ptr = (u8 *)COMPACT_KEYWORDS + 13, .size = 3}},
+	 .string = COMPACT_KEYWORDS.substring(13, 16)}
 };
 
 /// Line and column in original source
@@ -123,11 +123,10 @@ struct Token {
 struct Tokenizer {
 
   private:
-	String source;
-	u8 * start_of_token = nullptr;
-	u8 * end_of_source = nullptr;
-	u8 * next_cursor = nullptr;
-	u8 * current_cursor = nullptr;
+	const String source;
+	usize start_of_token = 0;
+	usize next_cursor = 0;
+	usize current_cursor = 0;
 	u32 current_rune = 0;
 	u32 next_rune = 0;
 
@@ -137,11 +136,7 @@ struct Tokenizer {
 	Token generate_token(TokenKind kind) const {
 		return {
 			.kind = kind,
-			.value =
-				{.ptr = start_of_token,
-				 .size = static_cast<usize>(
-					 current_cursor - start_of_token
-				 )},
+			.value = source.substring(start_of_token, current_cursor),
 			.start = start,
 			.end = end
 		};
@@ -208,11 +203,8 @@ struct Tokenizer {
 			advance();
 		}
 
-		String identifier_string = {
-			.ptr = start_of_token,
-			.size =
-				static_cast<usize>(current_cursor - start_of_token)
-		};
+		String identifier_string =
+			source.substring(start_of_token, current_cursor);
 
 		for (Keyword keyword : KEYWORDS) {
 			if (identifier_string == keyword.string) {
@@ -265,13 +257,13 @@ struct Tokenizer {
 	void advance() {
 		current_rune = next_rune;
 		current_cursor = next_cursor;
-		if (next_cursor < end_of_source) {
-			if (is_utf8(*next_cursor)) {
+		if (next_cursor < source.size) {
+			if (is_utf8(source[next_cursor])) {
 				// TODO: handle utf8
-			} else if (*next_cursor == 0) {
+			} else if (source[next_cursor] == 0) {
 				// TODO: illegal state (store lexical errors)
 			} else {
-				next_rune = *next_cursor;
+				next_rune = source[next_cursor];
 
 				if (current_rune == '\n') {
 					end.line += 1;
@@ -293,14 +285,7 @@ struct Tokenizer {
 	}
 
   public:
-	Tokenizer(char const * source) {
-		this->source.ptr = (u8 *)source;
-		this->source.size = strlen(source);
-
-		start_of_token = this->source.ptr;
-		end_of_source = this->source.ptr + this->source.size;
-		current_cursor = start_of_token;
-		next_cursor = start_of_token;
+	Tokenizer(String source) : source(source) {
 		advance();
 		// resetting after first advancing
 		start = {.line = 0, .column = 0};

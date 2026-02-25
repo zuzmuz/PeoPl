@@ -184,7 +184,7 @@ template <> struct std::formatter<String> {
 
 	auto format(const String & s, std::format_context & ctx) const {
 		std::string_view view(
-			reinterpret_cast<const char *>(s.ptr), s.size
+			reinterpret_cast<const char *>(s.data), s.size
 		);
 		return std::format_to(ctx.out(), "{}", view);
 	}

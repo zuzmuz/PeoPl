@@ -129,9 +129,9 @@ struct Parser {
 	// }
 
   public:
-	Parser(const char * source) : tokenizer(source) {
-		tokenizer = Tokenizer(source);
-	}
+	Parser(String source)
+		: tokenizer(source), tokens(source.size),
+		  expressions(source.size / 2), errors(0) {}
 
 	SyntaxTree parse() {
 		auto expression_list = parse_expression_list(TokenKind::eof);
@@ -141,25 +141,26 @@ struct Parser {
   private:
 	/// ExpressionList
 	ExpressionList parse_expression_list(TokenKind end_token_kind) {
-		std::vector<const Expression *> exps;
-		exps.push_back(push_expression(parse_complex_expression()));
+		// std::vector<const Expression *> exps;
+		// exps.push_back(push_expression(parse_complex_expression()));
+		//
+		// auto cursor = move_cursor();
+		// while (cursor.kind != end_token_kind) {
+		// 	cursor = move_cursor();
+		// 	if (cursor.kind == TokenKind::comma or
+		// 		cursor.kind == TokenKind::new_line) {
+		//
+		// 		move_cursor();
+		// 		skip_newlines();
+		//
+		// 		expressions.push_back(parse_complex_expression());
+		// 	} else {
+		// 		// TODO: handle error properly
+		// 	}
+		// }
 
-		auto cursor = move_cursor();
-		while (cursor.kind != end_token_kind) {
-			cursor = move_cursor();
-			if (cursor.kind == TokenKind::comma or
-				cursor.kind == TokenKind::new_line) {
-
-				move_cursor();
-				skip_newlines();
-
-				expressions.push_back(parse_complex_expression());
-			} else {
-				// TODO: handle error properly
-			}
-		}
-
-		return {.items = exps};
+		// return {.items = exps};
+		return {};
 	}
 
 	void skip_newlines() {
@@ -221,8 +222,9 @@ struct Parser {
 	///   ;
 	///
 	Expression parse_simple_expression() {
-		auto cursor = move_cursor();
-		switch (cursor.kind) {
+		// auto cursor = move_cursor();
+		// switch (cursor.kind) {
+		switch (TokenKind::comma) {
 		case TokenKind::int_literal:
 		case TokenKind::hex_literal:
 		case TokenKind::oct_literal:
@@ -253,12 +255,12 @@ struct Parser {
 
 	Expression parse_int_literal() {
 		return {
-			.kind = ExpressionKind::int_literal,
-			.value = {
-				.int_literal = {
-					.value = int_from_token(cursor), .token = &cursor
-				}
-			}
+			// .kind = ExpressionKind::int_literal,
+			// .value = {
+			// 	.int_literal = {
+			// 		.value = int_from_token(cursor), .token = &cursor
+			// 	}
+			// }
 		};
 	}
 };
