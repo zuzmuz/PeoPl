@@ -112,21 +112,21 @@ make_tagged(Identifier tag, const Expression * expression) {
 struct Parser {
   private:
 	Tokenizer tokenizer;
-	std::vector<Token> tokens;
-	std::vector<SyntaxError> errors;
-	std::vector<Expression> expressions;
+	Array<Token> tokens;
+	Array<SyntaxError> errors;
+	Array<Expression> expressions;
 
-	const Token & move_cursor() {
-		tokens.push_back(tokenizer.next_token());
-		return tokens.back();
-	}
-
-	const Token & cursor() { return tokens.back(); }
-
-	const Expression * push_expression(Expression expression) {
-		expressions.push_back(expression);
-		return &expressions.back();
-	}
+	// const Token & move_cursor() {
+	// 	tokens.push_back(tokenizer.next_token());
+	// 	return tokens.back();
+	// }
+	//
+	// const Token & cursor() { return tokens.back(); }
+	//
+	// const Expression * push_expression(Expression expression) {
+	// 	expressions.push_back(expression);
+	// 	return &expressions.back();
+	// }
 
   public:
 	Parser(const char * source) : tokenizer(source) {

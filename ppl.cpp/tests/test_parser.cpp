@@ -9,7 +9,7 @@ TEST_CASE("int literal") {
 	// syntax::SyntaxTree ast(tokenizer);
 	// 
 	for (auto expression: ast.expression_list.items) {
-		std::println("{}", expression.value.int_literal.value);
+		std::println("{}", expression->value.int_literal.value);
 	}
 	// std::println("{}", ast.tokens);
 }
