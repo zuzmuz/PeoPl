@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstring>
+#include <print>
 #include <stdint.h>
 #include <utility>
 
@@ -47,7 +48,7 @@ struct String {
 
 template <typename T> struct Array {
   private:
-	const T * data = nullptr;
+	T * data = nullptr;
 	usize size = 0;
 
   public:
@@ -81,20 +82,24 @@ template <typename T> struct Array {
 		return *this;
 	};
 
-	template <typename... Args> T & emplace_back(Args &&... args) {
-
-		// construct in-place at the next free slot
-		// T * slot = data + size;
-		//
-		// ::new (static_cast<void *>(slot))
-		// 	T(std::forward<Args>(args)...);
-
+	template <typename... Args> const T & emplace_back(Args &&... args) {
 		data[size] = T(std::forward(args)...);
+		size += 1;
+		return data[size - 1];
+	}
 
-		size += size;
-
-		return data[size];
+	const T & push_back(T o) {
+		data[size] = o;
+		size += 1;
+		return data[size - 1];
 	}
 
 	Array<T> const & operator[](usize i) const { return data[i]; }
+	
+	template <typename F>
+	void foreach(F&& fn) {
+		for (int i=0; i<size; ++i) {
+			fn(data[i]);
+		}
+	}
 };

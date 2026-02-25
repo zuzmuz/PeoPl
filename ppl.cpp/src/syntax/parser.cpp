@@ -131,7 +131,17 @@ struct Parser {
   public:
 	Parser(String source)
 		: tokenizer(source), tokens(source.size),
-		  expressions(source.size / 2), errors(0) {}
+		  expressions(source.size / 2), errors(0) {
+		Token token;
+		while ((token = tokenizer.next_token()).kind !=
+			   TokenKind::eof) {
+			tokens.push_back(token);
+		}
+
+		tokens.foreach ([](const Token & t) {
+			std::println("Token {}", t);
+		});
+	}
 
 	SyntaxTree parse() {
 		auto expression_list = parse_expression_list(TokenKind::eof);
