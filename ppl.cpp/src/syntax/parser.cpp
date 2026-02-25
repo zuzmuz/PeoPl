@@ -49,7 +49,12 @@ u64 int_from_token(Token const & token) {
 	}
 }
 
-enum class ExpressionKind { int_literal, nothing, invalid };
+enum class ExpressionKind {
+	int_literal,
+	identifier,
+	nothing,
+	invalid
+};
 
 struct Nothing {};
 struct Invalid {};
@@ -59,8 +64,13 @@ struct IntLiteral {
 	const Token * token;
 };
 
+struct Identifier {
+	const Token * token;
+};
+
 union ExpressionValue {
 	IntLiteral int_literal;
+	Identifier identifier;
 	Nothing nothing;
 	Invalid invalid;
 };
@@ -131,15 +141,25 @@ struct Parser {
 	///   ;
 	Expression parse_complex_expression() {
 		switch (cursor.kind) {
-		case TokenKind::identifier:
+		case TokenKind::identifier: {
+			Token identifier_token = cursor;
 			cursor = tokenizer.next_token();
 			if (cursor.kind == TokenKind::colon) {
-				// TODO: tagged expressions
+				cursor = tokenizer.next_token();
+				return parse_simple_expression();
+			} else {
+				// TODO: other cases
+				return {
+					.kind = ExpressionKind::identifier,
+					.value = {
+						.identifier = {.token = &identifier_token}
+					}
+				};
 			}
-		default:
-			break;
 		}
-		return {};
+		default:
+			return parse_simple_expression();
+		}
 	}
 
 	/// TaggedExpression
@@ -150,21 +170,32 @@ struct Parser {
 	/// BasicExpression
 	///   : SimpleExpression
 	///   ;
-	Expression parse_basic_expression() { return {}; }	
+	Expression parse_basic_expression() { return {}; }
 
 	/// SimpleExpression
-	///   : 
+	///   : Literal
+	///   | Identifier
+	///   ;
 	///
-	Expression parse_expression() {
+	Expression parse_simple_expression() {
 		switch (cursor.kind) {
 		case TokenKind::int_literal:
 		case TokenKind::hex_literal:
 		case TokenKind::oct_literal:
 		case TokenKind::bin_literal:
 			return parse_int_literal();
+		case TokenKind::identifier:
+			return parse_identifier();
 		default:
 			return {.kind = ExpressionKind::invalid, .value = {}};
 		}
+	}
+
+	Expression parse_identifier() {
+		return {
+			.kind = ExpressionKind::identifier,
+			.value = {.identifier = {.token = &cursor}}
+		};
 	}
 
 	Expression parse_int_literal() {
