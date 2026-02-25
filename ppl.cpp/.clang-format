@@ -4,5 +4,6 @@ UseTab: Always
 IndentWidth: 4
 TabWidth: 4
 AlignAfterOpenBracket: BlockIndent
+AlignTrailingComments: Never
 BinPackArguments: false
 PointerAlignment: Middle

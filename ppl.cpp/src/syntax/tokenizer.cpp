@@ -27,24 +27,24 @@ enum class TokenKind {
 	kword_not,
 
 	// arithmetics
-	plus,	  // +
-	minus,	  // -
-	times,	  // *
-	by,		  // /
-	mod,	  // %
+	plus, // +
+	minus, // -
+	times, // *
+	by, // /
+	mod, // %
 	exponent, // ^
 
 	// bitwise
 	lshift, // <<
 	rshift, // >>
-	band,	// .&
-	bor,	// .|
-	bxor,	// .^
-	bnot,	// ~
+	band, // .&
+	bor, // .|
+	bxor, // .^
+	bnot, // ~
 
 	// access
-	dot,	   // .
-	pipe,	   // |>
+	dot, // .
+	pipe, // |>
 	propagate, // ?
 
 	// comparisons
@@ -55,22 +55,22 @@ enum class TokenKind {
 	lt, // <
 
 	// delimieters
-	lparen,	  // (
-	rparen,	  // )
+	lparen, // (
+	rparen, // )
 	lbracket, // [
 	rbracket, // ]
-	lbrace,	  // {
-	rbrace,	  // }
+	lbrace, // {
+	rbrace, // }
 
 	// special
-	comma,		 // delimiting expressions
-	bar,		 // for capture blocks
-	backslash,	 // for qualified identifiers
+	comma, // delimiting expressions
+	bar, // for capture blocks
+	backslash, // for qualified identifiers
 	appostrophe, // for type definitions
-	colon,		 // for expression definitions
-	arrow,		 // ->
-	binding,	 // @
-	positional,	 // $
+	colon, // for expression definitions
+	arrow, // ->
+	binding, // @
+	positional, // $
 
 	comment,
 	new_line,
