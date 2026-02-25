@@ -4,11 +4,13 @@
 
 TEST_CASE("int literal") {
 	syntax::Parser parser("0x1_2, 0b_10, 5\n0o1234,   0xff, 1000");
-	// auto ast = parser.parse();
-	// syntax::SyntaxTree ast(tokenizer);
+	auto ast = parser.parse();
 	//
-	// for (auto expression: ast.expression_list.items) {
-	// 	std::println("{}", expression->value.int_literal.value);
-	// }
+	for (auto expr_idx : ast.expression_list.expr_list_idx) {
+		std::println(
+			"expression {}",
+			parser.get_expression(expr_idx).value.int_literal.value
+		);
+	}
 	// std::println("{}", ast.tokens);
 }

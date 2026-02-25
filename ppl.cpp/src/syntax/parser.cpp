@@ -65,16 +65,16 @@ struct Invalid {};
 
 struct IntLiteral {
 	usize value;
-	const Token * token;
+	usize token_idx;
 };
 
 struct Identifier {
-	const Token * token;
+	usize token_idx;
 };
 
 struct Tagged {
 	Identifier tag;
-	const Expression * expression;
+	usize expr_idx;
 };
 
 union ExpressionValue {
@@ -91,7 +91,7 @@ struct Expression {
 };
 
 struct ExpressionList {
-	std::vector<const Expression *> items;
+	std::vector<usize> expr_list_idx;
 };
 
 struct SyntaxTree {
@@ -102,19 +102,41 @@ struct SyntaxError {
 	i16 error_code;
 };
 
-Expression
-make_tagged(Identifier tag, const Expression * expression) {
+Expression make_invalid() {
+	return {.kind = ExpressionKind::invalid, .value = {}};
+}
+
+Expression make_tagged(Identifier tag, usize expr_idx) {
 	return {
 		.kind = ExpressionKind::tagged,
-		.value = {.tagged = {.tag = tag, .expression = expression}}
+		.value = {.tagged = {.tag = tag, .expr_idx = expr_idx}}
 	};
 }
+
+Expression make_identifier(Identifier tag) {
+	return {
+		.kind = ExpressionKind::identifier,
+		.value = {.identifier = tag}
+	};
+}
+
+Expression make_int_literal(u64 value, usize token_idx) {
+	return {
+		.kind = ExpressionKind::int_literal,
+		.value = {
+			.int_literal = {.value = value, .token_idx = token_idx}
+		}
+	};
+}
+
 struct Parser {
   private:
 	Tokenizer tokenizer;
-	Array<Token> tokens;
-	Array<SyntaxError> errors;
-	Array<Expression> expressions;
+	std::vector<Token> tokens;
+	std::vector<SyntaxError> errors;
+	std::vector<Expression> expressions;
+
+	usize cursor = 0;
 
 	// const Token & move_cursor() {
 	// 	tokens.push_back(tokenizer.next_token());
@@ -123,24 +145,19 @@ struct Parser {
 	//
 	// const Token & cursor() { return tokens.back(); }
 	//
-	// const Expression * push_expression(Expression expression) {
-	// 	expressions.push_back(expression);
-	// 	return &expressions.back();
-	// }
+	usize push_expression(Expression expression) {
+		std::println("pushing expression {}", expression);
+		expressions.push_back(expression);
+		return expressions.size();
+	}
 
   public:
-	Parser(String source)
-		: tokenizer(source), tokens(source.size),
-		  expressions(source.size / 2), errors(0) {
+	Parser(String source) : tokenizer(source) {
 		Token token;
 		while ((token = tokenizer.next_token()).kind !=
 			   TokenKind::eof) {
 			tokens.push_back(token);
 		}
-
-		tokens.foreach ([](const Token & t) {
-			std::println("Token {}", t);
-		});
 	}
 
 	SyntaxTree parse() {
@@ -148,35 +165,41 @@ struct Parser {
 		return {.expression_list = expression_list};
 	}
 
+	const Expression & get_expression(usize expr_idx) const {
+		return expressions[expr_idx];
+	}
+
   private:
 	/// ExpressionList
 	ExpressionList parse_expression_list(TokenKind end_token_kind) {
-		// std::vector<const Expression *> exps;
+		std::vector<usize> expr_list_idx;
+		expr_list_idx.push_back(
+			push_expression(parse_complex_expression())
+		);
 		// exps.push_back(push_expression(parse_complex_expression()));
 		//
 		// auto cursor = move_cursor();
-		// while (cursor.kind != end_token_kind) {
-		// 	cursor = move_cursor();
-		// 	if (cursor.kind == TokenKind::comma or
-		// 		cursor.kind == TokenKind::new_line) {
-		//
-		// 		move_cursor();
-		// 		skip_newlines();
-		//
-		// 		expressions.push_back(parse_complex_expression());
-		// 	} else {
-		// 		// TODO: handle error properly
-		// 	}
-		// }
+		while (tokens[cursor].kind != end_token_kind) {
+			if (tokens[cursor].kind == TokenKind::comma or
+				tokens[cursor].kind == TokenKind::new_line) {
+				cursor += 1;
+				skip_newlines();
 
-		// return {.items = exps};
-		return {};
+				expr_list_idx.push_back(
+					push_expression(parse_complex_expression())
+				);
+			} else {
+				// TODO: handle error properly
+			}
+		}
+
+		return {.expr_list_idx = expr_list_idx};
 	}
 
 	void skip_newlines() {
-		// while (cursor.kind == TokenKind::new_line) {
-		// 	move_cursor();
-		// }
+		while (tokens[cursor].kind == TokenKind::new_line) {
+			cursor += 1;
+		}
 	}
 
 	/// ComplexExpression
@@ -184,39 +207,25 @@ struct Parser {
 	///   | BasicExpression
 	///   ;
 	Expression parse_complex_expression() {
-		// switch (cursor.kind) {
-		// case TokenKind::identifier: {
-		// 	Token identifier_token = cursor;
-		// 	move_cursor();
-		// 	if (cursor.kind == TokenKind::colon) {
-		// 		move_cursor();
-		// 		auto rhs = parse_basic_expression();
-		// 		return {
-		// 			.kind = ExpressionKind::tagged, .value = {
-		// 				.tagged
-		// 			} else {
-		// 				// TODO: other cases
-		// 				return {
-		// 					.kind = ExpressionKind::identifier,
-		// 					.value = {
-		// 						.identifier = {
-		// 							.token = &identifier_token
-		// 						}
-		// 					}
-		// 				};
-		// 			}
-		// 		}
-		// 	}
-		// }
-		// default:
-		return parse_simple_expression();
-		// }
+		switch (tokens[cursor].kind) {
+		case TokenKind::identifier: {
+			if (tokens[cursor + 1].kind == TokenKind::colon) {
+				// Tagged Expression
+				// identifier: basic_expression
+				Identifier tag(cursor);
+				cursor += 2;
+				usize expr_idx =
+					push_expression(parse_basic_expression());
+				return make_tagged(tag, expr_idx);
+			} else {
+				return parse_identifier();
+			}
+		}
+		default:
+			return parse_basic_expression();
+			// }
+		}
 	}
-
-	/// TaggedExpression
-	///   : Identifier BasicExpression
-	///   ;
-	Expression parse_tagged_expression() { return {}; }
 
 	/// BasicExpression
 	///   : SimpleExpression
@@ -232,9 +241,7 @@ struct Parser {
 	///   ;
 	///
 	Expression parse_simple_expression() {
-		// auto cursor = move_cursor();
-		// switch (cursor.kind) {
-		switch (TokenKind::comma) {
+		switch (tokens[cursor].kind) {
 		case TokenKind::int_literal:
 		case TokenKind::hex_literal:
 		case TokenKind::oct_literal:
@@ -245,7 +252,7 @@ struct Parser {
 		case TokenKind::lparen:
 			return parse_parenthesis();
 		default:
-			return {.kind = ExpressionKind::invalid, .value = {}};
+			return make_invalid();
 		}
 	}
 
@@ -256,22 +263,14 @@ struct Parser {
 	}
 
 	Expression parse_identifier() {
-		return {};
-		// return {
-		// 	.kind = ExpressionKind::identifier,
-		// 	.value = {.identifier = {.token = &cursor}}
-		// };
+		// TODO: might be call expressions
+		return make_identifier(Identifier(cursor));
 	}
 
 	Expression parse_int_literal() {
-		return {
-			// .kind = ExpressionKind::int_literal,
-			// .value = {
-			// 	.int_literal = {
-			// 		.value = int_from_token(cursor), .token = &cursor
-			// 	}
-			// }
-		};
+		return make_int_literal(
+			int_from_token(tokens[cursor]), cursor
+		);
 	}
 };
 }; // namespace syntax
