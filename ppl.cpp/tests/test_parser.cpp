@@ -13,7 +13,7 @@ TEST_CASE("int literal") {
 	for (auto expr_idx : ast.expression_list.expr_list_idx) {
 		std::println(
 			"expression {}",
-			parser.get_expression(expr_idx).value.int_literal.value
+			parser.get_expression(expr_idx)
 		);
 	}
 	// std::println("{}", ast.tokens);

@@ -1,6 +1,7 @@
 #pragma once
 #include "tokenizer+debug.cpp"
 #include "tokenizer.cpp"
+#include <format>
 #include <memory>
 #include <print>
 #include <vector>
@@ -280,47 +281,61 @@ struct Parser {
 }; // namespace syntax
    //
 
-// template <> struct std::formatter<syntax::ExpressionKind> {
-// 	constexpr auto parse(std::format_parse_context & ctx) {
-// 		return ctx.begin();
-// 	}
-//
-// 	auto format(
-// 		const syntax::ExpressionKind & kind, std::format_context & ctx
-// 	) const {
-// 		string_view name;
-// 		switch (kind) {
-// 		case syntax::ExpressionKind::int_literal:
-// 			name = "int_literal";
-// 			break;
-// 		case syntax::ExpressionKind::identifier:
-// 			name = "identifier";
-// 			break;
-// 		case syntax::ExpressionKind::tagged:
-// 			name = "tagged";
-// 			break;
-// 		case syntax::ExpressionKind::nothing:
-// 			name = "nothing";
-// 			break;
-// 		case syntax::ExpressionKind::invalid:
-// 			name = "invalid";
-// 			break;
-// 		}
-//
-// 		return std::format_to(ctx.out(), "{}", name);
-// 	}
-// };
+template <> struct std::formatter<syntax::ExpressionKind> {
+	constexpr auto parse(std::format_parse_context & ctx) {
+		return ctx.begin();
+	}
 
-// template <> struct std::formatter<syntax::Expression> {
-// 	// parse() handles format spec like {:.2f}
-// 	constexpr auto parse(std::format_parse_context & ctx) {
-// 		return ctx.begin(); // no custom format spec, just return
-// 	}
-//
-// 	auto format(
-// 		const syntax::Token & token, std::format_context & ctx
-// 	) const {
-//
-// 		return std::format_to(ctx.out(), "to_implement");
-// 	}
-// };
+	auto format(
+		const syntax::ExpressionKind & kind, std::format_context & ctx
+	) const {
+		string_view name;
+		switch (kind) {
+		case syntax::ExpressionKind::int_literal:
+			name = "int_literal";
+			break;
+		case syntax::ExpressionKind::identifier:
+			name = "identifier";
+			break;
+		case syntax::ExpressionKind::tagged:
+			name = "tagged";
+			break;
+		case syntax::ExpressionKind::nothing:
+			name = "nothing";
+			break;
+		case syntax::ExpressionKind::invalid:
+			name = "invalid";
+			break;
+		}
+
+		return std::format_to(ctx.out(), "{}", name);
+	}
+};
+
+template <> struct std::formatter<syntax::Expression> {
+	// parse() handles format spec like {:.2f}
+	constexpr auto parse(std::format_parse_context & ctx) {
+		return ctx.begin(); // no custom format spec, just return
+	}
+
+	auto format(
+		const syntax::Expression & expression, std::format_context & ctx
+	) const {
+		string_view value;
+		switch (expression.kind) {
+		case syntax::ExpressionKind::int_literal:
+			value = std::format("{}", expression.value.int_literal.value);
+			break;
+		case syntax::ExpressionKind::identifier:
+			value = std::format("{}", expression.value.identifier.token_idx);
+			break;
+		case syntax::ExpressionKind::tagged:
+		case syntax::ExpressionKind::nothing:
+		case syntax::ExpressionKind::invalid:
+			value = "";
+			break;
+		}
+
+		return std::format_to(ctx.out(), "{} {}", expression.kind, value);
+	}
+};
