@@ -1,9 +1,7 @@
-use std::io::{Write, stdout};
-
 use phf::phf_map;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
-enum TokenKind {
+pub enum TokenKind {
     // literals
     DecLiteral,
     HexLiteral,
@@ -87,20 +85,20 @@ static KEYWORDS: phf::Map<&'static str, TokenKind> = phf_map! {
 };
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
-struct Point {
+pub struct Point {
     line: usize,
     column: usize,
 }
 
-#[derive(Debug, PartialEq, Eq)]
-struct Token<'a> {
-    kind: TokenKind,
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Token<'a> {
+    pub kind: TokenKind,
     value: &'a str,
     start: Point,
     end: Point,
 }
 
-struct Tokenizer<'a> {
+pub struct Tokenizer<'a> {
     source: &'a str,
 
     start_of_token: usize,
@@ -140,7 +138,39 @@ impl<'a> Tokenizer<'a> {
         match self.current_rune {
             '\n' => self.generate_token(TokenKind::NewLine),
             r if r.is_digit(10) => self.consume_number(),
-            // r if r.is_alphabetic() => self.consume_identifier(),
+            r if r.is_alphabetic() => self.consume_identifier(),
+            '=' => self.generate_token(TokenKind::OpEq),
+            '+' => self.generate_token(TokenKind::OpPlus),
+            '*' => self.generate_token(TokenKind::OpTimes),
+            '%' => self.generate_token(TokenKind::OpMod),
+            '^' => self.generate_token(TokenKind::OpExponent),
+            '~' => self.generate_token(TokenKind::Bnot),
+            '(' => self.generate_token(TokenKind::Lparen),
+            ')' => self.generate_token(TokenKind::Rparen),
+            '{' => self.generate_token(TokenKind::Lbrace),
+            '}' => self.generate_token(TokenKind::Rbrace),
+            '[' => self.generate_token(TokenKind::Lbracket),
+            ']' => self.generate_token(TokenKind::Rbracket),
+            ',' => self.generate_token(TokenKind::Comma),
+            '\\' => self.generate_token(TokenKind::Backslash),
+            '\'' => self.generate_token(TokenKind::Appostrophe),
+            ':' => self.generate_token(TokenKind::Colon),
+            '@' => self.consume_binding(),
+            // '$' => self.consume_positiona(),
+            '-' => {
+                if self.next_rune == '>' {
+                    self.generate_token(TokenKind::Arrow)
+                } else {
+                    self.generate_token(TokenKind::OpMinus)
+                }
+            }
+            '/' => {
+                if self.next_rune == '/' {
+                    self.consume_comment()
+                } else {
+                    self.generate_token(TokenKind::OpBy)
+                }
+            },
             _ => self.generate_token(TokenKind::Invalid),
         }
     }
@@ -160,8 +190,8 @@ impl<'a> Tokenizer<'a> {
         self.current_cursor = self.next_cursor;
 
         if self.next_cursor < self.source.len() {
-            self.next_rune = self.source
-                [self.next_cursor..(self.next_cursor + 4).min(self.source.len())]
+            self.next_rune = self.source[self.next_cursor
+                ..(self.next_cursor + 4).min(self.source.len())]
                 .chars()
                 .next()
                 .unwrap_or('\0');
@@ -197,7 +227,7 @@ impl<'a> Tokenizer<'a> {
         }
     }
 
-    fn consume_identier(&mut self) -> Token<'a> {
+    fn consume_identifier(&mut self) -> Token<'a> {
         while self.next_rune.is_alphanumeric() {
             self.advance();
         }
@@ -208,6 +238,18 @@ impl<'a> Tokenizer<'a> {
         } else {
             self.generate_token(TokenKind::Identifier)
         }
+    }
+
+    fn consume_binding(&mut self) -> Token<'a> {
+        if !self.next_rune.is_alphabetic() {
+            // TODO: consider special error for binding
+            return self.generate_token(TokenKind::Invalid);
+        }
+        self.advance();
+        while self.next_rune.is_alphabetic() {
+            self.advance();
+        }
+        self.generate_token(TokenKind::Binding)
     }
 
     fn consume_number(&mut self) -> Token<'a> {
@@ -246,6 +288,10 @@ impl<'a> Tokenizer<'a> {
             }
             self.generate_token(TokenKind::DecLiteral)
         }
+    }
+
+    fn consume_comment(&mut self) -> Token<'a> {
+        panic!("not implemented yet");
     }
 }
 
