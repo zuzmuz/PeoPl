@@ -50,6 +50,45 @@ u64 int_from_token(Token const & token) {
 	}
 }
 
+i8 get_token_precedence(TokenKind kind) {
+	switch (kind) {
+		case TokenKind::dot:
+			return 12;
+		case TokenKind::lparen:
+			return 11;
+		case TokenKind::exponent:
+			return 10;
+		case TokenKind::times:
+		case TokenKind::by:
+		case TokenKind::mod:
+			return 9;
+		case TokenKind::plus:
+		case TokenKind::minus:
+			return 8;
+		case TokenKind::lshift:
+		case TokenKind::rshift:
+			return 7;
+		case TokenKind::band:
+			return 6;
+		case TokenKind::bxor:
+			return 5;
+		case TokenKind::bor:
+			return 4;
+		case TokenKind::eq:
+		case TokenKind::ge:
+		case TokenKind::gt:
+		case TokenKind::le:
+		case TokenKind::lt:
+			return 3;
+		case TokenKind::kword_and:
+			return 2;
+		case TokenKind::kword_or:
+			return 1;
+		default: // the token is not an operator
+			return -1;
+	}
+}
+
 enum class Precedence {
 	lonely = 0,
 	shotcirc_or = 1,
@@ -250,10 +289,29 @@ struct Parser {
 	///   | PrimaryExpression Extension
 	///   ;
 	Expression parse_expression() {
-		usize lhs_expr_idx =
-			push_expression(parse_primary_expression());
+		// TODO: if token is binding then parse as binding (don't
+		// allow extensions)
+		//
 
-		return parse_primary_expression();
+		// usize lhs_expr_idx =
+		// 	push_expression(parse_primary_expression());
+		Expression lhs_expr = parse_primary_expression();
+		cursor += 1;
+		return parse_extension(Precedence::lonely, lhs_expr);
+	}
+
+	Expression
+	parse_extension(Precedence precedence, Expression lhs_expr) {
+		while (true) {
+			switch (tokens[cursor].kind) {
+
+			default:
+				// if no extension token, return lhs exprerssion as
+				// lonely
+				return lhs_expr;
+			}
+		}
+		return {};
 	}
 
 	/// PrimaryExpression
