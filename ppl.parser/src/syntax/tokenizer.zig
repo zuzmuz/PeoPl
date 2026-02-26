@@ -75,6 +75,22 @@ fn isUtf8(c: u8) bool {
     return c & 0x80;
 }
 
+fn isDigit(rune: u32) bool {
+    return rune >= '0' and rune <= '9';
+}
+fn isLetter(rune: u32) bool {
+    return (rune >= 'a' and rune <= 'z') or (rune >= 'A' and rune <= 'Z');
+}
+fn isHexDigit(rune: u32) bool {
+    return (rune >= '0' and rune <= '9') or (rune >= 'a' and rune <= 'f') or (rune >= 'A' and rune <= 'F');
+}
+fn isOctDigit(rune: u32) bool {
+    return rune >= '0' and rune <= '7';
+}
+fn idBinaryDigit(rune: u32) bool {
+    return rune >= '0' and rune <= '1';
+}
+
 pub const keywords: std.StaticStringMap(TokenKind) = .initComptime(.{
     .{ "and", .kword_and },
     .{ "or", .kword_or },
@@ -105,11 +121,47 @@ const Tokenizer = struct {
     start_of_token: usize,
     next_cursor: usize,
     current_cursor: usize,
-    next_rune: usize,
-    current_rune: usize,
+    next_rune: u32,
+    current_rune: u32,
 
     start: Point,
     end: Point,
+
+    pub fn init(source: []const u8) Tokenizer {
+        var value = Tokenizer{
+            .source = source,
+            .start_of_token = 0,
+            .next_cursor = 0,
+            .current_cursor = 0,
+            .next_rune = 0,
+            .current_rune = 0,
+            .start = .{ .line = 0, .column = 0 },
+            .end = .{ .line = 0, .column = 0 },
+        };
+
+        value.advance();
+        return value;
+    }
+
+    pub fn nextToken(self: *Token) Token {
+        // self.skipSpaces();
+        self.start_of_token = self.current_cursor;
+        self.start = self.end;
+
+        self.advance();
+
+        if (self.current_rune == '\n') {
+            return self.generateToken(.new_line);
+        }
+
+        if (isDigit(self.current_rune)) {
+            return self.consumeNumber();
+        }
+
+        if (isLetter(self.current_rune)) {
+            return self.consumeIdentifier();
+        }
+    }
 
     fn advance(self: *Token) void {
         self.current_rune = self.next_rune;
@@ -142,6 +194,15 @@ const Tokenizer = struct {
         }
     }
 
+    fn skipSpaces(self: *Tokenizer) void {
+        while (true) {
+            switch (self.next_rune) {
+                ' ', '\t', '\r' => self.advance(),
+                else => return,
+            }
+        }
+    }
+
     fn generateToken(self: Token, kind: TokenKind) Token {
         return .{
             .kind = kind,
@@ -158,3 +219,10 @@ const Tokenizer = struct {
         return self.generateToken(.string_literal);
     }
 };
+
+test "test " {
+    const string =
+        " comp   if fnfn not \n   and  or    fn  compiffnnotandor";
+    var tokenizer = Tokenizer.init(string);
+    tokenizer.nextToken();
+}

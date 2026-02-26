@@ -1,5 +1,5 @@
 const std = @import("std");
-const ppl_parser = @import("ppl_parser");
+const tokenizer = @import("syntax/tokenizer.zig");
 
 pub fn main() !void {
 }
