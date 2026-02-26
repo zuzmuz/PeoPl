@@ -35,7 +35,6 @@ u64 int_from_string(String const & content, u8 base) {
 }
 
 u64 int_from_token(Token const & token) {
-
 	switch (token.kind) {
 	case TokenKind::int_literal:
 		return int_from_string(token.value, 10);
@@ -51,10 +50,26 @@ u64 int_from_token(Token const & token) {
 	}
 }
 
+enum class Precedence {
+	lonely = 0,
+	shotcirc_or = 1,
+	shortcirc_and = 2,
+	comp = 3,
+	bor = 4,
+	band = 5,
+	bshift = 6,
+	additive = 7,
+	multiplicative = 8,
+	exponent = 9,
+	parenthesis = 10,
+	access = 11,
+};
+
 enum class ExpressionKind {
 	int_literal,
 	identifier,
 	tagged,
+	accessed,
 	nothing,
 	invalid
 };
@@ -76,6 +91,17 @@ struct Identifier {
 struct Tagged {
 	Identifier tag;
 	usize expr_idx;
+};
+
+struct Accessed {
+	usize prefix_expr_idx;
+	Identifier field;
+};
+
+struct BinaryOp {
+	TokenKind op;
+	usize lhs_expr_idx;
+	usize rhs_expr_idx;
 };
 
 union ExpressionValue {
@@ -139,13 +165,6 @@ struct Parser {
 
 	usize cursor = 0;
 
-	// const Token & move_cursor() {
-	// 	tokens.push_back(tokenizer.next_token());
-	// 	return tokens.back();
-	// }
-	//
-	// const Token & cursor() { return tokens.back(); }
-	//
 	usize push_expression(Expression expression) {
 		// std::println("pushing expression {}", expression.kind);
 		expressions.push_back(expression);
@@ -175,7 +194,6 @@ struct Parser {
   private:
 	/// ExpressionList
 	ExpressionList parse_expression_list(TokenKind end_token_kind) {
-		std::println("So we're here");
 		std::vector<usize> expr_list_idx;
 		expr_list_idx.push_back(
 			push_expression(parse_complex_expression())
@@ -207,10 +225,9 @@ struct Parser {
 
 	/// ComplexExpression
 	///   : TaggedExpression
-	///   | BasicExpression
+	///   | Expression
 	///   ;
 	Expression parse_complex_expression() {
-		std::println("We should be parsing the complex expression");
 		switch (tokens[cursor].kind) {
 		case TokenKind::identifier: {
 			if (tokens[cursor + 1].kind == TokenKind::colon) {
@@ -218,34 +235,35 @@ struct Parser {
 				// identifier: basic_expression
 				Identifier tag(cursor);
 				cursor += 2;
-				usize expr_idx =
-					push_expression(parse_basic_expression());
+				usize expr_idx = push_expression(parse_expression());
 				return make_tagged(tag, expr_idx);
-			} else {
-				return parse_identifier();
-			}
+			} // if not follow through and parse expression
 		}
 		default:
-			return parse_basic_expression();
+			return parse_expression();
 			// }
 		}
 	}
 
-	/// BasicExpression
-	///   : SimpleExpression
+	/// Expression
+	///   : Binding
+	///   | PrimaryExpression Extension
 	///   ;
-	Expression parse_basic_expression() {
-		return parse_simple_expression();
+	Expression parse_expression() {
+		usize lhs_expr_idx =
+			push_expression(parse_primary_expression());
+
+		return parse_primary_expression();
 	}
 
-	/// SimpleExpression
+	/// PrimaryExpression
 	///   : Literal
 	///   | Identifier
-	///   | parenthesized_expression
+	///   | ParenthesizedExpression
+	///   | Positional
 	///   ;
 	///
-	Expression parse_simple_expression() {
-		std::println("Parsing simple expression");
+	Expression parse_primary_expression() {
 		switch (tokens[cursor].kind) {
 		case TokenKind::int_literal:
 		case TokenKind::hex_literal:
@@ -256,10 +274,32 @@ struct Parser {
 			return parse_identifier();
 		case TokenKind::lparen:
 			return parse_parenthesis();
+		case TokenKind::plus:
+		case TokenKind::minus:
+		case TokenKind::times:
+		case TokenKind::by:
+		case TokenKind::exponent:
+		case TokenKind::kword_or:
+		case TokenKind::kword_and:
+		case TokenKind::mod:
+		case TokenKind::lshift:
+		case TokenKind::rshift:
+		case TokenKind::band:
+		case TokenKind::bor:
+		case TokenKind::bxor:
+		case TokenKind::bnot:
+		case TokenKind::eq:
+		case TokenKind::ge:
+		case TokenKind::gt:
+		case TokenKind::le:
+		case TokenKind::lt:
+			return parse_unary();
 		default:
 			return make_invalid();
 		}
 	}
+
+	Expression parse_unary() { return {}; }
 
 	Expression parse_parenthesis() {
 		// skip lparen token
@@ -273,11 +313,20 @@ struct Parser {
 	}
 
 	Expression parse_int_literal() {
-		return make_int_literal(
-			int_from_token(tokens[cursor]), cursor
-		);
-	}
-};
+		Expression literal =
+			make_int_literal(int_from_token(tokens[cursor]), cursor);
+
+		if (tokens[cursor + 1].kind == TokenKind::lparen) {
+			// TODO: calling a int literal error
+		} else if (tokens[cursor + 1].kind == TokenKind::dot) {
+			// Access operator
+			cursor += 2;
+			Expression accessed = parse_identifier();
+			return
+
+				return
+		}
+	};
 }; // namespace syntax
    //
 
@@ -319,15 +368,19 @@ template <> struct std::formatter<syntax::Expression> {
 	}
 
 	auto format(
-		const syntax::Expression & expression, std::format_context & ctx
+		const syntax::Expression & expression,
+		std::format_context & ctx
 	) const {
 		string_view value;
 		switch (expression.kind) {
 		case syntax::ExpressionKind::int_literal:
-			value = std::format("{}", expression.value.int_literal.value);
+			value =
+				std::format("{}", expression.value.int_literal.value);
 			break;
 		case syntax::ExpressionKind::identifier:
-			value = std::format("{}", expression.value.identifier.token_idx);
+			value = std::format(
+				"{}", expression.value.identifier.token_idx
+			);
 			break;
 		case syntax::ExpressionKind::tagged:
 		case syntax::ExpressionKind::nothing:
@@ -336,6 +389,8 @@ template <> struct std::formatter<syntax::Expression> {
 			break;
 		}
 
-		return std::format_to(ctx.out(), "{} {}", expression.kind, value);
+		return std::format_to(
+			ctx.out(), "{} {}", expression.kind, value
+		);
 	}
 };
