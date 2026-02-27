@@ -4,14 +4,14 @@ use logos::{Lexer, Logos};
 #[logos(skip r"[ \t]+")]
 pub enum TokenKind {
     // literals
-    #[regex("[0-9][0-9_]*", priority = 10)]
-    DecLiteral,
-    #[regex("(0[x])[0-9a-zA-Z][0-9a-z-A-Z_]*", priority = 10)]
-    HexLiteral,
-    #[regex("(0[o])[0-7][0-7_]*", priority = 10)]
-    OctLiteral,
-    #[regex("(0[b])[01][01_]*", priority = 10)]
-    BinLiteral,
+    #[regex("[0-9][0-9_]*", |lex| lex.slice().parse::<u64>().ok())]
+    DecLiteral(u64),
+    #[regex("(0[x])[0-9a-zA-Z][0-9a-z-A-Z_]*", |lex| lex.slice().parse::<u64>().ok())]
+    HexLiteral(u64),
+    #[regex("(0[o])[0-7][0-7_]*", |lex| lex.slice().parse::<u64>().ok())]
+    OctLiteral(u64),
+    #[regex("(0[b])[01][01_]*", |lex| lex.slice().parse::<u64>().ok())]
+    BinLiteral(u64),
 
     #[regex(r"([0-9][0-9_]*)*\.([0-9][0-9_]*)*([eE][+-]?[0-9_]+)?")]
     FloatLiteral,
@@ -125,13 +125,9 @@ pub enum TokenKind {
 
     #[regex("\n|\r\n|\x0C")]
     NewLine,
-
-    Eof,
 }
 
-
 pub fn lex_source(source: &str) {
-
     let mut lex = TokenKind::lexer(source);
 
     while let Some(tok) = lex.next() {
@@ -149,10 +145,46 @@ mod tests {
         let test_string = "  12 0x8f  0b10_10_01_00   0o123_456 ";
 
         let mut lex = TokenKind::lexer(test_string);
+        let reference_tokens = [
+            TokenKind::DecLiteral(12),
+            TokenKind::HexLiteral(143),
+            TokenKind::BinLiteral(1),
+            TokenKind::OctLiteral(1),
+        ];
 
-        while let Some(tok) = lex.next() {
-            println!("{:?}  {:?}", tok, lex.slice());
-            //        ^token      ^source text it matched
+        for reference_token in reference_tokens {
+            if let Some(Ok(token)) = lex.next() {
+                assert_eq!(token, reference_token);
+            } // else {
+            //     assert!(false);
+            // }
+        }
+    }
+
+    #[test]
+    fn function_def() {
+        let test_string = "hey: fn [a: Int] -> { 3 }";
+        let mut lex = TokenKind::lexer(test_string);
+        let reference_tokens = [
+            TokenKind::Identifier,
+            TokenKind::Colon,
+            TokenKind::KwordFn,
+            TokenKind::Lbracket,
+            TokenKind::Identifier,
+            TokenKind::Colon,
+            TokenKind::Identifier,
+            TokenKind::Rbracket,
+            TokenKind::Arrow,
+            TokenKind::Lbrace,
+            TokenKind::DecLiteral(3),
+            TokenKind::Rbrace,
+        ];
+        for reference_token in reference_tokens {
+            if let Some(Ok(token)) = lex.next() {
+                assert_eq!(token, reference_token);
+            } // else {
+            //     assert!(false);
+            // }
         }
     }
 }
