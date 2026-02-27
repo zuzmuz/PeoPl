@@ -52,6 +52,18 @@ impl Operator {
 }
 
 impl<'a> tokenizer::Token<'a> {
+    fn precedence(&self) -> i8 {
+        if self.is_dot() {
+            12
+        } else if self.is_lparen() || self.is_lbrace() || self.is_lbracket() {
+            11
+        } else if let Some(operator) = self.operator() {
+            operator.binary_precedence()
+        } else {
+            -1
+        }
+    }
+
     fn operator(&self) -> Option<Operator> {
         match &self {
             tokenizer::Token::OpExponent => Some(Operator::Exponent),
@@ -78,17 +90,17 @@ impl<'a> tokenizer::Token<'a> {
         }
     }
 
-    fn is_dot(self) -> bool {
-        self == tokenizer::Token::Dot
+    fn is_dot(&self) -> bool {
+        *self == tokenizer::Token::Dot
     }
-    fn is_lparen(self) -> bool {
-        self == tokenizer::Token::Lparen
+    fn is_lparen(&self) -> bool {
+        *self == tokenizer::Token::Lparen
     }
-    fn is_lbracket(self) -> bool {
-        self == tokenizer::Token::Lbracket
+    fn is_lbracket(&self) -> bool {
+        *self == tokenizer::Token::Lbracket
     }
-    fn is_lbrace(self) -> bool {
-        self == tokenizer::Token::Lbrace
+    fn is_lbrace(&self) -> bool {
+        *self == tokenizer::Token::Lbrace
     }
 }
 
@@ -140,8 +152,7 @@ impl<'a> Parser<'a> {
 
     pub fn parse(&mut self) -> Ast {
         Ast {
-            expression_list: self
-                .parse_expression_list(tokenizer::Token::Eof),
+            expression_list: self.parse_expression_list(tokenizer::Token::Eof),
         }
     }
 
@@ -160,8 +171,7 @@ impl<'a> Parser<'a> {
         while self.tokens[self.cursor] != end_token {
             println!("next token {:?}", self.tokens[self.cursor]);
             while self.tokens[self.cursor] == tokenizer::Token::Comma
-                || self.tokens[self.cursor]
-                    == tokenizer::Token::NewLine
+                || self.tokens[self.cursor] == tokenizer::Token::NewLine
             {
                 self.cursor += 1;
             }
@@ -169,7 +179,6 @@ impl<'a> Parser<'a> {
             println!("Complex expression parsed: {:#?}", expr);
             expressions.push(self.expressions.len());
             self.expressions.push(expr);
-            self.cursor += 1;
         }
         return expressions;
     }
@@ -181,9 +190,7 @@ impl<'a> Parser<'a> {
     fn parse_complex_expression(&mut self) -> Expression<'a> {
         match self.tokens[self.cursor] {
             tokenizer::Token::Identifier(identifier) => {
-                if self.tokens[self.cursor + 1]
-                    == tokenizer::Token::Colon
-                {
+                if self.tokens[self.cursor + 1] == tokenizer::Token::Colon {
                     self.cursor += 2;
                     // TODO: make tagged
                     panic!()
@@ -202,7 +209,6 @@ impl<'a> Parser<'a> {
         println!("Parsing basic expression");
         let lhs_expr = self.parse_primary_expression();
         println!("lhs {:#?}", lhs_expr);
-        // self.cursor += 1;
 
         self.parse_extended_expression(0, lhs_expr)
     }
@@ -214,44 +220,53 @@ impl<'a> Parser<'a> {
     ) -> Expression<'a> {
         let mut lhs_expr = lhs_expr;
         loop {
-            if let Some(operator) =
-                self.tokens[self.cursor].operator()
-            {
+            println!("Binop token {:?}", self.tokens[self.cursor]);
+            if self.tokens[self.cursor].is_dot() {
+                // Access expression
+                // TODO: handle access
+                todo!("handle access");
+            } else if self.tokens[self.cursor].is_lparen() {
+                // call() expression
+                // TODO: handle paren call
+                todo!("handle paren call");
+            } else if self.tokens[self.cursor].is_lbracket() {
+                // call[] expression
+                // TODO: handle bracket call
+                todo!("handle bracket call");
+            } else if self.tokens[self.cursor].is_lbrace() {
+                // call{} expression
+                // TODO: handle brace call
+                todo!("handle brace call");
+            } else if let Some(operator) = self.tokens[self.cursor].operator() {
+                // binary expression
+                let current_precedence = operator.binary_precedence();
+                if current_precedence < last_precedence {
+                    return lhs_expr;
+                }
+
+                self.cursor += 1;
+                let mut rhs_expr = self.parse_primary_expression();
+
+                let next_precedence = self.tokens[self.cursor].precedence();
+                if current_precedence < next_precedence {
+                    rhs_expr = self.parse_extended_expression(
+                        current_precedence + 1,
+                        rhs_expr,
+                    );
+                }
+                let expr_size = self.expressions.len();
+                self.expressions.push(lhs_expr);
+                self.expressions.push(rhs_expr);
+
+                lhs_expr =
+                    Expression::Binary(operator, expr_size, expr_size + 1);
             } else {
                 // next token is not an operator and we should stop
                 // TODO: not really cause if it's a new line we might have to continue on the next
                 // line
-            }
-            let current_precedence =
-                self.tokens[self.cursor].precedence();
-            if current_precedence < last_precedence {
-                // current precedence fell, stop aggregating
                 return lhs_expr;
             }
-
-            // self.tokens[self.cu
-            //     match &self.tokens[self.cursor] {
-            //         tokenizer::Token::Dot => todo!(),
-            //         tokenizer::Token::Lparen => todo!(),
-            //         tokenizer::Token::Lbracket => todo!(),
-            //         tokenizer::Token::Lbrace => todo!(),
-            //         op_token => { // we know it's an op_token
-            //             self.cursor += 1;
-            //             let mut rhs_expr = self.parse_primary_expression();
-            //             let next_precedence = self.tokens[self.cursor + 1].precedence();
-            //             if current_precedence < next_precedence {
-            //                 rhs_expr = self.parse_extended_expression(current_precedence + 1, rhs_expr);
-            //             }
-            //
-            //
-            //             lhs_expr = make_binary(op_token,
-            //
-            //
-            //         }
-            //     }
-            //
         }
-        todo!("extended expression")
     }
 
     /// PrimaryExpression
@@ -262,11 +277,8 @@ impl<'a> Parser<'a> {
     ///   ;
     ///
     fn parse_primary_expression(&mut self) -> Expression<'a> {
-        self.parse_literal()
-    }
-
-    fn parse_literal(&mut self) -> Expression<'a> {
-        match &self.tokens[self.cursor] {
+        println!("Parsing Literal {:?}", self.tokens[self.cursor]);
+        let expression = match &self.tokens[self.cursor] {
             tokenizer::Token::DecLiteral(value)
             | tokenizer::Token::HexLiteral(value)
             | tokenizer::Token::OctLiteral(value)
@@ -286,7 +298,9 @@ impl<'a> Parser<'a> {
                 Expression::Identifier(value)
             }
             _ => todo!(),
-        }
+        };
+        self.cursor += 1;
+        expression
     }
 }
 
