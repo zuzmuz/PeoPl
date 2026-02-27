@@ -19,7 +19,7 @@ pub enum Token<'a> {
     // literals
     #[regex("[0-9][0-9_]*", |lex| lex.slice().parse::<u64>().ok())]
     DecLiteral(u64),
-    #[regex("(0[x])[0-9a-zA-Z][0-9a-z-A-Z_]*", |lex| { u64::from_str_radix(&lex.slice()[2..], 16).ok()  })]
+    #[regex("(0[x])[0-9a-zA-Z][0-9a-z-A-Z_]*", |lex|  u64::from_str_radix(&lex.slice()[2..], 16).ok() )]
     HexLiteral(u64),
     #[regex("(0[o])[0-7][0-7_]*", |lex| u64::from_str_radix(&lex.slice()[2..], 8).ok())]
     OctLiteral(u64),
@@ -146,30 +146,6 @@ pub enum Token<'a> {
     NewLine,
 
     Eof,
-}
-
-impl<'a> Token<'a> {
-    pub fn precedence(&self) -> i8 {
-        match self {
-            Token::Dot => 12,
-            Token::Lparen | Token::Lbracket | Token::Lbrace => 11,
-            Token::OpExponent => 10,
-            Token::OpTimes | Token::OpBy | Token::OpMod => 9,
-            Token::OpPlus | Token::OpMinus => 8,
-            Token::Lshift | Token::Rshift => 7,
-            Token::Band => 6,
-            Token::Bor => 5,
-            Token::Bxor => 4,
-            Token::OpEq
-            | Token::OpGe
-            | Token::OpGt
-            | Token::OpLe
-            | Token::OpLt => 3,
-            Token::KwordAnd => 2,
-            Token::KwordOr => 1,
-            _ => -1,
-        }
-    }
 }
 
 pub fn lex_source<'a>(source: &'a str) -> Vec<Token<'a>> {

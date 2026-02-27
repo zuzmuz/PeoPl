@@ -212,37 +212,46 @@ impl<'a> Parser<'a> {
         last_precedence: i8,
         lhs_expr: Expression<'a>,
     ) -> Expression<'a> {
-        lhs_expr
-        // let mut lhs_expr = lhs_expr;
-        // loop {
-        //     let current_precedence =
-        //         self.tokens[self.cursor].precedence();
-        //     if current_precedence < last_precedence {
-        //         // current precedence fell, stop aggregating
-        //         return lhs_expr;
-        //     }
-        //
-        //     match &self.tokens[self.cursor] {
-        //         tokenizer::Token::Dot => todo!(),
-        //         tokenizer::Token::Lparen => todo!(),
-        //         tokenizer::Token::Lbracket => todo!(),
-        //         tokenizer::Token::Lbrace => todo!(),
-        //         op_token => { // we know it's an op_token
-        //             self.cursor += 1;
-        //             let mut rhs_expr = self.parse_primary_expression();
-        //             let next_precedence = self.tokens[self.cursor + 1].precedence();
-        //             if current_precedence < next_precedence {
-        //                 rhs_expr = self.parse_extended_expression(current_precedence + 1, rhs_expr);
-        //             }
-        //
-        //
-        //             lhs_expr = make_binary(op_token,
-        //
-        //
-        //         }
-        //     }
-        //
-        // }
+        let mut lhs_expr = lhs_expr;
+        loop {
+            if let Some(operator) =
+                self.tokens[self.cursor].operator()
+            {
+            } else {
+                // next token is not an operator and we should stop
+                // TODO: not really cause if it's a new line we might have to continue on the next
+                // line
+            }
+            let current_precedence =
+                self.tokens[self.cursor].precedence();
+            if current_precedence < last_precedence {
+                // current precedence fell, stop aggregating
+                return lhs_expr;
+            }
+
+            // self.tokens[self.cu
+            //     match &self.tokens[self.cursor] {
+            //         tokenizer::Token::Dot => todo!(),
+            //         tokenizer::Token::Lparen => todo!(),
+            //         tokenizer::Token::Lbracket => todo!(),
+            //         tokenizer::Token::Lbrace => todo!(),
+            //         op_token => { // we know it's an op_token
+            //             self.cursor += 1;
+            //             let mut rhs_expr = self.parse_primary_expression();
+            //             let next_precedence = self.tokens[self.cursor + 1].precedence();
+            //             if current_precedence < next_precedence {
+            //                 rhs_expr = self.parse_extended_expression(current_precedence + 1, rhs_expr);
+            //             }
+            //
+            //
+            //             lhs_expr = make_binary(op_token,
+            //
+            //
+            //         }
+            //     }
+            //
+        }
+        todo!("extended expression")
     }
 
     /// PrimaryExpression
