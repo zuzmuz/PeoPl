@@ -2,7 +2,7 @@ use logos::{Lexer, Logos};
 
 #[derive(Logos, Clone, Debug, PartialEq, Eq)]
 #[logos(skip r"[ \t]+")]
-pub enum TokenKind {
+pub enum Token<'a> {
     // literals
     #[regex("[0-9][0-9_]*", |lex| lex.slice().parse::<u64>().ok())]
     DecLiteral(u64),
@@ -17,8 +17,11 @@ pub enum TokenKind {
     FloatLiteral,
     #[regex(r"([0-9][0-9_]*)*\.([0-9][0-9_]*)*([eE][+-]?[0-9_]+)?i")]
     ImaginaryLiteral,
-    #[regex(r#""([^"\\]|\\["\\bnfrt])*""#)]
-    StringLiteral,
+    #[regex(r#""([^"\\]|\\["\\bnfrt])*""#, |lex| {
+        let slice = lex.slice();
+        &slice[1..slice.len()]
+    })]
+    StringLiteral(&'a str),
 
     #[token("_")]
     Special, // underscore
@@ -37,8 +40,8 @@ pub enum TokenKind {
     #[token("not")]
     KwordNot,
 
-    #[regex(r"\p{Alphabetic}[\p{Alphabetic}0-9_]*")]
-    Identifier,
+    #[regex(r"\p{Alphabetic}[\p{Alphabetic}0-9_]*", |lex| lex.slice())]
+    Identifier(&'a str),
 
     // arithmetics
     #[token("+")]
@@ -125,15 +128,17 @@ pub enum TokenKind {
 
     #[regex("\n|\r\n|\x0C")]
     NewLine,
+
+    Eof,
 }
 
-pub fn lex_source(source: &str) {
-    let mut lex = TokenKind::lexer(source);
-
-    while let Some(tok) = lex.next() {
-        println!("{:?}  {:?}", tok, lex.slice());
-        //        ^token      ^source text it matched
-    }
+pub fn lex_source(source: &str) -> Vec<Token> {
+    let mut tokens: Vec<Token> = Token::lexer(source)
+        .spanned()
+        .filter_map(|(token, _)| token.ok())
+        .collect();
+    tokens.push(Token::Eof);
+    tokens
 }
 
 #[cfg(test)]
@@ -144,12 +149,13 @@ mod tests {
     fn numbers() {
         let test_string = "  12 0x8f  0b10_10_01_00   0o123_456 ";
 
-        let mut lex = TokenKind::lexer(test_string);
+        let mut lex = Token::lexer(test_string);
         let reference_tokens = [
-            TokenKind::DecLiteral(12),
-            TokenKind::HexLiteral(143),
-            TokenKind::BinLiteral(1),
-            TokenKind::OctLiteral(1),
+            Token::DecLiteral(12),
+            Token::HexLiteral(143),
+            Token::BinLiteral(1),
+            Token::OctLiteral(1),
+            Token::Eof,
         ];
 
         for reference_token in reference_tokens {
@@ -164,20 +170,21 @@ mod tests {
     #[test]
     fn function_def() {
         let test_string = "hey: fn [a: Int] -> { 3 }";
-        let mut lex = TokenKind::lexer(test_string);
+        let mut lex = Token::lexer(test_string);
         let reference_tokens = [
-            TokenKind::Identifier,
-            TokenKind::Colon,
-            TokenKind::KwordFn,
-            TokenKind::Lbracket,
-            TokenKind::Identifier,
-            TokenKind::Colon,
-            TokenKind::Identifier,
-            TokenKind::Rbracket,
-            TokenKind::Arrow,
-            TokenKind::Lbrace,
-            TokenKind::DecLiteral(3),
-            TokenKind::Rbrace,
+            Token::Identifier("hey"),
+            Token::Colon,
+            Token::KwordFn,
+            Token::Lbracket,
+            Token::Identifier("a"),
+            Token::Colon,
+            Token::Identifier("Int"),
+            Token::Rbracket,
+            Token::Arrow,
+            Token::Lbrace,
+            Token::DecLiteral(3),
+            Token::Rbrace,
+            Token::Eof,
         ];
         for reference_token in reference_tokens {
             if let Some(Ok(token)) = lex.next() {
