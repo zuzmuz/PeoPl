@@ -3,20 +3,109 @@ use crate::syntax::tokenizer;
 // //
 // // }
 //
-#[derive(Clone, Debug, PartialEq, Eq)]
-enum ExpressionKind {
+//
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Operator {
+    Exponent,
+    Times,
+    By,
+    Mod,
+    Plus,
+    Minus,
+    Lshift,
+    Rshift,
+    Band,
+    Bor,
+    Bxor,
+    Eq,
+    Ge,
+    Gt,
+    Le,
+    Lt,
+    And,
+    Or,
+
+    Not,
+    Bnot,
+}
+
+impl Operator {
+    fn binary_precedence(self) -> i8 {
+        match self {
+            Operator::Exponent => 10,
+            Operator::Times | Operator::By | Operator::Mod => 9,
+            Operator::Plus | Operator::Minus => 8,
+            Operator::Lshift | Operator::Rshift => 7,
+            Operator::Band => 6,
+            Operator::Bor => 5,
+            Operator::Bxor => 4,
+            Operator::Eq
+            | Operator::Ge
+            | Operator::Gt
+            | Operator::Le
+            | Operator::Lt => 3,
+            Operator::And => 2,
+            Operator::Or => 1,
+            _ => -1,
+        }
+    }
+}
+
+impl<'a> tokenizer::Token<'a> {
+    fn operator(&self) -> Option<Operator> {
+        match &self {
+            tokenizer::Token::OpExponent => Some(Operator::Exponent),
+            tokenizer::Token::OpTimes => Some(Operator::Times),
+            tokenizer::Token::OpBy => Some(Operator::By),
+            tokenizer::Token::OpMod => Some(Operator::Mod),
+            tokenizer::Token::OpPlus => Some(Operator::Plus),
+            tokenizer::Token::OpMinus => Some(Operator::Minus),
+            tokenizer::Token::Lshift => Some(Operator::Lshift),
+            tokenizer::Token::Rshift => Some(Operator::Rshift),
+            tokenizer::Token::Band => Some(Operator::Band),
+            tokenizer::Token::Bor => Some(Operator::Bor),
+            tokenizer::Token::Bxor => Some(Operator::Bxor),
+            tokenizer::Token::OpEq => Some(Operator::Eq),
+            tokenizer::Token::OpGe => Some(Operator::Ge),
+            tokenizer::Token::OpGt => Some(Operator::Gt),
+            tokenizer::Token::OpLe => Some(Operator::Le),
+            tokenizer::Token::OpLt => Some(Operator::Lt),
+            tokenizer::Token::KwordAnd => Some(Operator::And),
+            tokenizer::Token::KwordOr => Some(Operator::Or),
+            tokenizer::Token::KwordNot => Some(Operator::Not),
+            tokenizer::Token::Bnot => Some(Operator::Bnot),
+            _ => None,
+        }
+    }
+
+    fn is_dot(self) -> bool {
+        self == tokenizer::Token::Dot
+    }
+    fn is_lparen(self) -> bool {
+        self == tokenizer::Token::Lparen
+    }
+    fn is_lbracket(self) -> bool {
+        self == tokenizer::Token::Lbracket
+    }
+    fn is_lbrace(self) -> bool {
+        self == tokenizer::Token::Lbrace
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum Expression<'a> {
     // literals
     IntLiteral(u64),
-    // FloatLiteral,
-    // ImaginaryLiteral,
-    // StringLiteral,
-    // Identifier,
+    FloatLiteral(f64),
+    ImaginaryLiteral(f64),
+    StringLiteral(&'a str),
+    Identifier(&'a str),
     // Special,
 
     // primary
     // Unary(),
     //
-    // Binary,
+    Binary(Operator, usize, usize),
     // Call,
     // Access,
     //
@@ -27,25 +116,19 @@ enum ExpressionKind {
 }
 
 #[derive(Debug)]
-struct Expression {
-    kind: ExpressionKind,
+pub struct Ast {
+    pub expression_list: Vec<usize>,
 }
 
-#[derive(Debug)]
-struct Ast<'a> {
-    expression_list: Vec<&'a Expression>,
-}
-
-struct Parser<'a> {
+pub struct Parser<'a> {
     tokens: Vec<tokenizer::Token<'a>>,
-    expressions: Vec<Expression>,
+    pub expressions: Vec<Expression<'a>>,
 
     cursor: usize,
 }
 
 impl<'a> Parser<'a> {
     pub fn new(source: &'a str) -> Self {
-
         let tokens = tokenizer::lex_source(source);
         let tokens_len = tokens.len();
         Parser {
@@ -65,32 +148,138 @@ impl<'a> Parser<'a> {
     fn parse_expression_list(
         &mut self,
         end_token: tokenizer::Token,
-    ) -> Vec<&Expression> {
+    ) -> Vec<usize> {
         // parsing first expression of the list
+        let mut expressions: Vec<usize> = Vec::new();
         let expr = self.parse_complex_expression();
+        println!("Complex expression parsed: {:#?}", expr);
+        expressions.push(self.expressions.len());
         self.expressions.push(expr);
         self.cursor += 1;
 
         while self.tokens[self.cursor] != end_token {
-            let mut num_commas = 0;
-            loop {
-                if self.tokens[self.cursor] == tokenizer::Token::Comma {
-                    num_commas += 1;
-                    if num_commas > 1 {
-                        panic!("no more the 2 commas allowed");
-                    }
+            println!("next token {:?}", self.tokens[self.cursor]);
+            while self.tokens[self.cursor] == tokenizer::Token::Comma
+                || self.tokens[self.cursor]
+                    == tokenizer::Token::NewLine
+            {
+                self.cursor += 1;
+            }
+            let expr = self.parse_complex_expression();
+            println!("Complex expression parsed: {:#?}", expr);
+            expressions.push(self.expressions.len());
+            self.expressions.push(expr);
+            self.cursor += 1;
+        }
+        return expressions;
+    }
+
+    /// ComplexExpression
+    /// : TaggedExpression
+    /// | BasicExpression
+    /// ;
+    fn parse_complex_expression(&mut self) -> Expression<'a> {
+        match self.tokens[self.cursor] {
+            tokenizer::Token::Identifier(identifier) => {
+                if self.tokens[self.cursor + 1]
+                    == tokenizer::Token::Colon
+                {
+                    self.cursor += 2;
+                    // TODO: make tagged
+                    panic!()
+                } else {
+                    self.parse_basic_expression()
                 }
             }
+            _ => self.parse_basic_expression(),
         }
-        panic!()
     }
 
-    fn parse_complex_expression(
-        &mut self) -> Expression {
-        panic!();
+    /// BasicExpression
+    /// : PrimaryExpression extension
+    /// ;
+    fn parse_basic_expression(&mut self) -> Expression<'a> {
+        println!("Parsing basic expression");
+        let lhs_expr = self.parse_primary_expression();
+        println!("lhs {:#?}", lhs_expr);
+        // self.cursor += 1;
+
+        self.parse_extended_expression(0, lhs_expr)
+    }
+
+    fn parse_extended_expression(
+        &mut self,
+        last_precedence: i8,
+        lhs_expr: Expression<'a>,
+    ) -> Expression<'a> {
+        lhs_expr
+        // let mut lhs_expr = lhs_expr;
+        // loop {
+        //     let current_precedence =
+        //         self.tokens[self.cursor].precedence();
+        //     if current_precedence < last_precedence {
+        //         // current precedence fell, stop aggregating
+        //         return lhs_expr;
+        //     }
+        //
+        //     match &self.tokens[self.cursor] {
+        //         tokenizer::Token::Dot => todo!(),
+        //         tokenizer::Token::Lparen => todo!(),
+        //         tokenizer::Token::Lbracket => todo!(),
+        //         tokenizer::Token::Lbrace => todo!(),
+        //         op_token => { // we know it's an op_token
+        //             self.cursor += 1;
+        //             let mut rhs_expr = self.parse_primary_expression();
+        //             let next_precedence = self.tokens[self.cursor + 1].precedence();
+        //             if current_precedence < next_precedence {
+        //                 rhs_expr = self.parse_extended_expression(current_precedence + 1, rhs_expr);
+        //             }
+        //
+        //
+        //             lhs_expr = make_binary(op_token,
+        //
+        //
+        //         }
+        //     }
+        //
+        // }
+    }
+
+    /// PrimaryExpression
+    ///   : Literal
+    ///   | Identifier
+    ///   | ParenthesizedExpression
+    ///   | Positional
+    ///   ;
+    ///
+    fn parse_primary_expression(&mut self) -> Expression<'a> {
+        self.parse_literal()
+    }
+
+    fn parse_literal(&mut self) -> Expression<'a> {
+        match &self.tokens[self.cursor] {
+            tokenizer::Token::DecLiteral(value)
+            | tokenizer::Token::HexLiteral(value)
+            | tokenizer::Token::OctLiteral(value)
+            | tokenizer::Token::BinLiteral(value) => {
+                Expression::IntLiteral(*value)
+            }
+            tokenizer::Token::FloatLiteral(value) => {
+                Expression::FloatLiteral(*value)
+            }
+            tokenizer::Token::ImaginaryLiteral(value) => {
+                Expression::ImaginaryLiteral(*value)
+            }
+            tokenizer::Token::StringLiteral(value) => {
+                Expression::StringLiteral(value)
+            }
+            tokenizer::Token::Identifier(value) => {
+                Expression::Identifier(value)
+            }
+            _ => todo!(),
+        }
     }
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -102,7 +291,7 @@ mod tests {
 
         let mut parser = Parser::new(test_string);
 
-        // let ast = parser.parse();
+        let ast = parser.parse();
 
         // println!("the ast {:#?}", ast);
     }

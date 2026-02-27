@@ -1,25 +1,41 @@
-use logos::{Lexer, Logos};
+use logos::Logos;
 
-#[derive(Logos, Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+struct Point {
+    line: usize,
+    column: usize,
+}
+
+// #[derive(Logos, Clone, Debug, PartialEq, Eq)]
+// struct Token<'a> {
+//     kind: TokenKind<'a>,
+//     start: Point,
+//     end: Point,
+// }
+
+#[derive(Logos, Clone, Debug, PartialEq)]
 #[logos(skip r"[ \t]+")]
 pub enum Token<'a> {
     // literals
     #[regex("[0-9][0-9_]*", |lex| lex.slice().parse::<u64>().ok())]
     DecLiteral(u64),
-    #[regex("(0[x])[0-9a-zA-Z][0-9a-z-A-Z_]*", |lex| lex.slice().parse::<u64>().ok())]
+    #[regex("(0[x])[0-9a-zA-Z][0-9a-z-A-Z_]*", |lex| { u64::from_str_radix(&lex.slice()[2..], 16).ok()  })]
     HexLiteral(u64),
-    #[regex("(0[o])[0-7][0-7_]*", |lex| lex.slice().parse::<u64>().ok())]
+    #[regex("(0[o])[0-7][0-7_]*", |lex| u64::from_str_radix(&lex.slice()[2..], 8).ok())]
     OctLiteral(u64),
-    #[regex("(0[b])[01][01_]*", |lex| lex.slice().parse::<u64>().ok())]
+    #[regex("(0[b])[01][01_]*", |lex| u64::from_str_radix(&lex.slice()[2..], 2).ok())]
     BinLiteral(u64),
 
-    #[regex(r"([0-9][0-9_]*)*\.([0-9][0-9_]*)*([eE][+-]?[0-9_]+)?")]
-    FloatLiteral,
-    #[regex(r"([0-9][0-9_]*)*\.([0-9][0-9_]*)*([eE][+-]?[0-9_]+)?i")]
-    ImaginaryLiteral,
+    #[regex(r"([0-9][0-9_]*)*\.([0-9][0-9_]*)*([eE][+-]?[0-9_]+)?", |lex| lex.slice().parse::<f64>().ok())]
+    FloatLiteral(f64),
+    #[regex(r"([0-9][0-9_]*)*\.([0-9][0-9_]*)*([eE][+-]?[0-9_]+)?i", |lex| {
+        let slice = lex.slice();
+        slice[0..(slice.len() - 1)].parse::<f64>().ok()
+    })]
+    ImaginaryLiteral(f64),
     #[regex(r#""([^"\\]|\\["\\bnfrt])*""#, |lex| {
         let slice = lex.slice();
-        &slice[1..slice.len()]
+        &slice[1..(slice.len()-1)]
     })]
     StringLiteral(&'a str),
 
@@ -132,7 +148,31 @@ pub enum Token<'a> {
     Eof,
 }
 
-pub fn lex_source(source: &str) -> Vec<Token> {
+impl<'a> Token<'a> {
+    pub fn precedence(&self) -> i8 {
+        match self {
+            Token::Dot => 12,
+            Token::Lparen | Token::Lbracket | Token::Lbrace => 11,
+            Token::OpExponent => 10,
+            Token::OpTimes | Token::OpBy | Token::OpMod => 9,
+            Token::OpPlus | Token::OpMinus => 8,
+            Token::Lshift | Token::Rshift => 7,
+            Token::Band => 6,
+            Token::Bor => 5,
+            Token::Bxor => 4,
+            Token::OpEq
+            | Token::OpGe
+            | Token::OpGt
+            | Token::OpLe
+            | Token::OpLt => 3,
+            Token::KwordAnd => 2,
+            Token::KwordOr => 1,
+            _ => -1,
+        }
+    }
+}
+
+pub fn lex_source<'a>(source: &'a str) -> Vec<Token<'a>> {
     let mut tokens: Vec<Token> = Token::lexer(source)
         .spanned()
         .filter_map(|(token, _)| token.ok())
