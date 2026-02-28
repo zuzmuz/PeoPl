@@ -1,18 +1,5 @@
 use logos::Logos;
 
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
-struct Point {
-    line: usize,
-    column: usize,
-}
-
-// #[derive(Logos, Clone, Debug, PartialEq, Eq)]
-// struct Token<'a> {
-//     kind: TokenKind<'a>,
-//     start: Point,
-//     end: Point,
-// }
-
 #[derive(Logos, Clone, Debug, PartialEq)]
 #[logos(skip r"[ \t]+")]
 pub enum Token<'a> {
@@ -28,11 +15,13 @@ pub enum Token<'a> {
 
     #[regex(r"([0-9][0-9_]*)*\.([0-9][0-9_]*)*([eE][+-]?[0-9_]+)?", |lex| lex.slice().parse::<f64>().ok())]
     FloatLiteral(f64),
-    #[regex(r"([0-9][0-9_]*)*\.([0-9][0-9_]*)*([eE][+-]?[0-9_]+)?i", |lex| {
+
+    #[regex(r"((([0-9][0-9_]*)*\.([0-9][0-9_]*)*([eE][+-]?[0-9_]+)?)|([0-9][0-9_]*))i", |lex| {
         let slice = lex.slice();
         slice[0..(slice.len() - 1)].parse::<f64>().ok()
     })]
     ImaginaryLiteral(f64),
+
     #[regex(r#""([^"\\]|\\["\\bnfrt])*""#, |lex| {
         let slice = lex.slice();
         &slice[1..(slice.len()-1)]
