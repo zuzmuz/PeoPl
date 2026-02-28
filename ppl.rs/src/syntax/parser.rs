@@ -90,34 +90,34 @@ impl<'a> tokenizer::Token<'a> {
             tokenizer::Token::Colon => 2,
             tokenizer::Token::Comma => 1,
 
-            tokenizer::Token::Rparen => todo!(),
-            tokenizer::Token::Rbracket => todo!(),
-            tokenizer::Token::Rbrace => todo!(),
+            tokenizer::Token::Rparen
+            | tokenizer::Token::Rbracket
+            | tokenizer::Token::Rbrace
+            | tokenizer::Token::DecLiteral(_)
+            | tokenizer::Token::HexLiteral(_)
+            | tokenizer::Token::OctLiteral(_)
+            | tokenizer::Token::BinLiteral(_)
+            | tokenizer::Token::FloatLiteral(_)
+            | tokenizer::Token::ImaginaryLiteral(_)
+            | tokenizer::Token::StringLiteral(_)
+            | tokenizer::Token::Special
+            | tokenizer::Token::Identifier(_) => -1,
 
-            tokenizer::Token::DecLiteral(_) => todo!(),
-            tokenizer::Token::HexLiteral(_) => todo!(),
-            tokenizer::Token::OctLiteral(_) => todo!(),
-            tokenizer::Token::BinLiteral(_) => todo!(),
-            tokenizer::Token::FloatLiteral(_) => todo!(),
-            tokenizer::Token::ImaginaryLiteral(_) => todo!(),
-            tokenizer::Token::StringLiteral(_) => todo!(),
-            tokenizer::Token::Special => todo!(),
+            tokenizer::Token::Propagate => todo!(),
+            tokenizer::Token::Bar => todo!(),
+            tokenizer::Token::Backslash => todo!(),
+            tokenizer::Token::Appostrophe => todo!(),
+            tokenizer::Token::Positional => todo!(),
+            tokenizer::Token::Comment => todo!(),
+            tokenizer::Token::NewLine => todo!(),
+
+            tokenizer::Token::Binding => todo!(),
+            tokenizer::Token::Arrow => todo!(),
             tokenizer::Token::KwordIf => todo!(),
             tokenizer::Token::KwordComp => todo!(),
             tokenizer::Token::KwordFn => todo!(),
 
-            tokenizer::Token::Identifier(_) => todo!(),
-            tokenizer::Token::Propagate => todo!(),
-
-            tokenizer::Token::Bar => todo!(),
-            tokenizer::Token::Backslash => todo!(),
-            tokenizer::Token::Appostrophe => todo!(),
-            tokenizer::Token::Arrow => todo!(),
-            tokenizer::Token::Binding => todo!(),
-            tokenizer::Token::Positional => todo!(),
-            tokenizer::Token::Comment => todo!(),
-            tokenizer::Token::NewLine => todo!(),
-            tokenizer::Token::Eof => todo!(),
+            tokenizer::Token::Eof => -2,
         }
     }
 
@@ -205,9 +205,54 @@ impl<'a> Parser<'a> {
     }
 
     pub fn parse(&mut self) -> Expression<'a> {
-        let expr = self.parse_primary_expression();
+        let expression = self.parse_primary_expression();
+        return self.continue_parsign(0, expression);
+    }
 
-        return expr;
+    fn continue_parsign(
+        &mut self,
+        last_precedence: i8,
+        last_expression: Expression<'a>,
+    ) -> Expression<'a> {
+        let mut last_expression = last_expression;
+        loop {
+            println!("Last {:#?}", last_expression);
+            let operator_token = self.tokens[self.cursor + 1];
+            println!("Current token {:?}", operator_token);
+
+            let current_precedence = operator_token.precedence();
+
+            if current_precedence == -1 {
+                panic!("syntax error");
+            }
+
+            if current_precedence < last_precedence {
+                return last_expression;
+            }
+
+            self.cursor += 2;
+
+            let mut next_expression = self.parse_primary_expression();
+
+            let next_precedence = self.tokens[self.cursor + 1].precedence();
+
+            if current_precedence < next_precedence {
+                next_expression = self
+                    .continue_parsign(current_precedence + 1, next_expression);
+            }
+
+            if let Some(operator) = operator_token.operator() {
+                let expressions_len = self.expressions.len();
+                self.expressions.push(last_expression);
+                self.expressions.push(next_expression);
+
+                last_expression = Expression::Binary(
+                    operator,
+                    expressions_len,
+                    expressions_len + 1,
+                )
+            }
+        }
     }
 
     // fn parse_expression_list(
