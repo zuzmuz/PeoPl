@@ -23,6 +23,7 @@ pub enum Operator {
     Lt,
     And,
     Or,
+    Pipe,
 
     Not,
     Bnot,
@@ -91,21 +92,23 @@ impl<'a> Token<'a> {
             | Token::ImaginaryLiteral(_)
             | Token::StringLiteral(_)
             | Token::Special
-            | Token::Identifier(_) => -1,
+            | Token::Identifier(_)
+            | Token::Positional(_)
+            | Token::Binding(_)
+            | Token::Bar => -1,
 
             Token::Propagate => todo!(),
-            Token::Bar => todo!(),
             Token::Appostrophe => todo!(),
-            Token::Positional => todo!(),
-            Token::Comment => todo!(),
-            // Token::NewLine => todo!(),
-            Token::Binding => todo!(),
             Token::Arrow => todo!(),
             Token::KwordIf => todo!(),
             Token::KwordComp => todo!(),
             Token::KwordFn => todo!(),
 
             Token::Eof | Token::Rparen | Token::Rbracket | Token::Rbrace => -2,
+
+
+            Token::NewLine
+            | Token::Comment => -3,
         }
     }
 
@@ -131,6 +134,7 @@ impl<'a> Token<'a> {
             Token::KwordOr => Some(Operator::Or),
             Token::KwordNot => Some(Operator::Not),
             Token::Bnot => Some(Operator::Bnot),
+            Token::Pipe => Some(Operator::Pipe),
             _ => None,
         }
     }
@@ -214,6 +218,10 @@ impl<'a> Parser<'a> {
             println!("Current token {:?}", operator_token);
 
             let current_precedence = operator_token.precedence();
+
+            if current_precedence == -3 {
+                continue;
+            }
 
             if current_precedence == -1 {
                 panic!("syntax error");
@@ -351,6 +359,14 @@ impl<'a> Parser<'a> {
             }
             Token::StringLiteral(value) => Expression::StringLiteral(value),
             Token::Identifier(value) => Expression::Identifier(value),
+            Token::Bar => {
+                
+                Expression::Empty
+            }
+            Token::KwordIf => {
+
+                Expression::Empty
+            }
             &token => {
                 if let Some(container_opening) = token.opening() {
                     self.cursor += 1;
