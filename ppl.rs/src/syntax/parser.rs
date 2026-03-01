@@ -160,7 +160,7 @@ impl<'a> Token<'a> {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
-struct Identifier<'a> {
+pub struct Identifier<'a> {
     id: &'a str,
 }
 
@@ -180,7 +180,7 @@ pub enum Expression<'a> {
     Binary(Operator, Box<Expression<'a>>, Box<Expression<'a>>),
 
     List(Container, Vec<Expression<'a>>),
-    // Call,
+    Call(Container, Box<Expression<'a>>, Vec<Expression<'a>>),
     Access(Box<Expression<'a>>, Identifier<'a>),
     //
     Tagged(Identifier<'a>, Box<Expression<'a>>),
@@ -225,8 +225,8 @@ impl<'a> Parser<'a> {
 
             if let Some(container_closing) = operator_token.closing() {
                 println!(
-                    "closing the token {:?}, from {:?}",
-                    container_closing, operator_token
+                    "closing the token {:?}, from {:?} container {:?}",
+                    container_closing, operator_token, container,
                 );
                 if container_closing == container {
                     // closing expression
@@ -238,6 +238,33 @@ impl<'a> Parser<'a> {
 
             if current_precedence < last_precedence {
                 return last_expression;
+            }
+
+            // Call expressions
+            if let Some(opening_container) = operator_token.opening() {
+                self.cursor += 2;
+                let first_call_expr =
+                    self.parse_primary_expression(opening_container);
+                let fields_expression = self.continue_parsing(
+                    0,
+                    first_call_expr,
+                    opening_container,
+                );
+
+                let fields = if let Expression::List(_, vec) = fields_expression
+                {
+                    vec
+                } else {
+                    vec![fields_expression]
+                };
+
+                self.cursor += 1;
+
+                return Expression::Call(
+                    opening_container,
+                    Box::new(last_expression),
+                    fields,
+                );
             }
 
             self.cursor += 2;
@@ -457,6 +484,75 @@ mod tests {
                     Box::new(Expression::Identifier("s")),
                     Identifier { id: "b" },
                 )),
+            )),
+        );
+
+        assert_eq!(ast, reference);
+    }
+
+    #[test]
+    fn call_expressions_empty() {
+        let source = "call()";
+
+        let mut parser = Parser::new(source);
+
+        let ast = parser.parse();
+        let reference = Expression::Call(
+            Container::Paren,
+            Box::new(Expression::Identifier("call")),
+            vec![Expression::Empty],
+        );
+
+        assert_eq!(ast, reference);
+    }
+
+    #[test]
+    fn call_expressions() {
+        let source = "call(1, 2, 3)";
+
+        let mut parser = Parser::new(source);
+
+        let ast = parser.parse();
+        let reference = Expression::Call(
+            Container::Paren,
+            Box::new(Expression::Identifier("call")),
+            vec![
+                Expression::IntLiteral(1),
+                Expression::IntLiteral(2),
+                Expression::IntLiteral(3),
+            ],
+        );
+
+        assert_eq!(ast, reference);
+    }
+
+    #[test]
+    fn struct_definition() {
+        let source = "a: struct {
+            b: Int,
+            c: Int,
+        }";
+
+        let mut parser = Parser::new(source);
+
+        let ast = parser.parse();
+
+        let reference = Expression::Tagged(
+            Identifier { id: "a" },
+            Box::new(Expression::Call(
+                Container::Brace,
+                Box::new(Expression::Identifier("struct")),
+                vec![
+                    Expression::Tagged(
+                        Identifier { id: "b" },
+                        Box::new(Expression::Identifier("Int")),
+                    ),
+                    Expression::Tagged(
+                        Identifier { id: "c" },
+                        Box::new(Expression::Identifier("Int")),
+                    ),
+                    Expression::Empty
+                ],
             )),
         );
 
