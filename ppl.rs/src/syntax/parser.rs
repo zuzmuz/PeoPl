@@ -32,33 +32,21 @@ pub enum Operator {
     Bnot,
 }
 
+impl Operator {
+    fn is_binary(&self) -> bool {
+        match self {
+            Operator::Not | Operator::Bnot => false,
+            _ => true,
+        }
+    }
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Container {
     Paren,
     Bracket,
     Brace,
-}
-
-impl Operator {
-    // fn binary_precedence(self) -> i8 {
-    //     match self {
-    //         Operator::Exponent => 10,
-    //         Operator::Times | Operator::By | Operator::Mod => 9,
-    //         Operator::Plus | Operator::Minus => 8,
-    //         Operator::Lshift | Operator::Rshift => 7,
-    //         Operator::Band => 6,
-    //         Operator::Bor => 5,
-    //         Operator::Bxor => 4,
-    //         Operator::Eq
-    //         | Operator::Ge
-    //         | Operator::Gt
-    //         | Operator::Le
-    //         | Operator::Lt => 3,
-    //         Operator::And => 2,
-    //         Operator::Or => 1,
-    //         _ => -1,
-    //     }
-    // }
+    File,
 }
 
 impl<'a> Token<'a> {
@@ -152,21 +140,21 @@ impl<'a> Token<'a> {
         }
     }
 
-    fn closing(&self) -> Option<Self> {
+    fn opening(&self) -> Option<Container> {
         match self {
-            Token::Lparen => Some(Token::Rparen),
-            Token::Lbracket => Some(Token::Rbracket),
-            Token::Lbrace => Some(Token::Rbrace),
-            Token::Eof => Some(Token::Eof),
+            Token::Lparen => Some(Container::Paren),
+            Token::Lbracket => Some(Container::Bracket),
+            Token::Lbrace => Some(Container::Brace),
             _ => None,
         }
     }
 
-    fn opening(&self) -> Option<Self> {
+    fn closing(&self) -> Option<Container> {
         match self {
-            Token::Rparen => Some(Token::Lparen),
-            Token::Rbracket => Some(Token::Lbracket),
-            Token::Rbrace => Some(Token::Lbrace),
+            Token::Rparen => Some(Container::Paren),
+            Token::Rbracket => Some(Container::Bracket),
+            Token::Rbrace => Some(Container::Brace),
+            Token::Eof => Some(Container::File),
             _ => None,
         }
     }
@@ -184,11 +172,10 @@ pub enum Expression<'a> {
     // Special,
 
     // primary
-    // Unary(),
-    //
+    Unary(Operator, Box<Expression<'a>>),
     Binary(Operator, Box<Expression<'a>>, Box<Expression<'a>>),
 
-    List(Vec<Expression<'a>>),
+    List(Container, Vec<Expression<'a>>),
     // Call,
     // Access,
     //
@@ -210,15 +197,15 @@ impl<'a> Parser<'a> {
     }
 
     pub fn parse(&mut self) -> Expression<'a> {
-        let expression = self.parse_primary_expression(Token::Eof);
-        return self.continue_parsing(0, expression, Token::Eof);
+        let expression = self.parse_primary_expression(Container::File);
+        self.continue_parsing(0, expression, Container::File)
     }
 
     fn continue_parsing(
         &mut self,
         last_precedence: i8,
         last_expression: Expression<'a>,
-        end_token: Token,
+        container: Container,
     ) -> Expression<'a> {
         let mut last_expression = last_expression;
         loop {
@@ -232,12 +219,12 @@ impl<'a> Parser<'a> {
                 panic!("syntax error");
             }
 
-            if current_precedence == -2 {
+            if let Some(container_closing) = operator_token.closing() {
                 println!(
                     "closing the token {:?}, from {:?}",
-                    end_token, operator_token
+                    container_closing, operator_token
                 );
-                if operator_token == end_token {
+                if container_closing == container {
                     // closing expression
                     return last_expression;
                 } else {
@@ -251,7 +238,7 @@ impl<'a> Parser<'a> {
 
             self.cursor += 2;
 
-            let mut next_expression = self.parse_primary_expression(end_token);
+            let mut next_expression = self.parse_primary_expression(container);
 
             let next_precedence = self.tokens[self.cursor + 1].precedence();
 
@@ -259,18 +246,20 @@ impl<'a> Parser<'a> {
                 next_expression = self.continue_parsing(
                     current_precedence + 1,
                     next_expression,
-                    end_token,
+                    container,
                 );
             }
 
             if operator_token == Token::Comma {
-                if let Expression::List(vec) = last_expression {
+                if let Expression::List(cont, vec) = last_expression {
                     let mut vec = vec;
                     vec.push(next_expression);
-                    last_expression = Expression::List(vec);
+                    last_expression = Expression::List(cont, vec);
                 } else {
-                    last_expression =
-                        Expression::List(vec![last_expression, next_expression])
+                    last_expression = Expression::List(
+                        container,
+                        vec![last_expression, next_expression],
+                    )
                 }
             } else if operator_token == Token::Colon {
                 match last_expression {
@@ -286,11 +275,15 @@ impl<'a> Parser<'a> {
                     ),
                 }
             } else if let Some(operator) = operator_token.operator() {
-                last_expression = Expression::Binary(
-                    operator,
-                    Box::new(last_expression),
-                    Box::new(next_expression),
-                )
+                if operator.is_binary() {
+                    last_expression = Expression::Binary(
+                        operator,
+                        Box::new(last_expression),
+                        Box::new(next_expression),
+                    )
+                } else {
+                    todo!("syntax error illegal unary operator");
+                }
             } else if operator_token == Token::Backslash {
                 todo!("qualified identifiers");
             }
@@ -301,9 +294,13 @@ impl<'a> Parser<'a> {
     ///   : Literal
     ///   | Identifier
     ///   | ParenthesizedExpression
+    ///   | Unary
     ///   ;
     ///
-    fn parse_primary_expression(&mut self, end_token: Token) -> Expression<'a> {
+    fn parse_primary_expression(
+        &mut self,
+        container: Container,
+    ) -> Expression<'a> {
         println!("Parsing Literal {:?}", self.tokens[self.cursor]);
         match &self.tokens[self.cursor] {
             Token::DecLiteral(value)
@@ -317,26 +314,26 @@ impl<'a> Parser<'a> {
             Token::StringLiteral(value) => Expression::StringLiteral(value),
             Token::Identifier(value) => Expression::Identifier(value),
             &token => {
-                if let Some(closing_token) = token.closing() {
+                if let Some(container_opening) = token.opening() {
                     self.cursor += 1;
                     let expression =
-                        self.parse_primary_expression(closing_token);
+                        self.parse_primary_expression(container_opening);
                     let inside_expression =
-                        self.continue_parsing(0, expression, closing_token);
+                        self.continue_parsing(0, expression, container_opening);
                     self.cursor += 1;
                     inside_expression
-                } else if let Some(_) = token.opening() {
-                    if token == end_token {
+                } else if let Some(container_closing) = token.closing() {
+                    if container_closing == container {
                         self.cursor -= 1;
                         Expression::Empty
                     } else {
                         todo!("Wrong closing");
                     }
-                }
-                // else if let Some(operator) = token.operator() {
-                //
-                // }
-                else {
+                } else if let Some(operator) = token.operator() {
+                    self.cursor += 1;
+                    let expression = self.parse_primary_expression(container);
+                    Expression::Unary(operator, Box::new(expression))
+                } else {
                     todo!("check if more primary expression types");
                 }
             }
