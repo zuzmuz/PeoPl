@@ -2,11 +2,7 @@ use crate::syntax::{
     self,
     tokenizer::{self, Token},
 };
-// // enum Op {
-// //
-// // }
-//
-//
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Operator {
     Exponent,
@@ -551,9 +547,36 @@ mod tests {
                         Identifier { id: "c" },
                         Box::new(Expression::Identifier("Int")),
                     ),
-                    Expression::Empty
+                    Expression::Empty,
                 ],
             )),
+        );
+
+        assert_eq!(ast, reference);
+    }
+
+    #[test]
+    fn prefix() {
+        let source = "(3 + 2).to_float(x: a)";
+
+        let mut parser = Parser::new(source);
+
+        let ast = parser.parse();
+
+        let reference = Expression::Call(
+            Container::Paren,
+            Box::new(Expression::Access(
+                Box::new(Expression::Binary(
+                    Operator::Plus,
+                    Box::new(Expression::IntLiteral(3)),
+                    Box::new(Expression::IntLiteral(2)),
+                )),
+                Identifier { id: "to_float" },
+            )),
+            vec![Expression::Tagged(
+                Identifier { id: "x" },
+                Box::new(Expression::Identifier("a")),
+            )],
         );
 
         assert_eq!(ast, reference);
