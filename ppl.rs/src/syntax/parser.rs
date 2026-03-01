@@ -106,9 +106,7 @@ impl<'a> Token<'a> {
 
             Token::Eof | Token::Rparen | Token::Rbracket | Token::Rbrace => -2,
 
-
-            Token::NewLine
-            | Token::Comment => -3,
+            Token::NewLine | Token::Comment => -3,
         }
     }
 
@@ -220,6 +218,7 @@ impl<'a> Parser<'a> {
             let current_precedence = operator_token.precedence();
 
             if current_precedence == -3 {
+                self.cursor += 1;
                 continue;
             }
 
@@ -359,14 +358,8 @@ impl<'a> Parser<'a> {
             }
             Token::StringLiteral(value) => Expression::StringLiteral(value),
             Token::Identifier(value) => Expression::Identifier(value),
-            Token::Bar => {
-                
-                Expression::Empty
-            }
-            Token::KwordIf => {
-
-                Expression::Empty
-            }
+            Token::Bar => Expression::Empty,
+            Token::KwordIf => Expression::Empty,
             &token => {
                 if let Some(container_opening) = token.opening() {
                     self.cursor += 1;
@@ -392,6 +385,9 @@ impl<'a> Parser<'a> {
                         container,
                     );
                     Expression::Unary(operator, Box::new(continued_expression))
+                } else if Token::NewLine == token || Token::Comment == token {
+                    self.cursor += 1;
+                    self.parse_primary_expression(container)
                 } else {
                     todo!("check if more primary expression types");
                 }
