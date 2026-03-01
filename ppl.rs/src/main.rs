@@ -14,7 +14,7 @@ fn list() {
 }
 
 fn binary() {
-    let test_string = "3 * (12,), second: hi, third: Int ^ 3";
+    let test_string = "3 * (12, 23,), second: {hi,}, third: [Int ^ 3]";
 
     let mut parser = parser::Parser::new(test_string);
 

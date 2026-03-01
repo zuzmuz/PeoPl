@@ -321,7 +321,7 @@ impl<'a> Parser<'a> {
             }
             Token::Rparen | Token::Rbracket | Token::Rbrace => {
                 if self.tokens[self.cursor] == end_token {
-                    self.cursor += 1;
+                    self.cursor -= 1;
                     Expression::Empty
                 } else {
                     todo!("wrong closing");
