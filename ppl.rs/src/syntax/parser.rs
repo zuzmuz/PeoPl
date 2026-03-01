@@ -32,6 +32,13 @@ pub enum Operator {
     Bnot,
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Container {
+    Paren,
+    Bracket,
+    Brace,
+}
+
 impl Operator {
     // fn binary_precedence(self) -> i8 {
     //     match self {
@@ -294,7 +301,6 @@ impl<'a> Parser<'a> {
     ///   : Literal
     ///   | Identifier
     ///   | ParenthesizedExpression
-    ///   | Positional
     ///   ;
     ///
     fn parse_primary_expression(&mut self, end_token: Token) -> Expression<'a> {
@@ -310,24 +316,30 @@ impl<'a> Parser<'a> {
             }
             Token::StringLiteral(value) => Expression::StringLiteral(value),
             Token::Identifier(value) => Expression::Identifier(value),
-            Token::Lparen | Token::Lbracket | Token::Lbrace => {
-                let closing_token = self.tokens[self.cursor].closing().unwrap();
-                self.cursor += 1;
-                let expression = self.parse_primary_expression(closing_token);
-                let inside_expression =
-                    self.continue_parsing(0, expression, closing_token);
-                self.cursor += 1;
-                inside_expression
-            }
-            Token::Rparen | Token::Rbracket | Token::Rbrace => {
-                if self.tokens[self.cursor] == end_token {
-                    self.cursor -= 1;
-                    Expression::Empty
-                } else {
-                    todo!("wrong closing");
+            &token => {
+                if let Some(closing_token) = token.closing() {
+                    self.cursor += 1;
+                    let expression =
+                        self.parse_primary_expression(closing_token);
+                    let inside_expression =
+                        self.continue_parsing(0, expression, closing_token);
+                    self.cursor += 1;
+                    inside_expression
+                } else if let Some(_) = token.opening() {
+                    if token == end_token {
+                        self.cursor -= 1;
+                        Expression::Empty
+                    } else {
+                        todo!("Wrong closing");
+                    }
+                }
+                // else if let Some(operator) = token.operator() {
+                //
+                // }
+                else {
+                    todo!("check if more primary expression types");
                 }
             }
-            _ => todo!(),
         }
     }
 }
