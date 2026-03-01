@@ -14,13 +14,14 @@ fn list() {
 }
 
 fn binary() {
-    let test_string = "3 + 2i";
+    let test_string = "3 + 2i - 2 * 4, hi, Int ^ 3";
 
     let mut parser = parser::Parser::new(test_string);
 
     let ast = parser.parse();
     
     println!("the ast {:#?}", ast);
+    println!("the expressions {:#?}", parser.expressions);
 }
 
 fn main() {

@@ -1,4 +1,7 @@
-use crate::syntax::tokenizer;
+use crate::syntax::{
+    self,
+    tokenizer::{self, Token},
+};
 // // enum Op {
 // //
 // // }
@@ -174,9 +177,9 @@ pub enum Expression<'a> {
     // primary
     // Unary(),
     //
-    Binary(Operator, usize, usize),
+    Binary(Operator, Box<Expression<'a>>, Box<Expression<'a>>),
 
-    List(Vec<usize>),
+    List(Vec<Expression<'a>>),
     // Call,
     // Access,
     //
@@ -241,15 +244,23 @@ impl<'a> Parser<'a> {
                     .continue_parsign(current_precedence + 1, next_expression);
             }
 
-            if let Some(operator) = operator_token.operator() {
-                let expressions_len = self.expressions.len();
-                self.expressions.push(last_expression);
-                self.expressions.push(next_expression);
+            if operator_token == tokenizer::Token::Comma {
+                if let Expression::List(vec) = last_expression {
+                    let mut vec = vec;
+                    vec.push(next_expression);
+                    last_expression = Expression::List(vec);
+                } else {
+                    last_expression = Expression::List(vec![last_expression, next_expression])
+                }
+            } else if let Some(operator) = operator_token.operator() {
+                // let expressions_len = self.expressions.len();
+                // self.expressions.push(last_expression);
+                // self.expressions.push(next_expression);
 
                 last_expression = Expression::Binary(
                     operator,
-                    expressions_len,
-                    expressions_len + 1,
+                    Box::new(last_expression),
+                    Box::new(next_expression),
                 )
             }
         }
