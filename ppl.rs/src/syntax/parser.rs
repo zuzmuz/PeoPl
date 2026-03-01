@@ -103,7 +103,6 @@ impl<'a> Token<'a> {
             Token::Positional => todo!(),
             Token::Comment => todo!(),
             // Token::NewLine => todo!(),
-
             Token::Binding => todo!(),
             Token::Arrow => todo!(),
             Token::KwordIf => todo!(),
@@ -160,6 +159,11 @@ impl<'a> Token<'a> {
     }
 }
 
+#[derive(Clone, Debug, PartialEq, Eq)]
+struct Identifier<'a> {
+    id: &'a str,
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub enum Expression<'a> {
     // literals
@@ -168,7 +172,7 @@ pub enum Expression<'a> {
     ImaginaryLiteral(f64),
     StringLiteral(&'a str),
     Identifier(&'a str),
-    QualifiedIdentifier(Vec<&'a str>),
+    // QualifiedIdentifier(Vec<&'a str>),
     // Special,
 
     // primary
@@ -177,9 +181,9 @@ pub enum Expression<'a> {
 
     List(Container, Vec<Expression<'a>>),
     // Call,
-    Access(Box<Expression<'a>>, Box<Expression<'a>>),
+    Access(Box<Expression<'a>>, Identifier<'a>),
     //
-    Tagged(Box<Expression<'a>>, Box<Expression<'a>>),
+    Tagged(Identifier<'a>, Box<Expression<'a>>),
     //
     Empty,
     // Invalid,
@@ -263,10 +267,9 @@ impl<'a> Parser<'a> {
                 }
             } else if operator_token == Token::Colon {
                 match last_expression {
-                    Expression::Identifier(_)
-                    | Expression::QualifiedIdentifier(_) => {
+                    Expression::Identifier(ident) => {
                         last_expression = Expression::Tagged(
-                            Box::new(last_expression),
+                            Identifier { id: ident },
                             Box::new(next_expression),
                         )
                     }
@@ -287,10 +290,17 @@ impl<'a> Parser<'a> {
             } else if operator_token == Token::Backslash {
                 todo!("qualified identifiers");
             } else if operator_token == Token::Dot {
-                last_expression = Expression::Access(
-                    Box::new(last_expression),
-                    Box::new(next_expression),
-                );
+                match next_expression {
+                    Expression::Identifier(ident) => {
+                        last_expression = Expression::Access(
+                            Box::new(last_expression),
+                            Identifier { id: ident },
+                        );
+                    }
+                    _ => todo!(
+                        "access expression requires rhs to be an identifier"
+                    ),
+                }
             }
         }
     }
@@ -337,7 +347,12 @@ impl<'a> Parser<'a> {
                 } else if let Some(operator) = token.operator() {
                     self.cursor += 1;
                     let expression = self.parse_primary_expression(container);
-                    Expression::Unary(operator, Box::new(expression))
+                    let continued_expression = self.continue_parsing(
+                        token.precedence() + 1,
+                        expression,
+                        container,
+                    );
+                    Expression::Unary(operator, Box::new(continued_expression))
                 } else {
                     todo!("check if more primary expression types");
                 }
@@ -379,18 +394,18 @@ mod tests {
         let mut parser = Parser::new(source);
         let ast = parser.parse();
         let reference = Expression::Tagged(
-            Box::new(Expression::Identifier("c")),
+            Identifier { id: "c" },
             Box::new(Expression::Binary(
                 Operator::And,
                 Box::new(Expression::Binary(
                     Operator::Gt,
-                    Box::new(Expression::Binary(
-                        Operator::Times,
-                        Box::new(Expression::Unary(
-                            Operator::Minus,
+                    Box::new(Expression::Unary(
+                        Operator::Minus,
+                        Box::new(Expression::Binary(
+                            Operator::Times,
                             Box::new(Expression::IntLiteral(1)),
+                            Box::new(Expression::IntLiteral(4)),
                         )),
-                        Box::new(Expression::IntLiteral(4)),
                     )),
                     Box::new(Expression::Binary(
                         Operator::Minus,
@@ -403,6 +418,44 @@ mod tests {
                     Operator::Eq,
                     Box::new(Expression::Identifier("value")),
                     Box::new(Expression::StringLiteral("string")),
+                )),
+            )),
+        );
+
+        assert_eq!(ast, reference);
+    }
+
+    #[test]
+    fn member_access() {
+        let source = "
+            v: - s.a ^ 2 * 3 + s.b
+        ";
+
+        let mut parser = Parser::new(source);
+
+        let ast = parser.parse();
+        let reference = Expression::Tagged(
+            Identifier { id: "v" },
+            Box::new(Expression::Binary(
+                Operator::Plus,
+                Box::new(Expression::Unary(
+                    Operator::Minus,
+                    Box::new(Expression::Binary(
+                        Operator::Times,
+                        Box::new(Expression::Binary(
+                            Operator::Exponent,
+                            Box::new(Expression::Access(
+                                Box::new(Expression::Identifier("s")),
+                                Identifier { id: "a" },
+                            )),
+                            Box::new(Expression::IntLiteral(2)),
+                        )),
+                        Box::new(Expression::IntLiteral(3)),
+                    )),
+                )),
+                Box::new(Expression::Access(
+                    Box::new(Expression::Identifier("s")),
+                    Identifier { id: "b" },
                 )),
             )),
         );
