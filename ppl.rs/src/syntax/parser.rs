@@ -102,7 +102,7 @@ impl<'a> Token<'a> {
             Token::Appostrophe => todo!(),
             Token::Positional => todo!(),
             Token::Comment => todo!(),
-            Token::NewLine => todo!(),
+            // Token::NewLine => todo!(),
 
             Token::Binding => todo!(),
             Token::Arrow => todo!(),
@@ -177,7 +177,7 @@ pub enum Expression<'a> {
 
     List(Container, Vec<Expression<'a>>),
     // Call,
-    // Access,
+    Access(Box<Expression<'a>>, Box<Expression<'a>>),
     //
     Tagged(Box<Expression<'a>>, Box<Expression<'a>>),
     //
@@ -286,6 +286,11 @@ impl<'a> Parser<'a> {
                 }
             } else if operator_token == Token::Backslash {
                 todo!("qualified identifiers");
+            } else if operator_token == Token::Dot {
+                last_expression = Expression::Access(
+                    Box::new(last_expression),
+                    Box::new(next_expression),
+                );
             }
         }
     }
@@ -347,12 +352,61 @@ mod tests {
 
     #[test]
     fn numbers() {
-        let test_string = "3\n10\0x12";
+        let source = "1, 0x12, 3.4";
 
-        let mut parser = Parser::new(test_string);
+        let mut parser = Parser::new(source);
 
         let ast = parser.parse();
 
-        // println!("the ast {:#?}", ast);
+        let reference = Expression::List(
+            Container::File,
+            vec![
+                Expression::IntLiteral(1),
+                Expression::IntLiteral(18),
+                Expression::FloatLiteral(3.4),
+            ],
+        );
+
+        assert_eq!(ast, reference);
+    }
+
+    #[test]
+    fn basic() {
+        let source = "
+            c: - 1 * 4 > 3 - 2 and value = \"string\"
+        ";
+
+        let mut parser = Parser::new(source);
+        let ast = parser.parse();
+        let reference = Expression::Tagged(
+            Box::new(Expression::Identifier("c")),
+            Box::new(Expression::Binary(
+                Operator::And,
+                Box::new(Expression::Binary(
+                    Operator::Gt,
+                    Box::new(Expression::Binary(
+                        Operator::Times,
+                        Box::new(Expression::Unary(
+                            Operator::Minus,
+                            Box::new(Expression::IntLiteral(1)),
+                        )),
+                        Box::new(Expression::IntLiteral(4)),
+                    )),
+                    Box::new(Expression::Binary(
+                        Operator::Minus,
+                        Box::new(Expression::IntLiteral(3)),
+                        Box::new(Expression::IntLiteral(2)),
+                    )),
+                )),
+                // value = "string"
+                Box::new(Expression::Binary(
+                    Operator::Eq,
+                    Box::new(Expression::Identifier("value")),
+                    Box::new(Expression::StringLiteral("string")),
+                )),
+            )),
+        );
+
+        assert_eq!(ast, reference);
     }
 }

@@ -1,7 +1,8 @@
 use logos::Logos;
 
 #[derive(Logos, Clone, Copy, Debug, PartialEq)]
-#[logos(skip r"[ \t]+")]
+// #[logos(skip r"[ \t]+")]
+#[logos(skip r"[ \t\n\r\n\x0C]+")]
 pub enum Token<'a> {
     // literals
     #[regex("[0-9][0-9_]*", |lex| lex.slice().parse::<u64>().ok())]
@@ -131,8 +132,8 @@ pub enum Token<'a> {
     #[regex(r"//[.]*", priority = 20)]
     Comment,
 
-    #[regex("\n|\r\n|\x0C")]
-    NewLine,
+    // #[regex("\n|\r\n|\x0C")]
+    // NewLine,
 
     Eof,
 }
