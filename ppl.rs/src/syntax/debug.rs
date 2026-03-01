@@ -1,3 +1,5 @@
+use std::fmt;
+
 enum Connector {
     Last,
     NotLast,
@@ -87,9 +89,8 @@ impl Colored for String {
 impl Connector {
     pub fn raw(&self) -> String {
         match self {
-            Self::Last => {
-                "└─ ".to_string().colored(TerminalColor::BrightBlack)
-            }
+            Self::Last => "└─ ".to_string().colored(TerminalColor::BrightBlack),
+
             Self::NotLast => {
                 "├─ ".to_string().colored(TerminalColor::BrightBlack)
             }
@@ -97,8 +98,26 @@ impl Connector {
     }
     pub fn child_prefix(&self) -> String {
         match self {
-		Self::Last => "   ".to_string().colored(TerminalColor::BrightBlack),
-		Self::NotLast => "│  ".to_string().colored(TerminalColor::BrightBlack),
-		}
+            Self::Last => "   ".to_string().colored(TerminalColor::BrightBlack),
+            Self::NotLast => {
+                "│  ".to_string().colored(TerminalColor::BrightBlack)
+            }
+        }
+    }
+}
+
+
+trait ASTFormattableNode {
+    fn formatAST(
+        prefix: String,
+        connector: Connector,
+        extra: String,
+        description: &mut Vec<String>
+    );
+}
+
+impl fmt::Display for ASTFormattableNode {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        todo!()
     }
 }
