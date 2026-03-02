@@ -545,29 +545,70 @@ mod tests {
         let source = "a: struct {
             b: Int,
             c: Int,
-        }";
+        },
+
+        x: a[b: 1, c: 2],
+        y: a.b + a.c,
+        ";
 
         let mut parser = Parser::new(source);
 
         let ast = parser.parse();
 
-        let reference = Expression::Tagged(
-            Identifier { id: "a" },
-            Box::new(Expression::Call(
-                Container::Brace,
-                Box::new(Expression::Identifier("struct")),
-                vec![
-                    Expression::Tagged(
-                        Identifier { id: "b" },
-                        Box::new(Expression::Identifier("Int")),
-                    ),
-                    Expression::Tagged(
-                        Identifier { id: "c" },
-                        Box::new(Expression::Identifier("Int")),
-                    ),
-                    Expression::Empty,
-                ],
-            )),
+        let reference = Expression::List(
+            Container::File,
+            vec![
+                Expression::Tagged(
+                    Identifier { id: "a" },
+                    Box::new(Expression::Call(
+                        Container::Brace,
+                        Box::new(Expression::Identifier("struct")),
+                        vec![
+                            Expression::Tagged(
+                                Identifier { id: "b" },
+                                Box::new(Expression::Identifier("Int")),
+                            ),
+                            Expression::Tagged(
+                                Identifier { id: "c" },
+                                Box::new(Expression::Identifier("Int")),
+                            ),
+                            Expression::Empty,
+                        ],
+                    )),
+                ),
+                Expression::Tagged(
+                    Identifier { id: "x" },
+                    Box::new(Expression::Call(
+                        Container::Bracket,
+                        Box::new(Expression::Identifier("a")),
+                        vec![
+                            Expression::Tagged(
+                                Identifier { id: "b" },
+                                Box::new(Expression::IntLiteral(1)),
+                            ),
+                            Expression::Tagged(
+                                Identifier { id: "c" },
+                                Box::new(Expression::IntLiteral(2)),
+                            ),
+                        ],
+                    )),
+                ),
+                Expression::Tagged(
+                    Identifier { id: "y" },
+                    Box::new(Expression::Binary(
+                        Operator::Plus,
+                        Box::new(Expression::Access(
+                            Box::new(Expression::Identifier("a")),
+                            Identifier { id: "b" },
+                        )),
+                        Box::new(Expression::Access(
+                            Box::new(Expression::Identifier("a")),
+                            Identifier { id: "c" },
+                        )),
+                    )),
+                ),
+                Expression::Empty,
+            ],
         );
 
         assert_eq!(ast, reference);
