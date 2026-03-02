@@ -593,4 +593,36 @@ mod tests {
 
         assert_eq!(ast, reference);
     }
+
+    #[test]
+    fn pipes() {
+        let source = "
+            \"we are the champions\"
+            |> slice()[1, -1]
+        ";
+
+        let mut parser = Parser::new(source);
+
+        let ast = parser.parse();
+
+        let reference = Expression::Binary(
+            Operator::Pipe,
+            Box::new(Expression::StringLiteral("we are the champions")),
+            Box::new(Expression::Call(
+                Container::Bracket,
+                Box::new(Expression::Call(
+                    Container::Paren,
+                    Box::new(Expression::Identifier("slice")),
+                    vec![Expression::Empty],
+                )),
+                vec![
+                    Expression::IntLiteral(1),
+                    Expression::Unary(
+                        Operator::Minus,
+                        Box::new(Expression::IntLiteral(1)),
+                    ),
+                ],
+            )),
+        );
+    }
 }
