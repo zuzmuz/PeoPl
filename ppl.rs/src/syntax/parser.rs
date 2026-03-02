@@ -54,7 +54,13 @@ impl<'a> Token<'a> {
 
             Token::Dot => 50,
 
-            Token::Lparen | Token::Lbracket | Token::Lbrace => 40,
+            Token::Lparen
+            | Token::Lbracket
+            | Token::Lbrace
+            | Token::Rparen
+            | Token::Rbracket
+            | Token::Rbrace
+            | Token::Eof => 40,
 
             Token::Bnot => 31,
             Token::KwordNot => 30,
@@ -103,8 +109,6 @@ impl<'a> Token<'a> {
             Token::KwordIf => todo!(),
             Token::KwordComp => todo!(),
             Token::KwordFn => todo!(),
-
-            Token::Eof | Token::Rparen | Token::Rbracket | Token::Rbrace => -2,
 
             Token::NewLine | Token::Comment => -3,
         }
@@ -239,6 +243,7 @@ impl<'a> Parser<'a> {
                 }
             }
 
+            println!("precc {current_precedence} {last_precedence}");
             if current_precedence < last_precedence {
                 return last_expression;
             }
@@ -263,11 +268,12 @@ impl<'a> Parser<'a> {
 
                 self.cursor += 1;
 
-                return Expression::Call(
+                last_expression = Expression::Call(
                     opening_container,
                     Box::new(last_expression),
                     fields,
                 );
+                continue;
             }
 
             self.cursor += 2;
@@ -624,5 +630,48 @@ mod tests {
                 ],
             )),
         );
+
+        assert_eq!(ast, reference);
+    }
+
+    #[test]
+    fn multiple_functions() {
+        let source = "
+            first() + second(1) + third(x:3,)
+        ";
+
+        let mut parser = Parser::new(source);
+
+        let ast = parser.parse();
+
+        let reference = Expression::Binary(
+            Operator::Plus,
+            Box::new(Expression::Binary(
+                Operator::Plus,
+                Box::new(Expression::Call(
+                    Container::Paren,
+                    Box::new(Expression::Identifier("first")),
+                    vec![Expression::Empty],
+                )),
+                Box::new(Expression::Call(
+                    Container::Paren,
+                    Box::new(Expression::Identifier("second")),
+                    vec![Expression::IntLiteral(1)],
+                )),
+            )),
+            Box::new(Expression::Call(
+                Container::Paren,
+                Box::new(Expression::Identifier("third")),
+                vec![
+                    Expression::Tagged(
+                        Identifier { id: "x" },
+                        Box::new(Expression::IntLiteral(3)),
+                    ),
+                    Expression::Empty,
+                ],
+            )),
+        );
+
+        assert_eq!(ast, reference);
     }
 }
