@@ -1,7 +1,4 @@
-use crate::syntax::{
-    self,
-    tokenizer::{self, Token},
-};
+use crate::syntax::tokenizer::{self, Token};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Operator {
@@ -43,6 +40,7 @@ pub enum Container {
     Paren,
     Bracket,
     Brace,
+    Bar,
     File,
 }
 
@@ -175,7 +173,9 @@ pub enum Expression<'a> {
     StringLiteral(&'a str),
     Identifier(&'a str),
     // QualifiedIdentifier(Vec<&'a str>),
-    // Special,
+    Special,
+    Positional(&'a str),
+    Binding(&'a str),
 
     // primary
     Unary(Operator, Box<Expression<'a>>),
@@ -184,8 +184,11 @@ pub enum Expression<'a> {
     List(Container, Vec<Expression<'a>>),
     Call(Container, Box<Expression<'a>>, Vec<Expression<'a>>),
     Access(Box<Expression<'a>>, Identifier<'a>),
-    //
+
     Tagged(Identifier<'a>, Box<Expression<'a>>),
+
+    Branched,
+    Pipe(Box<Expression<'a>>, Box<Expression<'a>>),
     //
     Empty,
     // Invalid,
@@ -203,8 +206,25 @@ impl<'a> Parser<'a> {
     }
 
     pub fn parse(&mut self) -> Expression<'a> {
-        let expression = self.parse_primary_expression(Container::File);
-        self.continue_parsing(0, expression, Container::File)
+        self.parse_complex_expression(Container::File)
+    }
+
+    /// : Branched
+    /// | PrimaryExpression
+    fn parse_complex_expression(
+        &mut self,
+        container: Container,
+    ) -> Expression<'a> {
+        match &self.tokens[self.cursor] {
+            Token::Bar => {
+                todo!("parse branch expressions");
+            }
+            _ => {
+                let primary_expression =
+                    self.parse_primary_expression(container);
+                self.continue_parsing(0, primary_expression, container)
+            }
+        }
     }
 
     fn continue_parsing(
@@ -325,6 +345,8 @@ impl<'a> Parser<'a> {
                 }
             } else if operator_token == Token::Backslash {
                 todo!("qualified identifiers");
+            } else if operator_token == Token::KwordIf {
+                todo!("if guards");
             } else if operator_token == Token::Dot {
                 match next_expression {
                     Expression::Identifier(ident) => {
@@ -363,16 +385,19 @@ impl<'a> Parser<'a> {
                 Expression::ImaginaryLiteral(*value)
             }
             Token::StringLiteral(value) => Expression::StringLiteral(value),
+            Token::Positional(value) => Expression::Positional(value),
+            Token::Binding(value) => Expression::Binding(value),
+            Token::Special => Expression::Special,
             Token::Identifier(value) => Expression::Identifier(value),
-            Token::Bar => Expression::Empty,
             Token::KwordIf => Expression::Empty,
+            Token::Bar => {
+                todo!("handle error no bars are allowed");
+            }
             &token => {
                 if let Some(container_opening) = token.opening() {
                     self.cursor += 1;
-                    let expression =
-                        self.parse_primary_expression(container_opening);
                     let inside_expression =
-                        self.continue_parsing(0, expression, container_opening);
+                        self.parse_complex_expression(container_opening);
                     self.cursor += 1;
                     inside_expression
                 } else if let Some(container_closing) = token.closing() {
