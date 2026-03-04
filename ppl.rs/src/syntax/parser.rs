@@ -24,6 +24,8 @@ pub enum Operator {
 
     Not,
     Bnot,
+
+    If,
 }
 
 impl Operator {
@@ -40,7 +42,8 @@ pub enum Container {
     Paren,
     Bracket,
     Brace,
-    Bar,
+    Guard,
+    BranchBody, // FIXME: not sure about this
     File,
 }
 
@@ -58,6 +61,8 @@ impl<'a> Token<'a> {
             | Token::Rparen
             | Token::Rbracket
             | Token::Rbrace
+            | Token::Bar
+            | Token::KwordIf
             | Token::Eof => 40,
 
             Token::Bnot => 31,
@@ -86,6 +91,7 @@ impl<'a> Token<'a> {
             Token::Pipe => 5,
 
             Token::Colon => 2,
+
             Token::Comma => 1,
 
             Token::DecLiteral(_)
@@ -98,13 +104,11 @@ impl<'a> Token<'a> {
             | Token::Special
             | Token::Identifier(_)
             | Token::Positional(_)
-            | Token::Binding(_)
-            | Token::Bar => -1,
+            | Token::Binding(_) => -1,
 
             Token::Propagate => todo!(),
             Token::Appostrophe => todo!(),
             Token::Arrow => todo!(),
-            Token::KwordIf => todo!(),
             Token::KwordComp => todo!(),
             Token::KwordFn => todo!(),
 
@@ -135,6 +139,7 @@ impl<'a> Token<'a> {
             Token::KwordNot => Some(Operator::Not),
             Token::Bnot => Some(Operator::Bnot),
             Token::Pipe => Some(Operator::Pipe),
+            Token::KwordIf => Some(Operator::If),
             _ => None,
         }
     }
@@ -154,7 +159,8 @@ impl<'a> Token<'a> {
             Token::Rparen => Some(Container::Paren),
             Token::Rbracket => Some(Container::Bracket),
             Token::Rbrace => Some(Container::Brace),
-            Token::Bar => Some(Container::Bar),
+            Token::Bar => Some(Container::Guard),
+            Token::KwordIf => Some(Container::Guard), // if closes guard expression
             Token::Eof => Some(Container::File),
             _ => None,
         }
@@ -164,6 +170,13 @@ impl<'a> Token<'a> {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Identifier<'a> {
     id: &'a str,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct Branch<'a> {
+    match_expression: Expression<'a>,
+    guard_expression: Option<Expression<'a>>,
+    body: Expression<'a>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -189,7 +202,7 @@ pub enum Expression<'a> {
 
     Tagged(Identifier<'a>, Box<Expression<'a>>),
 
-    Branched,
+    Branched(Vec<Branch<'a>>),
     Pipe(Box<Expression<'a>>, Box<Expression<'a>>),
     //
     Empty,
@@ -219,12 +232,61 @@ impl<'a> Parser<'a> {
     ) -> Expression<'a> {
         match &self.tokens[self.cursor] {
             Token::Bar => {
-                self.cursor += 1;
-                let expression = self.parse_primary_expression(Container::Bar);
-                let continued_expression =
-                    self.continue_parsing(0, expression, Container::Bar);
-                self.cursor += 1;
-                Expression::Branched
+                let mut branches: Vec<Branch<'a>> = Vec::new();
+
+                loop {
+                    self.cursor += 1;
+                    let expression =
+                        self.parse_primary_expression(Container::Guard);
+                    let continued_expression =
+                        self.continue_parsing(0, expression, Container::Guard);
+                    self.cursor += 1;
+
+                    let (match_expression, guard_expression): (
+                        Expression<'a>,
+                        Option<Expression<'a>>,
+                    ) = match self.tokens[self.cursor] {
+                        Token::Bar => (continued_expression, None),
+                        Token::KwordIf => {
+                            todo!("parse the guard expression");
+                        }
+                        _ => {
+                            todo!(
+                                "this should not happen but handle error anyways"
+                            );
+                        }
+                    };
+
+                    self.cursor += 1;
+
+                    let expression =
+                        self.parse_primary_expression(Container::BranchBody);
+                    let continued_expression = self.continue_parsing(
+                        0,
+                        expression,
+                        Container::BranchBody,
+                    );
+
+                    self.cursor += 1;
+
+                    if let Some(closing_container) =
+                        self.tokens[self.cursor].closing()
+                    {
+                        if closing_container == Container::Guard {
+                            todo!("new branch");
+                        } else if closing_container == container {
+                            branches.push(Branch {
+                                match_expression,
+                                guard_expression,
+                                body: continued_expression,
+                            });
+                            break;
+                        }
+                    } else {
+                        todo!("unreachable state");
+                    }
+                }
+                Expression::Branched(branches)
             }
             _ => {
                 let primary_expression =
@@ -267,6 +329,8 @@ impl<'a> Parser<'a> {
                 if container_closing == container {
                     // closing expression
                     return last_expression;
+                } else if container == Container::BranchBody {
+                    return last_expression;
                 } else {
                     // Got unexpected closing token
                     todo!("illegal closing");
@@ -283,25 +347,23 @@ impl<'a> Parser<'a> {
             if let Some(opening_container) = operator_token.opening() {
                 // Found opening, it is a call expressions
                 self.cursor += 2; // Skip opening and start parsing complex expression
-                // let first_call_expr =
-                //     self.parse_primary_expression(opening_container);
-                // let fields_expression = self.continue_parsing(
-                //     0,
-                //     first_call_expr,
-                //     opening_container,
-                // );
+
+                // This might not need to be a complex expression
                 let fields_expression =
                     self.parse_complex_expression(opening_container);
 
                 let fields = if let Expression::List(_, vec) = fields_expression
                 {
+                    // if fields are already an expression list return them
                     vec
                 } else {
+                    // otherwise crreate vector
                     vec![fields_expression]
                 };
 
                 self.cursor += 1;
 
+                // Update last expression as a call expression and continue parsing
                 last_expression = Expression::Call(
                     opening_container,
                     Box::new(last_expression),
@@ -309,6 +371,8 @@ impl<'a> Parser<'a> {
                 );
                 continue;
             }
+
+            // if not call expression
 
             self.cursor += 2;
 
@@ -347,9 +411,6 @@ impl<'a> Parser<'a> {
                         "tagged expression requires lhs to be an identifier"
                     ),
                 }
-            } else if operator_token == Token::KwordIf
-                && container == Container::Bar
-            {
             } else if let Some(operator) = operator_token.operator() {
                 if operator.is_binary() {
                     last_expression = Expression::Binary(
@@ -362,8 +423,6 @@ impl<'a> Parser<'a> {
                 }
             } else if operator_token == Token::Backslash {
                 todo!("qualified identifiers");
-            } else if operator_token == Token::KwordIf {
-                todo!("if guards");
             } else if operator_token == Token::Dot {
                 match next_expression {
                     Expression::Identifier(ident) => {
@@ -421,6 +480,8 @@ impl<'a> Parser<'a> {
                     if container_closing == container {
                         self.cursor -= 1;
                         Expression::Empty
+                    } else if container == Container::BranchBody {
+                        todo!("empty branch body is illegal");
                     } else {
                         todo!("Wrong closing");
                     }
@@ -754,6 +815,29 @@ mod tests {
                 ],
             )),
         );
+
+        assert_eq!(ast, reference);
+    }
+
+    #[test]
+    fn branched_expression() {
+        let source = "|condition1, condition2| expression";
+
+        let mut parser = Parser::new(source);
+
+        let ast = parser.parse();
+
+        let reference = Expression::Branched(vec![Branch {
+            match_expression: Expression::List(
+                Container::Guard,
+                vec![
+                    Expression::Identifier("condition1"),
+                    Expression::Identifier("condition2"),
+                ],
+            ),
+            guard_expression: None,
+            body: Expression::Identifier("expression"),
+        }]);
 
         assert_eq!(ast, reference);
     }
