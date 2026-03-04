@@ -139,6 +139,7 @@ impl<'a> Token<'a> {
         }
     }
 
+    /// Bar is not considered an opening container, because it has special semantics
     fn opening(&self) -> Option<Container> {
         match self {
             Token::Lparen => Some(Container::Paren),
@@ -153,6 +154,7 @@ impl<'a> Token<'a> {
             Token::Rparen => Some(Container::Paren),
             Token::Rbracket => Some(Container::Bracket),
             Token::Rbrace => Some(Container::Brace),
+            Token::Bar => Some(Container::Bar),
             Token::Eof => Some(Container::File),
             _ => None,
         }
@@ -217,7 +219,12 @@ impl<'a> Parser<'a> {
     ) -> Expression<'a> {
         match &self.tokens[self.cursor] {
             Token::Bar => {
-                todo!("parse branch expressions");
+                self.cursor += 1;
+                let expression = self.parse_primary_expression(Container::Bar);
+                let continued_expression =
+                    self.continue_parsing(0, expression, Container::Bar);
+                self.cursor += 1;
+                Expression::Branched
             }
             _ => {
                 let primary_expression =
@@ -242,12 +249,14 @@ impl<'a> Parser<'a> {
             let current_precedence = operator_token.precedence();
 
             if current_precedence == -3 {
+                // Token is newline or comments, skip
                 self.cursor += 1;
                 continue;
             }
 
             if current_precedence == -1 {
-                panic!("syntax error");
+                // expecting operator token got something else
+                todo!("handle syntax error properly");
             }
 
             if let Some(container_closing) = operator_token.closing() {
@@ -259,25 +268,30 @@ impl<'a> Parser<'a> {
                     // closing expression
                     return last_expression;
                 } else {
+                    // Got unexpected closing token
                     todo!("illegal closing");
                 }
             }
 
             println!("precc {current_precedence} {last_precedence}");
             if current_precedence < last_precedence {
+                // past expression chain had higher precedence
+                // stop parsing and return expression
                 return last_expression;
             }
 
-            // Call expressions
             if let Some(opening_container) = operator_token.opening() {
-                self.cursor += 2;
-                let first_call_expr =
-                    self.parse_primary_expression(opening_container);
-                let fields_expression = self.continue_parsing(
-                    0,
-                    first_call_expr,
-                    opening_container,
-                );
+                // Found opening, it is a call expressions
+                self.cursor += 2; // Skip opening and start parsing complex expression
+                // let first_call_expr =
+                //     self.parse_primary_expression(opening_container);
+                // let fields_expression = self.continue_parsing(
+                //     0,
+                //     first_call_expr,
+                //     opening_container,
+                // );
+                let fields_expression =
+                    self.parse_complex_expression(opening_container);
 
                 let fields = if let Expression::List(_, vec) = fields_expression
                 {
@@ -333,6 +347,9 @@ impl<'a> Parser<'a> {
                         "tagged expression requires lhs to be an identifier"
                     ),
                 }
+            } else if operator_token == Token::KwordIf
+                && container == Container::Bar
+            {
             } else if let Some(operator) = operator_token.operator() {
                 if operator.is_binary() {
                     last_expression = Expression::Binary(
