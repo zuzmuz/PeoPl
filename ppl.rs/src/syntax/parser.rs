@@ -248,7 +248,18 @@ impl<'a> Parser<'a> {
                     ) = match self.tokens[self.cursor] {
                         Token::Bar => (continued_expression, None),
                         Token::KwordIf => {
-                            todo!("parse the guard expression");
+                            self.cursor += 1;
+
+                            let expression =
+                                self.parse_primary_expression(Container::Guard);
+                            let guard_expression = self.continue_parsing(
+                                0,
+                                expression,
+                                Container::Guard,
+                            );
+                            self.cursor += 1;
+
+                            (continued_expression, Some(guard_expression))
                         }
                         _ => {
                             todo!(
@@ -838,6 +849,49 @@ mod tests {
             guard_expression: None,
             body: Expression::Identifier("expression"),
         }]);
+
+        assert_eq!(ast, reference);
+    }
+
+    #[test]
+    fn complex_branched() {
+        let source = "
+            a: {
+                |x: a if a = 0| do_something()
+                |_| do_nothing
+            }
+        ";
+
+        let mut parser = Parser::new(source);
+
+        let ast = parser.parse();
+
+        let reference = Expression::Tagged(
+            Identifier { id: "a" },
+            Box::new(Expression::Branched(vec![
+                Branch {
+                    match_expression: Expression::Tagged(
+                        Identifier { id: "x" },
+                        Box::new(Expression::Identifier("a")),
+                    ),
+                    guard_expression: Some(Expression::Binary(
+                        Operator::Eq,
+                        Box::new(Expression::Identifier("a")),
+                        Box::new(Expression::IntLiteral(0)),
+                    )),
+                    body: Expression::Call(
+                        Container::Paren,
+                        Box::new(Expression::Identifier("do_something")),
+                        vec![Expression::Empty],
+                    ),
+                },
+                Branch {
+                    match_expression: Expression::Special,
+                    guard_expression: None,
+                    body: Expression::Identifier("do_nothing"),
+                },
+            ])),
+        );
 
         assert_eq!(ast, reference);
     }
