@@ -203,8 +203,7 @@ pub enum Expression<'a> {
     Tagged(Identifier<'a>, Box<Expression<'a>>),
 
     Branched(Vec<Branch<'a>>),
-    Pipe(Box<Expression<'a>>, Box<Expression<'a>>),
-    //
+
     Empty,
     // Invalid,
 }
@@ -224,23 +223,51 @@ impl<'a> Parser<'a> {
         self.parse_complex_expression(Container::File)
     }
 
+    fn skip_to_next_valid_token(&mut self) {
+        while self.tokens[self.cursor] == Token::NewLine
+            || self.tokens[self.cursor] == Token::Comment
+        {
+            self.cursor += 1;
+        }
+    }
+
+    fn advance(&mut self) {
+        println!("advancing from {:?}: {:?}", self.cursor, self.tokens[self.cursor]);
+        self.cursor += 1;
+        self.skip_to_next_valid_token();
+        println!("advancing to {:?}: {:?}", self.cursor, self.tokens[self.cursor]);
+    }
+
+    fn peek_next_token(&self) -> Token<'a> {
+        let mut current_cursor = self.cursor;
+
+        current_cursor += 1;
+        while self.tokens[current_cursor] == Token::NewLine
+            || self.tokens[current_cursor] == Token::Comment
+        {
+            current_cursor += 1;
+        }
+        self.tokens[current_cursor]
+    }
+
     /// : Branched
     /// | PrimaryExpression
     fn parse_complex_expression(
         &mut self,
         container: Container,
     ) -> Expression<'a> {
+        self.skip_to_next_valid_token();
         match &self.tokens[self.cursor] {
             Token::Bar => {
                 let mut branches: Vec<Branch<'a>> = Vec::new();
 
                 loop {
-                    self.cursor += 1;
+                    self.advance();
                     let expression =
                         self.parse_primary_expression(Container::Guard);
                     let continued_expression =
                         self.continue_parsing(0, expression, Container::Guard);
-                    self.cursor += 1;
+                    self.advance();
 
                     let (match_expression, guard_expression): (
                         Expression<'a>,
@@ -248,7 +275,7 @@ impl<'a> Parser<'a> {
                     ) = match self.tokens[self.cursor] {
                         Token::Bar => (continued_expression, None),
                         Token::KwordIf => {
-                            self.cursor += 1;
+                            self.advance();
 
                             let expression =
                                 self.parse_primary_expression(Container::Guard);
@@ -257,7 +284,7 @@ impl<'a> Parser<'a> {
                                 expression,
                                 Container::Guard,
                             );
-                            self.cursor += 1;
+                            self.advance();
 
                             (continued_expression, Some(guard_expression))
                         }
@@ -268,7 +295,7 @@ impl<'a> Parser<'a> {
                         }
                     };
 
-                    self.cursor += 1;
+                    self.advance();
 
                     let expression =
                         self.parse_primary_expression(Container::BranchBody);
@@ -278,19 +305,19 @@ impl<'a> Parser<'a> {
                         Container::BranchBody,
                     );
 
-                    self.cursor += 1;
 
                     if let Some(closing_container) =
-                        self.tokens[self.cursor].closing()
+                        self.peek_next_token().closing()
                     {
+                        branches.push(Branch {
+                            match_expression,
+                            guard_expression,
+                            body: continued_expression,
+                        });
                         if closing_container == Container::Guard {
-                            todo!("new branch");
+                            self.advance();
+                            continue;
                         } else if closing_container == container {
-                            branches.push(Branch {
-                                match_expression,
-                                guard_expression,
-                                body: continued_expression,
-                            });
                             break;
                         }
                     } else {
@@ -316,16 +343,10 @@ impl<'a> Parser<'a> {
         let mut last_expression = last_expression;
         loop {
             println!("Last {:#?}", last_expression);
-            let operator_token = self.tokens[self.cursor + 1];
+            let operator_token = self.peek_next_token();
             println!("Current token {:?}", operator_token);
 
             let current_precedence = operator_token.precedence();
-
-            if current_precedence == -3 {
-                // Token is newline or comments, skip
-                self.cursor += 1;
-                continue;
-            }
 
             if current_precedence == -1 {
                 // expecting operator token got something else
@@ -357,8 +378,10 @@ impl<'a> Parser<'a> {
 
             if let Some(opening_container) = operator_token.opening() {
                 // Found opening, it is a call expressions
-                self.cursor += 2; // Skip opening and start parsing complex expression
+                // self.cursor += 2; // Skip opening and start parsing complex expression
 
+                self.advance();
+                self.advance();
                 // This might not need to be a complex expression
                 let fields_expression =
                     self.parse_complex_expression(opening_container);
@@ -372,7 +395,7 @@ impl<'a> Parser<'a> {
                     vec![fields_expression]
                 };
 
-                self.cursor += 1;
+                self.advance();
 
                 // Update last expression as a call expression and continue parsing
                 last_expression = Expression::Call(
@@ -385,10 +408,12 @@ impl<'a> Parser<'a> {
 
             // if not call expression
 
-            self.cursor += 2;
+            self.advance();
+            self.advance();
 
             let mut next_expression = self.parse_primary_expression(container);
 
+            // let next_precedence = self.peek_next_token().precedence();
             let next_precedence = self.tokens[self.cursor + 1].precedence();
 
             if current_precedence < next_precedence {
@@ -482,10 +507,10 @@ impl<'a> Parser<'a> {
             }
             &token => {
                 if let Some(container_opening) = token.opening() {
-                    self.cursor += 1;
+                    self.advance();
                     let inside_expression =
                         self.parse_complex_expression(container_opening);
-                    self.cursor += 1;
+                    self.advance();
                     inside_expression
                 } else if let Some(container_closing) = token.closing() {
                     if container_closing == container {
@@ -497,7 +522,7 @@ impl<'a> Parser<'a> {
                         todo!("Wrong closing");
                     }
                 } else if let Some(operator) = token.operator() {
-                    self.cursor += 1;
+                    self.advance();
                     let expression = self.parse_primary_expression(container);
                     let continued_expression = self.continue_parsing(
                         token.precedence() + 1,
@@ -506,7 +531,7 @@ impl<'a> Parser<'a> {
                     );
                     Expression::Unary(operator, Box::new(continued_expression))
                 } else if Token::NewLine == token || Token::Comment == token {
-                    self.cursor += 1;
+                    self.advance();
                     self.parse_primary_expression(container)
                 } else {
                     todo!("check if more primary expression types");
@@ -857,7 +882,7 @@ mod tests {
     fn complex_branched() {
         let source = "
             a: {
-                |x: a if a = 0| do_something()
+                |x: @a if a = 0| do_something()
                 |_| do_nothing
             }
         ";
@@ -872,7 +897,7 @@ mod tests {
                 Branch {
                     match_expression: Expression::Tagged(
                         Identifier { id: "x" },
-                        Box::new(Expression::Identifier("a")),
+                        Box::new(Expression::Binding("a")),
                     ),
                     guard_expression: Some(Expression::Binary(
                         Operator::Eq,
