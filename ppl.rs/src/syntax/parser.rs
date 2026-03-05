@@ -24,8 +24,6 @@ pub enum Operator {
 
     Not,
     Bnot,
-
-    If,
 }
 
 impl Operator {
@@ -102,15 +100,15 @@ impl<'a> Token<'a> {
             | Token::ImaginaryLiteral(_)
             | Token::StringLiteral(_)
             | Token::Special
+            | Token::KwordFn
+            | Token::Arrow
             | Token::Identifier(_)
             | Token::Positional(_)
             | Token::Binding(_) => -1,
 
             Token::Propagate => todo!(),
             Token::Appostrophe => todo!(),
-            Token::Arrow => todo!(),
             Token::KwordComp => todo!(),
-            Token::KwordFn => todo!(),
 
             Token::NewLine | Token::Comment => -3,
         }
@@ -139,7 +137,6 @@ impl<'a> Token<'a> {
             Token::KwordNot => Some(Operator::Not),
             Token::Bnot => Some(Operator::Bnot),
             Token::Pipe => Some(Operator::Pipe),
-            Token::KwordIf => Some(Operator::If),
             _ => None,
         }
     }
@@ -204,6 +201,8 @@ pub enum Expression<'a> {
 
     Branched(Vec<Branch<'a>>),
 
+    Function(Vec<Expression<'a>>, Box<Expression<'a>>),
+
     Empty,
     // Invalid,
 }
@@ -224,27 +223,31 @@ impl<'a> Parser<'a> {
     }
 
     fn skip_to_next_valid_token(&mut self) {
-        while self.tokens[self.cursor] == Token::NewLine
-            || self.tokens[self.cursor] == Token::Comment
-        {
+        while self.tokens[self.cursor].precedence() == -3 {
             self.cursor += 1;
         }
     }
 
     fn advance(&mut self) {
-        println!("advancing from {:?}: {:?}", self.cursor, self.tokens[self.cursor]);
+        println!(
+            "advancing from {:?}: {:?}",
+            self.cursor, self.tokens[self.cursor]
+        );
+
         self.cursor += 1;
         self.skip_to_next_valid_token();
-        println!("advancing to {:?}: {:?}", self.cursor, self.tokens[self.cursor]);
+
+        println!(
+            "advancing to {:?}: {:?}",
+            self.cursor, self.tokens[self.cursor]
+        );
     }
 
     fn peek_next_token(&self) -> Token<'a> {
         let mut current_cursor = self.cursor;
 
         current_cursor += 1;
-        while self.tokens[current_cursor] == Token::NewLine
-            || self.tokens[current_cursor] == Token::Comment
-        {
+        while self.tokens[self.cursor].precedence() == -3 {
             current_cursor += 1;
         }
         self.tokens[current_cursor]
@@ -304,7 +307,6 @@ impl<'a> Parser<'a> {
                         expression,
                         Container::BranchBody,
                     );
-
 
                     if let Some(closing_container) =
                         self.peek_next_token().closing()
@@ -501,9 +503,34 @@ impl<'a> Parser<'a> {
             Token::Binding(value) => Expression::Binding(value),
             Token::Special => Expression::Special,
             Token::Identifier(value) => Expression::Identifier(value),
-            Token::KwordIf => Expression::Empty,
+            Token::KwordIf => {
+                todo!("handle empty match expression");
+            }
             Token::Bar => {
                 todo!("handle error no bars are allowed");
+            }
+            Token::KwordFn => {
+                self.advance();
+                if self.tokens[self.cursor] != Token::Lparen {
+                    todo!("fn should have parent opening")
+                } else {
+                    let function_params =
+                        self.parse_primary_expression(container);
+                    self.advance();
+                    if self.tokens[self.cursor] == Token::Arrow {
+                        self.advance();
+                        let expression =
+                            self.parse_primary_expression(container);
+                        let continued_expression =
+                            self.continue_parsing(0, expression, container);
+                        Expression::Function(
+                            vec![function_params],
+                            Box::new(continued_expression),
+                        )
+                    } else {
+                        todo!("need arrow for function")
+                    }
+                }
             }
             &token => {
                 if let Some(container_opening) = token.opening() {
@@ -916,6 +943,36 @@ mod tests {
                     body: Expression::Identifier("do_nothing"),
                 },
             ])),
+        );
+
+        assert_eq!(ast, reference);
+    }
+
+    #[test]
+    fn function_definition() {
+        let source = "
+            factorial: fn (i: int) -> int {
+                3
+            }
+        ";
+
+        let mut parser = Parser::new(source);
+
+        let ast = parser.parse();
+
+        let reference = Expression::Tagged(
+            Identifier { id: "factorial" },
+            Box::new(Expression::Function(
+                vec![Expression::Tagged(
+                    Identifier { id: "i" },
+                    Box::new(Expression::Identifier("int")),
+                )],
+                Box::new(Expression::Call(
+                    Container::Brace,
+                    Box::new(Expression::Identifier("int")),
+                    vec![Expression::IntLiteral(3)],
+                )),
+            )),
         );
 
         assert_eq!(ast, reference);

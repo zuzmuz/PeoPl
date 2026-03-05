@@ -9,6 +9,7 @@ Math: 3.14 // a qualified floating point value
 
 name: "zuzmuz" // a string value
 
+sdf: 4 + |xsd: 123| 3 - 2
 trueValue: true // a boolean value
 falseValue: false // another boolean value
 
@@ -20,7 +21,7 @@ main: fn [] -> Int {
 }
 
 // functions can take parameters
-Math: fn [a: Int, b: Int] -> Int {
+Math: fn (a: Int, b: Int) -> Int {
     a * b
 }
 

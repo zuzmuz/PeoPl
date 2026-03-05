@@ -1,4 +1,4 @@
-use logos::Logos;
+use logos::{Logos, skip};
 
 #[derive(Logos, Clone, Copy, Debug, PartialEq)]
 #[logos(skip r"[ \t]+")]
@@ -133,7 +133,7 @@ pub enum Token<'a> {
     #[regex(r"//[.]*", priority = 20)]
     Comment,
 
-    #[regex("\n|\r\n|\x0C")]
+    #[regex("\n|\r\n|\x0C", skip)]
     NewLine,
 
     Eof,
