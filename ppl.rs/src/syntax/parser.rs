@@ -41,7 +41,7 @@ pub enum Container {
     Bracket,
     Brace,
     Guard,
-    BranchBody, // FIXME: not sure about this
+    BranchBody,
     File,
 }
 
@@ -165,9 +165,7 @@ impl<'a> Token<'a> {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Identifier<'a> {
-    id: &'a str,
-}
+pub struct Identifier<'a>(&'a str);
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Branch<'a> {
@@ -441,7 +439,7 @@ impl<'a> Parser<'a> {
                 match last_expression {
                     Expression::Identifier(ident) => {
                         last_expression = Expression::Tagged(
-                            Identifier { id: ident },
+                            Identifier(ident),
                             Box::new(next_expression),
                         )
                     }
@@ -466,7 +464,7 @@ impl<'a> Parser<'a> {
                     Expression::Identifier(ident) => {
                         last_expression = Expression::Access(
                             Box::new(last_expression),
-                            Identifier { id: ident },
+                            Identifier(ident),
                         );
                     }
                     _ => todo!(
@@ -568,6 +566,14 @@ impl<'a> Parser<'a> {
     }
 }
 
+enum Connector {
+    Last,
+    NotLast,
+}
+
+// impl Display for Connector {
+// }
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -601,7 +607,7 @@ mod tests {
         let mut parser = Parser::new(source);
         let ast = parser.parse();
         let reference = Expression::Tagged(
-            Identifier { id: "c" },
+            Identifier("c"),
             Box::new(Expression::Binary(
                 Operator::And,
                 Box::new(Expression::Binary(
@@ -642,7 +648,7 @@ mod tests {
 
         let ast = parser.parse();
         let reference = Expression::Tagged(
-            Identifier { id: "v" },
+            Identifier("v"),
             Box::new(Expression::Binary(
                 Operator::Plus,
                 Box::new(Expression::Unary(
@@ -653,7 +659,7 @@ mod tests {
                             Operator::Exponent,
                             Box::new(Expression::Access(
                                 Box::new(Expression::Identifier("s")),
-                                Identifier { id: "a" },
+                                Identifier("a"),
                             )),
                             Box::new(Expression::IntLiteral(2)),
                         )),
@@ -662,7 +668,7 @@ mod tests {
                 )),
                 Box::new(Expression::Access(
                     Box::new(Expression::Identifier("s")),
-                    Identifier { id: "b" },
+                    Identifier("b"),
                 )),
             )),
         );
@@ -725,17 +731,17 @@ mod tests {
             Container::File,
             vec![
                 Expression::Tagged(
-                    Identifier { id: "a" },
+                    Identifier("a"),
                     Box::new(Expression::Call(
                         Container::Brace,
                         Box::new(Expression::Identifier("struct")),
                         vec![
                             Expression::Tagged(
-                                Identifier { id: "b" },
+                                Identifier("b"),
                                 Box::new(Expression::Identifier("Int")),
                             ),
                             Expression::Tagged(
-                                Identifier { id: "c" },
+                                Identifier("c"),
                                 Box::new(Expression::Identifier("Int")),
                             ),
                             Expression::Empty,
@@ -743,33 +749,33 @@ mod tests {
                     )),
                 ),
                 Expression::Tagged(
-                    Identifier { id: "x" },
+                    Identifier("x"),
                     Box::new(Expression::Call(
                         Container::Bracket,
                         Box::new(Expression::Identifier("a")),
                         vec![
                             Expression::Tagged(
-                                Identifier { id: "b" },
+                                Identifier("b"),
                                 Box::new(Expression::IntLiteral(1)),
                             ),
                             Expression::Tagged(
-                                Identifier { id: "c" },
+                                Identifier("c"),
                                 Box::new(Expression::IntLiteral(2)),
                             ),
                         ],
                     )),
                 ),
                 Expression::Tagged(
-                    Identifier { id: "y" },
+                    Identifier("y"),
                     Box::new(Expression::Binary(
                         Operator::Plus,
                         Box::new(Expression::Access(
                             Box::new(Expression::Identifier("a")),
-                            Identifier { id: "b" },
+                            Identifier("b"),
                         )),
                         Box::new(Expression::Access(
                             Box::new(Expression::Identifier("a")),
-                            Identifier { id: "c" },
+                            Identifier("c"),
                         )),
                     )),
                 ),
@@ -796,10 +802,10 @@ mod tests {
                     Box::new(Expression::IntLiteral(3)),
                     Box::new(Expression::IntLiteral(2)),
                 )),
-                Identifier { id: "to_float" },
+                Identifier("to_float"),
             )),
             vec![Expression::Tagged(
-                Identifier { id: "x" },
+                Identifier("x"),
                 Box::new(Expression::Identifier("a")),
             )],
         );
@@ -871,7 +877,7 @@ mod tests {
                 Box::new(Expression::Identifier("third")),
                 vec![
                     Expression::Tagged(
-                        Identifier { id: "x" },
+                        Identifier("x"),
                         Box::new(Expression::IntLiteral(3)),
                     ),
                     Expression::Empty,
@@ -919,11 +925,11 @@ mod tests {
         let ast = parser.parse();
 
         let reference = Expression::Tagged(
-            Identifier { id: "a" },
+            Identifier("a"),
             Box::new(Expression::Branched(vec![
                 Branch {
                     match_expression: Expression::Tagged(
-                        Identifier { id: "x" },
+                        Identifier("x"),
                         Box::new(Expression::Binding("a")),
                     ),
                     guard_expression: Some(Expression::Binary(
@@ -961,10 +967,10 @@ mod tests {
         let ast = parser.parse();
 
         let reference = Expression::Tagged(
-            Identifier { id: "factorial" },
+            Identifier("factorial"),
             Box::new(Expression::Function(
                 vec![Expression::Tagged(
-                    Identifier { id: "i" },
+                    Identifier("i"),
                     Box::new(Expression::Identifier("int")),
                 )],
                 Box::new(Expression::Call(
