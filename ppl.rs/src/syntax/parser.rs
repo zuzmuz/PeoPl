@@ -1,3 +1,5 @@
+use std::fmt::format;
+
 use crate::syntax::tokenizer::{self, Token};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -571,8 +573,97 @@ enum Connector {
     NotLast,
 }
 
-// impl Display for Connector {
-// }
+impl Connector {
+    // TODO: use proper str instead of String
+    fn display(&self) -> String {
+        match self {
+            Self::Last => "└─ ".to_string(),
+            Self::NotLast => "├─ ".to_string(),
+        }
+    }
+
+    fn child_prefix(&self) -> String {
+        match self {
+            Self::Last => "   ".to_string(),
+            Self::NotLast => "│  ".to_string(),
+        }
+    }
+}
+
+trait ASTDisplay {
+    fn display_ast(
+        &self,
+        prefix: String,
+        connector: Connector,
+        extra: String,
+        descriptions: &mut Vec<String>,
+    );
+}
+
+impl<'a> ASTDisplay for Expression<'a> {
+    fn display_ast(
+        &self,
+        prefix: String,
+        connector: Connector,
+        extra: String,
+        descriptions: &mut Vec<String>,
+    ) {
+        let child_prefix = format!("{}{}", prefix, connector.child_prefix());
+        match self {
+            Expression::IntLiteral(_) => todo!(),
+            Expression::FloatLiteral(_) => todo!(),
+            Expression::ImaginaryLiteral(_) => todo!(),
+            Expression::StringLiteral(value) => {
+                descriptions.push(format!(
+                    "{}{}{}{}: {}",
+                    prefix,
+                    connector.display(),
+                    extra,
+                    "Literal",
+                    value
+                ));
+                // "\(prefix)\(connector)\(extra)\("Literal".colored(.cyan)) \(self.location): \(value.debugDescription.colored(.green))"
+                // )
+            }
+            Expression::Identifier(_) => todo!(),
+            Expression::Special => todo!(),
+            Expression::Positional(_) => todo!(),
+            Expression::Binding(_) => todo!(),
+            Expression::Unary(operator, expression) => todo!(),
+            Expression::Binary(operator, expression, expression1) => todo!(),
+            Expression::List(container, expressions) => {
+                descriptions.push(format!(
+                    "{}{}Arguments",
+                    child_prefix,
+                    Connector::Last.display()
+                ));
+                for (index, expression) in expressions.iter().enumerate() {
+                    let is_last_arg = index == expressions.len() - 1;
+                    expression.display_ast(
+                        format!(
+                            "{}{}",
+                            child_prefix,
+                            Connector::Last.child_prefix()
+                        ),
+                        if is_last_arg {
+                            Connector::Last
+                        } else {
+                            Connector::NotLast
+                        },
+                        format!("#{}", index),
+                        descriptions,
+                    );
+                }
+            }
+            Expression::Call(container, prefix, fields) => todo!(),
+            Expression::Access(expression, identifier) => todo!(),
+            Expression::Tagged(identifier, expression) => todo!(),
+            Expression::Branched(branches) => todo!(),
+            Expression::Function(args, body) => todo!(),
+            Expression::Empty => todo!(),
+        }
+    }
+}
 
 #[cfg(test)]
 mod tests {
