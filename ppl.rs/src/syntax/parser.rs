@@ -1,6 +1,6 @@
-use std::fmt::format;
-
 use crate::syntax::tokenizer::{self, Token};
+use colored::{self, ColoredString, Colorize};
+use log;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Operator {
@@ -229,17 +229,19 @@ impl<'a> Parser<'a> {
     }
 
     fn advance(&mut self) {
-        println!(
+        log::debug!(
             "advancing from {:?}: {:?}",
-            self.cursor, self.tokens[self.cursor]
+            self.cursor,
+            self.tokens[self.cursor]
         );
 
         self.cursor += 1;
         self.skip_to_next_valid_token();
 
-        println!(
+        log::debug!(
             "advancing to {:?}: {:?}",
-            self.cursor, self.tokens[self.cursor]
+            self.cursor,
+            self.tokens[self.cursor]
         );
     }
 
@@ -344,9 +346,9 @@ impl<'a> Parser<'a> {
     ) -> Expression<'a> {
         let mut last_expression = last_expression;
         loop {
-            println!("Last {:#?}", last_expression);
+            log::debug!("Last {:#?}", last_expression);
             let operator_token = self.peek_next_token();
-            println!("Current token {:?}", operator_token);
+            log::debug!("Current token {:?}", operator_token);
 
             let current_precedence = operator_token.precedence();
 
@@ -356,9 +358,11 @@ impl<'a> Parser<'a> {
             }
 
             if let Some(container_closing) = operator_token.closing() {
-                println!(
+                log::debug!(
                     "closing the token {:?}, from {:?} container {:?}",
-                    container_closing, operator_token, container,
+                    container_closing,
+                    operator_token,
+                    container,
                 );
                 if container_closing == container {
                     // closing expression
@@ -371,7 +375,7 @@ impl<'a> Parser<'a> {
                 }
             }
 
-            println!("precc {current_precedence} {last_precedence}");
+            log::debug!("precc {current_precedence} {last_precedence}");
             if current_precedence < last_precedence {
                 // past expression chain had higher precedence
                 // stop parsing and return expression
@@ -488,7 +492,7 @@ impl<'a> Parser<'a> {
         &mut self,
         container: Container,
     ) -> Expression<'a> {
-        println!("Parsing Literal {:?}", self.tokens[self.cursor]);
+        log::debug!("Parsing Literal {:?}", self.tokens[self.cursor]);
         match &self.tokens[self.cursor] {
             Token::DecLiteral(value)
             | Token::HexLiteral(value)
@@ -568,29 +572,29 @@ impl<'a> Parser<'a> {
     }
 }
 
-enum Connector {
+pub enum Connector {
     Last,
     NotLast,
 }
 
 impl Connector {
     // TODO: use proper str instead of String
-    fn display(&self) -> String {
+    fn display(&self) -> ColoredString {
         match self {
-            Self::Last => "└─ ".to_string(),
-            Self::NotLast => "├─ ".to_string(),
+            Self::Last => "└─ ".bright_black(),
+            Self::NotLast => "├─ ".bright_black(),
         }
     }
 
-    fn child_prefix(&self) -> String {
+    fn child_prefix(&self) -> ColoredString {
         match self {
-            Self::Last => "   ".to_string(),
-            Self::NotLast => "│  ".to_string(),
+            Self::Last => "   ".bright_black(),
+            Self::NotLast => "│  ".bright_black(),
         }
     }
 }
 
-trait ASTDisplay {
+pub trait ASTDisplay {
     fn display_ast(
         &self,
         prefix: String,
@@ -610,20 +614,45 @@ impl<'a> ASTDisplay for Expression<'a> {
     ) {
         let child_prefix = format!("{}{}", prefix, connector.child_prefix());
         match self {
-            Expression::IntLiteral(_) => todo!(),
-            Expression::FloatLiteral(_) => todo!(),
-            Expression::ImaginaryLiteral(_) => todo!(),
-            Expression::StringLiteral(value) => {
+            Expression::IntLiteral(value) => {
                 descriptions.push(format!(
-                    "{}{}{}{}: {}",
+                    "{}{}{} {}: {}",
                     prefix,
                     connector.display(),
                     extra,
-                    "Literal",
-                    value
+                    "Int".yellow(),
+                    value.to_string().green()
                 ));
-                // "\(prefix)\(connector)\(extra)\("Literal".colored(.cyan)) \(self.location): \(value.debugDescription.colored(.green))"
-                // )
+            }
+            Expression::FloatLiteral(value) => {
+                descriptions.push(format!(
+                    "{}{}{} {}: {}",
+                    prefix,
+                    connector.display(),
+                    extra,
+                    "Float".yellow(),
+                    value.to_string().green()
+                ));
+            }
+            Expression::ImaginaryLiteral(value) => {
+                descriptions.push(format!(
+                    "{}{}{} {}: {}",
+                    prefix,
+                    connector.display(),
+                    extra,
+                    "Imaginary".yellow(),
+                    format!("{value}i").green()
+                ));
+            }
+            Expression::StringLiteral(value) => {
+                descriptions.push(format!(
+                    "{}{}{} {}: {}",
+                    prefix,
+                    connector.display(),
+                    extra,
+                    "String".yellow(),
+                    value.green()
+                ));
             }
             Expression::Identifier(_) => todo!(),
             Expression::Special => todo!(),
@@ -633,7 +662,7 @@ impl<'a> ASTDisplay for Expression<'a> {
             Expression::Binary(operator, expression, expression1) => todo!(),
             Expression::List(container, expressions) => {
                 descriptions.push(format!(
-                    "{}{}Arguments",
+                    "{}{}List",
                     child_prefix,
                     Connector::Last.display()
                 ));
