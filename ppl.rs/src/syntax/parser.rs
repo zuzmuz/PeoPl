@@ -657,7 +657,7 @@ impl<'a> ASTDisplay for Expression<'a> {
         match self {
             Expression::IntLiteral(value) => {
                 descriptions.push(format!(
-                    "{}{}{} {}: {}",
+                    "{}{}{}{}: {}",
                     prefix,
                     connector.display(),
                     extra.red(),
@@ -667,7 +667,7 @@ impl<'a> ASTDisplay for Expression<'a> {
             }
             Expression::FloatLiteral(value) => {
                 descriptions.push(format!(
-                    "{}{}{} {}: {}",
+                    "{}{}{}{}: {}",
                     prefix,
                     connector.display(),
                     extra.red(),
@@ -677,7 +677,7 @@ impl<'a> ASTDisplay for Expression<'a> {
             }
             Expression::ImaginaryLiteral(value) => {
                 descriptions.push(format!(
-                    "{}{}{} {}: {}",
+                    "{}{}{}{}: {}",
                     prefix,
                     connector.display(),
                     extra.red(),
@@ -687,7 +687,7 @@ impl<'a> ASTDisplay for Expression<'a> {
             }
             Expression::StringLiteral(value) => {
                 descriptions.push(format!(
-                    "{}{}{} {}: {}",
+                    "{}{}{}{}: {}",
                     prefix,
                     connector.display(),
                     extra.red(),
@@ -697,7 +697,7 @@ impl<'a> ASTDisplay for Expression<'a> {
             }
             Expression::Identifier(value) => {
                 descriptions.push(format!(
-                    "{}{}{} {}: {}",
+                    "{}{}{}{}: {}",
                     prefix,
                     connector.display(),
                     extra.red(),
@@ -718,15 +718,15 @@ impl<'a> ASTDisplay for Expression<'a> {
                 ));
 
                 expression.display_ast(
-                    format!("{}{}", prefix, connector.child_prefix()),
+                    child_prefix,
                     Connector::Last,
-                    "expr:".to_string(),
+                    "expr: ".to_string(),
                     descriptions,
                 )
             }
             Expression::Binary(operator, lhs, rhs) => {
                 descriptions.push(format!(
-                    "{}{}{} {}",
+                    "{}{}{}{}",
                     prefix,
                     connector.display(),
                     extra.red(),
@@ -734,13 +734,13 @@ impl<'a> ASTDisplay for Expression<'a> {
                 ));
 
                 lhs.display_ast(
-                    format!("{}{}", prefix, connector.child_prefix()),
-                    Connector::Last,
+                    child_prefix.clone(),
+                    Connector::NotLast,
                     "lhs:".to_string(),
                     descriptions,
                 );
                 rhs.display_ast(
-                    format!("{}{}", prefix, connector.child_prefix()),
+                    child_prefix,
                     Connector::Last,
                     "rhs:".to_string(),
                     descriptions,
@@ -748,38 +748,71 @@ impl<'a> ASTDisplay for Expression<'a> {
             }
             Expression::List(container, expressions) => {
                 descriptions.push(format!(
-                    "{}{}{} {}",
-                    child_prefix,
+                    "{}{}{}{} {}",
+                    prefix,
                     Connector::Last.display(),
+                    extra.red(),
                     "List -".yellow(),
                     container.to_string().blue()
                 ));
                 for (index, expression) in expressions.iter().enumerate() {
                     let is_last_arg = index == expressions.len() - 1;
                     expression.display_ast(
-                        format!(
-                            "{}{}",
-                            child_prefix,
-                            Connector::Last.child_prefix()
-                        ),
+                        child_prefix.clone(),
                         if is_last_arg {
                             Connector::Last
                         } else {
                             Connector::NotLast
                         },
-                        format!("#{}", index),
+                        format!("#{} ", index),
                         descriptions,
                     );
                 }
             }
-            Expression::Call(container, prefix, fields) => {
+            Expression::Call(container, prefix_expr, fields) => {
+                descriptions.push(format!(
+                    "{}{}{}{} {}",
+                    prefix,
+                    Connector::Last.display(),
+                    extra.red(),
+                    "Call -".cyan(),
+                    container.to_string().blue()
+                ));
 
+                prefix_expr.display_ast(
+                    child_prefix.clone(),
+                    Connector::NotLast,
+                    "prefix:".to_string(),
+                    descriptions,
+                );
+
+                for (index, expression) in fields.iter().enumerate() {
+                    let is_last_arg = index == fields.len() - 1;
+                    expression.display_ast(
+                        child_prefix.clone(),
+                        if is_last_arg {
+                            Connector::Last
+                        } else {
+                            Connector::NotLast
+                        },
+                        format!("#{} ", index),
+                        descriptions,
+                    );
+                }
             }
             Expression::Access(expression, identifier) => todo!(),
             Expression::Tagged(identifier, expression) => todo!(),
             Expression::Branched(branches) => todo!(),
             Expression::Function(args, body) => todo!(),
-            Expression::Empty => todo!(),
+            Expression::Empty => {
+                descriptions.push(format!(
+                    "{}{}{} {}",
+                    prefix,
+                    connector.display(),
+                    extra.red(),
+                    "Empty".purple(),
+                ));
+            }
         }
     }
 }
