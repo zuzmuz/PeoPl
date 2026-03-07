@@ -144,9 +144,9 @@ impl<'a> Token<'a> {
             | Token::StringLiteral(_)
             | Token::Special
             | Token::KwordFn
-            | Token::Arrow
             | Token::Identifier(_)
             | Token::Positional(_)
+            | Token::Arrow
             | Token::Binding(_) => -1,
 
             Token::Propagate => todo!(),
@@ -567,7 +567,8 @@ impl<'a> Parser<'a> {
                         let expression =
                             self.parse_primary_expression(container);
                         let continued_expression =
-                            self.continue_parsing(0, expression, container);
+                            self.continue_parsing(3, expression, container);
+                        // 3 because we need to know when to stop parsing,
                         Expression::Function(
                             vec![function_params],
                             Box::new(continued_expression),

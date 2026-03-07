@@ -130,7 +130,7 @@ pub enum Token<'a> {
     #[regex(r"\$[\p{Alphabetic}0-9_]+", |lex| &lex.slice()[1..])]
     Positional(&'a str), // $
 
-    #[regex(r"//[.]*", priority = 20)]
+    #[regex(r"//.*", allow_greedy = true)]
     Comment,
 
     #[regex("\n|\r\n|\x0C", skip)]
