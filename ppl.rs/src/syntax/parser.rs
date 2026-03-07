@@ -660,7 +660,7 @@ impl<'a> ASTDisplay for Expression<'a> {
                     "{}{}{}{}: {}",
                     prefix,
                     connector.display(),
-                    extra.red(),
+                    extra.cyan(),
                     "Int".yellow(),
                     value.to_string().green()
                 ));
@@ -670,7 +670,7 @@ impl<'a> ASTDisplay for Expression<'a> {
                     "{}{}{}{}: {}",
                     prefix,
                     connector.display(),
-                    extra.red(),
+                    extra.cyan(),
                     "Float".yellow(),
                     value.to_string().green()
                 ));
@@ -680,7 +680,7 @@ impl<'a> ASTDisplay for Expression<'a> {
                     "{}{}{}{}: {}",
                     prefix,
                     connector.display(),
-                    extra.red(),
+                    extra.cyan(),
                     "Imaginary".yellow(),
                     format!("{value}i").green()
                 ));
@@ -690,7 +690,7 @@ impl<'a> ASTDisplay for Expression<'a> {
                     "{}{}{}{}: {}",
                     prefix,
                     connector.display(),
-                    extra.red(),
+                    extra.cyan(),
                     "String".yellow(),
                     value.green()
                 ));
@@ -700,7 +700,7 @@ impl<'a> ASTDisplay for Expression<'a> {
                     "{}{}{}{}: {}",
                     prefix,
                     connector.display(),
-                    extra.red(),
+                    extra.cyan(),
                     "Identifier".yellow(),
                     value.green()
                 ));
@@ -713,8 +713,8 @@ impl<'a> ASTDisplay for Expression<'a> {
                     "{}{}{} {}",
                     prefix,
                     connector.display(),
-                    extra.red(),
-                    operator.to_string().blue()
+                    extra.cyan(),
+                    operator.to_string().bright_red()
                 ));
 
                 expression.display_ast(
@@ -729,20 +729,20 @@ impl<'a> ASTDisplay for Expression<'a> {
                     "{}{}{}{}",
                     prefix,
                     connector.display(),
-                    extra.red(),
-                    operator.to_string().blue()
+                    extra.cyan(),
+                    operator.to_string().bright_red()
                 ));
 
                 lhs.display_ast(
                     child_prefix.clone(),
                     Connector::NotLast,
-                    "lhs:".to_string(),
+                    "lhs: ".to_string(),
                     descriptions,
                 );
                 rhs.display_ast(
                     child_prefix,
                     Connector::Last,
-                    "rhs:".to_string(),
+                    "rhs: ".to_string(),
                     descriptions,
                 );
             }
@@ -750,8 +750,8 @@ impl<'a> ASTDisplay for Expression<'a> {
                 descriptions.push(format!(
                     "{}{}{}{} {}",
                     prefix,
-                    Connector::Last.display(),
-                    extra.red(),
+                    connector.display(),
+                    extra.cyan(),
                     "List -".yellow(),
                     container.to_string().blue()
                 ));
@@ -773,16 +773,16 @@ impl<'a> ASTDisplay for Expression<'a> {
                 descriptions.push(format!(
                     "{}{}{}{} {}",
                     prefix,
-                    Connector::Last.display(),
-                    extra.red(),
-                    "Call -".cyan(),
+                    connector.display(),
+                    extra.cyan(),
+                    "Call -".red(),
                     container.to_string().blue()
                 ));
 
                 prefix_expr.display_ast(
                     child_prefix.clone(),
                     Connector::NotLast,
-                    "prefix:".to_string(),
+                    "prefix: ".to_string(),
                     descriptions,
                 );
 
@@ -800,16 +800,105 @@ impl<'a> ASTDisplay for Expression<'a> {
                     );
                 }
             }
-            Expression::Access(expression, identifier) => todo!(),
-            Expression::Tagged(identifier, expression) => todo!(),
+            Expression::Access(expression, identifier) => {
+                descriptions.push(format!(
+                    "{}{}{}{} {}",
+                    prefix,
+                    connector.display(),
+                    extra.cyan(),
+                    "Access -".red(),
+                    identifier.0.to_string().blue()
+                ));
+
+                expression.display_ast(
+                    child_prefix,
+                    Connector::Last,
+                    "prefix: ".to_string(),
+                    descriptions,
+                );
+            }
+            Expression::Tagged(identifier, expression) => {
+                descriptions.push(format!(
+                    "{}{}{}{} {}",
+                    prefix,
+                    connector.display(),
+                    extra.cyan(),
+                    "Tagged -".red(),
+                    identifier.0.to_string().blue()
+                ));
+
+                expression.display_ast(
+                    child_prefix,
+                    Connector::Last,
+                    "expr: ".to_string(),
+                    descriptions,
+                );
+            }
             Expression::Branched(branches) => todo!(),
-            Expression::Function(args, body) => todo!(),
+            Expression::Function(args, body) => {
+                descriptions.push(format!(
+                    "{}{}{}{}",
+                    prefix,
+                    connector.display(),
+                    extra.cyan(),
+                    "Function".red(),
+                ));
+
+                descriptions.push(format!(
+                    "{}{}{}{}",
+                    child_prefix.clone(),
+                    Connector::NotLast.display(),
+                    "".to_string(),
+                    "Arguments".bright_yellow()
+                ));
+
+                let arguments_prefix = format!(
+                    "{}{}",
+                    child_prefix,
+                    Connector::NotLast.child_prefix()
+                );
+
+                for (index, expression) in args.iter().enumerate() {
+                    let is_last_arg = index == args.len() - 1;
+                    expression.display_ast(
+                        arguments_prefix.clone(),
+                        if is_last_arg {
+                            Connector::Last
+                        } else {
+                            Connector::NotLast
+                        },
+                        format!("#{} ", index),
+                        descriptions,
+                    );
+                }
+
+                descriptions.push(format!(
+                    "{}{}{}{}",
+                    child_prefix,
+                    Connector::Last.display(),
+                    "".to_string(),
+                    "Output".bright_yellow()
+                ));
+
+                let output_prefix = format!(
+                    "{}{}",
+                    child_prefix,
+                    Connector::Last.child_prefix()
+                );
+
+                body.display_ast(
+                    output_prefix,
+                    Connector::Last,
+                    "".to_string(),
+                    descriptions,
+                );
+            }
             Expression::Empty => {
                 descriptions.push(format!(
                     "{}{}{} {}",
                     prefix,
                     connector.display(),
-                    extra.red(),
+                    extra.cyan(),
                     "Empty".purple(),
                 ));
             }
