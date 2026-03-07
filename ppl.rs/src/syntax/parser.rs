@@ -28,6 +28,34 @@ pub enum Operator {
     Bnot,
 }
 
+impl ToString for Operator {
+    fn to_string(&self) -> String {
+        match self {
+            Operator::Exponent => "^".to_string(),
+            Operator::Times => "*".to_string(),
+            Operator::By => "/".to_string(),
+            Operator::Mod => "%".to_string(),
+            Operator::Plus => "+".to_string(),
+            Operator::Minus => "-".to_string(),
+            Operator::Lshift => "<<".to_string(),
+            Operator::Rshift => ">>".to_string(),
+            Operator::Band => ".&".to_string(),
+            Operator::Bor => ".|".to_string(),
+            Operator::Bxor => ".^".to_string(),
+            Operator::Eq => "=".to_string(),
+            Operator::Ge => ">=".to_string(),
+            Operator::Gt => ">".to_string(),
+            Operator::Le => "<=".to_string(),
+            Operator::Lt => "<".to_string(),
+            Operator::And => "and".to_string(),
+            Operator::Or => "or".to_string(),
+            Operator::Pipe => "|>".to_string(),
+            Operator::Not => "not".to_string(),
+            Operator::Bnot => "~".to_string(),
+        }
+    }
+}
+
 impl Operator {
     fn is_binary(&self) -> bool {
         match self {
@@ -45,6 +73,19 @@ pub enum Container {
     Guard,
     BranchBody,
     File,
+}
+
+impl ToString for Container {
+    fn to_string(&self) -> String {
+        match self {
+            Container::Paren => "()".to_string(),
+            Container::Bracket => "[]".to_string(),
+            Container::Brace => "{}".to_string(),
+            Container::Guard => "||".to_string(),
+            Container::BranchBody => "|}".to_string(),
+            Container::File => "FILE".to_string(),
+        }
+    }
 }
 
 impl<'a> Token<'a> {
@@ -619,7 +660,7 @@ impl<'a> ASTDisplay for Expression<'a> {
                     "{}{}{} {}: {}",
                     prefix,
                     connector.display(),
-                    extra,
+                    extra.red(),
                     "Int".yellow(),
                     value.to_string().green()
                 ));
@@ -629,7 +670,7 @@ impl<'a> ASTDisplay for Expression<'a> {
                     "{}{}{} {}: {}",
                     prefix,
                     connector.display(),
-                    extra,
+                    extra.red(),
                     "Float".yellow(),
                     value.to_string().green()
                 ));
@@ -639,7 +680,7 @@ impl<'a> ASTDisplay for Expression<'a> {
                     "{}{}{} {}: {}",
                     prefix,
                     connector.display(),
-                    extra,
+                    extra.red(),
                     "Imaginary".yellow(),
                     format!("{value}i").green()
                 ));
@@ -649,22 +690,69 @@ impl<'a> ASTDisplay for Expression<'a> {
                     "{}{}{} {}: {}",
                     prefix,
                     connector.display(),
-                    extra,
+                    extra.red(),
                     "String".yellow(),
                     value.green()
                 ));
             }
-            Expression::Identifier(_) => todo!(),
+            Expression::Identifier(value) => {
+                descriptions.push(format!(
+                    "{}{}{} {}: {}",
+                    prefix,
+                    connector.display(),
+                    extra.red(),
+                    "Identifier".yellow(),
+                    value.green()
+                ));
+            }
             Expression::Special => todo!(),
             Expression::Positional(_) => todo!(),
             Expression::Binding(_) => todo!(),
-            Expression::Unary(operator, expression) => todo!(),
-            Expression::Binary(operator, expression, expression1) => todo!(),
+            Expression::Unary(operator, expression) => {
+                descriptions.push(format!(
+                    "{}{}{} {}",
+                    prefix,
+                    connector.display(),
+                    extra.red(),
+                    operator.to_string().blue()
+                ));
+
+                expression.display_ast(
+                    format!("{}{}", prefix, connector.child_prefix()),
+                    Connector::Last,
+                    "expr:".to_string(),
+                    descriptions,
+                )
+            }
+            Expression::Binary(operator, lhs, rhs) => {
+                descriptions.push(format!(
+                    "{}{}{} {}",
+                    prefix,
+                    connector.display(),
+                    extra.red(),
+                    operator.to_string().blue()
+                ));
+
+                lhs.display_ast(
+                    format!("{}{}", prefix, connector.child_prefix()),
+                    Connector::Last,
+                    "lhs:".to_string(),
+                    descriptions,
+                );
+                rhs.display_ast(
+                    format!("{}{}", prefix, connector.child_prefix()),
+                    Connector::Last,
+                    "rhs:".to_string(),
+                    descriptions,
+                );
+            }
             Expression::List(container, expressions) => {
                 descriptions.push(format!(
-                    "{}{}List",
+                    "{}{}{} {}",
                     child_prefix,
-                    Connector::Last.display()
+                    Connector::Last.display(),
+                    "List -".yellow(),
+                    container.to_string().blue()
                 ));
                 for (index, expression) in expressions.iter().enumerate() {
                     let is_last_arg = index == expressions.len() - 1;
@@ -684,7 +772,9 @@ impl<'a> ASTDisplay for Expression<'a> {
                     );
                 }
             }
-            Expression::Call(container, prefix, fields) => todo!(),
+            Expression::Call(container, prefix, fields) => {
+
+            }
             Expression::Access(expression, identifier) => todo!(),
             Expression::Tagged(identifier, expression) => todo!(),
             Expression::Branched(branches) => todo!(),
