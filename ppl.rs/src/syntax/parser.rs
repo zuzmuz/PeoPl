@@ -534,14 +534,14 @@ impl<'a> Parser<'a> {
         container: Container,
     ) -> Expression<'a> {
         log::debug!("Parsing Literal {:?}", self.tokens[self.cursor]);
-        match &self.tokens[self.cursor] {
+        match self.tokens[self.cursor] {
             Token::DecLiteral(value)
             | Token::HexLiteral(value)
             | Token::OctLiteral(value)
-            | Token::BinLiteral(value) => Expression::IntLiteral(*value),
-            Token::FloatLiteral(value) => Expression::FloatLiteral(*value),
+            | Token::BinLiteral(value) => Expression::IntLiteral(value),
+            Token::FloatLiteral(value) => Expression::FloatLiteral(value),
             Token::ImaginaryLiteral(value) => {
-                Expression::ImaginaryLiteral(*value)
+                Expression::ImaginaryLiteral(value)
             }
             Token::StringLiteral(value) => Expression::StringLiteral(value),
             Token::Positional(value) => Expression::Positional(value),
@@ -578,7 +578,7 @@ impl<'a> Parser<'a> {
                     }
                 }
             }
-            &token => {
+            token => {
                 if let Some(container_opening) = token.opening() {
                     self.advance();
                     let inside_expression =
@@ -614,6 +614,7 @@ impl<'a> Parser<'a> {
     }
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Connector {
     Last,
     NotLast,
@@ -706,7 +707,15 @@ impl<'a> ASTDisplay for Expression<'a> {
                     value.green()
                 ));
             }
-            Expression::Special => todo!(),
+            Expression::Special => {
+                descriptions.push(format!(
+                    "{}{}{}{}",
+                    prefix,
+                    connector.display(),
+                    extra.cyan(),
+                    "Special".yellow(),
+                ));
+            }
             Expression::Positional(_) => todo!(),
             Expression::Binding(_) => todo!(),
             Expression::Unary(operator, expression) => {
@@ -835,7 +844,75 @@ impl<'a> ASTDisplay for Expression<'a> {
                     descriptions,
                 );
             }
-            Expression::Branched(branches) => todo!(),
+            Expression::Branched(branches) => {
+                descriptions.push(format!(
+                    "{}{}{}{}",
+                    prefix,
+                    connector.display(),
+                    extra.cyan(),
+                    "Branched".red(),
+                ));
+
+                for (index, branch) in branches.iter().enumerate() {
+                    let is_last_branch = index == branches.len() - 1;
+                    let branch_connector = if is_last_branch {
+                        Connector::Last
+                    } else {
+                        Connector::NotLast
+                    };
+                    descriptions.push(format!(
+                        "{}{}{}{}",
+                        child_prefix.clone(),
+                        branch_connector.display(),
+                        format!("#{}: ", index).cyan(),
+                        "Branch".red()
+                    ));
+
+                    branch.match_expression.display_ast(
+                        format!(
+                            "{}{}",
+                            child_prefix,
+                            branch_connector.child_prefix()
+                        ),
+                        Connector::NotLast,
+                        "match: ".to_string(),
+                        descriptions,
+                    );
+
+                    if let Some(guard_expression) = &branch.guard_expression {
+                        guard_expression.display_ast(
+                            format!(
+                                "{}{}",
+                                child_prefix,
+                                branch_connector.child_prefix()
+                            ),
+                            Connector::NotLast,
+                            "guard: ".to_string(),
+                            descriptions,
+                        );
+                    }
+
+                    descriptions.push(format!(
+                        "{}{}{}{}",
+                        child_prefix,
+                        branch_connector.child_prefix(),
+                        Connector::Last.display(),
+                        "Body".red(),
+                    ));
+
+                    branch.body.display_ast(
+                        format!(
+                            "{}{}{}",
+                            child_prefix,
+                            branch_connector.child_prefix(),
+                            Connector::Last.child_prefix()
+                        ),
+                        Connector::Last,
+                        "".to_string(),
+                        descriptions,
+                    );
+                }
+            }
             Expression::Function(args, body) => {
                 descriptions.push(format!(
                     "{}{}{}{}",
@@ -846,10 +923,9 @@ impl<'a> ASTDisplay for Expression<'a> {
                 ));
 
                 descriptions.push(format!(
-                    "{}{}{}{}",
+                    "{}{}{}",
                     child_prefix.clone(),
                     Connector::NotLast.display(),
-                    "".to_string(),
                     "Arguments".bright_yellow()
                 ));
 

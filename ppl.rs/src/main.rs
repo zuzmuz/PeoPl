@@ -3,9 +3,6 @@ use crate::syntax::parser::ASTDisplay;
 use crate::syntax::{parser, tokenizer};
 
 use clap::{Parser, Subcommand};
-use colored::{self, Colorize};
-use log;
-use pretty_env_logger;
 use std::fs::File;
 use std::io::Read;
 use std::path::PathBuf;
@@ -44,7 +41,7 @@ fn ast(file_path: PathBuf) {
     };
 
     let mut contents = String::new();
-    let Ok(result) = file.read_to_string(&mut contents) else {
+    let Ok(_) = file.read_to_string(&mut contents) else {
         log::error!("File not valid utf8 {}", file_path.display());
         return;
     };
