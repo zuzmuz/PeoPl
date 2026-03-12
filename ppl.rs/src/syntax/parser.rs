@@ -254,8 +254,12 @@ pub struct Parser<'a> {
 }
 
 impl<'a> Parser<'a> {
-    pub fn new(source: &'a str) -> Self {
+    pub fn from_source(source: &'a str) -> Self {
         let tokens = tokenizer::lex_source(source);
+        Parser { tokens, cursor: 0 }
+    }
+
+    pub fn from_tokens(tokens: Vec<Token<'a>>) -> Self {
         Parser { tokens, cursor: 0 }
     }
 
@@ -991,7 +995,7 @@ mod tests {
     fn numbers() {
         let source = "1, 0x12, 3.4";
 
-        let mut parser = Parser::new(source);
+        let mut parser = Parser::from_source(source);
 
         let ast = parser.parse();
 
@@ -1013,7 +1017,7 @@ mod tests {
             c: - 1 * 4 > 3 - 2 and value = \"string\"
         ";
 
-        let mut parser = Parser::new(source);
+        let mut parser = Parser::from_source(source);
         let ast = parser.parse();
         let reference = Expression::Tagged(
             Identifier("c"),
@@ -1053,7 +1057,7 @@ mod tests {
             v: - s.a ^ 2 * 3 + s.b
         ";
 
-        let mut parser = Parser::new(source);
+        let mut parser = Parser::from_source(source);
 
         let ast = parser.parse();
         let reference = Expression::Tagged(
@@ -1089,7 +1093,7 @@ mod tests {
     fn call_expressions_empty() {
         let source = "call()";
 
-        let mut parser = Parser::new(source);
+        let mut parser = Parser::from_source(source);
 
         let ast = parser.parse();
         let reference = Expression::Call(
@@ -1105,7 +1109,7 @@ mod tests {
     fn call_expressions() {
         let source = "call(1, 2, 3)";
 
-        let mut parser = Parser::new(source);
+        let mut parser = Parser::from_source(source);
 
         let ast = parser.parse();
         let reference = Expression::Call(
@@ -1132,7 +1136,7 @@ mod tests {
         y: a.b + a.c,
         ";
 
-        let mut parser = Parser::new(source);
+        let mut parser = Parser::from_source(source);
 
         let ast = parser.parse();
 
@@ -1199,7 +1203,7 @@ mod tests {
     fn prefix() {
         let source = "(3 + 2).to_float(x: a)";
 
-        let mut parser = Parser::new(source);
+        let mut parser = Parser::from_source(source);
 
         let ast = parser.parse();
 
@@ -1229,7 +1233,7 @@ mod tests {
             |> slice()[1, -1]
         ";
 
-        let mut parser = Parser::new(source);
+        let mut parser = Parser::from_source(source);
 
         let ast = parser.parse();
 
@@ -1262,7 +1266,7 @@ mod tests {
             first() + second(1) + third(x:3,)
         ";
 
-        let mut parser = Parser::new(source);
+        let mut parser = Parser::from_source(source);
 
         let ast = parser.parse();
 
@@ -1301,7 +1305,7 @@ mod tests {
     fn branched_expression() {
         let source = "|condition1, condition2| expression";
 
-        let mut parser = Parser::new(source);
+        let mut parser = Parser::from_source(source);
 
         let ast = parser.parse();
 
@@ -1329,7 +1333,7 @@ mod tests {
             }
         ";
 
-        let mut parser = Parser::new(source);
+        let mut parser = Parser::from_source(source);
 
         let ast = parser.parse();
 
@@ -1371,7 +1375,7 @@ mod tests {
             }
         ";
 
-        let mut parser = Parser::new(source);
+        let mut parser = Parser::from_source(source);
 
         let ast = parser.parse();
 

@@ -28,13 +28,19 @@ struct Cli {
 #[derive(Subcommand)]
 enum Commands {
     /// print ast of file
-    AST {
+    Build {
         file: PathBuf,
+
+        #[arg(long, default_value_t = false)]
+        tokens: bool,
+
+        #[arg(long, default_value_t = false)]
+        ast: bool,
     },
     LSP,
 }
 
-fn ast(file_path: PathBuf) {
+fn build(file_path: PathBuf, display_tokens: bool, display_ast: bool) {
     let Ok(mut file) = File::open(&file_path) else {
         log::error!("Can't open file {}", file_path.display());
         return;
@@ -46,19 +52,30 @@ fn ast(file_path: PathBuf) {
         return;
     };
 
-    let mut parser = parser::Parser::new(&contents);
+    let tokens = tokenizer::lex_source(&contents);
+    if display_tokens {
+        log::info!("Displaying Token List");
+        for token in tokens.iter() {
+            log::info!("{:?}", token)
+        }
+    }
+
+    let mut parser = parser::Parser::from_tokens(tokens);
 
     let ast = parser.parse();
 
-    let mut description: Vec<String> = Vec::new();
-    ast.display_ast(
-        "".to_string(),
-        parser::Connector::Last,
-        "".to_string(),
-        &mut description,
-    );
+    if display_ast {
+        log::info!("Displaying AST");
+        let mut description: Vec<String> = Vec::new();
+        ast.display_ast(
+            "".to_string(),
+            parser::Connector::Last,
+            "".to_string(),
+            &mut description,
+        );
 
-    log::info!("\n{}", description.join("\n"));
+        log::info!("\n{}", description.join("\n"));
+    }
 }
 
 fn main() {
@@ -69,7 +86,7 @@ fn main() {
         .init();
 
     match cli.command {
-        Commands::AST { file } => ast(file),
+        Commands::Build { file, tokens, ast } => build(file, tokens, ast),
         Commands::LSP => println!("Lsp"),
     }
 }
