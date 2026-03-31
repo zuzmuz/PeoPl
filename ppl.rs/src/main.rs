@@ -1,5 +1,5 @@
 mod syntax;
-use crate::syntax::parser::ASTDisplay;
+use crate::syntax::parser_display::{self, ASTDisplay};
 use crate::syntax::{parser, tokenizer};
 
 use clap::{Parser, Subcommand};
@@ -69,7 +69,7 @@ fn build(file_path: PathBuf, display_tokens: bool, display_ast: bool) {
         let mut description: Vec<String> = Vec::new();
         ast.display_ast(
             "".to_string(),
-            parser::Connector::Last,
+            parser_display::Connector::Last,
             "".to_string(),
             &mut description,
         );
