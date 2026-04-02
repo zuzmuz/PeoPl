@@ -1,4 +1,4 @@
-use crate::syntax::parser::{self, Expression};
+use crate::syntax::parser::{ExprArena, ExprIdx, Expression};
 use colored::{self, ColoredString, Colorize};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -24,348 +24,371 @@ impl Connector {
     }
 }
 
-pub trait ASTDisplay {
-    fn display_ast(
-        &self,
-        prefix: String,
-        connector: Connector,
-        extra: String,
-        descriptions: &mut Vec<String>,
-    );
-}
+pub fn display_ast<'a>(
+    arena: &ExprArena<'a>,
+    idx: ExprIdx,
+    prefix: String,
+    connector: Connector,
+    extra: String,
+    descriptions: &mut Vec<String>,
+) {
+    let child_prefix = format!("{}{}", prefix, connector.child_prefix());
+    match arena.get(idx) {
+        Expression::IntLiteral(value) => {
+            descriptions.push(format!(
+                "{}{}{}{}: {}",
+                prefix,
+                connector.display(),
+                extra.cyan(),
+                "Int".yellow(),
+                value.to_string().green()
+            ));
+        }
+        Expression::FloatLiteral(value) => {
+            descriptions.push(format!(
+                "{}{}{}{}: {}",
+                prefix,
+                connector.display(),
+                extra.cyan(),
+                "Float".yellow(),
+                value.to_string().green()
+            ));
+        }
+        Expression::ImaginaryLiteral(value) => {
+            descriptions.push(format!(
+                "{}{}{}{}: {}",
+                prefix,
+                connector.display(),
+                extra.cyan(),
+                "Imaginary".yellow(),
+                format!("{value}i").green()
+            ));
+        }
+        Expression::StringLiteral(value) => {
+            descriptions.push(format!(
+                "{}{}{}{}: {}",
+                prefix,
+                connector.display(),
+                extra.cyan(),
+                "String".yellow(),
+                value.green()
+            ));
+        }
+        Expression::Identifier(value) => {
+            descriptions.push(format!(
+                "{}{}{}{}: {}",
+                prefix,
+                connector.display(),
+                extra.cyan(),
+                "Identifier".yellow(),
+                value.green()
+            ));
+        }
+        Expression::Special => {
+            descriptions.push(format!(
+                "{}{}{}{}",
+                prefix,
+                connector.display(),
+                extra.cyan(),
+                "Special".yellow(),
+            ));
+        }
+        Expression::Positional(_) => todo!(),
+        Expression::Binding(_) => todo!(),
+        Expression::Unary(operator, expr) => {
+            let expr = *expr;
+            descriptions.push(format!(
+                "{}{}{} {}",
+                prefix,
+                connector.display(),
+                extra.cyan(),
+                operator.to_string().bright_red()
+            ));
 
-impl<'a> ASTDisplay for Expression<'a> {
-    fn display_ast(
-        &self,
-        prefix: String,
-        connector: Connector,
-        extra: String,
-        descriptions: &mut Vec<String>,
-    ) {
-        let child_prefix = format!("{}{}", prefix, connector.child_prefix());
-        match self {
-            Expression::IntLiteral(value) => {
-                descriptions.push(format!(
-                    "{}{}{}{}: {}",
-                    prefix,
-                    connector.display(),
-                    extra.cyan(),
-                    "Int".yellow(),
-                    value.to_string().green()
-                ));
-            }
-            Expression::FloatLiteral(value) => {
-                descriptions.push(format!(
-                    "{}{}{}{}: {}",
-                    prefix,
-                    connector.display(),
-                    extra.cyan(),
-                    "Float".yellow(),
-                    value.to_string().green()
-                ));
-            }
-            Expression::ImaginaryLiteral(value) => {
-                descriptions.push(format!(
-                    "{}{}{}{}: {}",
-                    prefix,
-                    connector.display(),
-                    extra.cyan(),
-                    "Imaginary".yellow(),
-                    format!("{value}i").green()
-                ));
-            }
-            Expression::StringLiteral(value) => {
-                descriptions.push(format!(
-                    "{}{}{}{}: {}",
-                    prefix,
-                    connector.display(),
-                    extra.cyan(),
-                    "String".yellow(),
-                    value.green()
-                ));
-            }
-            Expression::Identifier(value) => {
-                descriptions.push(format!(
-                    "{}{}{}{}: {}",
-                    prefix,
-                    connector.display(),
-                    extra.cyan(),
-                    "Identifier".yellow(),
-                    value.green()
-                ));
-            }
-            Expression::Special => {
-                descriptions.push(format!(
-                    "{}{}{}{}",
-                    prefix,
-                    connector.display(),
-                    extra.cyan(),
-                    "Special".yellow(),
-                ));
-            }
-            Expression::Positional(_) => todo!(),
-            Expression::Binding(_) => todo!(),
-            Expression::Unary(operator, expression) => {
-                descriptions.push(format!(
-                    "{}{}{} {}",
-                    prefix,
-                    connector.display(),
-                    extra.cyan(),
-                    operator.to_string().bright_red()
-                ));
+            display_ast(
+                arena,
+                expr,
+                child_prefix,
+                Connector::Last,
+                "expr: ".to_string(),
+                descriptions,
+            );
+        }
+        Expression::Binary(operator, lhs, rhs) => {
+            let (lhs, rhs) = (*lhs, *rhs);
+            descriptions.push(format!(
+                "{}{}{}{}",
+                prefix,
+                connector.display(),
+                extra.cyan(),
+                operator.to_string().bright_red()
+            ));
 
-                expression.display_ast(
-                    child_prefix,
-                    Connector::Last,
-                    "expr: ".to_string(),
-                    descriptions,
-                )
-            }
-            Expression::Binary(operator, lhs, rhs) => {
-                descriptions.push(format!(
-                    "{}{}{}{}",
-                    prefix,
-                    connector.display(),
-                    extra.cyan(),
-                    operator.to_string().bright_red()
-                ));
-
-                lhs.display_ast(
+            display_ast(
+                arena,
+                lhs,
+                child_prefix.clone(),
+                Connector::NotLast,
+                "lhs: ".to_string(),
+                descriptions,
+            );
+            display_ast(
+                arena,
+                rhs,
+                child_prefix,
+                Connector::Last,
+                "rhs: ".to_string(),
+                descriptions,
+            );
+        }
+        Expression::List(container, expressions) => {
+            let (container, expressions) = (*container, expressions.clone());
+            descriptions.push(format!(
+                "{}{}{}{} {}",
+                prefix,
+                connector.display(),
+                extra.cyan(),
+                "List -".yellow(),
+                container.to_string().blue()
+            ));
+            for (index, expr) in expressions.iter().enumerate() {
+                let is_last_arg = index == expressions.len() - 1;
+                display_ast(
+                    arena,
+                    *expr,
                     child_prefix.clone(),
-                    Connector::NotLast,
-                    "lhs: ".to_string(),
-                    descriptions,
-                );
-                rhs.display_ast(
-                    child_prefix,
-                    Connector::Last,
-                    "rhs: ".to_string(),
-                    descriptions,
-                );
-            }
-            Expression::List(container, expressions) => {
-                descriptions.push(format!(
-                    "{}{}{}{} {}",
-                    prefix,
-                    connector.display(),
-                    extra.cyan(),
-                    "List -".yellow(),
-                    container.to_string().blue()
-                ));
-                for (index, expression) in expressions.iter().enumerate() {
-                    let is_last_arg = index == expressions.len() - 1;
-                    expression.display_ast(
-                        child_prefix.clone(),
-                        if is_last_arg {
-                            Connector::Last
-                        } else {
-                            Connector::NotLast
-                        },
-                        format!("#{} ", index),
-                        descriptions,
-                    );
-                }
-            }
-            Expression::Call(container, prefix_expr, fields) => {
-                descriptions.push(format!(
-                    "{}{}{}{} {}",
-                    prefix,
-                    connector.display(),
-                    extra.cyan(),
-                    "Call -".red(),
-                    container.to_string().blue()
-                ));
-
-                prefix_expr.display_ast(
-                    child_prefix.clone(),
-                    Connector::NotLast,
-                    "prefix: ".to_string(),
-                    descriptions,
-                );
-
-                for (index, expression) in fields.iter().enumerate() {
-                    let is_last_arg = index == fields.len() - 1;
-                    expression.display_ast(
-                        child_prefix.clone(),
-                        if is_last_arg {
-                            Connector::Last
-                        } else {
-                            Connector::NotLast
-                        },
-                        format!("#{} ", index),
-                        descriptions,
-                    );
-                }
-            }
-            Expression::Access(expression, identifier) => {
-                descriptions.push(format!(
-                    "{}{}{}{} {}",
-                    prefix,
-                    connector.display(),
-                    extra.cyan(),
-                    "Access -".red(),
-                    identifier.0.to_string().blue()
-                ));
-
-                expression.display_ast(
-                    child_prefix,
-                    Connector::Last,
-                    "prefix: ".to_string(),
-                    descriptions,
-                );
-            }
-            Expression::Tagged(identifier, expression) => {
-                descriptions.push(format!(
-                    "{}{}{}{} {}",
-                    prefix,
-                    connector.display(),
-                    extra.cyan(),
-                    "Tagged -".red(),
-                    identifier.0.to_string().blue()
-                ));
-
-                expression.display_ast(
-                    child_prefix,
-                    Connector::Last,
-                    "expr: ".to_string(),
-                    descriptions,
-                );
-            }
-            Expression::Branched(branches) => {
-                descriptions.push(format!(
-                    "{}{}{}{}",
-                    prefix,
-                    connector.display(),
-                    extra.cyan(),
-                    "Branched".red(),
-                ));
-
-                for (index, branch) in branches.iter().enumerate() {
-                    let is_last_branch = index == branches.len() - 1;
-                    let branch_connector = if is_last_branch {
+                    if is_last_arg {
                         Connector::Last
                     } else {
                         Connector::NotLast
-                    };
-                    descriptions.push(format!(
-                        "{}{}{}{}",
-                        child_prefix.clone(),
-                        branch_connector.display(),
-                        format!("#{}: ", index).cyan(),
-                        "Branch".red()
-                    ));
-
-                    branch.match_expression.display_ast(
-                        format!(
-                            "{}{}",
-                            child_prefix,
-                            branch_connector.child_prefix()
-                        ),
-                        Connector::NotLast,
-                        "match: ".to_string(),
-                        descriptions,
-                    );
-
-                    if let Some(guard_expression) = &branch.guard_expression {
-                        guard_expression.display_ast(
-                            format!(
-                                "{}{}",
-                                child_prefix,
-                                branch_connector.child_prefix()
-                            ),
-                            Connector::NotLast,
-                            "guard: ".to_string(),
-                            descriptions,
-                        );
-                    }
-
-                    descriptions.push(format!(
-                        "{}{}{}{}",
-                        child_prefix,
-                        branch_connector.child_prefix(),
-                        Connector::Last.display(),
-                        "Body".red(),
-                    ));
-
-                    branch.body.display_ast(
-                        format!(
-                            "{}{}{}",
-                            child_prefix,
-                            branch_connector.child_prefix(),
-                            Connector::Last.child_prefix()
-                        ),
-                        Connector::Last,
-                        "".to_string(),
-                        descriptions,
-                    );
-                }
+                    },
+                    format!("#{} ", index),
+                    descriptions,
+                );
             }
-            Expression::Function(args, body) => {
+        }
+        Expression::Call(container, prefix_expr, fields) => {
+            let (container, prefix_expr, fields) =
+                (*container, *prefix_expr, fields.clone());
+            descriptions.push(format!(
+                "{}{}{}{} {}",
+                prefix,
+                connector.display(),
+                extra.cyan(),
+                "Call -".red(),
+                container.to_string().blue()
+            ));
+
+            display_ast(
+                arena,
+                prefix_expr,
+                child_prefix.clone(),
+                Connector::NotLast,
+                "prefix: ".to_string(),
+                descriptions,
+            );
+
+            for (index, expr) in fields.iter().enumerate() {
+                let is_last_arg = index == fields.len() - 1;
+                display_ast(
+                    arena,
+                    *expr,
+                    child_prefix.clone(),
+                    if is_last_arg {
+                        Connector::Last
+                    } else {
+                        Connector::NotLast
+                    },
+                    format!("#{} ", index),
+                    descriptions,
+                );
+            }
+        }
+        Expression::Access(expr, identifier) => {
+            let (expr, identifier_str) = (*expr, identifier.0.to_string());
+            descriptions.push(format!(
+                "{}{}{}{} {}",
+                prefix,
+                connector.display(),
+                extra.cyan(),
+                "Access -".red(),
+                identifier_str.blue()
+            ));
+
+            display_ast(
+                arena,
+                expr,
+                child_prefix,
+                Connector::Last,
+                "prefix: ".to_string(),
+                descriptions,
+            );
+        }
+        Expression::Tagged(identifier, expr) => {
+            let (identifier_str, expr) = (identifier.0.to_string(), *expr);
+            descriptions.push(format!(
+                "{}{}{}{} {}",
+                prefix,
+                connector.display(),
+                extra.cyan(),
+                "Tagged -".red(),
+                identifier_str.blue()
+            ));
+
+            display_ast(
+                arena,
+                expr,
+                child_prefix,
+                Connector::Last,
+                "expr: ".to_string(),
+                descriptions,
+            );
+        }
+        Expression::Branched(branches) => {
+            let branches = branches.clone();
+            descriptions.push(format!(
+                "{}{}{}{}",
+                prefix,
+                connector.display(),
+                extra.cyan(),
+                "Branched".red(),
+            ));
+
+            for (index, branch) in branches.iter().enumerate() {
+                let is_last_branch = index == branches.len() - 1;
+                let branch_connector = if is_last_branch {
+                    Connector::Last
+                } else {
+                    Connector::NotLast
+                };
                 descriptions.push(format!(
                     "{}{}{}{}",
-                    prefix,
-                    connector.display(),
-                    extra.cyan(),
-                    "Function".red(),
-                ));
-
-                descriptions.push(format!(
-                    "{}{}{}",
                     child_prefix.clone(),
-                    Connector::NotLast.display(),
-                    "Arguments".bright_yellow()
+                    branch_connector.display(),
+                    format!("#{}: ", index).cyan(),
+                    "Branch".red()
                 ));
 
-                let arguments_prefix = format!(
+                let branch_child_prefix = format!(
                     "{}{}",
                     child_prefix,
-                    Connector::NotLast.child_prefix()
+                    branch_connector.child_prefix()
                 );
 
-                for (index, expression) in args.iter().enumerate() {
-                    let is_last_arg = index == args.len() - 1;
-                    expression.display_ast(
-                        arguments_prefix.clone(),
-                        if is_last_arg {
-                            Connector::Last
-                        } else {
-                            Connector::NotLast
-                        },
-                        format!("#{} ", index),
+                display_ast(
+                    arena,
+                    branch.match_expression,
+                    branch_child_prefix.clone(),
+                    Connector::NotLast,
+                    "match: ".to_string(),
+                    descriptions,
+                );
+
+                if let Some(guard_expression) = branch.guard_expression {
+                    display_ast(
+                        arena,
+                        guard_expression,
+                        branch_child_prefix.clone(),
+                        Connector::NotLast,
+                        "guard: ".to_string(),
                         descriptions,
                     );
                 }
 
                 descriptions.push(format!(
                     "{}{}{}{}",
-                    child_prefix,
+                    branch_child_prefix,
                     Connector::Last.display(),
                     "".to_string(),
-                    "Output".bright_yellow()
+                    "Body".red(),
                 ));
 
-                let output_prefix = format!(
+                let body_prefix = format!(
                     "{}{}",
-                    child_prefix,
+                    branch_child_prefix,
                     Connector::Last.child_prefix()
                 );
 
-                body.display_ast(
-                    output_prefix,
+                display_ast(
+                    arena,
+                    branch.body,
+                    body_prefix,
                     Connector::Last,
                     "".to_string(),
                     descriptions,
                 );
             }
-            Expression::Empty => {
-                descriptions.push(format!(
-                    "{}{}{} {}",
-                    prefix,
-                    connector.display(),
-                    extra.cyan(),
-                    "Empty".purple(),
-                ));
+        }
+        Expression::Function(params, body) => {
+            let (params, body) = (params.clone(), *body);
+            descriptions.push(format!(
+                "{}{}{}{}",
+                prefix,
+                connector.display(),
+                extra.cyan(),
+                "Function".red(),
+            ));
+
+            descriptions.push(format!(
+                "{}{}{}",
+                child_prefix.clone(),
+                Connector::NotLast.display(),
+                "Arguments".bright_yellow()
+            ));
+
+            let arguments_prefix = format!(
+                "{}{}",
+                child_prefix,
+                Connector::NotLast.child_prefix()
+            );
+
+            for (index, param) in params.iter().enumerate() {
+                let is_last_arg = index == params.len() - 1;
+                display_ast(
+                    arena,
+                    *param,
+                    arguments_prefix.clone(),
+                    if is_last_arg {
+                        Connector::Last
+                    } else {
+                        Connector::NotLast
+                    },
+                    format!("#{} ", index),
+                    descriptions,
+                );
             }
+
+            descriptions.push(format!(
+                "{}{}{}{}",
+                child_prefix,
+                Connector::Last.display(),
+                "".to_string(),
+                "Output".bright_yellow()
+            ));
+
+            let output_prefix = format!(
+                "{}{}",
+                child_prefix,
+                Connector::Last.child_prefix()
+            );
+
+            display_ast(
+                arena,
+                body,
+                output_prefix,
+                Connector::Last,
+                "".to_string(),
+                descriptions,
+            );
+        }
+        Expression::Empty => {
+            descriptions.push(format!(
+                "{}{}{} {}",
+                prefix,
+                connector.display(),
+                extra.cyan(),
+                "Empty".purple(),
+            ));
         }
     }
 }
