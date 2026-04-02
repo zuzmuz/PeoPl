@@ -219,6 +219,12 @@ impl<'a> ExprArena<'a> {
         }
     }
 
+    pub fn with_capacity(capacity: usize) -> Self {
+        ExprArena {
+            expressions: Vec::with_capacity(capacity)
+        }
+    }
+
     pub fn alloc(&mut self, expr: Expression<'a>) -> ExprIdx {
         let idx = self.expressions.len();
         self.expressions.push(expr);
@@ -284,18 +290,20 @@ pub struct Parser<'a> {
 impl<'a> Parser<'a> {
     pub fn from_source(source: &'a str) -> Self {
         let tokens = tokenizer::lex_source(source);
+        let tokens_len = tokens.len();
         Parser {
             tokens,
             cursor: 0,
-            arena: ExprArena::new(),
+            arena: ExprArena::with_capacity(tokens_len / 4),
         }
     }
 
     pub fn from_tokens(tokens: Vec<Token<'a>>) -> Self {
+        let tokens_len = tokens.len();
         Parser {
             tokens,
             cursor: 0,
-            arena: ExprArena::new(),
+            arena: ExprArena::with_capacity(tokens_len / 4),
         }
     }
 

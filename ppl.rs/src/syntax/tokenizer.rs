@@ -7,7 +7,7 @@ pub enum Token<'a> {
     // literals
     #[regex("[0-9][0-9_]*", |lex| lex.slice().parse::<u64>().ok())]
     DecLiteral(u64),
-    #[regex("(0[x])[0-9a-zA-Z][0-9a-z-A-Z_]*", |lex|  u64::from_str_radix(&lex.slice()[2..], 16).ok() )]
+    #[regex("(0[x])[0-9a-fA-F][0-9a-f-A-F_]*", |lex|  u64::from_str_radix(&lex.slice()[2..], 16).ok() )]
     HexLiteral(u64),
     #[regex("(0[o])[0-7][0-7_]*", |lex| u64::from_str_radix(&lex.slice()[2..], 8).ok())]
     OctLiteral(u64),
@@ -46,7 +46,7 @@ pub enum Token<'a> {
     #[token("not")]
     KwordNot,
 
-    #[regex(r"\p{Alphabetic}[\p{Alphabetic}0-9_]*", |lex| lex.slice())]
+    #[regex(r"[\p{XID_Start}][\p{XID_Continue}\p{So}\p{Sk}]*", |lex| lex.slice())]
     Identifier(&'a str),
 
     // arithmetics
@@ -125,9 +125,9 @@ pub enum Token<'a> {
     #[token("->")]
     Arrow, // ->
     
-    #[regex(r"@\p{Alphabetic}[\p{Alphabetic}0-9_]*", |lex| &lex.slice()[1..])]
+    #[regex(r"@[\p{XID_Start}\p{So}\p{Sk}][\p{XID_Continue}\p{So}\p{Sk}]*", |lex| &lex.slice()[1..])]
     Binding(&'a str), // @
-    #[regex(r"\$[\p{Alphabetic}0-9_]+", |lex| &lex.slice()[1..])]
+    #[regex(r"\$[\p{XID_Continue}\p{So}\p{Sk}]+", |lex| &lex.slice()[1..])]
     Positional(&'a str), // $
 
     #[regex(r"//.*", allow_greedy = true)]
@@ -172,6 +172,15 @@ mod tests {
             //     assert!(false);
             // }
         }
+    }
+
+    #[test]
+    fn unicode_identifiers() {
+        let test_string = "factor🫶🏽sdf π résumé";
+        let mut lex = Token::lexer(test_string);
+        assert_eq!(lex.next(), Some(Ok(Token::Identifier("factor🫶🏽sdf"))));
+        assert_eq!(lex.next(), Some(Ok(Token::Identifier("π"))));
+        assert_eq!(lex.next(), Some(Ok(Token::Identifier("résumé"))));
     }
 
     #[test]
