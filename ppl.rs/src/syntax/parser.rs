@@ -205,14 +205,43 @@ impl<'a> Token<'a> {
     }
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct ExprIdx(pub usize);
+
+pub struct ExprArena<'a> {
+    expressions: Vec<Expression<'a>>,
+}
+
+impl<'a> ExprArena<'a> {
+    pub fn new() -> Self {
+        ExprArena {
+            expressions: Vec::new(),
+        }
+    }
+
+    pub fn alloc(&mut self, expr: Expression<'a>) -> ExprIdx {
+        let idx = self.expressions.len();
+        self.expressions.push(expr);
+        ExprIdx(idx)
+    }
+
+    pub fn get(&self, idx: ExprIdx) -> &Expression<'a> {
+        &self.expressions[idx.0]
+    }
+
+    pub fn get_mut(&mut self, idx: ExprIdx) -> &mut Expression<'a> {
+        &mut self.expressions[idx.0]
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Identifier<'a>(pub &'a str);
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct Branch<'a> {
-    pub match_expression: Expression<'a>,
-    pub guard_expression: Option<Expression<'a>>,
-    pub body: Expression<'a>,
+pub struct Branch {
+    pub match_expression: ExprIdx,
+    pub guard_expression: Option<ExprIdx>,
+    pub body: ExprIdx,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -229,18 +258,18 @@ pub enum Expression<'a> {
     Binding(&'a str),
 
     // primary
-    Unary(Operator, Box<Expression<'a>>),
-    Binary(Operator, Box<Expression<'a>>, Box<Expression<'a>>),
+    Unary(Operator, ExprIdx),
+    Binary(Operator, ExprIdx, ExprIdx),
 
-    List(Container, Vec<Expression<'a>>),
-    Call(Container, Box<Expression<'a>>, Vec<Expression<'a>>),
-    Access(Box<Expression<'a>>, Identifier<'a>),
+    List(Container, Vec<ExprIdx>),
+    Call(Container, ExprIdx, Vec<ExprIdx>),
+    Access(ExprIdx, Identifier<'a>),
 
-    Tagged(Identifier<'a>, Box<Expression<'a>>),
+    Tagged(Identifier<'a>, ExprIdx),
 
-    Branched(Vec<Branch<'a>>),
+    Branched(Vec<Branch>),
 
-    Function(Vec<Expression<'a>>, Box<Expression<'a>>),
+    Function(Vec<ExprIdx>, ExprIdx),
 
     Empty,
     // Invalid,
@@ -249,20 +278,34 @@ pub enum Expression<'a> {
 pub struct Parser<'a> {
     tokens: Vec<Token<'a>>,
     cursor: usize,
+    arena: ExprArena<'a>,
 }
 
 impl<'a> Parser<'a> {
     pub fn from_source(source: &'a str) -> Self {
         let tokens = tokenizer::lex_source(source);
-        Parser { tokens, cursor: 0 }
+        Parser {
+            tokens,
+            cursor: 0,
+            arena: ExprArena::new(),
+        }
     }
 
     pub fn from_tokens(tokens: Vec<Token<'a>>) -> Self {
-        Parser { tokens, cursor: 0 }
+        Parser {
+            tokens,
+            cursor: 0,
+            arena: ExprArena::new(),
+        }
     }
 
-    pub fn parse(&mut self) -> Expression<'a> {
-        self.parse_complex_expression(Container::File)
+    pub fn parse(mut self) -> (ExprArena<'a>, ExprIdx) {
+        let root = self.parse_complex_expression(Container::File);
+        (self.arena, root)
+    }
+
+    fn alloc(&mut self, expr: Expression<'a>) -> ExprIdx {
+        self.arena.alloc(expr)
     }
 
     fn skip_to_next_valid_token(&mut self) {
@@ -302,16 +345,13 @@ impl<'a> Parser<'a> {
     ///
     /// : Branched
     /// | PrimaryExpression
-    fn parse_complex_expression(
-        &mut self,
-        container: Container,
-    ) -> Expression<'a> {
+    fn parse_complex_expression(&mut self, container: Container) -> ExprIdx {
         self.skip_to_next_valid_token();
         match &self.tokens[self.cursor] {
             // When parsing complex expression if we encounter a `Token::Bar`
             // we expect a branching expression
             Token::Bar => {
-                let mut branches: Vec<Branch<'a>> = Vec::new();
+                let mut branches: Vec<Branch> = Vec::new();
 
                 loop {
                     self.advance();
@@ -322,8 +362,8 @@ impl<'a> Parser<'a> {
                     self.advance();
 
                     let (match_expression, guard_expression): (
-                        Expression<'a>,
-                        Option<Expression<'a>>,
+                        ExprIdx,
+                        Option<ExprIdx>,
                     ) = match self.tokens[self.cursor] {
                         Token::Bar => (continued_expression, None),
                         Token::KwordIf => {
@@ -375,7 +415,7 @@ impl<'a> Parser<'a> {
                         todo!("unreachable state");
                     }
                 }
-                Expression::Branched(branches)
+                self.alloc(Expression::Branched(branches))
             }
             // otherwise it's just a regular expression
             _ => {
@@ -389,12 +429,12 @@ impl<'a> Parser<'a> {
     fn continue_parsing(
         &mut self,
         last_precedence: i8,
-        last_expression: Expression<'a>,
+        last_expression: ExprIdx,
         container: Container,
-    ) -> Expression<'a> {
+    ) -> ExprIdx {
         let mut last_expression = last_expression;
         loop {
-            log::debug!("Last {:#?}", last_expression);
+            log::debug!("Last {:#?}", self.arena.get(last_expression));
             let operator_token = self.peek_next_token();
             log::debug!("Current token {:?}", operator_token);
 
@@ -431,32 +471,24 @@ impl<'a> Parser<'a> {
             }
 
             if let Some(opening_container) = operator_token.opening() {
-                // Found opening, it is a call expressions
-                // self.cursor += 2; // Skip opening and start parsing complex expression
-
+                // Found opening, it is a call expression
                 self.advance();
                 self.advance();
-                // This might not need to be a complex expression
                 let fields_expression =
                     self.parse_complex_expression(opening_container);
 
-                let fields = if let Expression::List(_, vec) = fields_expression
-                {
-                    // if fields are already an expression list return them
-                    vec
-                } else {
-                    // otherwise crreate vector
-                    vec![fields_expression]
+                let fields = match self.arena.get(fields_expression) {
+                    Expression::List(_, vec) => vec.clone(),
+                    _ => vec![fields_expression],
                 };
 
                 self.advance();
 
-                // Update last expression as a call expression and continue parsing
-                last_expression = Expression::Call(
+                last_expression = self.alloc(Expression::Call(
                     opening_container,
-                    Box::new(last_expression),
+                    last_expression,
                     fields,
-                );
+                ));
                 continue;
             }
 
@@ -465,66 +497,68 @@ impl<'a> Parser<'a> {
             self.advance();
             self.advance();
 
-            let mut next_expression = self.parse_primary_expression(container);
+            let next_expression = self.parse_primary_expression(container);
 
             // let next_precedence = self.peek_next_token().precedence();
             let next_precedence = self.tokens[self.cursor + 1].precedence();
 
-            if current_precedence < next_precedence {
-                next_expression = self.continue_parsing(
+            let next_expression = if current_precedence < next_precedence {
+                self.continue_parsing(
                     current_precedence + 1,
                     next_expression,
                     container,
-                );
-            }
+                )
+            } else {
+                next_expression
+            };
 
             if operator_token == Token::Comma {
-                if let Expression::List(cont, vec) = last_expression {
-                    let mut vec = vec;
-                    vec.push(next_expression);
-                    last_expression = Expression::List(cont, vec);
+                if matches!(self.arena.get(last_expression), Expression::List(_, _)) {
+                    if let Expression::List(_, vec) =
+                        self.arena.get_mut(last_expression)
+                    {
+                        vec.push(next_expression);
+                    }
                 } else {
-                    last_expression = Expression::List(
+                    last_expression = self.alloc(Expression::List(
                         container,
                         vec![last_expression, next_expression],
-                    )
+                    ));
                 }
             } else if operator_token == Token::Colon {
-                match last_expression {
-                    Expression::Identifier(ident) => {
-                        last_expression = Expression::Tagged(
-                            Identifier(ident),
-                            Box::new(next_expression),
-                        )
-                    }
+                let ident_str = match self.arena.get(last_expression) {
+                    Expression::Identifier(ident) => *ident,
                     _ => todo!(
                         "tagged expression requires lhs to be an identifier"
                     ),
-                }
+                };
+                last_expression = self.alloc(Expression::Tagged(
+                    Identifier(ident_str),
+                    next_expression,
+                ));
             } else if let Some(operator) = operator_token.operator() {
                 if operator.is_binary() {
-                    last_expression = Expression::Binary(
+                    last_expression = self.alloc(Expression::Binary(
                         operator,
-                        Box::new(last_expression),
-                        Box::new(next_expression),
-                    )
+                        last_expression,
+                        next_expression,
+                    ));
                 } else {
                     todo!("syntax error illegal unary operator");
                 }
             } else if operator_token == Token::Backslash {
                 todo!("qualified identifiers");
             } else if operator_token == Token::Dot {
-                match next_expression {
-                    Expression::Identifier(ident) => {
-                        last_expression = Expression::Access(
-                            Box::new(last_expression),
-                            Identifier(ident),
-                        );
-                    }
+                let ident_str = match self.arena.get(next_expression) {
+                    Expression::Identifier(ident) => *ident,
                     _ => todo!(
                         "access expression requires rhs to be an identifier"
                     ),
-                }
+                };
+                last_expression = self.alloc(Expression::Access(
+                    last_expression,
+                    Identifier(ident_str),
+                ));
             }
         }
     }
@@ -536,25 +570,22 @@ impl<'a> Parser<'a> {
     ///   | Unary
     ///   ;
     ///
-    fn parse_primary_expression(
-        &mut self,
-        container: Container,
-    ) -> Expression<'a> {
+    fn parse_primary_expression(&mut self, container: Container) -> ExprIdx {
         log::debug!("Parsing Literal {:?}", self.tokens[self.cursor]);
         match self.tokens[self.cursor] {
             Token::DecLiteral(value)
             | Token::HexLiteral(value)
             | Token::OctLiteral(value)
-            | Token::BinLiteral(value) => Expression::IntLiteral(value),
-            Token::FloatLiteral(value) => Expression::FloatLiteral(value),
+            | Token::BinLiteral(value) => self.alloc(Expression::IntLiteral(value)),
+            Token::FloatLiteral(value) => self.alloc(Expression::FloatLiteral(value)),
             Token::ImaginaryLiteral(value) => {
-                Expression::ImaginaryLiteral(value)
+                self.alloc(Expression::ImaginaryLiteral(value))
             }
-            Token::StringLiteral(value) => Expression::StringLiteral(value),
-            Token::Positional(value) => Expression::Positional(value),
-            Token::Binding(value) => Expression::Binding(value),
-            Token::Special => Expression::Special,
-            Token::Identifier(value) => Expression::Identifier(value),
+            Token::StringLiteral(value) => self.alloc(Expression::StringLiteral(value)),
+            Token::Positional(value) => self.alloc(Expression::Positional(value)),
+            Token::Binding(value) => self.alloc(Expression::Binding(value)),
+            Token::Special => self.alloc(Expression::Special),
+            Token::Identifier(value) => self.alloc(Expression::Identifier(value)),
             Token::KwordIf => {
                 todo!("handle empty match expression");
             }
@@ -576,10 +607,10 @@ impl<'a> Parser<'a> {
                         let continued_expression =
                             self.continue_parsing(3, expression, container);
                         // 3 because we need to know when to stop parsing,
-                        Expression::Function(
+                        self.alloc(Expression::Function(
                             vec![function_params],
-                            Box::new(continued_expression),
-                        )
+                            continued_expression,
+                        ))
                     } else {
                         todo!("need arrow for function")
                     }
@@ -595,7 +626,7 @@ impl<'a> Parser<'a> {
                 } else if let Some(container_closing) = token.closing() {
                     if container_closing == container {
                         self.cursor -= 1;
-                        Expression::Empty
+                        self.alloc(Expression::Empty)
                     } else if container == Container::BranchBody {
                         todo!("empty branch body is illegal");
                     } else {
@@ -609,7 +640,7 @@ impl<'a> Parser<'a> {
                         expression,
                         container,
                     );
-                    Expression::Unary(operator, Box::new(continued_expression))
+                    self.alloc(Expression::Unary(operator, continued_expression))
                 } else if Token::NewLine == token || Token::Comment == token {
                     self.advance();
                     self.parse_primary_expression(container)
@@ -623,6 +654,91 @@ impl<'a> Parser<'a> {
 
 
 #[cfg(test)]
+impl<'a> ExprArena<'a> {
+    /// Structural equality check between two trees, potentially in different arenas.
+    fn tree_eq(&self, a: ExprIdx, other: &ExprArena<'a>, b: ExprIdx) -> bool {
+        match (self.get(a), other.get(b)) {
+            (Expression::IntLiteral(x), Expression::IntLiteral(y)) => x == y,
+            (Expression::FloatLiteral(x), Expression::FloatLiteral(y)) => {
+                x.to_bits() == y.to_bits()
+            }
+            (Expression::ImaginaryLiteral(x), Expression::ImaginaryLiteral(y)) => {
+                x.to_bits() == y.to_bits()
+            }
+            (Expression::StringLiteral(x), Expression::StringLiteral(y)) => x == y,
+            (Expression::Identifier(x), Expression::Identifier(y)) => x == y,
+            (Expression::Special, Expression::Special) => true,
+            (Expression::Positional(x), Expression::Positional(y)) => x == y,
+            (Expression::Binding(x), Expression::Binding(y)) => x == y,
+            (Expression::Unary(op1, e1), Expression::Unary(op2, e2)) => {
+                let (e1, e2) = (*e1, *e2);
+                op1 == op2 && self.tree_eq(e1, other, e2)
+            }
+            (Expression::Binary(op1, l1, r1), Expression::Binary(op2, l2, r2)) => {
+                let (l1, r1, l2, r2) = (*l1, *r1, *l2, *r2);
+                op1 == op2
+                    && self.tree_eq(l1, other, l2)
+                    && self.tree_eq(r1, other, r2)
+            }
+            (Expression::List(c1, es1), Expression::List(c2, es2)) => {
+                if c1 != c2 || es1.len() != es2.len() {
+                    return false;
+                }
+                let pairs: Vec<(ExprIdx, ExprIdx)> =
+                    es1.iter().copied().zip(es2.iter().copied()).collect();
+                pairs.iter().all(|(a, b)| self.tree_eq(*a, other, *b))
+            }
+            (Expression::Call(c1, f1, args1), Expression::Call(c2, f2, args2)) => {
+                if c1 != c2 || args1.len() != args2.len() {
+                    return false;
+                }
+                let (f1, f2) = (*f1, *f2);
+                let pairs: Vec<(ExprIdx, ExprIdx)> =
+                    args1.iter().copied().zip(args2.iter().copied()).collect();
+                self.tree_eq(f1, other, f2)
+                    && pairs.iter().all(|(a, b)| self.tree_eq(*a, other, *b))
+            }
+            (Expression::Access(e1, id1), Expression::Access(e2, id2)) => {
+                let (e1, e2) = (*e1, *e2);
+                id1 == id2 && self.tree_eq(e1, other, e2)
+            }
+            (Expression::Tagged(id1, e1), Expression::Tagged(id2, e2)) => {
+                let (e1, e2) = (*e1, *e2);
+                id1 == id2 && self.tree_eq(e1, other, e2)
+            }
+            (Expression::Branched(bs1), Expression::Branched(bs2)) => {
+                if bs1.len() != bs2.len() {
+                    return false;
+                }
+                let branch_pairs: Vec<(Branch, Branch)> =
+                    bs1.iter().cloned().zip(bs2.iter().cloned()).collect();
+                branch_pairs.iter().all(|(b1, b2)| {
+                    self.tree_eq(b1.match_expression, other, b2.match_expression)
+                        && match (b1.guard_expression, b2.guard_expression) {
+                            (None, None) => true,
+                            (Some(g1), Some(g2)) => self.tree_eq(g1, other, g2),
+                            _ => false,
+                        }
+                        && self.tree_eq(b1.body, other, b2.body)
+                })
+            }
+            (Expression::Function(params1, body1), Expression::Function(params2, body2)) => {
+                if params1.len() != params2.len() {
+                    return false;
+                }
+                let (body1, body2) = (*body1, *body2);
+                let pairs: Vec<(ExprIdx, ExprIdx)> =
+                    params1.iter().copied().zip(params2.iter().copied()).collect();
+                pairs.iter().all(|(a, b)| self.tree_eq(*a, other, *b))
+                    && self.tree_eq(body1, other, body2)
+            }
+            (Expression::Empty, Expression::Empty) => true,
+            _ => false,
+        }
+    }
+}
+
+#[cfg(test)]
 mod tests {
     use super::*;
 
@@ -630,20 +746,16 @@ mod tests {
     fn numbers() {
         let source = "1, 0x12, 3.4";
 
-        let mut parser = Parser::from_source(source);
+        let parser = Parser::from_source(source);
+        let (arena, root) = parser.parse();
 
-        let ast = parser.parse();
+        let mut r = ExprArena::new();
+        let i1 = r.alloc(Expression::IntLiteral(1));
+        let i2 = r.alloc(Expression::IntLiteral(18));
+        let f = r.alloc(Expression::FloatLiteral(3.4));
+        let list = r.alloc(Expression::List(Container::File, vec![i1, i2, f]));
 
-        let reference = Expression::List(
-            Container::File,
-            vec![
-                Expression::IntLiteral(1),
-                Expression::IntLiteral(18),
-                Expression::FloatLiteral(3.4),
-            ],
-        );
-
-        assert_eq!(ast, reference);
+        assert!(arena.tree_eq(root, &r, list));
     }
 
     #[test]
@@ -652,38 +764,25 @@ mod tests {
             c: - 1 * 4 > 3 - 2 and value = \"string\"
         ";
 
-        let mut parser = Parser::from_source(source);
-        let ast = parser.parse();
-        let reference = Expression::Tagged(
-            Identifier("c"),
-            Box::new(Expression::Binary(
-                Operator::And,
-                Box::new(Expression::Binary(
-                    Operator::Gt,
-                    Box::new(Expression::Unary(
-                        Operator::Minus,
-                        Box::new(Expression::Binary(
-                            Operator::Times,
-                            Box::new(Expression::IntLiteral(1)),
-                            Box::new(Expression::IntLiteral(4)),
-                        )),
-                    )),
-                    Box::new(Expression::Binary(
-                        Operator::Minus,
-                        Box::new(Expression::IntLiteral(3)),
-                        Box::new(Expression::IntLiteral(2)),
-                    )),
-                )),
-                // value = "string"
-                Box::new(Expression::Binary(
-                    Operator::Eq,
-                    Box::new(Expression::Identifier("value")),
-                    Box::new(Expression::StringLiteral("string")),
-                )),
-            )),
-        );
+        let parser = Parser::from_source(source);
+        let (arena, root) = parser.parse();
 
-        assert_eq!(ast, reference);
+        let mut r = ExprArena::new();
+        let int1 = r.alloc(Expression::IntLiteral(1));
+        let int4 = r.alloc(Expression::IntLiteral(4));
+        let times = r.alloc(Expression::Binary(Operator::Times, int1, int4));
+        let uminus = r.alloc(Expression::Unary(Operator::Minus, times));
+        let int3 = r.alloc(Expression::IntLiteral(3));
+        let int2 = r.alloc(Expression::IntLiteral(2));
+        let sub = r.alloc(Expression::Binary(Operator::Minus, int3, int2));
+        let gt = r.alloc(Expression::Binary(Operator::Gt, uminus, sub));
+        let val = r.alloc(Expression::Identifier("value"));
+        let str_ = r.alloc(Expression::StringLiteral("string"));
+        let eq = r.alloc(Expression::Binary(Operator::Eq, val, str_));
+        let and = r.alloc(Expression::Binary(Operator::And, gt, eq));
+        let tagged = r.alloc(Expression::Tagged(Identifier("c"), and));
+
+        assert!(arena.tree_eq(root, &r, tagged));
     }
 
     #[test]
@@ -692,72 +791,56 @@ mod tests {
             v: - s.a ^ 2 * 3 + s.b
         ";
 
-        let mut parser = Parser::from_source(source);
+        let parser = Parser::from_source(source);
+        let (arena, root) = parser.parse();
 
-        let ast = parser.parse();
-        let reference = Expression::Tagged(
-            Identifier("v"),
-            Box::new(Expression::Binary(
-                Operator::Plus,
-                Box::new(Expression::Unary(
-                    Operator::Minus,
-                    Box::new(Expression::Binary(
-                        Operator::Times,
-                        Box::new(Expression::Binary(
-                            Operator::Exponent,
-                            Box::new(Expression::Access(
-                                Box::new(Expression::Identifier("s")),
-                                Identifier("a"),
-                            )),
-                            Box::new(Expression::IntLiteral(2)),
-                        )),
-                        Box::new(Expression::IntLiteral(3)),
-                    )),
-                )),
-                Box::new(Expression::Access(
-                    Box::new(Expression::Identifier("s")),
-                    Identifier("b"),
-                )),
-            )),
-        );
+        let mut r = ExprArena::new();
+        let s1 = r.alloc(Expression::Identifier("s"));
+        let access_a = r.alloc(Expression::Access(s1, Identifier("a")));
+        let int2 = r.alloc(Expression::IntLiteral(2));
+        let exp = r.alloc(Expression::Binary(Operator::Exponent, access_a, int2));
+        let int3 = r.alloc(Expression::IntLiteral(3));
+        let times = r.alloc(Expression::Binary(Operator::Times, exp, int3));
+        let uminus = r.alloc(Expression::Unary(Operator::Minus, times));
+        let s2 = r.alloc(Expression::Identifier("s"));
+        let access_b = r.alloc(Expression::Access(s2, Identifier("b")));
+        let plus = r.alloc(Expression::Binary(Operator::Plus, uminus, access_b));
+        let tagged = r.alloc(Expression::Tagged(Identifier("v"), plus));
 
-        assert_eq!(ast, reference);
+        assert!(arena.tree_eq(root, &r, tagged));
     }
 
     #[test]
     fn call_expressions_empty() {
         let source = "call()";
 
-        let mut parser = Parser::from_source(source);
+        let parser = Parser::from_source(source);
+        let (arena, root) = parser.parse();
 
-        let ast = parser.parse();
-        let reference = Expression::Call(
-            Container::Paren,
-            Box::new(Expression::Identifier("call")),
-            vec![Expression::Empty],
-        );
+        let mut r = ExprArena::new();
+        let callee = r.alloc(Expression::Identifier("call"));
+        let empty = r.alloc(Expression::Empty);
+        let call = r.alloc(Expression::Call(Container::Paren, callee, vec![empty]));
 
-        assert_eq!(ast, reference);
+        assert!(arena.tree_eq(root, &r, call));
     }
 
     #[test]
     fn call_expressions() {
         let source = "call(1, 2, 3)";
 
-        let mut parser = Parser::from_source(source);
+        let parser = Parser::from_source(source);
+        let (arena, root) = parser.parse();
 
-        let ast = parser.parse();
-        let reference = Expression::Call(
-            Container::Paren,
-            Box::new(Expression::Identifier("call")),
-            vec![
-                Expression::IntLiteral(1),
-                Expression::IntLiteral(2),
-                Expression::IntLiteral(3),
-            ],
-        );
+        let mut r = ExprArena::new();
+        let callee = r.alloc(Expression::Identifier("call"));
+        let i1 = r.alloc(Expression::IntLiteral(1));
+        let i2 = r.alloc(Expression::IntLiteral(2));
+        let i3 = r.alloc(Expression::IntLiteral(3));
+        let call =
+            r.alloc(Expression::Call(Container::Paren, callee, vec![i1, i2, i3]));
 
-        assert_eq!(ast, reference);
+        assert!(arena.tree_eq(root, &r, call));
     }
 
     #[test]
@@ -771,94 +854,69 @@ mod tests {
         y: a.b + a.c,
         ";
 
-        let mut parser = Parser::from_source(source);
+        let parser = Parser::from_source(source);
+        let (arena, root) = parser.parse();
 
-        let ast = parser.parse();
+        let mut r = ExprArena::new();
 
-        let reference = Expression::List(
+        // a: struct { b: Int, c: Int, }
+        let struct_id = r.alloc(Expression::Identifier("struct"));
+        let int_b = r.alloc(Expression::Identifier("Int"));
+        let int_c = r.alloc(Expression::Identifier("Int"));
+        let tagged_b = r.alloc(Expression::Tagged(Identifier("b"), int_b));
+        let tagged_c = r.alloc(Expression::Tagged(Identifier("c"), int_c));
+        let empty1 = r.alloc(Expression::Empty);
+        let struct_call = r.alloc(Expression::Call(
+            Container::Brace,
+            struct_id,
+            vec![tagged_b, tagged_c, empty1],
+        ));
+        let a_tagged = r.alloc(Expression::Tagged(Identifier("a"), struct_call));
+
+        // x: a[b: 1, c: 2]
+        let a_id = r.alloc(Expression::Identifier("a"));
+        let one = r.alloc(Expression::IntLiteral(1));
+        let two = r.alloc(Expression::IntLiteral(2));
+        let b1 = r.alloc(Expression::Tagged(Identifier("b"), one));
+        let c2 = r.alloc(Expression::Tagged(Identifier("c"), two));
+        let a_bracket =
+            r.alloc(Expression::Call(Container::Bracket, a_id, vec![b1, c2]));
+        let x_tagged = r.alloc(Expression::Tagged(Identifier("x"), a_bracket));
+
+        // y: a.b + a.c
+        let a1 = r.alloc(Expression::Identifier("a"));
+        let access_ab = r.alloc(Expression::Access(a1, Identifier("b")));
+        let a2 = r.alloc(Expression::Identifier("a"));
+        let access_ac = r.alloc(Expression::Access(a2, Identifier("c")));
+        let plus = r.alloc(Expression::Binary(Operator::Plus, access_ab, access_ac));
+        let y_tagged = r.alloc(Expression::Tagged(Identifier("y"), plus));
+
+        let empty2 = r.alloc(Expression::Empty);
+        let list = r.alloc(Expression::List(
             Container::File,
-            vec![
-                Expression::Tagged(
-                    Identifier("a"),
-                    Box::new(Expression::Call(
-                        Container::Brace,
-                        Box::new(Expression::Identifier("struct")),
-                        vec![
-                            Expression::Tagged(
-                                Identifier("b"),
-                                Box::new(Expression::Identifier("Int")),
-                            ),
-                            Expression::Tagged(
-                                Identifier("c"),
-                                Box::new(Expression::Identifier("Int")),
-                            ),
-                            Expression::Empty,
-                        ],
-                    )),
-                ),
-                Expression::Tagged(
-                    Identifier("x"),
-                    Box::new(Expression::Call(
-                        Container::Bracket,
-                        Box::new(Expression::Identifier("a")),
-                        vec![
-                            Expression::Tagged(
-                                Identifier("b"),
-                                Box::new(Expression::IntLiteral(1)),
-                            ),
-                            Expression::Tagged(
-                                Identifier("c"),
-                                Box::new(Expression::IntLiteral(2)),
-                            ),
-                        ],
-                    )),
-                ),
-                Expression::Tagged(
-                    Identifier("y"),
-                    Box::new(Expression::Binary(
-                        Operator::Plus,
-                        Box::new(Expression::Access(
-                            Box::new(Expression::Identifier("a")),
-                            Identifier("b"),
-                        )),
-                        Box::new(Expression::Access(
-                            Box::new(Expression::Identifier("a")),
-                            Identifier("c"),
-                        )),
-                    )),
-                ),
-                Expression::Empty,
-            ],
-        );
+            vec![a_tagged, x_tagged, y_tagged, empty2],
+        ));
 
-        assert_eq!(ast, reference);
+        assert!(arena.tree_eq(root, &r, list));
     }
 
     #[test]
     fn prefix() {
         let source = "(3 + 2).to_float(x: a)";
 
-        let mut parser = Parser::from_source(source);
+        let parser = Parser::from_source(source);
+        let (arena, root) = parser.parse();
 
-        let ast = parser.parse();
+        let mut r = ExprArena::new();
+        let three = r.alloc(Expression::IntLiteral(3));
+        let two = r.alloc(Expression::IntLiteral(2));
+        let plus = r.alloc(Expression::Binary(Operator::Plus, three, two));
+        let access = r.alloc(Expression::Access(plus, Identifier("to_float")));
+        let a_id = r.alloc(Expression::Identifier("a"));
+        let x_a = r.alloc(Expression::Tagged(Identifier("x"), a_id));
+        let call = r.alloc(Expression::Call(Container::Paren, access, vec![x_a]));
 
-        let reference = Expression::Call(
-            Container::Paren,
-            Box::new(Expression::Access(
-                Box::new(Expression::Binary(
-                    Operator::Plus,
-                    Box::new(Expression::IntLiteral(3)),
-                    Box::new(Expression::IntLiteral(2)),
-                )),
-                Identifier("to_float"),
-            )),
-            vec![Expression::Tagged(
-                Identifier("x"),
-                Box::new(Expression::Identifier("a")),
-            )],
-        );
-
-        assert_eq!(ast, reference);
+        assert!(arena.tree_eq(root, &r, call));
     }
 
     #[test]
@@ -868,31 +926,27 @@ mod tests {
             |> slice()[1, -1]
         ";
 
-        let mut parser = Parser::from_source(source);
+        let parser = Parser::from_source(source);
+        let (arena, root) = parser.parse();
 
-        let ast = parser.parse();
+        let mut r = ExprArena::new();
+        let str_ = r.alloc(Expression::StringLiteral("we are the champions"));
+        let slice_id = r.alloc(Expression::Identifier("slice"));
+        let empty = r.alloc(Expression::Empty);
+        let slice_call =
+            r.alloc(Expression::Call(Container::Paren, slice_id, vec![empty]));
+        let one = r.alloc(Expression::IntLiteral(1));
+        let neg_one_inner = r.alloc(Expression::IntLiteral(1));
+        let neg_one = r.alloc(Expression::Unary(Operator::Minus, neg_one_inner));
+        let bracket_call = r.alloc(Expression::Call(
+            Container::Bracket,
+            slice_call,
+            vec![one, neg_one],
+        ));
+        let pipe =
+            r.alloc(Expression::Binary(Operator::Pipe, str_, bracket_call));
 
-        let reference = Expression::Binary(
-            Operator::Pipe,
-            Box::new(Expression::StringLiteral("we are the champions")),
-            Box::new(Expression::Call(
-                Container::Bracket,
-                Box::new(Expression::Call(
-                    Container::Paren,
-                    Box::new(Expression::Identifier("slice")),
-                    vec![Expression::Empty],
-                )),
-                vec![
-                    Expression::IntLiteral(1),
-                    Expression::Unary(
-                        Operator::Minus,
-                        Box::new(Expression::IntLiteral(1)),
-                    ),
-                ],
-            )),
-        );
-
-        assert_eq!(ast, reference);
+        assert!(arena.tree_eq(root, &r, pipe));
     }
 
     #[test]
@@ -901,62 +955,60 @@ mod tests {
             first() + second(1) + third(x:3,)
         ";
 
-        let mut parser = Parser::from_source(source);
+        let parser = Parser::from_source(source);
+        let (arena, root) = parser.parse();
 
-        let ast = parser.parse();
+        let mut r = ExprArena::new();
 
-        let reference = Expression::Binary(
-            Operator::Plus,
-            Box::new(Expression::Binary(
-                Operator::Plus,
-                Box::new(Expression::Call(
-                    Container::Paren,
-                    Box::new(Expression::Identifier("first")),
-                    vec![Expression::Empty],
-                )),
-                Box::new(Expression::Call(
-                    Container::Paren,
-                    Box::new(Expression::Identifier("second")),
-                    vec![Expression::IntLiteral(1)],
-                )),
-            )),
-            Box::new(Expression::Call(
-                Container::Paren,
-                Box::new(Expression::Identifier("third")),
-                vec![
-                    Expression::Tagged(
-                        Identifier("x"),
-                        Box::new(Expression::IntLiteral(3)),
-                    ),
-                    Expression::Empty,
-                ],
-            )),
-        );
+        let first_id = r.alloc(Expression::Identifier("first"));
+        let empty1 = r.alloc(Expression::Empty);
+        let first_call =
+            r.alloc(Expression::Call(Container::Paren, first_id, vec![empty1]));
 
-        assert_eq!(ast, reference);
+        let second_id = r.alloc(Expression::Identifier("second"));
+        let one = r.alloc(Expression::IntLiteral(1));
+        let second_call =
+            r.alloc(Expression::Call(Container::Paren, second_id, vec![one]));
+
+        let plus1 =
+            r.alloc(Expression::Binary(Operator::Plus, first_call, second_call));
+
+        let third_id = r.alloc(Expression::Identifier("third"));
+        let three = r.alloc(Expression::IntLiteral(3));
+        let x3 = r.alloc(Expression::Tagged(Identifier("x"), three));
+        let empty2 = r.alloc(Expression::Empty);
+        let third_call = r.alloc(Expression::Call(
+            Container::Paren,
+            third_id,
+            vec![x3, empty2],
+        ));
+
+        let plus2 =
+            r.alloc(Expression::Binary(Operator::Plus, plus1, third_call));
+
+        assert!(arena.tree_eq(root, &r, plus2));
     }
 
     #[test]
     fn branched_expression() {
         let source = "|condition1, condition2| expression";
 
-        let mut parser = Parser::from_source(source);
+        let parser = Parser::from_source(source);
+        let (arena, root) = parser.parse();
 
-        let ast = parser.parse();
-
-        let reference = Expression::Branched(vec![Branch {
-            match_expression: Expression::List(
-                Container::Guard,
-                vec![
-                    Expression::Identifier("condition1"),
-                    Expression::Identifier("condition2"),
-                ],
-            ),
+        let mut r = ExprArena::new();
+        let cond1 = r.alloc(Expression::Identifier("condition1"));
+        let cond2 = r.alloc(Expression::Identifier("condition2"));
+        let match_expr =
+            r.alloc(Expression::List(Container::Guard, vec![cond1, cond2]));
+        let body = r.alloc(Expression::Identifier("expression"));
+        let branched = r.alloc(Expression::Branched(vec![Branch {
+            match_expression: match_expr,
             guard_expression: None,
-            body: Expression::Identifier("expression"),
-        }]);
+            body,
+        }]));
 
-        assert_eq!(ast, reference);
+        assert!(arena.tree_eq(root, &r, branched));
     }
 
     #[test]
@@ -968,38 +1020,41 @@ mod tests {
             }
         ";
 
-        let mut parser = Parser::from_source(source);
+        let parser = Parser::from_source(source);
+        let (arena, root) = parser.parse();
 
-        let ast = parser.parse();
+        let mut r = ExprArena::new();
 
-        let reference = Expression::Tagged(
-            Identifier("a"),
-            Box::new(Expression::Branched(vec![
-                Branch {
-                    match_expression: Expression::Tagged(
-                        Identifier("x"),
-                        Box::new(Expression::Binding("a")),
-                    ),
-                    guard_expression: Some(Expression::Binary(
-                        Operator::Eq,
-                        Box::new(Expression::Identifier("a")),
-                        Box::new(Expression::IntLiteral(0)),
-                    )),
-                    body: Expression::Call(
-                        Container::Paren,
-                        Box::new(Expression::Identifier("do_something")),
-                        vec![Expression::Empty],
-                    ),
-                },
-                Branch {
-                    match_expression: Expression::Special,
-                    guard_expression: None,
-                    body: Expression::Identifier("do_nothing"),
-                },
-            ])),
-        );
+        // Branch 1: x: @a if a = 0 | do_something()
+        let binding_a = r.alloc(Expression::Binding("a"));
+        let match1 = r.alloc(Expression::Tagged(Identifier("x"), binding_a));
+        let a_id = r.alloc(Expression::Identifier("a"));
+        let zero = r.alloc(Expression::IntLiteral(0));
+        let guard1 = r.alloc(Expression::Binary(Operator::Eq, a_id, zero));
+        let do_something = r.alloc(Expression::Identifier("do_something"));
+        let empty = r.alloc(Expression::Empty);
+        let body1 =
+            r.alloc(Expression::Call(Container::Paren, do_something, vec![empty]));
 
-        assert_eq!(ast, reference);
+        // Branch 2: _ | do_nothing
+        let special = r.alloc(Expression::Special);
+        let body2 = r.alloc(Expression::Identifier("do_nothing"));
+
+        let branched = r.alloc(Expression::Branched(vec![
+            Branch {
+                match_expression: match1,
+                guard_expression: Some(guard1),
+                body: body1,
+            },
+            Branch {
+                match_expression: special,
+                guard_expression: None,
+                body: body2,
+            },
+        ]));
+        let tagged = r.alloc(Expression::Tagged(Identifier("a"), branched));
+
+        assert!(arena.tree_eq(root, &r, tagged));
     }
 
     #[test]
@@ -1010,25 +1065,19 @@ mod tests {
             }
         ";
 
-        let mut parser = Parser::from_source(source);
+        let parser = Parser::from_source(source);
+        let (arena, root) = parser.parse();
 
-        let ast = parser.parse();
+        let mut r = ExprArena::new();
+        let i_id = r.alloc(Expression::Identifier("int"));
+        let param = r.alloc(Expression::Tagged(Identifier("i"), i_id));
+        let int_id = r.alloc(Expression::Identifier("int"));
+        let three = r.alloc(Expression::IntLiteral(3));
+        let body =
+            r.alloc(Expression::Call(Container::Brace, int_id, vec![three]));
+        let func = r.alloc(Expression::Function(vec![param], body));
+        let tagged = r.alloc(Expression::Tagged(Identifier("factorial"), func));
 
-        let reference = Expression::Tagged(
-            Identifier("factorial"),
-            Box::new(Expression::Function(
-                vec![Expression::Tagged(
-                    Identifier("i"),
-                    Box::new(Expression::Identifier("int")),
-                )],
-                Box::new(Expression::Call(
-                    Container::Brace,
-                    Box::new(Expression::Identifier("int")),
-                    vec![Expression::IntLiteral(3)],
-                )),
-            )),
-        );
-
-        assert_eq!(ast, reference);
+        assert!(arena.tree_eq(root, &r, tagged));
     }
 }
