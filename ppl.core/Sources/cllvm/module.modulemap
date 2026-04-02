@@ -1,4 +1,0 @@
-module cllvm [system] {
-  header "cllvm.h"
-  export *
-}

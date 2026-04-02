@@ -1,7 +1,0 @@
-CompileFlags:
-  Add: [
-    -std=c++23,
-    -Werror=switch,
-    -Werror=return-type,
-    -Werror=conversion
-]
