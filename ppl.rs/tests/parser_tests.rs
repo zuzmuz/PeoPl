@@ -513,3 +513,20 @@ fn multi_generic_curried_function() {
 
     assert!(tree_eq(&arena, root, &r, tagged));
 }
+
+#[test]
+fn compile_time_only_function() {
+    // fn [T] -> T is valid — no runtime param group required
+    let source = "type_of: fn [T] -> T";
+
+    let parser = Parser::from_source(source);
+    let (arena, root) = parser.parse();
+
+    let mut r = ExprArena::new();
+    let t = r.alloc(Expression::Identifier("T"));
+    let ret = r.alloc(Expression::Identifier("T"));
+    let func = r.alloc(Expression::Function(Container::Bracket, vec![t], ret));
+    let tagged = r.alloc(Expression::Tagged(Identifier("type_of"), func));
+
+    assert!(tree_eq(&arena, root, &r, tagged));
+}

@@ -632,13 +632,13 @@ impl<'a> Parser<'a> {
                         .push(self.parse_primary_expression(container));
                     self.advance();
                 }
-                if self.tokens[self.cursor] != Token::Lparen {
-                    todo!("fn should have at least one runtime param group")
-                }
                 while self.tokens[self.cursor] == Token::Lparen {
                     runtime_groups
                         .push(self.parse_primary_expression(container));
                     self.advance();
+                }
+                if compile_groups.is_empty() && runtime_groups.is_empty() {
+                    todo!("fn should have at least one param group")
                 }
                 if self.tokens[self.cursor] != Token::Arrow {
                     todo!("need arrow for function")
