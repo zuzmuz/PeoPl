@@ -1,6 +1,5 @@
-mod syntax;
-use crate::syntax::parser_display;
-use crate::syntax::{parser, tokenizer};
+use ppl::syntax::parser_display;
+use ppl::syntax::{parser, tokenizer};
 
 use clap::{Parser, Subcommand};
 use std::fs::File;
