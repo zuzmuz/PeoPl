@@ -1,4 +1,4 @@
-use crate::syntax::parser::{ExprArena, ExprIdx, Expression};
+use crate::syntax::parser::{Container, ExprArena, ExprIdx, Expression};
 use colored::{self, ColoredString, Colorize};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -340,14 +340,18 @@ pub fn display_ast<'a>(
                 );
             }
         }
-        Expression::Function(params, body) => {
+        Expression::Function(kind, params, body) => {
             let (params, body) = (params.clone(), *body);
+            let label = match kind {
+                Container::Bracket => "GenericFunction",
+                _ => "Function",
+            };
             descriptions.push(format!(
                 "{}{}{}{}",
                 prefix,
                 connector.display(),
                 extra.cyan(),
-                "Function".red(),
+                label.red(),
             ));
 
             descriptions.push(format!(

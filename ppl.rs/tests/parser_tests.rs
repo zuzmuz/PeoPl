@@ -86,10 +86,10 @@ fn tree_eq<'a>(
             })
         }
         (
-            Expression::Function(params1, body1),
-            Expression::Function(params2, body2),
+            Expression::Function(c1, params1, body1),
+            Expression::Function(c2, params2, body2),
         ) => {
-            if params1.len() != params2.len() {
+            if c1 != c2 || params1.len() != params2.len() {
                 return false;
             }
             let (body1, body2) = (*body1, *body2);
@@ -440,7 +440,7 @@ fn function_definition() {
     let int_id = r.alloc(Expression::Identifier("int"));
     let three = r.alloc(Expression::IntLiteral(3));
     let body = r.alloc(Expression::Call(Container::Brace, int_id, vec![three]));
-    let func = r.alloc(Expression::Function(vec![param], body));
+    let func = r.alloc(Expression::Function(Container::Paren, vec![param], body));
     let tagged = r.alloc(Expression::Tagged(Identifier("factorial"), func));
 
     assert!(tree_eq(&arena, root, &r, tagged));
@@ -460,9 +460,56 @@ fn curried_function_definition() {
     let b_type = r.alloc(Expression::Identifier("int"));
     let param_b = r.alloc(Expression::Tagged(Identifier("b"), b_type));
     let ret = r.alloc(Expression::Identifier("int"));
-    let inner = r.alloc(Expression::Function(vec![param_b], ret));
-    let outer = r.alloc(Expression::Function(vec![param_a], inner));
+    let inner = r.alloc(Expression::Function(Container::Paren, vec![param_b], ret));
+    let outer = r.alloc(Expression::Function(Container::Paren, vec![param_a], inner));
     let tagged = r.alloc(Expression::Tagged(Identifier("add"), outer));
+
+    assert!(tree_eq(&arena, root, &r, tagged));
+}
+
+#[test]
+fn generic_function_definition() {
+    // fn [T](a: T) -> T desugars to:
+    // GenericFunction([T], Function([a: T], T))
+    let source = "identity: fn [T](a: T) -> T";
+
+    let parser = Parser::from_source(source);
+    let (arena, root) = parser.parse();
+
+    let mut r = ExprArena::new();
+    let t1 = r.alloc(Expression::Identifier("T"));
+    let t2 = r.alloc(Expression::Identifier("T"));
+    let param_a = r.alloc(Expression::Tagged(Identifier("a"), t2));
+    let ret = r.alloc(Expression::Identifier("T"));
+    let inner = r.alloc(Expression::Function(Container::Paren, vec![param_a], ret));
+    let outer = r.alloc(Expression::Function(Container::Bracket, vec![t1], inner));
+    let tagged = r.alloc(Expression::Tagged(Identifier("identity"), outer));
+
+    assert!(tree_eq(&arena, root, &r, tagged));
+}
+
+#[test]
+fn multi_generic_curried_function() {
+    // fn [T][U](a: T)(b: U) -> T desugars to:
+    // GenericFunction([T], GenericFunction([U], Function([a: T], Function([b: U], T))))
+    let source = "map: fn [T][U](a: T)(b: U) -> T";
+
+    let parser = Parser::from_source(source);
+    let (arena, root) = parser.parse();
+
+    let mut r = ExprArena::new();
+    let t_type = r.alloc(Expression::Identifier("T"));
+    let u_type = r.alloc(Expression::Identifier("U"));
+    let t2 = r.alloc(Expression::Identifier("T"));
+    let u2 = r.alloc(Expression::Identifier("U"));
+    let param_a = r.alloc(Expression::Tagged(Identifier("a"), t2));
+    let param_b = r.alloc(Expression::Tagged(Identifier("b"), u2));
+    let ret = r.alloc(Expression::Identifier("T"));
+    let fn_b = r.alloc(Expression::Function(Container::Paren, vec![param_b], ret));
+    let fn_a = r.alloc(Expression::Function(Container::Paren, vec![param_a], fn_b));
+    let fn_u = r.alloc(Expression::Function(Container::Bracket, vec![u_type], fn_a));
+    let fn_t = r.alloc(Expression::Function(Container::Bracket, vec![t_type], fn_u));
+    let tagged = r.alloc(Expression::Tagged(Identifier("map"), fn_t));
 
     assert!(tree_eq(&arena, root, &r, tagged));
 }

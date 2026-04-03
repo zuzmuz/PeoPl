@@ -278,7 +278,7 @@ pub enum Expression<'a> {
 
     Branched(Vec<Branch>),
 
-    Function(Vec<ExprIdx>, ExprIdx),
+    Function(Container, Vec<ExprIdx>, ExprIdx),
 
     Empty,
     // Invalid,
@@ -625,35 +625,44 @@ impl<'a> Parser<'a> {
             }
             Token::KwordFn => {
                 self.advance();
-                if self.tokens[self.cursor] != Token::Lparen {
-                    todo!("fn should have parent opening")
-                } else {
-                    let mut param_groups =
-                        vec![self.parse_primary_expression(container)];
+                let mut compile_groups: Vec<ExprIdx> = Vec::new();
+                let mut runtime_groups: Vec<ExprIdx> = Vec::new();
+                while self.tokens[self.cursor] == Token::Lbracket {
+                    compile_groups
+                        .push(self.parse_primary_expression(container));
                     self.advance();
-                    while self.tokens[self.cursor] == Token::Lparen {
-                        param_groups
-                            .push(self.parse_primary_expression(container));
-                        self.advance();
-                    }
-                    if self.tokens[self.cursor] == Token::Arrow {
-                        self.advance();
-                        let expression =
-                            self.parse_primary_expression(container);
-                        // 3 because we need to know when to stop parsing
-                        let mut body =
-                            self.continue_parsing(3, expression, container);
-                        for params in param_groups.into_iter().rev() {
-                            body = self.alloc(Expression::Function(
-                                vec![params],
-                                body,
-                            ));
-                        }
-                        body
-                    } else {
-                        todo!("need arrow for function")
-                    }
                 }
+                if self.tokens[self.cursor] != Token::Lparen {
+                    todo!("fn should have at least one runtime param group")
+                }
+                while self.tokens[self.cursor] == Token::Lparen {
+                    runtime_groups
+                        .push(self.parse_primary_expression(container));
+                    self.advance();
+                }
+                if self.tokens[self.cursor] != Token::Arrow {
+                    todo!("need arrow for function")
+                }
+                self.advance();
+                let expression = self.parse_primary_expression(container);
+                // 3 because we need to know when to stop parsing
+                let mut body =
+                    self.continue_parsing(3, expression, container);
+                for params in runtime_groups.into_iter().rev() {
+                    body = self.alloc(Expression::Function(
+                        Container::Paren,
+                        vec![params],
+                        body,
+                    ));
+                }
+                for params in compile_groups.into_iter().rev() {
+                    body = self.alloc(Expression::Function(
+                        Container::Bracket,
+                        vec![params],
+                        body,
+                    ));
+                }
+                body
             }
             token => {
                 if let Some(container_opening) = token.opening() {
