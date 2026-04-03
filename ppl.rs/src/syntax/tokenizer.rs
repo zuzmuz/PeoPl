@@ -30,8 +30,8 @@ pub enum Token<'a> {
     StringLiteral(&'a str),
 
     #[token("_")]
-    Special, // underscore
-    //
+    Special,
+
     // kwords
     #[token("if")]
     KwordIf,
@@ -51,51 +51,51 @@ pub enum Token<'a> {
 
     // arithmetics
     #[token("+")]
-    OpPlus, // +
+    OpPlus,
     #[token("-")]
-    OpMinus, // -
+    OpMinus,
     #[token("*")]
-    OpTimes, // *
+    OpTimes,
     #[token("/")]
-    OpBy, // /
+    OpBy,
     #[token("%")]
-    OpMod, // %
+    OpMod,
     #[token("^")]
-    OpExponent, // ^
+    OpExponent,
 
     // bitwise
     #[token("<<")]
-    Lshift, // <<
+    Lshift,
     #[token(">>")]
-    Rshift, // >>
+    Rshift,
     #[token(".&")]
-    Band, // .&
+    Band,
     #[token(".|")]
-    Bor, // .|
+    Bor,
     #[token(".^")]
-    Bxor, // .^
+    Bxor,
     #[token("~")]
-    Bnot, // ~
+    Bnot,
 
     // access
     #[token(".", priority = 10)]
-    Dot, // .
+    Dot,
     #[token("|>")]
-    Pipe, // |>
+    Pipe,
     #[token("?")]
-    Propagate, // ?
+    Propagate,
 
     // comparisons
     #[token("=")]
-    OpEq, // =
+    OpEq,
     #[token(">=")]
-    OpGe, // >=
+    OpGe,
     #[token(">")]
-    OpGt, // >
+    OpGt,
     #[token("<=")]
-    OpLe, // <=
+    OpLe,
     #[token("<")]
-    OpLt, // <
+    OpLt,
 
     // delimieters
     #[token("(")]
@@ -124,11 +124,13 @@ pub enum Token<'a> {
     Colon, // :
     #[token("->")]
     Arrow, // ->
-    
-    #[regex(r"@[\p{XID_Start}\p{So}\p{Sk}][\p{XID_Continue}\p{So}\p{Sk}]*", |lex| &lex.slice()[1..])]
+
+    #[regex(r"@[\p{XID_Start}][\p{XID_Continue}\p{So}\p{Sk}]*", |lex| &lex.slice()[1..])]
     Binding(&'a str), // @
-    #[regex(r"\$[\p{XID_Continue}\p{So}\p{Sk}]+", |lex| &lex.slice()[1..])]
-    Positional(&'a str), // $
+    #[regex(r"\$[\p{XID_Start}][\p{XID_Continue}\p{So}\p{Sk}]*", |lex| &lex.slice()[1..])]
+    PositionalStr(&'a str), // $
+    #[regex(r"\$[0-9][0-9_]*", |lex| lex.slice()[1..].parse::<u64>().ok())]
+    PositionalInt(u64), // $
 
     #[regex(r"//.*", allow_greedy = true)]
     Comment,

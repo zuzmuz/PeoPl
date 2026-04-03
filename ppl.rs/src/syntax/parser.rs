@@ -143,7 +143,8 @@ impl<'a> Token<'a> {
             | Token::Special
             | Token::KwordFn
             | Token::Identifier(_)
-            | Token::Positional(_)
+            | Token::PositionalStr(_)
+            | Token::PositionalInt(_)
             | Token::Arrow
             | Token::Binding(_) => -1,
 
@@ -221,7 +222,7 @@ impl<'a> ExprArena<'a> {
 
     pub fn with_capacity(capacity: usize) -> Self {
         ExprArena {
-            expressions: Vec::with_capacity(capacity)
+            expressions: Vec::with_capacity(capacity),
         }
     }
 
@@ -260,7 +261,8 @@ pub enum Expression<'a> {
     Identifier(&'a str),
     // QualifiedIdentifier(Vec<&'a str>),
     Special,
-    Positional(&'a str),
+    PositionalStr(&'a str),
+    PositionalInt(u64),
     Binding(&'a str),
 
     // primary
@@ -269,7 +271,8 @@ pub enum Expression<'a> {
 
     List(Container, Vec<ExprIdx>),
     Call(Container, ExprIdx, Vec<ExprIdx>),
-    Access(ExprIdx, Identifier<'a>),
+    AccessIdent(ExprIdx, Identifier<'a>),
+    AccessPosition(ExprIdx, u64),
 
     Tagged(Identifier<'a>, ExprIdx),
 
@@ -521,7 +524,10 @@ impl<'a> Parser<'a> {
             };
 
             if operator_token == Token::Comma {
-                if matches!(self.arena.get(last_expression), Expression::List(_, _)) {
+                if matches!(
+                    self.arena.get(last_expression),
+                    Expression::List(_, _)
+                ) {
                     if let Expression::List(_, vec) =
                         self.arena.get_mut(last_expression)
                     {
@@ -557,16 +563,20 @@ impl<'a> Parser<'a> {
             } else if operator_token == Token::Backslash {
                 todo!("qualified identifiers");
             } else if operator_token == Token::Dot {
-                let ident_str = match self.arena.get(next_expression) {
-                    Expression::Identifier(ident) => *ident,
+                last_expression = match self.arena.get(next_expression) {
+                    Expression::Identifier(ident) => {
+                        self.alloc(Expression::AccessIdent(
+                            last_expression,
+                            Identifier(*ident),
+                        ))
+                    }
+                    Expression::IntLiteral(position) => self.alloc(
+                        Expression::AccessPosition(last_expression, *position),
+                    ),
                     _ => todo!(
                         "access expression requires rhs to be an identifier"
                     ),
                 };
-                last_expression = self.alloc(Expression::Access(
-                    last_expression,
-                    Identifier(ident_str),
-                ));
             }
         }
     }
@@ -584,16 +594,29 @@ impl<'a> Parser<'a> {
             Token::DecLiteral(value)
             | Token::HexLiteral(value)
             | Token::OctLiteral(value)
-            | Token::BinLiteral(value) => self.alloc(Expression::IntLiteral(value)),
-            Token::FloatLiteral(value) => self.alloc(Expression::FloatLiteral(value)),
+            | Token::BinLiteral(value) => {
+                self.alloc(Expression::IntLiteral(value))
+            }
+            Token::FloatLiteral(value) => {
+                self.alloc(Expression::FloatLiteral(value))
+            }
             Token::ImaginaryLiteral(value) => {
                 self.alloc(Expression::ImaginaryLiteral(value))
             }
-            Token::StringLiteral(value) => self.alloc(Expression::StringLiteral(value)),
-            Token::Positional(value) => self.alloc(Expression::Positional(value)),
+            Token::StringLiteral(value) => {
+                self.alloc(Expression::StringLiteral(value))
+            }
+            Token::PositionalStr(value) => {
+                self.alloc(Expression::PositionalStr(value))
+            }
+            Token::PositionalInt(value) => {
+                self.alloc(Expression::PositionalInt(value))
+            }
             Token::Binding(value) => self.alloc(Expression::Binding(value)),
             Token::Special => self.alloc(Expression::Special),
-            Token::Identifier(value) => self.alloc(Expression::Identifier(value)),
+            Token::Identifier(value) => {
+                self.alloc(Expression::Identifier(value))
+            }
             Token::KwordIf => {
                 todo!("handle empty match expression");
             }
@@ -648,7 +671,10 @@ impl<'a> Parser<'a> {
                         expression,
                         container,
                     );
-                    self.alloc(Expression::Unary(operator, continued_expression))
+                    self.alloc(Expression::Unary(
+                        operator,
+                        continued_expression,
+                    ))
                 } else if Token::NewLine == token || Token::Comment == token {
                     self.advance();
                     self.parse_primary_expression(container)
@@ -660,7 +686,6 @@ impl<'a> Parser<'a> {
     }
 }
 
-
 #[cfg(test)]
 impl<'a> ExprArena<'a> {
     /// Structural equality check between two trees, potentially in different arenas.
@@ -670,19 +695,26 @@ impl<'a> ExprArena<'a> {
             (Expression::FloatLiteral(x), Expression::FloatLiteral(y)) => {
                 x.to_bits() == y.to_bits()
             }
-            (Expression::ImaginaryLiteral(x), Expression::ImaginaryLiteral(y)) => {
-                x.to_bits() == y.to_bits()
+            (
+                Expression::ImaginaryLiteral(x),
+                Expression::ImaginaryLiteral(y),
+            ) => x.to_bits() == y.to_bits(),
+            (Expression::StringLiteral(x), Expression::StringLiteral(y)) => {
+                x == y
             }
-            (Expression::StringLiteral(x), Expression::StringLiteral(y)) => x == y,
             (Expression::Identifier(x), Expression::Identifier(y)) => x == y,
             (Expression::Special, Expression::Special) => true,
-            (Expression::Positional(x), Expression::Positional(y)) => x == y,
+            (Expression::PositionalStr(x), Expression::PositionalStr(y)) => x == y,
+            (Expression::PositionalInt(x), Expression::PositionalInt(y)) => x == y,
             (Expression::Binding(x), Expression::Binding(y)) => x == y,
             (Expression::Unary(op1, e1), Expression::Unary(op2, e2)) => {
                 let (e1, e2) = (*e1, *e2);
                 op1 == op2 && self.tree_eq(e1, other, e2)
             }
-            (Expression::Binary(op1, l1, r1), Expression::Binary(op2, l2, r2)) => {
+            (
+                Expression::Binary(op1, l1, r1),
+                Expression::Binary(op2, l2, r2),
+            ) => {
                 let (l1, r1, l2, r2) = (*l1, *r1, *l2, *r2);
                 op1 == op2
                     && self.tree_eq(l1, other, l2)
@@ -696,7 +728,10 @@ impl<'a> ExprArena<'a> {
                     es1.iter().copied().zip(es2.iter().copied()).collect();
                 pairs.iter().all(|(a, b)| self.tree_eq(*a, other, *b))
             }
-            (Expression::Call(c1, f1, args1), Expression::Call(c2, f2, args2)) => {
+            (
+                Expression::Call(c1, f1, args1),
+                Expression::Call(c2, f2, args2),
+            ) => {
                 if c1 != c2 || args1.len() != args2.len() {
                     return false;
                 }
@@ -706,7 +741,11 @@ impl<'a> ExprArena<'a> {
                 self.tree_eq(f1, other, f2)
                     && pairs.iter().all(|(a, b)| self.tree_eq(*a, other, *b))
             }
-            (Expression::Access(e1, id1), Expression::Access(e2, id2)) => {
+            (Expression::AccessIdent(e1, id1), Expression::AccessIdent(e2, id2)) => {
+                let (e1, e2) = (*e1, *e2);
+                id1 == id2 && self.tree_eq(e1, other, e2)
+            }
+            (Expression::AccessPosition(e1, id1), Expression::AccessPosition(e2, id2)) => {
                 let (e1, e2) = (*e1, *e2);
                 id1 == id2 && self.tree_eq(e1, other, e2)
             }
@@ -721,22 +760,30 @@ impl<'a> ExprArena<'a> {
                 let branch_pairs: Vec<(Branch, Branch)> =
                     bs1.iter().cloned().zip(bs2.iter().cloned()).collect();
                 branch_pairs.iter().all(|(b1, b2)| {
-                    self.tree_eq(b1.match_expression, other, b2.match_expression)
-                        && match (b1.guard_expression, b2.guard_expression) {
-                            (None, None) => true,
-                            (Some(g1), Some(g2)) => self.tree_eq(g1, other, g2),
-                            _ => false,
-                        }
-                        && self.tree_eq(b1.body, other, b2.body)
+                    self.tree_eq(
+                        b1.match_expression,
+                        other,
+                        b2.match_expression,
+                    ) && match (b1.guard_expression, b2.guard_expression) {
+                        (None, None) => true,
+                        (Some(g1), Some(g2)) => self.tree_eq(g1, other, g2),
+                        _ => false,
+                    } && self.tree_eq(b1.body, other, b2.body)
                 })
             }
-            (Expression::Function(params1, body1), Expression::Function(params2, body2)) => {
+            (
+                Expression::Function(params1, body1),
+                Expression::Function(params2, body2),
+            ) => {
                 if params1.len() != params2.len() {
                     return false;
                 }
                 let (body1, body2) = (*body1, *body2);
-                let pairs: Vec<(ExprIdx, ExprIdx)> =
-                    params1.iter().copied().zip(params2.iter().copied()).collect();
+                let pairs: Vec<(ExprIdx, ExprIdx)> = params1
+                    .iter()
+                    .copied()
+                    .zip(params2.iter().copied())
+                    .collect();
                 pairs.iter().all(|(a, b)| self.tree_eq(*a, other, *b))
                     && self.tree_eq(body1, other, body2)
             }
@@ -804,15 +851,17 @@ mod tests {
 
         let mut r = ExprArena::new();
         let s1 = r.alloc(Expression::Identifier("s"));
-        let access_a = r.alloc(Expression::Access(s1, Identifier("a")));
+        let access_a = r.alloc(Expression::AccessIdent(s1, Identifier("a")));
         let int2 = r.alloc(Expression::IntLiteral(2));
-        let exp = r.alloc(Expression::Binary(Operator::Exponent, access_a, int2));
+        let exp =
+            r.alloc(Expression::Binary(Operator::Exponent, access_a, int2));
         let int3 = r.alloc(Expression::IntLiteral(3));
         let times = r.alloc(Expression::Binary(Operator::Times, exp, int3));
         let uminus = r.alloc(Expression::Unary(Operator::Minus, times));
         let s2 = r.alloc(Expression::Identifier("s"));
-        let access_b = r.alloc(Expression::Access(s2, Identifier("b")));
-        let plus = r.alloc(Expression::Binary(Operator::Plus, uminus, access_b));
+        let access_b = r.alloc(Expression::AccessIdent(s2, Identifier("b")));
+        let plus =
+            r.alloc(Expression::Binary(Operator::Plus, uminus, access_b));
         let tagged = r.alloc(Expression::Tagged(Identifier("v"), plus));
 
         assert!(arena.tree_eq(root, &r, tagged));
@@ -828,7 +877,8 @@ mod tests {
         let mut r = ExprArena::new();
         let callee = r.alloc(Expression::Identifier("call"));
         let empty = r.alloc(Expression::Empty);
-        let call = r.alloc(Expression::Call(Container::Paren, callee, vec![empty]));
+        let call =
+            r.alloc(Expression::Call(Container::Paren, callee, vec![empty]));
 
         assert!(arena.tree_eq(root, &r, call));
     }
@@ -845,8 +895,11 @@ mod tests {
         let i1 = r.alloc(Expression::IntLiteral(1));
         let i2 = r.alloc(Expression::IntLiteral(2));
         let i3 = r.alloc(Expression::IntLiteral(3));
-        let call =
-            r.alloc(Expression::Call(Container::Paren, callee, vec![i1, i2, i3]));
+        let call = r.alloc(Expression::Call(
+            Container::Paren,
+            callee,
+            vec![i1, i2, i3],
+        ));
 
         assert!(arena.tree_eq(root, &r, call));
     }
@@ -879,7 +932,8 @@ mod tests {
             struct_id,
             vec![tagged_b, tagged_c, empty1],
         ));
-        let a_tagged = r.alloc(Expression::Tagged(Identifier("a"), struct_call));
+        let a_tagged =
+            r.alloc(Expression::Tagged(Identifier("a"), struct_call));
 
         // x: a[b: 1, c: 2]
         let a_id = r.alloc(Expression::Identifier("a"));
@@ -893,10 +947,11 @@ mod tests {
 
         // y: a.b + a.c
         let a1 = r.alloc(Expression::Identifier("a"));
-        let access_ab = r.alloc(Expression::Access(a1, Identifier("b")));
+        let access_ab = r.alloc(Expression::AccessIdent(a1, Identifier("b")));
         let a2 = r.alloc(Expression::Identifier("a"));
-        let access_ac = r.alloc(Expression::Access(a2, Identifier("c")));
-        let plus = r.alloc(Expression::Binary(Operator::Plus, access_ab, access_ac));
+        let access_ac = r.alloc(Expression::AccessIdent(a2, Identifier("c")));
+        let plus =
+            r.alloc(Expression::Binary(Operator::Plus, access_ab, access_ac));
         let y_tagged = r.alloc(Expression::Tagged(Identifier("y"), plus));
 
         let empty2 = r.alloc(Expression::Empty);
@@ -919,10 +974,11 @@ mod tests {
         let three = r.alloc(Expression::IntLiteral(3));
         let two = r.alloc(Expression::IntLiteral(2));
         let plus = r.alloc(Expression::Binary(Operator::Plus, three, two));
-        let access = r.alloc(Expression::Access(plus, Identifier("to_float")));
+        let access = r.alloc(Expression::AccessIdent(plus, Identifier("to_float")));
         let a_id = r.alloc(Expression::Identifier("a"));
         let x_a = r.alloc(Expression::Tagged(Identifier("x"), a_id));
-        let call = r.alloc(Expression::Call(Container::Paren, access, vec![x_a]));
+        let call =
+            r.alloc(Expression::Call(Container::Paren, access, vec![x_a]));
 
         assert!(arena.tree_eq(root, &r, call));
     }
@@ -945,7 +1001,8 @@ mod tests {
             r.alloc(Expression::Call(Container::Paren, slice_id, vec![empty]));
         let one = r.alloc(Expression::IntLiteral(1));
         let neg_one_inner = r.alloc(Expression::IntLiteral(1));
-        let neg_one = r.alloc(Expression::Unary(Operator::Minus, neg_one_inner));
+        let neg_one =
+            r.alloc(Expression::Unary(Operator::Minus, neg_one_inner));
         let bracket_call = r.alloc(Expression::Call(
             Container::Bracket,
             slice_call,
@@ -978,8 +1035,11 @@ mod tests {
         let second_call =
             r.alloc(Expression::Call(Container::Paren, second_id, vec![one]));
 
-        let plus1 =
-            r.alloc(Expression::Binary(Operator::Plus, first_call, second_call));
+        let plus1 = r.alloc(Expression::Binary(
+            Operator::Plus,
+            first_call,
+            second_call,
+        ));
 
         let third_id = r.alloc(Expression::Identifier("third"));
         let three = r.alloc(Expression::IntLiteral(3));
@@ -1041,8 +1101,11 @@ mod tests {
         let guard1 = r.alloc(Expression::Binary(Operator::Eq, a_id, zero));
         let do_something = r.alloc(Expression::Identifier("do_something"));
         let empty = r.alloc(Expression::Empty);
-        let body1 =
-            r.alloc(Expression::Call(Container::Paren, do_something, vec![empty]));
+        let body1 = r.alloc(Expression::Call(
+            Container::Paren,
+            do_something,
+            vec![empty],
+        ));
 
         // Branch 2: _ | do_nothing
         let special = r.alloc(Expression::Special);

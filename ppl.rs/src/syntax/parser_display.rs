@@ -93,7 +93,8 @@ pub fn display_ast<'a>(
                 "Special".yellow(),
             ));
         }
-        Expression::Positional(_) => todo!(),
+        Expression::PositionalStr(_) => todo!(),
+        Expression::PositionalInt(_) => todo!(),
         Expression::Binding(_) => todo!(),
         Expression::Unary(operator, expr) => {
             let expr = *expr;
@@ -204,7 +205,7 @@ pub fn display_ast<'a>(
                 );
             }
         }
-        Expression::Access(expr, identifier) => {
+        Expression::AccessIdent(expr, identifier) => {
             let (expr, identifier_str) = (*expr, identifier.0.to_string());
             descriptions.push(format!(
                 "{}{}{}{} {}",
@@ -213,6 +214,26 @@ pub fn display_ast<'a>(
                 extra.cyan(),
                 "Access -".red(),
                 identifier_str.blue()
+            ));
+
+            display_ast(
+                arena,
+                expr,
+                child_prefix,
+                Connector::Last,
+                "prefix: ".to_string(),
+                descriptions,
+            );
+        }
+        Expression::AccessPosition(expr, position) => {
+            let (expr, position) = (*expr, position);
+            descriptions.push(format!(
+                "{}{}{}{} {}",
+                prefix,
+                connector.display(),
+                extra.cyan(),
+                "Access -".red(),
+                format!("{}", position)
             ));
 
             display_ast(
