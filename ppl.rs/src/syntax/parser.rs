@@ -628,20 +628,28 @@ impl<'a> Parser<'a> {
                 if self.tokens[self.cursor] != Token::Lparen {
                     todo!("fn should have parent opening")
                 } else {
-                    let function_params =
-                        self.parse_primary_expression(container);
+                    let mut param_groups =
+                        vec![self.parse_primary_expression(container)];
                     self.advance();
+                    while self.tokens[self.cursor] == Token::Lparen {
+                        param_groups
+                            .push(self.parse_primary_expression(container));
+                        self.advance();
+                    }
                     if self.tokens[self.cursor] == Token::Arrow {
                         self.advance();
                         let expression =
                             self.parse_primary_expression(container);
-                        let continued_expression =
+                        // 3 because we need to know when to stop parsing
+                        let mut body =
                             self.continue_parsing(3, expression, container);
-                        // 3 because we need to know when to stop parsing,
-                        self.alloc(Expression::Function(
-                            vec![function_params],
-                            continued_expression,
-                        ))
+                        for params in param_groups.into_iter().rev() {
+                            body = self.alloc(Expression::Function(
+                                vec![params],
+                                body,
+                            ));
+                        }
+                        body
                     } else {
                         todo!("need arrow for function")
                     }

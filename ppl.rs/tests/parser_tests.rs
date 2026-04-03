@@ -445,3 +445,24 @@ fn function_definition() {
 
     assert!(tree_eq(&arena, root, &r, tagged));
 }
+
+#[test]
+fn curried_function_definition() {
+    // fn (a: A)(b: B) -> O desugars to fn (a: A) -> fn (b: B) -> O
+    let source = "add: fn (a: int)(b: int) -> int";
+
+    let parser = Parser::from_source(source);
+    let (arena, root) = parser.parse();
+
+    let mut r = ExprArena::new();
+    let a_type = r.alloc(Expression::Identifier("int"));
+    let param_a = r.alloc(Expression::Tagged(Identifier("a"), a_type));
+    let b_type = r.alloc(Expression::Identifier("int"));
+    let param_b = r.alloc(Expression::Tagged(Identifier("b"), b_type));
+    let ret = r.alloc(Expression::Identifier("int"));
+    let inner = r.alloc(Expression::Function(vec![param_b], ret));
+    let outer = r.alloc(Expression::Function(vec![param_a], inner));
+    let tagged = r.alloc(Expression::Tagged(Identifier("add"), outer));
+
+    assert!(tree_eq(&arena, root, &r, tagged));
+}
