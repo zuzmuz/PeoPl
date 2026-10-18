@@ -233,7 +233,7 @@ pub fn display_ast<'a>(
                 connector.display(),
                 extra.cyan(),
                 "Access -".red(),
-                format!("{}", position)
+                position
             ));
 
             display_ast(
@@ -320,7 +320,7 @@ pub fn display_ast<'a>(
                     "{}{}{}{}",
                     branch_child_prefix,
                     Connector::Last.display(),
-                    "".to_string(),
+                    "",
                     "Body".red(),
                 ));
 

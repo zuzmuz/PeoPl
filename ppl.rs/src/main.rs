@@ -26,13 +26,16 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
-    /// print ast of file
+    /// Builds single file
     Build {
+        ///File to build
         file: PathBuf,
 
+        /// Print out the AST
         #[arg(long, default_value_t = false)]
         tokens: bool,
-
+        
+        /// Print out list of tokens
         #[arg(long, default_value_t = false)]
         ast: bool,
     },

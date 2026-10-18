@@ -1,8 +1,7 @@
-use logos::{Logos, skip};
+use logos::{Logos};
 
 #[derive(Logos, Clone, Copy, Debug, PartialEq)]
 #[logos(skip r"[ \t]+")]
-// #[logos(skip r"[ \t\n\r\n\x0C]+")]
 pub enum Token<'a> {
     // literals
     #[regex("[0-9][0-9_]*", |lex| lex.slice().parse::<u64>().ok())]
@@ -50,39 +49,39 @@ pub enum Token<'a> {
     Identifier(&'a str),
 
     // arithmetics
-    #[token("+")]
+    #[regex("[ \t\n\r\n\x0c]*\\+")]
     OpPlus,
-    #[token("-")]
+    #[regex("[ \t\n\r\n\x0c]*-")]
     OpMinus,
-    #[token("*")]
+    #[regex("[ \t\n\r\n\x0c]*\\*")]
     OpTimes,
-    #[token("/")]
+    #[regex("[ \t\n\r\n\x0c]*/")]
     OpBy,
-    #[token("%")]
+    #[regex("[ \t\n\r\n\x0c]*%")]
     OpMod,
-    #[token("^")]
+    #[regex("[ \t\n\r\n\x0c]*\\^")]
     OpExponent,
 
     // bitwise
-    #[token("<<")]
+    #[regex("[ \t\n\r\n\x0c]*<<")]
     Lshift,
-    #[token(">>")]
+    #[regex("[ \t\n\r\n\x0c]*>>")]
     Rshift,
-    #[token(".&")]
+    #[regex("[ \t\n\r\n\x0c]*\\.&", priority=100)]
     Band,
-    #[token(".|")]
+    #[regex("[ \t\n\r\n\x0c]*\\.\\|", priority=100)]
     Bor,
-    #[token(".^")]
+    #[regex("[ \t\n\r\n\x0c]*\\.\\^", priority=100)]
     Bxor,
-    #[token("~")]
+    #[regex("[ \t\n\r\n\x0c]*~", priority=100)]
     Bnot,
 
     // access
-    #[token(".", priority = 10)]
+    #[regex("[ \t\n\r\n\x0c]*\\.", priority = 10)]
     Dot,
-    #[token("|>")]
+    #[regex("[ \t\n\r\n\x0c]*\\|>")]
     Pipe,
-    #[token("?")]
+    #[regex("[ \t\n\r\n\x0c]*\\?")]
     Propagate,
 
     // comparisons
@@ -122,7 +121,7 @@ pub enum Token<'a> {
     Appostrophe, // '
     #[token(":")]
     Colon, // :
-    #[token("->")]
+    #[regex("[ \t\n\r\n\x0c]*->")]
     Arrow, // ->
 
     #[regex(r"@[\p{XID_Start}][\p{XID_Continue}\p{So}\p{Sk}]*", |lex| &lex.slice()[1..])]
@@ -135,7 +134,7 @@ pub enum Token<'a> {
     #[regex(r"//.*", allow_greedy = true)]
     Comment,
 
-    #[regex("\n|\r\n|\x0C", skip)]
+    #[regex("(\n|\r\n|\x0C)[ \t\n\r\n\x0C]*")]
     NewLine,
 
     Eof,

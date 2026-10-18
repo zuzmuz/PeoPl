@@ -56,10 +56,7 @@ impl ToString for Operator {
 
 impl Operator {
     fn is_binary(&self) -> bool {
-        match self {
-            Operator::Not | Operator::Bnot => false,
-            _ => true,
-        }
+        !matches!(*self, Operator::Not | Operator::Bnot)
     }
 }
 
@@ -131,7 +128,7 @@ impl<'a> Token<'a> {
 
             Token::Colon => 2,
 
-            Token::Comma => 1,
+            Token::Comma | Token::NewLine => 1,
 
             Token::DecLiteral(_)
             | Token::HexLiteral(_)
@@ -152,7 +149,7 @@ impl<'a> Token<'a> {
             Token::Appostrophe => todo!(),
             Token::KwordComp => todo!(),
 
-            Token::NewLine | Token::Comment => -3,
+            Token::Comment => -3,
         }
     }
 
@@ -291,6 +288,7 @@ pub struct Parser<'a> {
 }
 
 impl<'a> Parser<'a> {
+    // Constructors
     pub fn from_source(source: &'a str) -> Self {
         let tokens = tokenizer::lex_source(source);
         let tokens_len = tokens.len();
@@ -523,7 +521,7 @@ impl<'a> Parser<'a> {
                 next_expression
             };
 
-            if operator_token == Token::Comma {
+            if matches!(operator_token, Token::Comma | Token::NewLine) {
                 if matches!(
                     self.arena.get(last_expression),
                     Expression::List(_, _)
@@ -646,8 +644,7 @@ impl<'a> Parser<'a> {
                 self.advance();
                 let expression = self.parse_primary_expression(container);
                 // 3 because we need to know when to stop parsing
-                let mut body =
-                    self.continue_parsing(3, expression, container);
+                let mut body = self.continue_parsing(3, expression, container);
                 for params in runtime_groups.into_iter().rev() {
                     body = self.alloc(Expression::Function(
                         Container::Paren,
