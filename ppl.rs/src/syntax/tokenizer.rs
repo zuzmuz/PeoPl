@@ -38,9 +38,9 @@ pub enum Token<'a> {
     KwordComp,
     #[token("fn")]
     KwordFn,
-    #[token("and")]
+    #[regex("[ \t\n\r\n\x0c]*and")]
     KwordAnd,
-    #[token("or")]
+    #[regex("[ \t\n\r\n\x0c]*or")]
     KwordOr,
     #[token("not")]
     KwordNot,
@@ -73,7 +73,7 @@ pub enum Token<'a> {
     Bor,
     #[regex("[ \t\n\r\n\x0c]*\\.\\^", priority=100)]
     Bxor,
-    #[regex("[ \t\n\r\n\x0c]*~", priority=100)]
+    #[token("~", priority=100)]
     Bnot,
 
     // access
@@ -85,15 +85,15 @@ pub enum Token<'a> {
     Propagate,
 
     // comparisons
-    #[token("=")]
+    #[regex("[ \t\n\r\n\x0c]*=")]
     OpEq,
-    #[token(">=")]
+    #[regex("[ \t\n\r\n\x0c]*>=")]
     OpGe,
-    #[token(">")]
+    #[regex("[ \t\n\r\n\x0c]*>")]
     OpGt,
-    #[token("<=")]
+    #[regex("[ \t\n\r\n\x0c]*<=")]
     OpLe,
-    #[token("<")]
+    #[regex("[ \t\n\r\n\x0c]*<")]
     OpLt,
 
     // delimieters
